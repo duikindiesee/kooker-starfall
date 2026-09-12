@@ -460,3 +460,11 @@ Observed after the user authorized visible launch. No agent movement input was s
 The visible fullscreen/windowed button passed both native transitions, restoring 1280Ã—720 and preserving scene/player state. [Release evidence](RELEASE-0.0.2-preview.2.md) distinguishes these observations from automatic checks, unverified resize/shortcut acceptance, and the user's Escape stop. Earlier tree renders and players remain unchanged.
 
 ![Actual restored preview.2 window](../evidence/milestones/display-toggle/native/03-restored-window.png)
+
+## First inhabitant — 12 September 2026
+
+Separate free Standard humanoid test courtyard, 0.0.3-preview.1. [Replay the actual standalone frames](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/replay.html).
+
+![Actual first-inhabitant walking frame](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/02-walking.png)
+
+The male Superhero body imports as Humanoid and uses idle, walk and Interact. The actual player passed 29 checks including deformed-foot grounding, collision, following camera obstruction and scripted crystal collection/delivery. This is scripted behavior; no learning is implemented. The 44.2 MB local ZIP passed 188-file integrity checks. Native controls/HUD acceptance remains pending; desktop input was not used. The existing R06/R19 runtime/release baseline retained 375 matching hashes. [Scope, evidence and one focused critique](FIRST-INHABITANT.md).

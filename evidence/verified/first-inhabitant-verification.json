@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-12T20:25:43.986707+00:00",
+  "buildSourceCommit": "9b14eb88ec0abe4e6469db40231b414157aff957",
+  "runtimeChecks": 29,
+  "packageEntries": 188,
+  "preservedFiles": 375,
+  "recordedFrames": 77,
+  "replayValidation": "All 77 referenced PNGs exist; embedded JavaScript parses. Browser playback itself not exercised.",
+  "secretScan": "Pinned Gitleaks 8.30.1 source/history and distribution passed; 3 byte-verified vendor public-key exceptions.",
+  "nativeInputAndHUD": "not visually accepted; no desktop input used"
+}

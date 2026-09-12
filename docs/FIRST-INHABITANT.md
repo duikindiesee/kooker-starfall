@@ -50,3 +50,12 @@ On Windows with pinned Unity 6000.6.0f1, commit the reviewed checkout and run:
 ~~~
 
 The script creates a unique player directory and retained local evidence, restores project rendering/player settings, and runs only an opt-in hidden smoke player. It does not launch a visible window. Fresh imports can be configured with CityLife.World.Editor.CharacterAssetImport.Run; the checked-in metadata already contains the selected settings.
+
+## Local delivery evidence
+
+- [Actual frame replay](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/replay.html) and [29-check standalone report](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/character-runtime.json).
+- [Release identity and ZIP SHA-256](../evidence/verified/first-inhabitant-release.json): 44,174,526-byte Windows ZIP, 188 checked files.
+- [375 preserved file hashes](../evidence/verified/first-inhabitant-preservation.json) and [actual free archive inventory](../evidence/verified/quaternius-standard-inventory.json).
+- Source build commit: 9b14eb88ec0abe4e6469db40231b414157aff957. Local asset-library revision: fe306300ea3fede74b4a5c87afc86a28bb7999bc. Neither character work nor binary library assets were pushed.
+
+Native controls and the on-screen journal HUD have not been visually accepted; no desktop input was performed. The replay presents the actual recorded frames with the runtime journal alongside them.
