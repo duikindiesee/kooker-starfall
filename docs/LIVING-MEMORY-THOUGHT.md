@@ -22,3 +22,16 @@ python tools/run-living-memory.py --exe Builds/EXACT_BUILD/KookerStarfallHybrid.
 Earlier binaries and evidence remain separate. The runner refuses existing output and does not mutate model defaults or load a model. It uses the explicitly already-loaded E4B exposed through laptop loopback; device attribution must be recorded for each run because LM Link may execute on the Mac.
 
 Death and knowledge progression are [future world rules and acceptance milestones](STARFALL-KNOWLEDGE-PROGRESSION.md), not part of this gate. API v1 remains unchanged and cannot ingest death/return events.
+
+## Actual compiled-player result — 13 September 2026
+
+Source `447faad`, build `KookerStarfallHybrid-0.0.6-memory-preview.1-20260913-185950`, runner `4a1a4f1`. Local evidence: `evidence/local/living-memory/run-20260913-1902/`.
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Real identity, pickup and delivery persisted | Passed | Three player receipts; amber delivered to depot-west at tick 588; SQLite reopened and chain verified | Death/return is deferred |
+| Bounded own-memory retrieval and isolation | Passed | Delivery event `33ac001292f38bafa3478a053240577dfaaac824fe8bda0ddecb0711667eaf5e`; other inhabitant empty; foreign-world query rejected 400 | No broader privacy certification claimed |
+| Genuine thought within 1500 ms | Failed | One E4B completion attempt timed out at 1504 ms; no complete answer; server recorded only three completion tokens and zero reasoning tokens | A complete valid response within the unchanged deadline |
+| Actual HUD admission guard | Passed | Player screenshot `runtime/51-living-memory-thought-or-fallback.png` visibly identifies event, actor and timeout; no thought admitted | Physical keyboard acceptance is separate |
+
+The complete living-memory thought is **not proven**. The compiled player exited with its explicit genuine-thought assertion failure. No timeout extension, partial-answer admission or endpoint-only substitution was used.

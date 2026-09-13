@@ -1,0 +1,4 @@
+
+### 2026-09-13 — Living-memory compiled-player gate
+
+Build 0.0.6-memory-preview.1-20260913-185950 completed real amber pickup/delivery and persisted/retrieved its scoped episode. Actual rendered HUD binds inhabitant-01, world and event but visibly reports timeout at 1504 ms / 1500 ms and no model thought admitted. Complete thought acceptance FAILED. Evidence: evidence/local/living-memory/run-20260913-1902/runtime/51-living-memory-thought-or-fallback.png and living-memory.json. SQLite restart and namespace checks passed; all 372 prior-build file hashes unchanged. Death/return and knowledge progression remain design only; see docs/STARFALL-KNOWLEDGE-PROGRESSION.md.
