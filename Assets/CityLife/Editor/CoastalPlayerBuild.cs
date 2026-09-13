@@ -136,4 +136,3 @@ namespace CityLife.World.Editor
         [Serializable]sealed class BuildEvidence{public string status,output,scene,product,scope,utc,buildId,version,sourceCommit,treeReview,frozenTreeCommit,componentMeshSha256;public long bytes;public double seconds;public int errors,warnings,woodColliders,rockColliders;}
     }
 }
-

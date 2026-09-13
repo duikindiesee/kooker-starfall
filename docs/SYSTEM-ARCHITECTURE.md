@@ -179,3 +179,7 @@ flowchart LR
 | Refuge authoring/runtime | Authored, compile pending | FIRST-REFUGE.md | Actual Windows player |
 | Hearth deterministic core | Synthetic C# PASS | evidence/verified/refuge/contract-checks.json | Player interaction |
 | NPC/memory bindings | Not installed | No authority modifications | Reviewed integration |
+
+## Knowledge progression design gate
+
+[Naive starts and staged survival roadmap](KNOWLEDGE-PROGRESSION.md) are authoritative design requirements for future work. Unity owns deterministic consequences and action permissions; beliefs carry provenance and save-scoped identity. Warnings, avoidance, retreat, bounded animals and fair counterplay precede hazards. Current refuge scope remains safe hearth/bedding; predator pressure and defenses are not installed.

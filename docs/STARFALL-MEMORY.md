@@ -82,3 +82,7 @@ docker compose -f services/starfall-memory/compose.yaml config --quiet
 ```
 
 The integration harness checks actual loopback ingestion, exact event hashes, idempotency, rejection boundaries, per-inhabitant memory, shared facts/private theories, sleep gating, immutable history and process restart persistence. Every invocation requires a new evidence directory. Reviewed synthetic evidence is retained separately from private database/configuration/raw logs. [Reviewed results](../evidence/milestones/starfall-memory/local-slice-v1/README.md) record the tested source and remaining gaps.
+
+## Save-scoped learning boundary
+
+[Knowledge progression contract](KNOWLEDGE-PROGRESSION.md) requires naive initial local knowledge and provenance for perception, experiments, outcomes, testimony, corrections and verified death lessons. Confidence is revisable. Prevent model-prior and cross-save/world/inhabitant knowledge leakage. Death carryover needs an explicit future rule; this note implements no persistence or cognition. Refuge rest has no live memory/dream binding.

@@ -172,4 +172,3 @@ Shader "CityLife/CoastalWater"
     }
     FallBack "Universal Render Pipeline/Unlit"
 }
-
