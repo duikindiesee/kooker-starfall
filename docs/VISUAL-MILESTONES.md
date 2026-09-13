@@ -500,3 +500,11 @@ Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-pla
 ## 13 September: smaller-model endpoint pass, player launch blocked
 
 Isolated source 45cac4a requires nonempty dialogue/reflection in both provider schema and strict parser. The separate player built with zero errors/warnings and 54 hybrid checks. LM Studio installed google/gemma-4-e4b Q4_K_M locally (6326843776 bytes including projector), preserving the existing loaded 26B model. At the user's direction, the endpoint probe used the already-loaded MLX E4B on Irwins-Mac-mini-2.local through laptop loopback: the corrected strict response completed in 3046 ms with zero reasoning tokens. This is linked-Mac compute, not laptop-only inference. Automatic approval review blocked the compiled-player launch with the sole reason blocked by policy; no new player thought or screenshot acceptance is claimed. Exact report, hashes, endpoint responses and prepared manual launcher: evidence/local/thought-e4b-20260913/REPORT.md. Component action authority and earlier artifacts remain unchanged.
+
+## Hunter clothing - isolated functional checkpoint, 13 September 2026
+
+Short hide panels now sit over continuous inner trousers. The user accepted the exposed-shoulder silhouette. Actual compiled-player captures retain pelvis/seat coverage through reviewed sitting, standing, crouching, walking, pickup/carry and seated camera orbits. Optional cold layers are off by default. [Checkpoint, limits and provenance](HUNTER-CLOTHING.md).
+
+![Actual standalone player: seated pelvis coverage](../evidence/milestones/hunter-clothing/2026-09-13/seated-default-180-Sit-20.png)
+
+Build `KookerStarfallHunter-0.0.3-preview.1-20260913-180511`, source `8659a92`. Separate courtyard, not main-world integration. Manual shortcuts, integrated terrain/cameras and sustained performance remain separate acceptance.
