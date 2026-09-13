@@ -1,0 +1,27 @@
+{
+  "contract": "starfall.environment-zone.v1",
+  "status": "GEOMETRY_AUTHORED_NOT_COMPILED_OR_ACCEPTED",
+  "worldId": "starfall.integrated-coastal.v1",
+  "worldRevision": "terrain-r2-weathered-banks.integrated1",
+  "zoneId": "first-refuge",
+  "candidateEntranceXZ": [-6.5, 0],
+  "candidateInteriorXZ": [-10.5, 0],
+  "nominalAuthoredFloorY": 0.3,
+  "geometryVerified": false,
+  "lowestRefugeFloorY": null,
+  "lowestConnectedIngressY": null,
+  "maximumDesignWaterY": null,
+  "waterEnvelopeSource": null,
+  "conditionalRegionalWaveUpperY": -1.889,
+  "regionalWaveBoundCondition": "Fixed water datum -2 and runtime WaveStrength in 0..1; inspector Range is not a shader runtime clamp. Material invariant not yet verified.",
+  "thermalVerified": false,
+  "rockAirTargetC": null,
+  "proposedPolicy": {
+    "blendMetres": 3,
+    "interiorWindMultiplier": 0.1,
+    "interiorRainMultiplier": 0.01,
+    "requiredFreeboardMetres": 0.75
+  },
+  "qualifiesAsDryRefuge": false,
+  "note": "Planning record only. Null measurements must not become zero or be treated as established bounds."
+}

@@ -1,0 +1,173 @@
+{
+  "contract": "starfall.environment-zone.v1",
+  "status": "PASS",
+  "layer": "Compiled .NET 8 tests of shared C# contract; synthetic geometry/thermal/water inputs. Not Unity cave acceptance.",
+  "assertions": 31,
+  "failures": 0,
+  "checks": [
+    {
+      "name": "synthetic interior wind attenuated \u003E=85 percent",
+      "passed": true,
+      "measured": 0.100000024
+    },
+    {
+      "name": "synthetic interior rain attenuated \u003E=98 percent",
+      "passed": true,
+      "measured": 0.00999999
+    },
+    {
+      "name": "cold interior warmer by \u003E=6 C",
+      "passed": true,
+      "measured": 20
+    },
+    {
+      "name": "validated synthetic refuge qualifies",
+      "passed": true,
+      "measured": {
+        "AirC": 12,
+        "FreeboardMetres": 1
+      }
+    },
+    {
+      "name": "outside is unchanged",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "doorway starts exposed",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "midpoint blend",
+      "passed": true,
+      "measured": {
+        "WindMultiplier": 0.55,
+        "AirC": 2
+      }
+    },
+    {
+      "name": "entrance transition monotonic and bounded",
+      "passed": true,
+      "measured": 0.004499972
+    },
+    {
+      "name": "unverified cave gets no shelter credit",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "open wind path disqualifies refuge",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "open rain path disqualifies refuge",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "no invented warming",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "unknown flood maximum fails closed",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "below required freeboard fails",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "exact freeboard threshold passes",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "low connected ingress fails despite high floor",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "low refuge floor fails despite high ingress",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "unmeasured floor fails closed",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "wrong revision gets no credit",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "wrong zone gets no credit",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "NaN flood bound fails closed",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "overflowing flood clearance fails closed",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "invalid weather rejected",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "finite overflowing wind rejected",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "wet occupant dries within 30 seconds in synthetic refuge",
+      "passed": true,
+      "measured": 0
+    },
+    {
+      "name": "cold occupant recovers in synthetic refuge",
+      "passed": true,
+      "measured": 11.615
+    },
+    {
+      "name": "exposed occupant stays cold and wet",
+      "passed": true,
+      "measured": {
+        "Wetness01": 1,
+        "ApparentC": -16.85
+      }
+    },
+    {
+      "name": "pause preserves exposure",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "identical ticks repeat exactly",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "exposure DTO round-trip continuation",
+      "passed": true,
+      "measured": null
+    },
+    {
+      "name": "invalid exposure restore rejected atomically",
+      "passed": true,
+      "measured": null
+    }
+  ]
+}
