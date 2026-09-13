@@ -27,4 +27,10 @@ Future location IDs: `tree-bank`, `canyon-gate`, `river-mouth`, `sea-overlook`, 
 
 ## Preservation and checkpoints
 
+## Environment integration contract
+
+The separate environment workstream's `Assets/CityLife/Environment/EnvironmentModel.cs` was read on 13 September. `Starfall.EnvironmentFoundation.IEnvironmentSurface` supplies `WorldId`, `Revision`, `PhysicalBounds`, `Contains`, `TryGround` (height and normal), `WaterLevel`, `WaterDepth`, and `Current`. WaterDepth is bed-to-surface depth; signed immersion is `WaterLevel(position) - position.y` only where water depth is positive. The component adapter currently returns zero current and samples the analytic coastal terrain; this is not an implemented flowing river or an exact rendered-triangle contact test. Player body motion must still use actual collision geometry.
+
+The environment clock uses 0.02-second ticks. Main-world integration must supply a new adapter for the new physical bounds and world revision, validate all route samples against rendered/collision terrain, and consume the shared weather/water contract without copying its simulation into this branch. The adapter has been inspected as source only here; the environment owner's reported tests and pending compiled-player checks are separate evidence. No environment source has been imported, no runtime has been connected, and no Unity process is controlled by this documentation change.
+
 Start: preserved coastal commit `30bdefbbc6731b611848054d9aa86887cd7a7799`. Isolated branch: `codex/starfall-coastal-playable`. Retain R01/R02 studies and all existing R06/R19 releases. Component checkpoint R03 remains labelled as such even if its player checks pass. Each later world revision gets unused build/evidence directories, source hashes, runtime results and a milestone entry. No push, merge, deployment or publication is authorized.
