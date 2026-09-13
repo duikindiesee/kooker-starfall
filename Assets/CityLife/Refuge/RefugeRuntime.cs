@@ -12,6 +12,7 @@ namespace Starfall.Refuge
 {
  public sealed class RefugeRuntime:MonoBehaviour
  {
+  public const int GeometryMask=(1<<8)|(1<<10);
   public const string WorldId="starfall.refuge-regional.v1", Revision="terrain-r2-weathered-banks.refuge2";
   public Camera View;public CharacterController Body;public Vector3 Hearth,Bed,Storage;public Collider Roof;public GameObject Flame;public Light FireLight;
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
@@ -26,9 +27,9 @@ namespace Starfall.Refuge
   public void ValidateGeometry()
   {
    Physics.SyncTransforms();FloorY=float.PositiveInfinity;bool valid=true;
-   for(float x=-12;x<=-7;x+=.5f)for(float z=-1.5f;z<=1.5f;z+=.5f){Vector3 p=new Vector3(x,2.1f,z);if(Vector2.Distance(new Vector2(x,z),new Vector2(Hearth.x,Hearth.z))<1.15f||Vector2.Distance(new Vector2(x,z),new Vector2(Storage.x,Storage.z))<.95f)continue;if(!Physics.Raycast(p,Vector3.down,out var hit,2,1<<8,QueryTriggerInteraction.Ignore)){valid=false;continue;}FloorY=Mathf.Min(FloorY,hit.point.y);var overlaps=Physics.OverlapCapsule(hit.point+Vector3.up*.36f,hit.point+Vector3.up*1.5f,.3f,1<<8,QueryTriggerInteraction.Ignore);if(overlaps.Length>0){valid=false;Debug.Log("REFUGE_CLEARANCE "+p+" blocked by "+string.Join(",",overlaps.Select(c=>c.name)));}}
+   for(float x=-12;x<=-7;x+=.5f)for(float z=-1.5f;z<=1.5f;z+=.5f){Vector3 p=new Vector3(x,2.1f,z);if(Vector2.Distance(new Vector2(x,z),new Vector2(Hearth.x,Hearth.z))<1.15f||Vector2.Distance(new Vector2(x,z),new Vector2(Storage.x,Storage.z))<.95f)continue;if(!Physics.Raycast(p,Vector3.down,out var hit,2,GeometryMask,QueryTriggerInteraction.Ignore)){valid=false;continue;}FloorY=Mathf.Min(FloorY,hit.point.y);var overlaps=Physics.OverlapCapsule(hit.point+Vector3.up*.36f,hit.point+Vector3.up*1.5f,.3f,GeometryMask,QueryTriggerInteraction.Ignore);if(overlaps.Length>0){valid=false;Debug.Log("REFUGE_CLEARANCE "+p+" blocked by "+string.Join(",",overlaps.Select(c=>c.name)));}}
    IngressY=1.8f; // Closed solid floor perimeter: only connected opening is the east ramp crest.
-   bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,1<<8))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
+   bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,GeometryMask))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
    GeometryVerified=valid&&crest&&Roof!=null&&Roof.enabled;
    WaterVerified=true;int waters=0;foreach(var r in FindObjectsByType<MeshRenderer>()){var m=r.sharedMaterial;if(m==null||m.shader.name!="CityLife/CoastalWater")continue;waters++;if(m.GetFloat("_WaveStrength")<0||m.GetFloat("_WaveStrength")>1)WaterVerified=false;var mesh=r.GetComponent<MeshFilter>().sharedMesh;foreach(var v in mesh.vertices)if(Mathf.Abs(r.transform.TransformPoint(v).y+2)>.0001f)WaterVerified=false;}
    WaterVerified &= waters>0;
@@ -37,8 +38,8 @@ namespace Starfall.Refuge
   {
    var s=Clock.Sample;var outside=new OutdoorWeather{WindX=s.wind.x,WindY=s.wind.y,WindZ=s.wind.z,AirC=s.temperature,Rain01=s.precipitation};
    bool inside=p.x<=-6&&p.x>=-12.6f&&Mathf.Abs(p.z)<=2&&p.y>=1.75f&&p.y<5;
-   bool roof=inside&&Roof!=null&&Roof.enabled&&Physics.Raycast(p+Vector3.up*.1f,Vector3.up,8,1<<8,QueryTriggerInteraction.Ignore);
-   float wind=0;if(inside&&s.wind.sqrMagnitude>.001f&&Physics.Raycast(p,-s.wind.normalized,10,1<<8,QueryTriggerInteraction.Ignore))wind=1;
+   bool roof=inside&&Roof!=null&&Roof.enabled&&Physics.Raycast(p+Vector3.up*.1f,Vector3.up,8,GeometryMask,QueryTriggerInteraction.Ignore);
+   float wind=0;if(inside&&s.wind.sqrMagnitude>.001f&&Physics.Raycast(p,-s.wind.normalized,10,GeometryMask,QueryTriggerInteraction.Ignore))wind=1;
    float heat=Fire.HeatAt(Vector3.Distance(p,Hearth+Vector3.up*.8f));
    var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-p.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(s.temperature+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
    return CaveZoneEvaluator.Evaluate(policy,outside,probe);
@@ -67,7 +68,7 @@ namespace Starfall.Refuge
    yield return new WaitForSeconds(2);Check("geometry standing clearance",GeometryVerified);Check("regional water material and mesh invariants",WaterVerified);Check("floor freeboard",FloorY+1.889f>=.75f,FloorY+1.889f);Check("connected ingress freeboard",IngressY+1.889f>=.75f,IngressY+1.889f);
    yield return Capture("01-entrance",new Vector3(-2,3.7f,-5),new Vector3(-10,3,0));
    yield return Route(new Vector3(-2,0,-4));yield return Route(new Vector3(-2,0,0));yield return Route(new Vector3(-7,1.8f,0));yield return Route(new Vector3(-11,1.8f,0));yield return Route(new Vector3(-7,1.8f,0));yield return Route(new Vector3(-2,0,0));yield return Route(new Vector3(-2,0,-4));yield return Route(new Vector3(-4,0,-4));
-   Check("back wall blocks body",Physics.CapsuleCast(new Vector3(-11,2.2f,0),new Vector3(-11,3.3f,0),.3f,Vector3.left,3,1<<8));Check("roof blocks camera",Physics.SphereCast(new Vector3(-10,3.4f,0),.2f,Vector3.up,out var roofHit,4,1<<8));
+   Check("back wall blocks body",Physics.CapsuleCast(new Vector3(-11,2.2f,0),new Vector3(-11,3.3f,0),.3f,Vector3.left,3,GeometryMask));Check("roof blocks camera",Physics.SphereCast(new Vector3(-10,3.4f,0),.2f,Vector3.up,out var roofHit,4,GeometryMask));
    Check("round trip stayed dry",Body.transform.position.y>-.2f,Body.transform.position.y);
    Check("remote fire action refused",!ToggleFire());yield return Route(new Vector3(-2,0,-4));yield return Route(new Vector3(-2,0,0));yield return Route(new Vector3(-7,1.8f,0));Clock.Tick=400;Check("hearth ignition through interaction gate",ToggleFire()&&Fire.Burning);yield return Capture("02-hearth-interior",new Vector3(-6.8f,3.3f,-1.5f),new Vector3(-11,2.5f,.4f));
    var sheltered=Sample(new Vector3(-11,2.8f,0));var exposed=Sample(new Vector3(-4,2.8f,0));Check("directional wind attenuation",sheltered.WindSpeed<exposed.WindSpeed*.15f,sheltered.WindSpeed);Check("hearth local warming",Sample(new Vector3(-9,2.6f,1.35f)).AirC>Clock.Sample.temperature,Sample(new Vector3(-9,2.6f,1.35f)).AirC-Clock.Sample.temperature);Check("roof rain attenuation",sheltered.RainMultiplier<.02f,sheltered.RainMultiplier);

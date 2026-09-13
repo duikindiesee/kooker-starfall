@@ -77,7 +77,7 @@ namespace CityLife.World.Editor
                     woodColliders++;
                 }
             camera.enabled=true;camera.tag="MainCamera";
-            ground.layer=8;
+            ground.layer=RefugeBuild.Requested?10:8;
             var explorer=camera.gameObject.AddComponent<CoastalExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
             camera.gameObject.AddComponent<CoastalSmoke>();
             if(RefugeBuild.Requested){Object.DestroyImmediate(explorer);Object.DestroyImmediate(camera.GetComponent<CoastalSmoke>());}
