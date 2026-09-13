@@ -534,3 +534,8 @@ Short hide panels now sit over continuous inner trousers. The user accepted the 
 ![Actual standalone player: seated pelvis coverage](../evidence/milestones/hunter-clothing/2026-09-13/seated-default-180-Sit-20.png)
 
 Build `KookerStarfallHunter-0.0.3-preview.1-20260913-180511`, source `8659a92`. Separate courtyard, not main-world integration. Manual shortcuts, integrated terrain/cameras and sustained performance remain separate acceptance.
+
+
+## Integrated coastal round 104 - 13 September 2026
+
+See [round 104](../evidence/milestones/coastal/round-104/README.md): 16 automated runtime checks and native menu clicks passed; native keyboard/traversal, full clothing coverage and performance remain pending. Club excluded; living sea and wider canyon remain future work.

@@ -1,6 +1,6 @@
 # Integrated coastal candidate
 
-13 September 2026. Target: `0.0.7-integrated.1`, a separate Windows player assembled in `codex/starfall-integrated-preview`. **Source integration in progress; no combined-player acceptance yet.** Every existing branch and build remains separate. Protected main requires MoJoJo review; this checkpoint is not a merge/deployment request.
+13 September 2026. Target: `0.0.7-integrated.1`, a separate Windows player assembled in `codex/starfall-integrated-preview`. **Compiled candidate available; 16 automated runtime checks passed. Native menu clicks passed; full native controls and clothing coverage remain pending.** Every existing branch and build remains separate. Protected main requires MoJoJo review; this checkpoint is not a merge/deployment request.
 
 ## Dependency order and current scope
 
@@ -34,14 +34,16 @@ Attenuation must come from the actual wind/driving-rain obstruction geometry wit
 
 ## Same-executable acceptance
 
-| Claim | Status | Required evidence | Remaining gap |
+| Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
-| Source integration | In progress | Exact dependency commits, clean source, metadata/public-file safeguards and focused authority/control checks | Unity compilation and compatibility |
-| Traversal and NPC autonomy | Unverified | Actual Windows player movement on the coast, real pickup/carry/delivery, slope/cliff/deep-water boundaries, escape from refuge, no falling through terrain | Combined runtime and native observation |
-| Environment and shelter | Unverified | Fixed-tick weather, wind/water response, rain/exposure, paused clocks, exterior/entrance/interior comparisons, measured clearance/freeboard | Actual scene and thermal limits |
-| Clothing | Accepted component handoff integrated in source; combined result unverified | Standing/walk/carry/crouch/seated multi-angle frames, continuous pelvis coverage, no unacceptable clipping | Same-executable coverage review |
-| Mouse and menus | Source changes unverified | Click/RMB capture, clear hint, sensible configurable sensitivity, no capture jump, Escape release, usable pause/options cursor, intended resume capture, F11 window/fullscreen preservation in spectator and possession modes | Visible native input checks; injected Input System tests alone are insufficient |
-| Signature vista | Unverified | Actual player cameras along canyon/outlet and at elevation, separated moons/giant, weather comparisons and measured timing | Wider canyon/roaming/progression remain future work |
+| Separate Windows build | Passed compilation | preview-build.json: zero errors, 14 warnings | Warnings retained; not full-world acceptance |
+| Integrated runtime | 16/16 automated checks passed | integrated-runtime.json; one autonomous delivery; no runtime errors | Synthetic Input System devices do not establish native keyboard acceptance |
+| Native menus | Passed observed clicks | Local native-04 screenshots: Options, Controls, sensitivity 0.12 to 0.10; reset observed to 0.12 | Automated native P key had no observed response; hardware keyboard, capture, Esc, F11 and traversal pending |
+| Clothing | Attached; partial visual review | Crouch-2 actual-player frame shows covered visible pelvis | Other angles are partly occluded; comprehensive moving coverage pending |
+| Earlier builds preserved | Passed | Local preserved-builds-final.json: 5946 files checked, no differences | Scope is the recorded before-snapshot |
+
+
+See [round 104 evidence](../evidence/milestones/coastal/round-104/README.md) for the exact compiled source and evidence boundaries.
 
 `IntegratedAcceptance` exercises the real compiled components using per-process Input System devices and captures the rendered player. Its report explicitly leaves native mouse/window use and visual clothing review pending. It is not a replacement for those observations. Retain failed runs, exact build/source hashes, screenshots, runtime errors and timing evidence. A compiled executable alone is a candidate, not final-world readiness.
 
