@@ -11,7 +11,7 @@ namespace CityLife.World
   public Vector3 PalmAnchor, ShaftAxis; public Quaternion HandBasis;
   public Vector3[] FlexAxes; public Vector3 PalmAlong,PalmNormal;
   public Vector3 DiagnosticCurlAdjustment,DiagnosticThumbAdjustment; public Vector2 DiagnosticAnchorAdjustment;
-  public float ForearmSlope=-1.5f,ElbowOut=.22f,WristDeviation=30f;
+  public float ForearmSlope=-1.5f,ElbowOut=.6f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
   // Author once in the imported bind pose, before the Animator evaluates.

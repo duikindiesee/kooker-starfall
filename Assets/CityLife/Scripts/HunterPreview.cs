@@ -38,7 +38,7 @@ namespace CityLife.World
   private IEnumerator Capture(string name){yield return new WaitForEndOfFrame();string file=name+".png";ScreenCapture.CaptureScreenshot(Path.Combine(directory,file));report.captures.Add(file);yield return null;}
   private void Audit(){report.frames++;var club=Model.GetComponent<HunterClubCarry>();if(club)report.minClubGroundClearance=Mathf.Min(report.minClubGroundClearance,club.GroundClearance);foreach(var r in Model.GetComponentsInChildren<SkinnedMeshRenderer>()){if(!r.name.StartsWith("Hunter "))continue;var m=new Mesh();r.BakeMesh(m);var bounds=m.bounds;float e=bounds.extents.magnitude;report.maxClothingExtent=Mathf.Max(report.maxClothingExtent,e);if(float.IsNaN(e)||e>3)throw new InvalidOperationException("Invalid deformation on "+r.name);Destroy(m);}}
   private bool gripVerify;
-  [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.22f,wristDeviation=30f;}
+  [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.6f,wristDeviation=30f;}
   [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
   [Serializable]class GripGeometry {public Vector3 handScale,clubScale;public List<Vector3> points=new List<Vector3>();public List<string> bones=new List<string>();}
