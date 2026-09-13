@@ -129,3 +129,8 @@ This is the target design, not an implemented launcher specification or authoriz
 Update this diagram and installation-state table in the same change that adds/removes a component, connects a live boundary, changes capability/storage scope, or changes installation behavior. Link the exact retained source, test, runtime or release evidence that justifies each status; identify which build/context was tested. Record unverified gaps instead of promoting a component because code, a configuration file or a package exists. Preserve older evidence snapshots. Recheck runtime availability when reporting a live state; this document does not run a monitor or scheduled task.
 
 Supporting detail: [world foundation](WORLD-FOUNDATION.md), [hybrid NPC](HYBRID-NPC.md), [latest local-model diagnostic](HYBRID-DIAGNOSTIC-30S.md), [native memory](STARFALL-MEMORY.md), [reviewed memory evidence](../evidence/milestones/starfall-memory/local-slice-v1/README.md).
+
+
+## 13 September: request-local reasoning-off diagnostic failed
+
+Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-player request used reasoning_effort none and produced zero reasoning tokens. Prompt processing consumed about 24 seconds; incomplete JSON remained at the 30001 ms cancellation. The actual player correctly failed the genuine-thought gate: 65 checks passed, one failed, zero runtime errors; deterministic fallback delivered one item. Shared model inventory remained unchanged. Reviewed local report and inspected timeout screenshot: evidence/local/thought-reasoning-off-20260913/REPORT.md and runtime/40-real-local-proposal-outcome.png. No genuine thought or new visual acceptance is claimed. Existing artifacts and component authority boundaries are preserved.
