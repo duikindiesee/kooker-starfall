@@ -12,6 +12,7 @@ namespace CityLife.World
         public CharacterPreviewActor Actor;
         public NpcPerception Perception;
         public NpcDecisionLog Log;
+        public NpcOptionalPlanner OptionalPlanner;
         public NpcInteractable[] Registry;
         public bool ManualSimulation, Running = true;
         public bool MenuPaused { get; set; }
@@ -39,6 +40,7 @@ namespace CityLife.World
         }
         public void ResetState()
         {
+            if (OptionalPlanner != null) OptionalPlanner.ResetSession();
             foreach (var item in Registry) item.RestoreInitial();
             Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
             goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
@@ -52,6 +54,7 @@ namespace CityLife.World
         public void SetPossession(bool possessed)
         {
             if (Possessed == possessed) return;
+            if (OptionalPlanner != null) OptionalPlanner.Cancel("possession-change");
             Possessed = possessed; ManualDirection = Vector3.zero; gestureTicks = 0; Actor.CancelGesture();
             if (!possessed) Running = true;
             if (!possessed && goal != null)
@@ -65,12 +68,14 @@ namespace CityLife.World
         }
         public void Pause()
         {
+            if (OptionalPlanner != null) OptionalPlanner.Cancel("autonomy-paused");
             Running = false;
         }
         public void ToggleAutonomy()
         {
             if (Possessed) return;
             Running = !Running;
+            if (!Running && OptionalPlanner != null) OptionalPlanner.Cancel("autonomy-paused");
             Log.Record(Tick, "control", DescribePerception(), GoalId, Running ? "resume-autonomy" : "pause-autonomy", "current goal and cargo retained");
         }
         public void StepTick()
@@ -112,7 +117,9 @@ namespace CityLife.World
             }
             if (goal == null)
             {
-                goal = NpcDecisionPolicy.Choose(Perception.Current, Actions.Held != null, retryAfter, Tick);
+                bool proposed = OptionalPlanner != null && OptionalPlanner.Choose(retryAfter, out goal);
+                if (proposed && goal == null) { Phase = "Think / wait"; Actor.Step(Vector3.zero, StepSeconds); return; }
+                if (!proposed) goal = NpcDecisionPolicy.Choose(Perception.Current, Actions.Held != null, retryAfter, Tick);
                 if (goal == null)
                 {
                     Phase = "Wait";
@@ -123,7 +130,7 @@ namespace CityLife.World
                 }
                 previousWait = ""; lastSeenTick = goal.seenAtTick; ChosenGoals.Add(goal.id);
                 Log.Record(Tick, "goal", DescribePerception(), goal.id,
-                    Actions.Held == null ? "collect" : "deliver", "nearest eligible perception; distance=" + goal.distanceMillimetres + "mm; stable-id tie break");
+                    Actions.Held == null ? "collect" : "deliver", proposed ? "validated optional proposal; deterministic navigation and action checks" : "nearest eligible perception; distance=" + goal.distanceMillimetres + "mm; stable-id tie break");
                 route = NpcGridNavigation.Plan(transform.position, goal.approach);
                 if (route == null) { Fail("no-route"); Actor.Step(Vector3.zero, StepSeconds); return; }
                 previousPosition = transform.position; stalledTicks = 0;

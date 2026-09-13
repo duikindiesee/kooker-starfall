@@ -35,13 +35,15 @@ namespace CityLife.World.Editor
 
         public static void Run() => Build(false);
         public static void RunNpc() => Build(true);
-        private static void Build(bool npc)
+        public static void RunHybrid() => Build(true, true);
+        private static void Build(bool npc, bool hybrid = false)
         {
             if (!Application.isBatchMode) throw new InvalidOperationException("Use the isolated batch build.");
             IslandValidation.Run();
             if (npc) NpcMilestoneValidation.Run();
-            string versionName = npc ? "0.0.4-preview.1" : Version;
-            string executable = npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
+            if (hybrid) NpcHybridValidation.Run();
+            string versionName = hybrid ? "0.0.5-preview.1" : npc ? "0.0.4-preview.1" : Version;
+            string executable = hybrid ? "KookerStarfallHybrid" : npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
             string id = executable + "-" + versionName + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             folder = "Assets/CityLife/GeneratedPreview-Character-" + id; materialCount = 0;
             string output = "Builds/" + id + "/" + executable + ".exe";
@@ -138,6 +140,11 @@ namespace CityLife.World.Editor
                 allImportedClips = clips.Select(x => x.name).ToArray(), humanoid = actor.Animator.avatar.isValid && actor.Animator.avatar.isHuman
             }, true));
             if (npc) NpcPreviewStage.Configure(actor, camera, folder);
+            if (hybrid)
+            {
+                var brain = actor.GetComponent<NpcAutonomy>();
+                var planner = actor.gameObject.AddComponent<NpcOptionalPlanner>(); planner.Brain = brain; brain.OptionalPlanner = planner;
+            }
 
             var oldGraphics = GraphicsSettings.defaultRenderPipeline;
             var sourcePipeline = oldGraphics as UniversalRenderPipelineAsset ??
@@ -164,7 +171,7 @@ namespace CityLife.World.Editor
             bool resize = PlayerSettings.resizableWindow;
             try
             {
-                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = npc ? "Kooker Starfall - Inhabitant decisions" : "Kooker Starfall - First inhabitant";
+                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = hybrid ? "Kooker Starfall - Optional local thoughts" : npc ? "Kooker Starfall - Inhabitant decisions" : "Kooker Starfall - First inhabitant";
                 PlayerSettings.bundleVersion = versionName; PlayerSettings.defaultScreenWidth = npc ? 1600 : 1280; PlayerSettings.defaultScreenHeight = npc ? 900 : 720;
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.runInBackground = true; PlayerSettings.resizableWindow = true;
                 GraphicsSettings.defaultRenderPipeline = pipeline;
@@ -179,7 +186,8 @@ namespace CityLife.World.Editor
                     seconds = report.summary.totalTime.TotalSeconds, bytes = (long)report.summary.totalSize,
                     utc = DateTime.UtcNow.ToString("O"), scope = "Separate character courtyard; free Standard assets; scripted bounded roaming; no saved world or learning." };
                 if (npc) evidence.scope = "Separate deterministic NPC perception, autonomous goals and validated actions; no LLM, learning, saved world or network.";
-                File.WriteAllText(npc ? "evidence/local/npc/build.json" : "evidence/local/character/build.json", JsonUtility.ToJson(evidence, true));
+                if (hybrid) evidence.scope = "Optional local high-level proposals; disabled by default; deterministic world actions and offline fallback; no learning.";
+                File.WriteAllText(hybrid ? "evidence/local/hybrid/build.json" : npc ? "evidence/local/npc/build.json" : "evidence/local/character/build.json", JsonUtility.ToJson(evidence, true));
                 if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Character build failed.");
                 Debug.Log("CHARACTER_PREVIEW_BUILD_SUCCEEDED " + output);
             }

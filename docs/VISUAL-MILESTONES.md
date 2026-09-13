@@ -468,3 +468,7 @@ Separate free Standard humanoid test courtyard, 0.0.3-preview.1. [Replay the act
 ![Actual first-inhabitant walking frame](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/02-walking.png)
 
 The male Superhero body imports as Humanoid and uses idle, walk and Interact. The actual player passed 29 checks including deformed-foot grounding, collision, following camera obstruction and scripted crystal collection/delivery. This is scripted behavior; no learning is implemented. The 44.2 MB local ZIP passed 188-file integrity checks. Native controls/HUD acceptance remains pending; desktop input was not used. The existing R06/R19 runtime/release baseline retained 375 matching hashes. [Scope, evidence and one focused critique](FIRST-INHABITANT.md).
+
+## Optional local thoughts — 13 September 2026
+
+Separate 0.0.5-preview.1 courtyard; [implementation, controls and acceptance boundaries](HYBRID-NPC.md). The optional planner supplies bounded high-level proposals and fictional text while deterministic actions retain authority. Runtime-03 passed 60 actual-player checks covering default-off behavior, explicit opt-in, fake-provider blue-goal delivery, denied proposals, unavailable-service delivery, timeout/late discard, pause cancellation and both F11 display transitions. Earlier failed runs are retained. Final packaged observations and the one real-local probe are linked by the release evidence when produced; physical input/performance acceptance remains separate. The living-sea environment is still separate world work.

@@ -100,7 +100,7 @@ namespace CityLife.World
                 yield return Tap(Key.DownArrow); yield return Tap(Key.Enter);
                 need("controls-page-readable-guide", controls.Page == "Controls" &&
                     controls.PageBody.text.Contains("WASD or arrows") && controls.PageBody.text.Contains("Tab:") &&
-                    controls.PageBody.text.Contains("R:") && controls.PageBody.text.Contains("Escape:"),
+                    controls.PageBody.text.Contains("R:") && controls.PageBody.text.Contains("Escape:") && controls.PageBody.text.Contains("F11:"),
                     "Keyboard navigation opens the real Controls page with possession, movement, autonomy and Escape guidance.");
                 capture("14-controls-page");
                 yield return Tap(Key.Escape);
@@ -135,6 +135,22 @@ namespace CityLife.World
                 capture("17-graphics-restored");
                 yield return Tap(Key.P);
                 need("P-resumes-from-submenu", !controls.MenuOpen && !brain.MenuPaused, "P resumes directly from Graphics.");
+
+                yield return Tap(Key.F11);
+                deadline = Time.realtimeSinceStartup + 10;
+                while (controls.DisplayShortcutActive && Time.realtimeSinceStartup < deadline) { brain.StepTick(); yield return null; }
+                need("F11-direct-fullscreen", !controls.DisplayShortcutActive && Screen.fullScreenMode != initialMode && !controls.MenuOpen &&
+                    !brain.MenuPaused && Time.timeScale == 1 && brain.Tick == displayTick && brain.transform.position == displayPosition,
+                    "Actual F11 event changes display from gameplay, temporarily freezes the body and restores the previous running state.");
+                capture("20-F11-fullscreen");
+                yield return Tap(Key.F11);
+                deadline = Time.realtimeSinceStartup + 10;
+                while (controls.DisplayShortcutActive && Time.realtimeSinceStartup < deadline) { brain.StepTick(); yield return null; }
+                need("F11-restores-window-and-context", Screen.fullScreenMode == initialMode && Screen.width == initialWidth && Screen.height == initialHeight &&
+                    brain.gameObject.GetEntityId() == identity && brain.Actions.Held?.StableId == cargo && brain.GoalId == goal &&
+                    brain.Tick == displayTick && brain.Log.Entries.Count == eventCount && !brain.MenuPaused && Time.timeScale == 1,
+                    "Second F11 restores original dimensions and preserves identity, cargo, goal, log, position and pause state.");
+                capture("21-F11-windowed-restored");
 
                 yield return Tap(Key.Tab);
                 need("release-possession-resumes-same-NPC", !brain.Possessed && brain.Running &&

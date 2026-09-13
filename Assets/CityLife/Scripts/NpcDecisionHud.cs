@@ -16,7 +16,7 @@ namespace CityLife.World
         public bool Detailed;
         public NpcPlayerControls Controls;
         private RectTransform backgroundRect, footerRect;
-        private Text footer;
+        private Text footer, thoughts;
         private void Awake()
         {
             var root = new GameObject("NPC decision panel", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -47,11 +47,26 @@ namespace CityLife.World
             History = Label("Action log", 442, 346, 18, new Color(.94f, .88f, .73f));
             footer = Label("Controls", 798, 72, 17, new Color(.65f, .75f, .82f)); footerRect = footer.rectTransform;
             footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nDeterministic rules; no LLM or learning.";
+            if (Brain.OptionalPlanner != null)
+            {
+                var o = new GameObject("Optional local thoughts", typeof(RectTransform), typeof(Text)); Rect(o, 970, 25, 600, 410);
+                thoughts = o.GetComponent<Text>(); thoughts.font = font; thoughts.fontSize = 20; thoughts.color = new Color(.8f, .94f, .97f);
+                thoughts.supportRichText = false; thoughts.horizontalOverflow = HorizontalWrapMode.Wrap;
+                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts off by default";
+            }
         }
         private void LateUpdate() => Refresh();
         public void Refresh()
         {
             if (!Brain.Ready || Summary == null) return;
+            if (thoughts != null)
+            {
+                var planner = Brain.OptionalPlanner; thoughts.gameObject.SetActive(Detailed);
+                thoughts.text = "OPTIONAL LOCAL THOUGHTS\n" + planner.Status + "\nAdvisory plan: " + planner.Plan +
+                    "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
+                    "\n\nActions use deterministic checks. No learning.";
+                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts " + (planner.EnabledByUser ? "on" : "off");
+            }
             Perceptions.gameObject.SetActive(Detailed); History.gameObject.SetActive(Detailed);
             backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 310);
             footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -238);

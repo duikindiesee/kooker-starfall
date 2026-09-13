@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,6 +25,9 @@ namespace CityLife.World
         public bool Looking { get; private set; }
         public bool ExitRequested { get; private set; }
         public bool FreeSpectator { get; private set; }
+        public bool DisplayShortcutActive { get; private set; }
+        private float shortcutTimeScale;
+        private bool shortcutPaused;
         public string Mode => Brain.Possessed ? "Possession" : FreeSpectator ? "Spectator / free camera" : "Autonomous NPC / follow";
         public Text PageTitle, PageBody;
         public Vector3 SpectatorPosition => freePosition;
@@ -46,10 +50,11 @@ namespace CityLife.World
         {
             if (!initialized || !Brain.Ready) return;
             Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
-            if (SuppressInput) return;
+            if (SuppressInput || DisplayShortcutActive) return;
             if (!Application.isFocused && !AllowUnfocusedTestInput) { ReleasePointer(); return; }
             var key = TestKeyboard ?? Keyboard.current; var mouse = TestMouse ?? Mouse.current;
             if (key == null) return;
+            if (key.f11Key.wasPressedThisFrame && !Display.IsChanging) { StartCoroutine(ToggleDisplayShortcut()); return; }
             if (key.pKey.wasPressedThisFrame) { if (MenuOpen) Resume(); else OpenMenu(); }
             else if (key.escapeKey.wasPressedThisFrame)
             {
@@ -59,8 +64,8 @@ namespace CityLife.World
             }
             if (MenuOpen)
             {
-                if (key.downArrowKey.wasPressedThisFrame) Select((selected + 1) % buttons.Count);
-                if (key.upArrowKey.wasPressedThisFrame) Select((selected + buttons.Count - 1) % buttons.Count);
+                if (key.downArrowKey.wasPressedThisFrame) Select((selected + 1) % actions.Count);
+                if (key.upArrowKey.wasPressedThisFrame) Select((selected + actions.Count - 1) % actions.Count);
                 if (key.enterKey.wasPressedThisFrame || key.numpadEnterKey.wasPressedThisFrame) actions[selected]();
                 return;
             }
@@ -97,14 +102,14 @@ namespace CityLife.World
         }
         private void FixedUpdate()
         {
-            if (!initialized || MenuOpen || Brain.Possessed || !FreeSpectator) return;
+            if (!initialized || MenuOpen || DisplayShortcutActive || Brain.Possessed || !FreeSpectator) return;
             freePosition += cameraMotion * NpcAutonomy.StepSeconds;
             freePosition = new Vector3(Mathf.Clamp(freePosition.x, -22, 22), Mathf.Clamp(freePosition.y, .7f, 18), Mathf.Clamp(freePosition.z, -22, 22));
         }
         private void LateUpdate()
         {
             if (!initialized) return;
-            if (!MenuOpen)
+            if (!MenuOpen && !DisplayShortcutActive)
             {
                 if (Brain.Possessed || !FreeSpectator) { View.Yaw = yaw; View.Pitch = Mathf.Clamp(pitch, -8, 65); View.Follow(); }
                 else View.transform.SetPositionAndRotation(freePosition, Quaternion.Euler(pitch, yaw, 0));
@@ -129,6 +134,7 @@ namespace CityLife.World
             if (MenuOpen) return;
             ReleasePointer(); savedTimeScale = Time.timeScale; Time.timeScale = 0;
             Brain.MenuPaused = true; Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
+            if (Brain.OptionalPlanner != null) Brain.OptionalPlanner.Cancel("options-opened");
             MenuOpen = true; overlay.SetActive(true); ShowPage("Root");
         }
         public void Resume()
@@ -151,12 +157,27 @@ namespace CityLife.World
         private void OnDisable()
         {
             ReleasePointer();
+            if (DisplayShortcutActive) { Time.timeScale = shortcutTimeScale; Brain.MenuPaused = shortcutPaused; DisplayShortcutActive = false; }
             if (MenuOpen) { Time.timeScale = savedTimeScale; Brain.MenuPaused = false; }
         }
         private void Exit()
         {
             ExitRequested = true;
             if (!NpcPreviewSmoke.Requested) Application.Quit();
+        }
+        private IEnumerator ToggleDisplayShortcut()
+        {
+            ReleasePointer(); shortcutTimeScale = Time.timeScale; shortcutPaused = Brain.MenuPaused;
+            DisplayShortcutActive = true; Time.timeScale = 0; Brain.MenuPaused = true;
+            Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
+            if (Brain.OptionalPlanner != null) Brain.OptionalPlanner.Cancel("display-shortcut");
+            try
+            {
+                Display.ToggleFromShortcut(); yield return null;
+                while (Display.IsChanging) yield return null;
+            }
+            finally
+            { Time.timeScale = shortcutTimeScale; Brain.MenuPaused = shortcutPaused; DisplayShortcutActive = false; }
         }
         private void BuildMenu()
         {
@@ -218,7 +239,7 @@ namespace CityLife.World
             else if (page == "Controls")
             {
                 PageTitle.text = "PAUSED / Controls";
-                PageBody.text = "Current mode: " + Mode +
+                PageBody.text = "Current mode: " + Mode + "   |   F11: fullscreen / windowed (also Options > Graphics)." +
                     "\nTab: deliberately enter / leave possession of the same NPC." +
                     "\nAutonomous NPC: follow its activity. F: switch follow / free spectator." +
                     "\nSpectator: WASD or arrows move the camera; Q/E down/up. NPC autonomy continues." +
@@ -226,7 +247,19 @@ namespace CityLife.World
                     "\nHold right mouse: look. R: pause/resume autonomy in observation modes." +
                     "\nL: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
+                if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
                 Option("Back", () => ShowPage("Root"));
+            }
+            else if (page == "Thoughts")
+            {
+                var planner = Brain.OptionalPlanner;
+                PageTitle.text = "PAUSED / Local thoughts";
+                PageBody.text = planner.Status + "\nOptional local goals, plans and fictional dialogue. Rules validate every action." +
+                    "\nOff by default. A configured, already-loaded model is required. Unavailable or invalid replies use rules." +
+                    "\nAt most 12 requests per session; short timeout and cancellation on control changes." +
+                    "\nL shows the decision log and last model text. Reflection is generated text, not learning.";
+                Option(planner.EnabledByUser ? "Turn local thoughts off" : "Turn local thoughts on", () => { planner.SetEnabled(!planner.EnabledByUser); ShowPage("Thoughts"); });
+                Option("Back", () => ShowPage("Controls"));
             }
             else
             {

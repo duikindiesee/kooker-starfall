@@ -12,6 +12,7 @@ namespace CityLife.World
         public bool MenuOnly;
         public bool IsChanging => changing;
         public void ToggleFromMenu() => Toggle("pause-menu");
+        public void ToggleFromShortcut() => Toggle("F11");
         private int windowWidth = 1600, windowHeight = 900;
         private bool changing;
         private string notice = "", evidenceFile;

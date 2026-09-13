@@ -35,11 +35,12 @@ namespace CityLife.World
         }
         [Serializable] public sealed class Report
         {
-            public string status, utc, unityVersion, version, gpu, failure, limit;
+            public string status, utc, unityVersion, version, buildId, gpu, failure, limit;
             public float seconds;
             public List<Check> checks = new List<Check>();
             public List<Scenario> scenarios = new List<Scenario>();
             public List<string> captures = new List<string>(), errors = new List<string>();
+            public List<NpcProposalAudit> proposalAudit;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Listen()
@@ -53,6 +54,7 @@ namespace CityLife.World
             if (!Requested) { enabled = false; return; }
             started = Time.realtimeSinceStartup;
             report = new Report { utc = DateTime.UtcNow.ToString("O"), version = Application.version,
+                buildId = Path.GetFileName(Path.GetDirectoryName(Application.dataPath)),
                 unityVersion = Application.unityVersion, gpu = SystemInfo.graphicsDeviceName,
                 limit = "Actual offscreen standalone player. Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim." };
             try
@@ -193,6 +195,16 @@ namespace CityLife.World
             Capture("09-no-permitted-goal"); SaveScenario("all-permissions-denied");
             var controls = NpcControlAcceptance.Verify(Brain, Controls, Hud, View, Need, name => Capture(name));
             while (controls.MoveNext()) yield return controls.Current;
+            if (Brain.OptionalPlanner != null)
+            {
+                var hybrid = NpcHybridAcceptance.Verify(Brain, Controls, Hud, Need, name => Capture(name), directory);
+                while (hybrid.MoveNext()) yield return hybrid.Current;
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-npcRealProbe") >= 0)
+                {
+                    var real = NpcRealProposalAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
+                    while (real.MoveNext()) yield return real.Current;
+                }
+            }
             Need("no-runtime-errors", Errors.Count == 0, "No player error/assert/exception.");
         }
         private void SaveScenario(string name)
@@ -228,6 +240,7 @@ namespace CityLife.World
             if (done) return; done = true;
             report.status = error == null ? "PASS" : "FAIL"; report.failure = error?.Message;
             report.seconds = Time.realtimeSinceStartup - started; report.errors = new List<string>(Errors);
+            if (Brain.OptionalPlanner != null) report.proposalAudit = new List<NpcProposalAudit>(Brain.OptionalPlanner.Audit);
             if (directory != null) File.WriteAllText(Path.Combine(directory, "npc-runtime.json"), JsonUtility.ToJson(report, true));
             Time.captureDeltaTime = 0;
             if (target != null) target.Release();
