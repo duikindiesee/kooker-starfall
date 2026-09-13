@@ -29,6 +29,24 @@ def main():
     if not exe.is_file() or output.exists():
         raise RuntimeError('Require existing separate executable and new evidence directory')
     output.mkdir(parents=True)
+    inventory_client = http.client.HTTPConnection('127.0.0.1', 1234, timeout=3)
+    try:
+        inventory_client.request('GET', '/api/v1/models')
+        inventory_response = inventory_client.getresponse()
+        inventory = json.loads(inventory_response.read(65537))
+        if inventory_response.status != 200:
+            raise RuntimeError('Model inventory unavailable')
+    finally:
+        inventory_client.close()
+    candidate = [m for m in inventory['models'] if m['key'] == 'google/gemma-4-e4b']
+    if len(candidate) != 1 or len(candidate[0]['loaded_instances']) != 1 or candidate[0]['format'] != 'mlx':
+        raise RuntimeError('Require exactly one already-loaded linked MLX E4B; no automatic loading')
+    devices = subprocess.check_output([str(Path.home() / '.lmstudio/bin/lms.exe'), 'ps'], text=True)
+    selected_lines = [line for line in devices.splitlines() if 'google/gemma-4-e4b' in line]
+    if len(selected_lines) != 1 or 'Irwins-Mac-mini-2.local' not in selected_lines[0]:
+        raise RuntimeError('Loaded E4B device differs from reviewed linked Mac')
+    save(output / 'model-inventory-before.json', inventory)
+    (output / 'model-devices.txt').write_text(devices, encoding='utf-8')
     build = exe.parent.name
     initialize(output / 'private', 'starfall.npc-courtyard.v1', [build], ['inhabitant-01', 'inhabitant-02'])
     config_path = output / 'private' / 'config.json'
