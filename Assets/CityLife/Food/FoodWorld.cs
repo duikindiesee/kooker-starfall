@@ -35,7 +35,7 @@ namespace Starfall.Food
             else{SetActor(new Vector3(0,0,-2));Record("perception","Purple-red berries visible; safety UNKNOWN. Read the signed lesson nearby.");}
             RefreshVisuals();if(Has("-foodTest"))StartCoroutine(Acceptance());else if(Has("-foodResume"))StartCoroutine(ResumeAcceptance());else if(Has("-foodEden"))StartCoroutine(EdenAcceptance());else if(Has("-foodMortality"))StartCoroutine(MortalityAcceptance());
         }
-        void BindScope(){Perception.WorldId=Model.State.world+"."+Model.State.generation;foreach(var x in Targets.Values)x.WorldId=Perception.WorldId;Log.ResetLog();pending=false;Auto=false;seenEcology=Model.State.ecologySequence;lastStock=Model.State.fruitStock;lastStage=Model.State.gardenStage;}
+        void BindScope(){Perception.WorldId=Model.State.world+"."+Model.State.generation;foreach(var x in Targets.Values)x.WorldId=Perception.WorldId;Log.ResetLog();Perception.Current.Clear();pending=false;Auto=false;seenEcology=Model.State.ecologySequence;lastStock=Model.State.fruitStock;lastStage=Model.State.gardenStage;}
         Material Mat(Color c){var m=new Material(Shader.Find("Universal Render Pipeline/Lit"));m.color=c;return m;}
         GameObject Shape(string name,PrimitiveType type,Vector3 pos,Vector3 scale,Material mat,bool solid=false)
         {
