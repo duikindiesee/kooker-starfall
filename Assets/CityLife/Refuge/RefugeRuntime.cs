@@ -44,8 +44,8 @@ namespace Starfall.Refuge
    return CaveZoneEvaluator.Evaluate(policy,outside,probe);
   }
   bool SafeFire()=>GeometryVerified&&WaterVerified&&Roof!=null&&Roof.enabled&&Vector3.Distance(Bed,Hearth)>2.5f;
-  public bool Ignite(){var w=Sample(Hearth+Vector3.up*.5f);return Fire.Ignite(w.Rain01,w.WindSpeed,SafeFire());}
-  void FixedUpdate(){if(paused)return;if(Resting&&restTicks<150)restTicks++;Clock.Step();var w=Sample(Hearth+Vector3.up*.5f);Fire.Step(w.Rain01,w.WindSpeed,SafeFire());Local=Sample(Body.transform.position+Vector3.up);exposure.Step(Local,false);}
+  public bool Ignite(){var w=Sample(Hearth+Vector3.up*.5f);return Fire.Ignite(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);}
+  void FixedUpdate(){if(paused)return;if(Resting&&restTicks<150)restTicks++;Clock.Step();var w=Sample(Hearth+Vector3.up*.5f);Fire.Step(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);Local=Sample(Body.transform.position+Vector3.up);exposure.Step(Local,false);}
   public void Move(Vector3 direction,float seconds){if(Resting||paused)return;fall=Body.isGrounded?-2:Mathf.Max(-30,fall-9.81f*seconds);Body.Move((Vector3.ClampMagnitude(direction,1)*3+Vector3.up*fall)*seconds);if(Body.transform.position.y < -1||Mathf.Abs(Body.transform.position.x)>87||Body.transform.position.z < -52||Body.transform.position.z>142){Place(new Vector3(-4,.05f,-4));Notice="Recovered to dry spawn";}}
   public void Place(Vector3 p){Body.enabled=false;Body.transform.position=p;Body.enabled=true;fall=0;}
   public bool Rest(){if(Vector3.Distance(Body.transform.position,Bed)>2)return false;Resting=!Resting;restTicks=0;Notice=Resting?"Resting on the mat — dreams and memory are planned":"Awake";return true;}
