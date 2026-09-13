@@ -1,6 +1,6 @@
 # Isolated Eden food fixture and integration contract
 
-Status: v0.1.1 passed 79 compiled loop/model checks, separate-process reload, five natural lifecycle checks and six synthetic mortality/return checks. The final v0.1.2 world-switch isolation and log layout revision awaits its own compiled evidence. No combined-world integration performed. Base checkout: `75fc4cb`; isolated branch `codex/starfall-food`. No model service, asset downloads, external publisher, hunting or weapon system is involved.
+Status: v0.1.2 passed 79 compiled loop/model checks, separate-process reload, six natural lifecycle/isolation checks and six synthetic mortality/return checks. Final visual acceptance remains open: later captures failed and the native tool returned desktop wallpaper for the food window. The v0.1.5 opaque HUD source correction is not baked. See [exact evidence and remaining work](FOOD-ACCEPTANCE.md). No combined-world integration performed. Base checkout: `75fc4cb`; isolated branch `codex/starfall-food`. No model service, asset downloads, external publisher, hunting or weapon system is involved.
 
 ## Bounded world
 

@@ -19,11 +19,12 @@ flowchart LR
 | Component | Installation/evidence state | Remaining gap |
 |---|---|---|
 | Food v0.1.0 player | Local build; 45 model and 14 actual-player-script checks; separate-process reload passed | Visual label/water revision; human acceptance separate |
-| Food v0.1.1 additions | Staged metabolism, persistent death/return and clearer checkpoint under validation | Compile/runtime evidence pending |
+| Food v0.1.2 behavior | 79 loop/model checks, exact separate-process reload, six Eden/isolation and six mortality/return checks | Final visual/input acceptance open; later captures failed |
+| Food v0.1.5 HUD source | Opaque panel correction compiles; not baked | Desktop/native surface access, versioned bake and inspected runtime required |
 | Combined adapter | [Exact boundary](FOOD-INTEGRATION.md) documented | Not wired; combined checkout untouched |
 | External memory | No food/death publisher/service connection | Schema/capability review |
 
-Evidence: `evidence/local/visible-20260913-182902/`. The architecture below retains its earlier snapshot; food component checks do not upgrade those connections.
+Evidence: [food checkpoints and exact paths](FOOD-ACCEPTANCE.md). The architecture below retains its earlier snapshot; food component checks do not upgrade those connections.
 
 This is the repository-owned map of the Starfall system. Reviewed **13 September 2026** against memory source `0445e0f`, the preserved hybrid preview.2 evidence, and the recorded local Windows player. It is an implementation/installation snapshot, not a live service-health monitor. Cloning this repository does not install its ignored player builds, model runtime, private configuration or database.
 

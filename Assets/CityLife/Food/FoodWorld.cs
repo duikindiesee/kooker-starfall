@@ -182,7 +182,8 @@ namespace Starfall.Food
         void OnGUI()
         {
             if(Model==null)return;GUI.matrix=Matrix4x4.Scale(new Vector3(Screen.width/1280f,Screen.height/720f,1));var s=Model.State;
-            GUI.DrawTexture(new Rect(0,0,1280,115),Texture2D.blackTexture);GUI.DrawTexture(new Rect(895,115,385,605),Texture2D.blackTexture);GUI.DrawTexture(new Rect(0,576,895,144),Texture2D.blackTexture);
+            var previousColor=GUI.color;GUI.color=Color.black;
+            GUI.DrawTexture(new Rect(0,0,1280,115),Texture2D.whiteTexture);GUI.DrawTexture(new Rect(895,115,385,605),Texture2D.whiteTexture);GUI.DrawTexture(new Rect(0,576,895,144),Texture2D.whiteTexture);GUI.color=previousColor;
             var title=new GUIStyle(GUI.skin.label){fontSize=25,fontStyle=FontStyle.Bold};var text=new GUIStyle(GUI.skin.label){fontSize=16,wordWrap=true};var small=new GUIStyle(text){fontSize=14};
             GUI.Box(new Rect(0,0,1280,115),"");GUI.Label(new Rect(22,12,850,38),"STARFALL  /  THE FIRST BERRY",title);
             GUI.Label(new Rect(22,48,850,38),$"Energy {s.satiety/100f:F1}% • Hydration {s.hydration/100f:F1}% • Fullness {s.body.stomach/100f:F0}% • Berries {s.carriedFruit} • Seeds {s.seeds}",text);
@@ -211,7 +212,7 @@ namespace Starfall.Food
             if(GUI.Button(new Rect(910,680,110,28),s.body.dead?"Return":"Camp aid")){if(s.body.dead)ExecuteNow(FoodAction.Return,"inventory");else Queue(FoodAction.CampAid,"inventory","Explicit assisted recovery; counted in save");}
             if(GUI.Button(new Rect(1025,680,110,28),"Rest / wake")){pending=false;s.body.resting=!s.body.resting;Auto=false;Record("rest","Rest toggled; shelter verified by location.");}
             if(GUI.Button(new Rect(1140,680,125,28),s.bags.Count>0?"Recover bag":"Other bush"))Queue(s.bags.Count>0?FoodAction.Recover:FoodAction.Gather,s.bags.Count>0?"refuge":"berry2","Visit observed resource / owned recovery chest");
-            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.4 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
+            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.5 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
             if(cameraView!=null)
             {
                 WorldLabel("berry",s.knowsBerry?"STARFALL BERRY":"UNKNOWN BERRY\nRead signed lesson");

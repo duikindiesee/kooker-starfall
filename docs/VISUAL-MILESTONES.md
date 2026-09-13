@@ -504,3 +504,7 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 ## Food workstream: concept versus runtime, 13 September 2026
 
 [Concept storyboard](FOOD-CONCEPT.png) is an illustrated mockup, not gameplay. Food v0.1.0 passed 59 compiled checks plus separate-process reload, but its visible captures in evidence/local/visible-20260913-182902 exposed overlapping labels and hidden water. That visual checkpoint is retained. The next revision must show readable purple-red berries, growth, fallen seeds and rare germination. Combined-world and human acceptance remain open. See [food adapter and evidence boundaries](FOOD-INTEGRATION.md).
+
+## 13 September: isolated food behavior proven; visual gate remains open
+
+Food v0.1.2 (source 34fa82a) passed 79 compiled loop/model checks, exact separate-process reload, six Eden natural-growth/new-world-isolation checks and six synthetic death/return/recovery/lesson-use checks. Actual close-up is retained at evidence/local/v012-loop-20260913-192342/07-bush-closeup.png. Longer rapid HUD changes retained stale glyphs; v0.1.3 and v0.1.4 visual captures also failed and are not accepted. Native capture of food HWND265136 returned desktop wallpaper and activation failed; no mismatched-surface click was sent. Pending v0.1.5 uses opaque white texture tinted black for HUD panels and compiles, but is not baked. All players are versioned and prior snapshots remain. See docs/FOOD-ACCEPTANCE.md for exact evidence and remaining native/visual/integration gates. No Discord post, merge or deployment performed.

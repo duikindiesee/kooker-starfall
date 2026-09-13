@@ -16,9 +16,9 @@ namespace Starfall.Food.Editor
             CityLifeBuild.Prepare();IslandValidation.Run();
             var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);new GameObject("Starfall food fixture").AddComponent<FoodWorld>();
             Directory.CreateDirectory("Assets/CityLife/Food/Scenes");string path="Assets/CityLife/Food/Scenes/FoodFixture.unity";EditorSceneManager.SaveScene(scene,path);
-            PlayerSettings.companyName="StarfallComponentStudies";PlayerSettings.productName="Starfall Food - First Berry";PlayerSettings.bundleVersion="0.1.4-food.5";
+            PlayerSettings.companyName="StarfallComponentStudies";PlayerSettings.productName="Starfall Food - First Berry";PlayerSettings.bundleVersion="0.1.5-food.6";
             PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=720;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.resizableWindow=false;PlayerSettings.defaultIsNativeResolution=false;PlayerSettings.allowFullscreenSwitch=false;
-            string folder="Builds/Food-0.1.4-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");Directory.CreateDirectory(folder);
+            string folder="Builds/Food-0.1.5-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");Directory.CreateDirectory(folder);
             var r=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{path},locationPathName=folder+"/StarfallFood.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
             File.WriteAllText("evidence/local/food-build.json",JsonUtility.ToJson(new Report{status=r.summary.result.ToString(),folder=folder,version=PlayerSettings.bundleVersion,errors=(int)r.summary.totalErrors,seconds=r.summary.totalTime.TotalSeconds,checks=checks.Count},true));
             if(r.summary.result!=BuildResult.Succeeded)throw new Exception("Food build failed");
