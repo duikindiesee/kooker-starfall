@@ -38,7 +38,7 @@ def main():
             raise RuntimeError('Model inventory unavailable')
     finally:
         inventory_client.close()
-    candidate = [m for m in inventory['models'] if m['key'] == 'google/gemma-4-e4b']
+    candidate = [m for m in inventory['models'] if m['key'] == 'google/gemma-4-e4b' and m['loaded_instances']]
     if len(candidate) != 1 or len(candidate[0]['loaded_instances']) != 1 or candidate[0]['format'] != 'mlx':
         raise RuntimeError('Require exactly one already-loaded linked MLX E4B; no automatic loading')
     devices = subprocess.check_output([str(Path.home() / '.lmstudio/bin/lms.exe'), 'ps'], text=True)
