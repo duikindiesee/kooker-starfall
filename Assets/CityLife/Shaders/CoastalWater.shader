@@ -68,7 +68,7 @@ Shader "CityLife/CoastalWater"
                 UNITY_TRANSFER_INSTANCE_ID(input,o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 float3 p = TransformObjectToWorld(input.positionOS.xyz);
-                float strength = lerp(.42,1,SeaBlend(p.z)) * _WaveStrength;
+                float strength = lerp(.42,1,SeaBlend(p.z)) * saturate(_WaveStrength);
                 p.y += dot(sin(WavePhase(p.xz)),float3(.045,.034,.032)) * strength;
                 o.positionWS = p;
                 o.positionCS = TransformWorldToHClip(p);
@@ -129,7 +129,7 @@ Shader "CityLife/CoastalWater"
                     water = lerp(water,filteredBed,transmission);
                 }
 
-                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * _WaveStrength;
+                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
                 float3 phase = WavePhase(input.positionWS.xz);
                 // Derivative filtering prevents fine wave fields shimmering into distant stripes.
                 float3 attenuation = 1-smoothstep(.6,2.1,abs(ddx(phase))+abs(ddy(phase)));
@@ -172,3 +172,4 @@ Shader "CityLife/CoastalWater"
     }
     FallBack "Universal Render Pipeline/Unlit"
 }
+

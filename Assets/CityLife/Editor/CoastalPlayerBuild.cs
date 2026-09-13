@@ -26,9 +26,11 @@ namespace CityLife.World.Editor
             string id=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             string folder="Assets/CityLife/GeneratedPreview-"+id;
             string buildName=frozenR19?"KookerStarfallCoastal-"+R19Version+"-"+id:"KookerStarfall-"+id;
+            if(RefugeBuild.Requested)buildName="KookerStarfallRefuge-"+RefugeBuild.Version+"-"+id;
             string buildDirectory="Builds/"+buildName;
             if(Directory.Exists(folder)||Directory.Exists(buildDirectory))throw new IOException("Preview output already exists; existing builds are preserved.");
             Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+            if(RefugeBuild.Requested)RefugeBuild.Attach(camera,ground);
             var persisted=new Dictionary<Object,Object>();int assetIndex=0;
             Object Persist(Object source)
             {
@@ -78,6 +80,7 @@ namespace CityLife.World.Editor
             ground.layer=8;
             var explorer=camera.gameObject.AddComponent<CoastalExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
             camera.gameObject.AddComponent<CoastalSmoke>();
+            if(RefugeBuild.Requested){Object.DestroyImmediate(explorer);Object.DestroyImmediate(camera.GetComponent<CoastalSmoke>());}
             if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
 
             var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
@@ -101,6 +104,7 @@ namespace CityLife.World.Editor
                 {QualitySettings.SetQualityLevel(i);oldPipelines[i]=QualitySettings.renderPipeline;capturedPipelines=i+1;}
                 QualitySettings.SetQualityLevel(oldQuality);
                 PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=frozenR19?"Kooker Starfall Coastal "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=frozenR19?R19Version:"0.0.1-wip";
+                if(RefugeBuild.Requested){PlayerSettings.productName="Starfall First Refuge";PlayerSettings.bundleVersion=RefugeBuild.Version;}
                 PlayerSettings.defaultScreenWidth=1600;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;
                 GraphicsSettings.defaultRenderPipeline=pipeline;
                 for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
@@ -132,3 +136,4 @@ namespace CityLife.World.Editor
         [Serializable]sealed class BuildEvidence{public string status,output,scene,product,scope,utc,buildId,version,sourceCommit,treeReview,frozenTreeCommit,componentMeshSha256;public long bytes;public double seconds;public int errors,warnings,woodColliders,rockColliders;}
     }
 }
+

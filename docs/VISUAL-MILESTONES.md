@@ -522,3 +522,7 @@ Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-pla
 ## 13 September: smaller-model endpoint pass, player launch blocked
 
 Isolated source 45cac4a requires nonempty dialogue/reflection in both provider schema and strict parser. The separate player built with zero errors/warnings and 54 hybrid checks. LM Studio installed google/gemma-4-e4b Q4_K_M locally (6326843776 bytes including projector), preserving the existing loaded 26B model. At the user's direction, the endpoint probe used the already-loaded MLX E4B on Irwins-Mac-mini-2.local through laptop loopback: the corrected strict response completed in 3046 ms with zero reasoning tokens. This is linked-Mac compute, not laptop-only inference. Automatic approval review blocked the compiled-player launch with the sole reason blocked by policy; no new player thought or screenshot acceptance is claimed. Exact report, hashes, endpoint responses and prepared manual launcher: evidence/local/thought-e4b-20260913/REPORT.md. Component action authority and earlier artifacts remain unchanged.
+
+## First refuge — 13 September 2026
+
+[Concept art](../evidence/concepts/refuge/refuge-concept-v1.png) is visibly labelled concept, not gameplay. [Isolated refuge workstream](FIRST-REFUGE.md) separates authored geometry, synthetic C# fire checks and pending actual Windows-player evidence.

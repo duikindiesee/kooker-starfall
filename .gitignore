@@ -33,3 +33,6 @@ __pycache__/
 
 # Keep ongoing local player evidence separate from reviewed acceptance snapshots.
 evidence/milestones/display-toggle/native/display-mode-*.jsonl
+!tools/refuge/Checks.csproj
+/tools/refuge/bin/
+/tools/refuge/obj/
