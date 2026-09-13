@@ -12,7 +12,7 @@ namespace CityLife.World.Editor
   public static void Run(){if(!Requested||!Application.isBatchMode)throw new InvalidOperationException("Explicit refuge batch required");KokerboomRender.RenderCoastalSlice();}
   public static void Attach(Camera camera,GameObject ground)
   {
-   foreach(var c in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))c.gameObject.layer=8;
+   foreach(var c in Object.FindObjectsByType<Collider>())c.gameObject.layer=8;
    ground.layer=8;
    var root=new GameObject("First refuge / authored v1");
    Material Mat(string n,Color c){return new Material(Shader.Find("Universal Render Pipeline/Lit")){name=n,color=c};}
@@ -46,4 +46,3 @@ namespace CityLife.World.Editor
   }
  }
 }
-

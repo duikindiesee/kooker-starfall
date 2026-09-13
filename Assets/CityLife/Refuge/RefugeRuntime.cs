@@ -19,8 +19,8 @@ namespace Starfall.Refuge
   public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY;public string Notice="Explore the first refuge";
   int restTicks;public bool Sleeping=>Resting&&restTicks>=150;GameObject[] storedLogs;float yaw,pitch,fall;bool paused;ZoneExposure exposure;public ZoneWeather Local;string output;
   bool Automated=>System.Environment.GetCommandLineArgs().Contains("-refugeAcceptance");
-  [Serializable] public class Check {public string name;public bool pass;public float value;}
-  [Serializable] public class Report {public string world=WorldId,revision=Revision,scope="Compiled regional refuge player, scripted controller acceptance; not human input or integrated NPC acceptance";public List<Check> checks=new List<Check>();public float floor,ingress,waterUpper=-1.889f;public int frames;public float frameP95;}
+  [Serializable] public class CheckResult {public string name;public bool pass;public float value;}
+  [Serializable] public class Report {public string world=WorldId,revision=Revision,scope="Compiled regional refuge player, scripted controller acceptance; not human input or integrated NPC acceptance";public List<CheckResult> checks=new List<CheckResult>();public float floor,ingress,waterUpper=-1.889f;public int frames;public float frameP95;}
   readonly Report report=new Report();readonly List<float> frames=new List<float>();
   void Start(){storedLogs=Enumerable.Range(0,6).Select(i=>GameObject.Find("Stored fuel "+i)).ToArray();yaw=View.transform.eulerAngles.y;pitch=View.transform.eulerAngles.x;Application.targetFrameRate=60;ValidateGeometry();Fire.Extinguish();if(Automated)StartCoroutine(Accept());}
   public void ValidateGeometry()
@@ -30,7 +30,7 @@ namespace Starfall.Refuge
    IngressY=1.8f; // Closed solid floor perimeter: only connected opening is the east ramp crest.
    bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,1<<8))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
    GeometryVerified=valid&&crest&&Roof!=null&&Roof.enabled;
-   WaterVerified=true;int waters=0;foreach(var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None)){var m=r.sharedMaterial;if(m==null||m.shader.name!="CityLife/CoastalWater")continue;waters++;if(m.GetFloat("_WaveStrength")<0||m.GetFloat("_WaveStrength")>1)WaterVerified=false;var mesh=r.GetComponent<MeshFilter>().sharedMesh;foreach(var v in mesh.vertices)if(Mathf.Abs(r.transform.TransformPoint(v).y+2)>.0001f)WaterVerified=false;}
+   WaterVerified=true;int waters=0;foreach(var r in FindObjectsByType<MeshRenderer>()){var m=r.sharedMaterial;if(m==null||m.shader.name!="CityLife/CoastalWater")continue;waters++;if(m.GetFloat("_WaveStrength")<0||m.GetFloat("_WaveStrength")>1)WaterVerified=false;var mesh=r.GetComponent<MeshFilter>().sharedMesh;foreach(var v in mesh.vertices)if(Mathf.Abs(r.transform.TransformPoint(v).y+2)>.0001f)WaterVerified=false;}
    WaterVerified &= waters>0;
   }
   public ZoneWeather Sample(Vector3 p)
@@ -56,7 +56,7 @@ namespace Starfall.Refuge
    if(!Automated){View.transform.position=Body.transform.position+Vector3.up*(Resting?.45f:1.65f);View.transform.rotation=Quaternion.Euler(pitch,yaw,Resting?12:0);}
   }
   void OnGUI(){GUI.Box(new Rect(12,12,690,130),"STARFALL — FIRST REFUGE 0.0.8-refuge.1");GUI.Label(new Rect(25,38,670,24),"WASD walk · RMB look · E fire · T stored fuel · R rest/wake · P pause");GUI.Label(new Rect(25,62,670,24),$"{Fire.Reason} · fuel {Fire.FuelTicks/50f:F0}s · stored logs {Fire.ReserveLogs} · {(Sleeping?"SLEEPING":Resting?"RESTING":"AWAKE")}");GUI.Label(new Rect(25,86,670,24),$"{Clock.Sample.target}: local wind {Local.WindSpeed:F1}m/s · rain {Local.Rain01:P0} · feels {exposure.ApparentC:F1}C");GUI.Label(new Rect(25,110,670,24),Notice);if(Resting){GUI.Box(new Rect(Screen.width/2-190,Screen.height-100,380,70),(Sleeping?"Sleeping in the first refuge":"Settling onto the mat")+"\nR / Escape to wake · dream integration planned");}}
-  void Check(string n,bool p,float v=0){report.checks.Add(new Check{name=n,pass=p,value=v});Debug.Log("REFUGE_CHECK "+n+" "+p+" "+v);}
+  void Check(string n,bool p,float v=0){report.checks.Add(new CheckResult{name=n,pass=p,value=v});Debug.Log("REFUGE_CHECK "+n+" "+p+" "+v);}
   IEnumerator Route(Vector3 target){int steps=0;while(Vector2.Distance(new Vector2(Body.transform.position.x,Body.transform.position.z),new Vector2(target.x,target.z))>.15f&&steps++<650){Move(new Vector3(target.x-Body.transform.position.x,0,target.z-Body.transform.position.z),.02f);View.transform.position=Body.transform.position+Vector3.up*1.65f;View.transform.LookAt(Hearth+Vector3.up*.7f);yield return new WaitForFixedUpdate();}Check("route "+target,steps<650,steps);}
   IEnumerator Capture(string name,Vector3 p,Vector3 target){View.transform.position=p;View.transform.LookAt(target);yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));yield return null;}
   IEnumerator Accept()
