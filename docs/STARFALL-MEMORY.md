@@ -1,5 +1,7 @@
 # Native Starfall memory — first local slice
 
+See the [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md) for how Unity, optional inference, inhabitant brains and this service fit together, including the current connections and planned launcher.
+
 Starfall has its own memory service and versioned contracts. It does not import Reflection or Archive Keeper code, personal archives, credentials, configuration or data volumes. Their broad ideas—event evidence, append-only history and separate instance storage—are reference points only. The implementation belongs to this Starfall repository.
 
 ```mermaid

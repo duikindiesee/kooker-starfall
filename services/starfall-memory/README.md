@@ -3,6 +3,7 @@
 Separate local event ledger, episodic memory, derived wiki and sleep-gated dreaming. Standard-library Python service; no Reflection/Archive Keeper dependency or personal data integration.
 
 - [Architecture, local setup and proof](../../docs/STARFALL-MEMORY.md)
+- [Starfall system architecture and installation state](../../docs/SYSTEM-ARCHITECTURE.md)
 - [Versioned API and record contracts](contracts/API-v1.md)
 - [Event JSON Schema](contracts/event-v1.schema.json)
 - [Container recipe](compose.yaml) (not deployed)
