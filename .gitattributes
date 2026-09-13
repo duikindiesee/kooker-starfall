@@ -19,3 +19,6 @@ Assets/CityLife/Art/THIRD-PARTY-NOTICES.txt -text whitespace=-blank-at-eol,-blan
 # Keep the reviewed manual probe's SHA256 evidence stable across Windows checkouts.
 evidence/milestones/hybrid-npc/manual-real-30s-20260913/npc-runtime.json -text
 evidence/milestones/hybrid-npc/manual-real-30s-20260913/real-local-probe.json -text
+# Preserve the original Unity export and reviewed memory evidence hashes.
+evidence/milestones/starfall-memory/local-slice-v1/*.json -text whitespace=cr-at-eol
+evidence/milestones/starfall-memory/local-slice-v1/*.jsonl -text whitespace=cr-at-eol

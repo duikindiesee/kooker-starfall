@@ -75,14 +75,17 @@ class Handler(BaseHTTPRequestHandler):
         raise Rejected('invalid-capability', 401)
 
     def body(self):
+        if hasattr(self, '_request_body'):
+            return self._request_body
         require(self.headers.get('Transfer-Encoding') is None, 'transfer-encoding-disabled')
         require(self.headers.get('Content-Type', '').split(';')[0] == 'application/json', 'json-required', 415)
         sizes = self.headers.get_all('Content-Length', [])
         require(len(sizes) == 1 and sizes[0].isdigit(), 'content-length-required', 411)
         size = int(sizes[0])
-        require(0 < size <= 16384, 'body-too-large', 413)
+        require(0 < size <= 65536, 'body-too-large', 413)
         raw = self.rfile.read(size)
         require(len(raw) == size, 'incomplete-body')
+        require(size <= 16384, 'body-too-large', 413)
         return parse_json(raw)
 
     def dispatch(self):
@@ -123,6 +126,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def respond(self):
         try:
+            # Consume bounded writes before a role/route rejection. Closing an unread
+            # request body can reset the TCP connection and hide a 403 on Windows.
+            if self.command in ('POST', 'PUT', 'PATCH', 'DELETE'):
+                self._request_body = self.body()
             payload, status = self.dispatch(), 200
         except Rejected as error:
             payload, status = {'error': error.code}, error.status

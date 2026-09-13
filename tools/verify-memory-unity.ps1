@@ -10,8 +10,8 @@ try {
     if ($LASTEXITCODE -ne 0 -or (& git status --porcelain)) { throw 'Commit the proof source before running Unity.' }
     $memoryRun = Join-Path $memoryRoot ('evidence/local/memory/unity-' + [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))
     $null = New-Item -ItemType Directory -Path $memoryRun
-    foreach ($memoryName in @('GraphicsSettings.asset', 'QualitySettings.asset', 'ProjectSettings.asset')) {
-        $memoryPath = Join-Path $memoryRoot ('ProjectSettings/' + $memoryName)
+    foreach ($memoryName in @('ProjectSettings/GraphicsSettings.asset', 'ProjectSettings/QualitySettings.asset', 'ProjectSettings/ProjectSettings.asset', 'Assets/Settings/UniversalRenderPipelineGlobalSettings.asset')) {
+        $memoryPath = Join-Path $memoryRoot $memoryName
         $memorySettings[$memoryPath] = [IO.File]::ReadAllBytes($memoryPath)
     }
     $memoryArgs = '-batchmode -quit -projectPath "' + $memoryRoot + '" -executeMethod CityLife.World.Editor.StarfallMemoryValidation.Run -starfallMemoryEvidence "' + (Join-Path $memoryRun 'export') + '" -starfallMemorySource ' + $memorySource + ' -logFile "' + (Join-Path $memoryRun 'editor.log') + '"'

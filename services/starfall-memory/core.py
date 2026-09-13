@@ -96,6 +96,13 @@ class MemoryStore:
         self.lock = threading.RLock()
         self.db = sqlite3.connect(path, check_same_thread=False, isolation_level=None, timeout=5)
         self.db.row_factory = sqlite3.Row
+        try:
+            self._initialize()
+        except BaseException:
+            self.db.close()
+            raise
+
+    def _initialize(self):
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA synchronous=FULL')
@@ -121,8 +128,9 @@ class MemoryStore:
                 PRAGMA user_version=1;
                 COMMIT;
             ''')
-            self.db.execute('INSERT INTO metadata VALUES (?, ?)', (world, publisher))
-        require(tuple(self.db.execute('SELECT world, publisher FROM metadata').fetchone()) == (world, publisher), 'database-namespace-mismatch', 503)
+            self.db.execute('INSERT INTO metadata VALUES (?, ?)', (self.world, self.publisher))
+        metadata = self.db.execute('SELECT world, publisher FROM metadata').fetchall()
+        require(len(metadata) == 1 and tuple(metadata[0]) == (self.world, self.publisher), 'database-namespace-mismatch', 503)
         for table in ('metadata', 'events', 'records'):
             for operation in ('UPDATE', 'DELETE'):
                 self.db.execute(f"CREATE TRIGGER IF NOT EXISTS {table}_no_{operation.lower()} BEFORE {operation} ON {table} BEGIN SELECT RAISE(ABORT, 'append-only'); END")
@@ -193,6 +201,13 @@ class MemoryStore:
                     require((data['action'] == 'pickup' and held is None) or (data['action'] == 'deliver' and held == data['item_id']), 'cargo-trace-mismatch', 409)
                     for old in self.db.execute("SELECT body FROM events WHERE actor=? AND session=? AND kind='action_completed'", (actor, source['session_id'])):
                         require(parse_json(old['body'])['data']['request_id'] != data['request_id'], 'action-receipt-replayed', 409)
+                    # This v1 action contract has pickup/delivery only: no reset, removal or depot emptying.
+                    for old in self.db.execute("SELECT body FROM events WHERE kind='action_completed'"):
+                        old_data = parse_json(old['body'])['data']
+                        if data['action'] == 'pickup':
+                            require(old_data['item_id'] != data['item_id'], 'item-already-claimed-or-delivered', 409)
+                        elif old_data['action'] == 'deliver':
+                            require(old_data['target_id'] != data['target_id'], 'destination-already-occupied', 409)
                 last_hash = self.db.execute('SELECT chain_hash FROM events ORDER BY id DESC LIMIT 1').fetchone()
                 previous = last_hash[0] if last_hash else '0' * 64
                 chain_hash = hashlib.sha256((previous + '\n' + body).encode()).hexdigest()
@@ -201,7 +216,8 @@ class MemoryStore:
                 refs = [event_id]
                 self._record('episode', actor, event_id, {'kind': 'episode', 'epistemic_status': 'confirmed_event', 'summary': summary, 'evidence_ids': refs, 'tick': event['tick']})
                 if kind in ('identity_registered', 'action_completed'):
-                    self._record('fact', actor, event_id, {'kind': 'wiki_fact', 'epistemic_status': 'confirmed_event', 'summary': summary, 'evidence_ids': refs, 'temporal_scope': 'past_event_only'})
+                    subjects = sorted({actor, data['item_id'], data['target_id']}) if kind == 'action_completed' else [actor]
+                    self._record('fact', actor, event_id, {'kind': 'wiki_fact', 'epistemic_status': 'confirmed_event', 'summary': summary, 'evidence_ids': refs, 'subjects': subjects, 'temporal_scope': 'past_event_only'})
                 if kind == 'identity_registered':
                     self._record('identity', actor, actor, {'kind': 'identity', 'display_name': data['display_name'], 'evidence_ids': refs})
                 self.db.execute('COMMIT')
@@ -223,7 +239,8 @@ class MemoryStore:
         return f"{actor} {'started sleeping' if kind == 'sleep_started' else 'woke'} at tick {event['tick']}."
 
     def _owned_refs(self, actor, refs):
-        require(type(refs) is list and 1 <= len(refs) <= 16 and len(set(refs)) == len(refs), 'invalid-evidence-list')
+        require(type(refs) is list and 1 <= len(refs) <= 16 and all(type(ref) is str for ref in refs), 'invalid-evidence-list')
+        require(len(set(refs)) == len(refs), 'invalid-evidence-list')
         for ref in refs:
             require(type(ref) is str and re.fullmatch('[0-9a-f]{64}', ref), 'invalid-evidence-id')
             require(self.db.execute('SELECT 1 FROM events WHERE event_id=? AND actor=?', (ref, actor)).fetchone(), 'evidence-not-in-namespace', 403)
@@ -280,8 +297,19 @@ class MemoryStore:
             return {'items': [{'cursor': row['id'], **parse_json(row['body'])} for row in rows[:limit]], 'has_more': len(rows) > limit, 'next_after': rows[min(len(rows), limit)-1]['id'] if rows else after}
 
     def wiki(self, actor):
-        return {'schema': 'starfall.wiki.v1', 'world_id': self.world,
-                'confirmed_facts': self.records(actor, ('fact',), limit=100, shared=True),
-                'inhabitant_beliefs': self.records(actor, ('belief',), limit=100),
-                'inhabitant_dreams': self.records(actor, ('dream',), limit=100),
-                'note': 'Confirmed entries describe past verified events. Beliefs and dream theories never become confirmed facts automatically.'}
+        with self.lock:
+            facts = self.records(actor, ('fact',), limit=100, shared=True)
+            beliefs = self.records(actor, ('belief',), limit=100)
+            dreams = self.records(actor, ('dream',), limit=100)
+            pages = {}
+            for fact in facts['items']:
+                for subject in fact.get('subjects', [fact['inhabitant_id']]):
+                    page = pages.setdefault(subject, {'subject_id': subject, 'confirmed_facts': [], 'inhabitant_beliefs': [], 'dream_theories': []})
+                    page['confirmed_facts'].append(fact)
+            for page in pages.values():
+                refs = {ref for fact in page['confirmed_facts'] for ref in fact['evidence_ids']}
+                page['inhabitant_beliefs'] = [belief for belief in beliefs['items'] if refs.intersection(belief['evidence_ids'])]
+                page['dream_theories'] = [idea for dream in dreams['items'] for idea in dream['associations'] if refs.intersection(idea['evidence_ids'])]
+            return {'schema': 'starfall.wiki.v1', 'world_id': self.world, 'pages': [pages[key] for key in sorted(pages)],
+                    'confirmed_facts': facts, 'inhabitant_beliefs': beliefs, 'inhabitant_dreams': dreams,
+                    'note': 'Bounded pages derived from the first 100 records per section; use paginated APIs when has_more is true. Facts describe past verified events. Beliefs and dream theories never become confirmed facts automatically.'}

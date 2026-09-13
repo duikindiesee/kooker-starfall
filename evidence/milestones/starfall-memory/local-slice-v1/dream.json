@@ -1,0 +1,36 @@
+{
+  "associations": [
+    {
+      "epistemic_status": "theory",
+      "evidence_ids": [
+        "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+      ],
+      "text": "Perhaps depot-west could be useful to visit again."
+    }
+  ],
+  "authority": "derived_only",
+  "epistemic_status": "derived_summary_and_theories",
+  "evidence_ids": [
+    "ccf1ed567814fb64d13d4a82eda182f00b5f0a417fdebc80d0bfc60ea1ac8e11",
+    "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372",
+    "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55",
+    "59a1c3fbe308dd502a67bec7fe299e559e47184659dbdf9299e038e516bef27d",
+    "c4cf8500897b1387a97af80162f80c28b04ee28b1e28ca0ee1affcf254e36192",
+    "880afa1d8e5b94cb07c36483f073b9f3e5654863e26d594175a25d4b9db112fb"
+  ],
+  "inhabitant_id": "inhabitant-01",
+  "kind": "dream",
+  "processor": "starfall.dream.rules.v1",
+  "schema": "starfall.memory.record.v1",
+  "sleep_event_id": "880afa1d8e5b94cb07c36483f073b9f3e5654863e26d594175a25d4b9db112fb",
+  "summary": [
+    "inhabitant-01 was registered as Aster.",
+    "inhabitant-01 picked up amber at tick 10.",
+    "inhabitant-01 delivered amber to depot-west at tick 20.",
+    "inhabitant-01 started sleeping at tick 30.",
+    "inhabitant-01 woke at tick 40.",
+    "inhabitant-01 started sleeping at tick 50."
+  ],
+  "window_limit": 32,
+  "world_id": "starfall.memory-proof.v1"
+}
