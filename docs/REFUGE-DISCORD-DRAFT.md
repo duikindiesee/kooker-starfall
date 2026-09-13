@@ -1,9 +1,11 @@
 # Discord-ready draft — not posted
 
-The canyon is vast. For one traveller, home may begin with something very small: a dry place beneath the stone, a little fire held against the night, a woven mat, and a few things worth keeping.
+The canyon is vast. For one traveller, home begins with something small: dry stone beneath their feet, a little fire held against the night, a woven mat, and a few things worth keeping.
 
-Our first refuge imagines that beginning beneath Starfall’s blue giant. This image is concept art, not gameplay. The isolated prototype source now contains a cave, a bounded hearth, bedding and storage; deterministic fire checks have passed. The Windows player and its collision, weather and rest interactions are still awaiting runtime verification. Inhabitant integration, remembered nights and dreams remain future work.
+Starfall’s first refuge now exists in a separate Windows test player. Its entrance and return routes, contained fire, weather response, rest/sleep and modest fuel storage passed 40 scripted checks. The hearth can go out in a storm; it is something to tend, not a promise against every danger.
 
-One day this hollow may hold the story of a life. For now, we are building its first safe place to return to.
+The painted image is clearly labelled concept art. The accompanying player captures show the simpler prototype we have actually built. Art and performance still need refinement, and the refuge is not yet bound to the inhabitant’s brain or saved memories. Dreams, remembered nights and learned defenses remain future work.
 
-Publication requires explicit approval for this specific update. Replace the prototype-status sentence only with verified player results before publication.
+One day this hollow may hold the story of a life. For now, it offers the beginning of a place to return to.
+
+Publication requires explicit approval for this specific update. Nothing has been posted externally.

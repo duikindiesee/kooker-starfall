@@ -36,3 +36,7 @@ evidence/milestones/display-toggle/native/display-mode-*.jsonl
 !tools/refuge/Checks.csproj
 /tools/refuge/bin/
 /tools/refuge/obj/
+# Refuge pre-bake coastal reference renders remain local; actual refuge evidence is retained separately.
+/evidence/milestones/coastal/round-081/
+/evidence/milestones/coastal/round-082/
+/evidence/milestones/coastal/round-083/

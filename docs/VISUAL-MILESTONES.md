@@ -526,3 +526,7 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 ## First refuge — 13 September 2026
 
 [Concept art](../evidence/concepts/refuge/refuge-concept-v1.png) is visibly labelled concept, not gameplay. [Isolated refuge workstream](FIRST-REFUGE.md) separates authored geometry, synthetic C# fire checks and pending actual Windows-player evidence.
+
+## First refuge v2 player acceptance — 13 September 2026
+
+[Actual player gallery and evidence](FIRST-REFUGE.md): 40 scripted checks passed twice in the visible v0.0.8-refuge.2 Windows player. Entrance, hearth, storm, sleep, storage and regional-context captures are retained separately from concept art. Prototype art remains simpler than the painting. Performance p95 33.665ms in the coordinated repeat is borderline against 33.3ms; integration and physical input acceptance remain open.

@@ -1,6 +1,6 @@
 # Refuge integration handoff
 
-Status: isolated work in progress; no merge/deploy approval. Initial compiled v1 route/rest/storage checks passed, but geometry clearance failed and fire/shelter correctly remained disabled. Revised v2 is queued for a correction bake. Do not consume the earlier build as an accepted refuge.
+Status: isolated v0.0.8-refuge.2 compiled from 88827d8ba38e541270250e9e4096f3b8046c8a08. Forty scripted checks passed in two visible runs. See FIRST-REFUGE.md for evidence and the borderline 33.665ms p95 result. No merge/deploy approval, integrated inhabitant or human-input acceptance is implied. Preserve the earlier v1 failed candidate.
 
 ## Binding contract
 
@@ -9,7 +9,7 @@ Status: isolated work in progress; no merge/deploy approval. Initial compiled v1
 - Layer 10: actual terrain, dry cave floor and ramp. Layer 8: cave rock enclosure and solid props. Layer 9: player capsule. Geometry queries use 8|10 and exclude actors/triggers. Ground/support queries should use 10 from the actor's local feet; do not raycast from above the roof and assign that elevation to an interior actor.
 - Proximity actions: fire toggle within 2.5m, storage transfer within 2m, rest within 2m of mat. The standalone controls are operator test affordances, not evidence that a naive inhabitant knows how to ignite a fire, use a plant, or craft anything. Bind future NPC proposals through the existing capability and authority gates.
 - `HearthState` advances once per accepted 50 Hz world tick. Do not add a second wall-clock accumulator. Invalid local weather/site extinguishes; fuel and reserve counts are bounded. Session state is not a world-save implementation.
-- Cave policy source is retained from environment-zones c75357f. Geometry, roof/wind rays, freeboard and local heat must be remeasured after adoption. The shader's fixed regional upper visual envelope is -1.889m; it does not cover future tide/surge/flood mechanics. Current floor/ingress measured 1.8m in v1, giving 3.689m limited regional clearance; v2 requires fresh confirmation.
+- Cave policy source is retained from environment-zones c75357f. Geometry, roof/wind rays, freeboard and local heat must be remeasured after adoption. The shader's fixed regional upper visual envelope is -1.889m; it does not cover future tide/surge/flood mechanics. V2 runtime remeasured floor/ingress at 1.8m, giving 3.689m limited regional clearance; adoption requires another fresh measurement.
 - Preserve the current integrated overhang until the replacement geometry and movement tests pass in a separate combined candidate. Do not leave overlapping duplicate shelters or two player controllers.
 
 ## Required joined acceptance

@@ -1,22 +1,29 @@
-# First refuge v1 — isolated regional candidate
+# First refuge v2 — separate Windows test player
 
-Workstream: codex/starfall-first-refuge, based on integrated committed checkpoint 2cbb7f0. Earlier branches/builds are preserved. Current authored world is the finite coastal component, not the planned panorama-scale canyon.
+Built source `88827d8ba38e541270250e9e4096f3b8046c8a08`, version **0.0.8-refuge.2**, on isolated branch `codex/starfall-first-refuge`. The task is separately pinned. No protected-main merge, deployment or external post was performed.
 
-The additive `RefugeBuild.Attach` creates a solid raised floor, broad entrance ramp, natural rock enclosure, designated contained hearth, grass mat and small fuel storage. `RefugeRuntime` supplies collision-driven first-person exploration, proximity-gated hearth/refuel/rest actions and a visible lowered rest view. It does not replace or integrate the NPC action executor. Full inhabitant animation and memory/dream integration remain planned.
+[Actual player interior](../evidence/milestones/refuge-v2/02-hearth-interior.png) · [Entrance](../evidence/milestones/refuge-v2/01-entrance.png) · [Sleep](../evidence/milestones/refuge-v2/04b-sleep.png) · [Regional context](../evidence/milestones/refuge-v2/06-regional-context.png) · [Clearly labelled concept](../evidence/concepts/refuge/refuge-concept-v1.png)
 
-The hearth uses integer fuel ticks at 50 Hz, a finite six-log reserve, ignition weather limits, explicit extinguish, bounded light/heat and weather/failure extinguishing. No spread API exists. Fuel transfer is atomic and capacity bounded. Runtime state is session-only; world save integration is not implemented.
-
-Water safety is limited to the current fixed regional datum: y=-2 plus the shader sine amplitudes .045+.034+.032, with saturate on wave strength. Upper visual bound is -1.889. Runtime validates water mesh transforms and material strength, actual floor/entrance rays and clearance. No future tide, surge or river flood guarantee is implied. A changed water model invalidates this bound.
-
-Cave zone source is retained from environment-zones c75357f. Per-position roof/wind rays feed attenuation; unknown geometry/water withholds refuge status. Thermal credit comes only from burning hearth proximity. The design does not promise a cold-safe interior in every storm or wind direction. Exterior rain is sampled separately, and a 128-drop visual pool is blocked by roof geometry.
+The authored rock overhang has a supported raised floor, broad entrance ramp, contained hearth, primitive mat and a modest six-log storage place. A collision-driven first-person test controller uses proximity-gated fire, fuel-transfer and rest actions. Rest settles into a visible sleep state after three seconds and can be interrupted. Soft pillow/weave are render-only; the mat and floor retain supporting collision.
 
 | Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
-| Fire model | Synthetic PASS | evidence/verified/refuge/contract-checks.json; 10013 assertions including 10000 replay ticks | Actual player pending |
-| Cave and contents | Authored | Assets/CityLife/Refuge/Editor/RefugeBuild.cs | Unity compilation, collision and visuals pending |
-| Compiled regional acceptance | Pending | tools/refuge/build.ps1 and runtime scripted probe | Build slot follows combined candidate |
-| Actual inhabitant / dream integration | Unimplemented | No executor or memory edits | Integrate through existing authority after review |
+| Windows player | Built | [Build report](../evidence/verified/refuge-v2/build.json), 0 errors, 21 warnings | Warnings include inherited large-tree collider and optional postprocess stripping; no runtime exception observed |
+| Entry/exit and collision | Scripted-player PASS | [40/40 checks](../evidence/verified/refuge-v2/player-report.json), repeated in two visible runs | Physical keyboard/mouse and integrated inhabitant navigation unverified |
+| Dry floor and connected ingress | Limited regional PASS | Both measured y=1.8; fixed upper visual water bound -1.889; clearance 3.689m | No future tide, surge or river-flood guarantee |
+| Fire and local weather | Scripted-player PASS | Ignition, fuel use, bounded visible light/heat, pause, storm extinguish; sampled wind 2 to .2m/s and rain 1 to .01 | Directional shelter; axial storm wind can enter and extinguish hearth. Not universally cold-safe |
+| Rest/sleep and storage | Scripted-player PASS | Visible rest/sleep/wake and finite stock decrement through shared interaction gates | No NPC executor, memory/dream or world-save integration |
+| Performance | Borderline | [Run context](../evidence/verified/refuge-v2/runtime-context.json): p95 33.665ms at 1280x720 in coordinated repeat; 96.437ms during shared build activity | Strict 33.3ms target not passed; long soak and other machines unverified |
+| Earlier builds | See final preservation report | [SHA256 comparison](../evidence/verified/refuge-v2/preservation.json) | Newly created sibling builds are outside initial inventory |
 
-Build with `tools/refuge/build.ps1` when the coordinated Unity slot is free. Source must be committed. A unique versioned Builds folder is created; older output is never replaced. Run the new executable with `-refugeAcceptance -refugeEvidence <new-absolute-directory>` for scripted player evidence; omit flags for manual exploration.
+The hearth consumes integer fuel ticks at 50 Hz, starts with 120 seconds of fuel and six stored 30-second logs, caps fuel at 360 seconds, rejects unsuitable ignition, and extinguishes on unsafe inputs or excessive local weather. Heat is an authored gameplay contribution bounded to 8C within 3m, not a physical combustion model. No spread mechanism exists. At the tested sample, the hearth added 5.333C. Runtime state is session-only.
 
-Integration queue: accepted coastal/environment sources -> combined-world candidate -> separately reviewed refuge exact head -> NPC action binding and joint runtime review. The refuge's world/revision is explicit; adopting it must not silently modify saved worlds. No protected-main merge, deployment or MoJoJo acceptance is inferred.
+Cave-zone source is retained from environment-zones `c75357f`. Per-position roof/wind rays drive attenuation. Floors/terrain/ramp use layer 10, walls and solid props layer 8, actor capsule layer 9. The frozen coastal tree geometry is retained. This is the finite coastal component, not the unimplemented panorama-scale canyon. Geometry revision is `terrain-r2-weathered-banks.refuge2`; it does not silently migrate saved worlds.
+
+The first player and failed preflight remain preserved. [Failure record](../evidence/verified/refuge-v1/README.md) distinguishes the furniture-clearance rejection, fail-closed fire/zone state, unusable hidden-launch captures and the later visible player. The v2 primitive art is still a prototype: rock silhouette, bedding, storage and flame presentation remain much simpler than the concept painting.
+
+Local player: `Builds/KookerStarfallRefuge-0.0.8-refuge.2-20260913-191013/StarfallRefuge.exe`. Portable ZIP: `Builds/Packages/StarfallRefuge-0.0.8-refuge.2-Windows.zip` (315043533 bytes), SHA256 `b14e052cab9b7ad698991ca40f480393aa19d183e8ffd7a353a298406dd41d48`. Extract the complete ZIP; keep its data folder and DLLs beside the executable. [Package manifest](../evidence/verified/refuge-v2/package-manifest.json) records included file hashes and CRC verification passed. Packaging is not separate runtime acceptance.
+
+Controls: WASD move, hold RMB look, E toggle hearth within reach, T transfer a stored log, R rest/sleep/wake, Escape wake, P pause simulation. No flight or swimming. Build script `tools/refuge/build.ps1` requires a clean source commit and an explicitly free coordinated Unity slot. For scripted evidence, launch with `-refugeAcceptance -refugeEvidence <new-absolute-directory>` in a visible window.
+
+[Integration handoff](REFUGE-HANDOFF.md) preserves the existing inhabitant authority and shared clock. [Knowledge progression](KNOWLEDGE-PROGRESSION.md) records naive knowledge, provenance, save-scoped beliefs and staged hazards; predator pressure and defenses remain future stages after the safe hearth/bedding milestone. [Discord draft](REFUGE-DISCORD-DRAFT.md) is prepared but not posted.

@@ -183,3 +183,7 @@ flowchart LR
 ## Knowledge progression design gate
 
 [Naive starts and staged survival roadmap](KNOWLEDGE-PROGRESSION.md) are authoritative design requirements for future work. Unity owns deterministic consequences and action permissions; beliefs carry provenance and save-scoped identity. Warnings, avoidance, retreat, bounded animals and fair counterplay precede hazards. Current refuge scope remains safe hearth/bedding; predator pressure and defenses are not installed.
+
+## Refuge v2 installation-state update
+
+The isolated v0.0.8-refuge.2 Windows player is built from 88827d8ba38e541270250e9e4096f3b8046c8a08 and passed 40 scripted checks twice. [Evidence and limitations](FIRST-REFUGE.md) supersede the earlier compile-pending row above. Runtime/controller/zone/hearth paths are exercised only in this regional fixture; the dotted NPC authority and memory links remain uninstalled. Current p95 33.665ms is borderline; no sustained-performance acceptance. Layer-10 support surfaces are distinct from layer-8 enclosure geometry. Session fuel/rest state has no world-save binding.

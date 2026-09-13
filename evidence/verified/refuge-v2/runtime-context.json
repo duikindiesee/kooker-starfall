@@ -1,0 +1,14 @@
+{
+  "nativeInput": "Scripted calls through shared interaction gates; physical keyboard/mouse acceptance unverified.",
+  "gpu": "AMD Radeon 8060S Graphics",
+  "afterInventory": [],
+  "quietWindow": "Coordinated after integrated editor exited; no matching Unity/Starfall/Food/Hunter process returned by pre-launch inventory. Other unrelated machine activity not excluded.",
+  "p95CoordinatedMs": 33.6654,
+  "checks": "40/40 PASS in both visible v2 runs",
+  "rendering": "Visible Windows player, Direct3D11",
+  "resolution": "1280x720",
+  "performance": "Borderline: exceeds strict 33.3ms threshold; no sustained performance acceptance.",
+  "p95ContendedMs": 96.4373,
+  "source": "88827d8ba38e541270250e9e4096f3b8046c8a08",
+  "warnings": "Inherited large-tree fast-midphase warning and stripped optional postprocess warnings observed. No runtime exception."
+}
