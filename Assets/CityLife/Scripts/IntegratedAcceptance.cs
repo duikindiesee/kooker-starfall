@@ -47,6 +47,9 @@ namespace CityLife.World
             Directory.CreateDirectory(directory);
             Application.logMessageReceived += Log;
             report.version = Application.version; report.worldId = Brain.InstanceWorldId;
+            // Only the explicitly requested automated run keeps synthetic devices
+            // enabled when another local player becomes foreground.
+            InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
             keyboard = InputSystem.AddDevice<Keyboard>("IntegratedAcceptanceKeyboard"); mouse = InputSystem.AddDevice<Mouse>("IntegratedAcceptanceMouse");
             Controls.TestKeyboard = keyboard; Controls.TestMouse = mouse; Controls.AllowUnfocusedTestInput = true;
             yield return null; yield return null;

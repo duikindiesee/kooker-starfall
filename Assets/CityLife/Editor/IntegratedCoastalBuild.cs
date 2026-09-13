@@ -87,17 +87,18 @@ namespace CityLife.World.Editor
             controls.CameraMinimum = new Vector3(-87, -1, -52); controls.CameraMaximum = new Vector3(87, 90, 142);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
             camera.fieldOfView = 60; actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Follow();
-            // The original study plane only covers one heading. Use its retained
-            // procedural material on an enclosing sphere for freely turning players.
+            // Keep the composed galaxy view and add background coverage behind it.
             var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
             if (galaxy != null)
             {
                 var skyTemplate = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                galaxy.GetComponent<MeshFilter>().sharedMesh = skyTemplate.GetComponent<MeshFilter>().sharedMesh;
-                Object.DestroyImmediate(skyTemplate);
-                galaxy.transform.position = Vector3.zero;
-                galaxy.transform.rotation = Quaternion.identity;
-                galaxy.transform.localScale = Vector3.one * 9000;
+                skyTemplate.name = "Surrounding procedural stars";
+                Object.DestroyImmediate(skyTemplate.GetComponent<Collider>());
+                skyTemplate.transform.localScale = Vector3.one * 9000;
+                var surroundingSky = new Material(galaxy.GetComponent<MeshRenderer>().sharedMaterial);
+                surroundingSky.name = "Surrounding stars"; surroundingSky.renderQueue = 999;
+                skyTemplate.GetComponent<MeshRenderer>().sharedMaterial = surroundingSky;
+                skyTemplate.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
             var environment = actorObject.AddComponent<IntegratedEnvironment>(); environment.Brain = brain;
             environment.Surface = brain.TerrainNavigation; environment.View = camera;
@@ -139,17 +140,25 @@ namespace CityLife.World.Editor
             camera.farClipPlane = 6000;
             var celestial = camera.gameObject.AddComponent<IntegratedCelestial>(); celestial.Environment = environment; celestial.Giant = giant.transform; celestial.Moons = moons;
             var rainObject = new GameObject("Regional precipitation"); var rain = rainObject.AddComponent<ParticleSystem>(); rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            var main = rain.main; main.maxParticles = 512; main.startLifetime = 1.4f; main.startSpeed = 0; main.startSize = .045f;
+            var main = rain.main; main.maxParticles = 512; main.startLifetime = 1.4f; main.startSpeed = 0; main.startSize = .008f;
             main.startColor = new Color(.5f, .78f, .95f, .5f); main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.useUnscaledTime = false;
             var shape = rain.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(18, 1, 18);
             var velocity = rain.velocityOverLifetime; velocity.enabled = true; velocity.space = ParticleSystemSimulationSpace.World; velocity.y = -13;
             var emission = rain.emission; emission.rateOverTime = 0;
             var rainRenderer = rain.GetComponent<ParticleSystemRenderer>();
-            rainRenderer.sharedMaterial = Material("Rain droplets", new Color(.45f, .76f, 1));
+            var rainMaterial = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            rainMaterial.name = "Translucent rain"; rainMaterial.SetColor("_BaseColor", new Color(.68f, .76f, .82f, .18f));
+            rainMaterial.SetFloat("_Surface", 1); rainMaterial.SetFloat("_Blend", 0);
+            rainMaterial.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            rainMaterial.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            rainMaterial.SetFloat("_ZWrite", 0); rainMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            rainMaterial.renderQueue = 3000; AssetDatabase.CreateAsset(rainMaterial, folder + "/TranslucentRain.mat");
+            rainRenderer.sharedMaterial = rainMaterial;
             rainRenderer.renderMode = ParticleSystemRenderMode.Stretch;
-            rainRenderer.lengthScale = 3;
-            rainRenderer.velocityScale = .04f;
+            rainRenderer.lengthScale = 1;
+            rainRenderer.velocityScale = .007f;
+            rainRenderer.maxParticleSize = .008f;
             rain.Play(); environment.Rain = rain;
             var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment;
             Time.fixedDeltaTime = .02f; Physics.gravity = Vector3.down * 9.81f;
