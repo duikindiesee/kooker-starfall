@@ -114,7 +114,7 @@ namespace Starfall.Food
                 else if(s.satiety<7500)
                 {
                     if(!s.knowsBerry)Queue(FoodAction.Inspect,"berry","Hungry: seek signed food lesson; never taste unknown fruit");
-                    else if(s.carriedFruit>0)Queue(FoodAction.Eat,"inventory","Hungry: eat known berry; recall lesson");
+                    else if(s.carriedFruit>0)Queue(FoodAction.Eat,"inventory",s.deaths.Count>0&&s.knowsMealBenefit?"Use remembered death/meal evidence: known berries restore energy":"Hungry: try a safely taught berry and observe its effect");
                     else Queue(FoodAction.Gather,"berry","Hungry: revisit remembered bush; verify stock on arrival");
                 }
                 else if(s.plantedAt<0&&s.seeds>0)Queue(s.knowsPlanting?FoodAction.Plant:FoodAction.Inspect,"bed","Needs met: learn moist-soil cultivation, then plant saved seed");
@@ -270,8 +270,11 @@ namespace Starfall.Food
             yield return Capture("mortality-01-verified-death");Save();Reload();s=Model.State;int tick=s.tick;int stock=s.fruitStock;string hash=s.deaths[0].hash;
             ExecuteNow(FoodAction.Return,"inventory");if(s.tick!=tick||s.fruitStock!=stock||s.deaths[0].hash!=hash||s.body.dead)throw new Exception("Return rewound world");
             ExecuteNow(FoodAction.Recover,"refuge");if(s.carriedFruit!=1)throw new Exception("Recovery bag failed");
-            Record("remembered insight",s.deaths[0].lesson);yield return Capture("mortality-02-return-and-insight");Save();
-            WriteReport("mortality-report.json",new List<string>{"synthetic prolonged-starvation boundary caused verified death","death saved/reloaded","same-world same-inhabitant return without ecology/time rewind","owned inventory recovered once","one grounded existing-mechanic lesson"});Application.Quit(0);
+            Record("remembered insight",s.deaths[0].lesson);yield return Capture("mortality-02-return-and-insight");
+            int energy=s.satiety;Paused=false;yield return Go(FoodAction.Eat,"inventory","Remembered death insight "+s.deaths[0].id+": use known berry to restore energy");Paused=true;
+            if(s.satiety<=energy||s.lastMealEvidence=="")throw new Exception("Remembered lesson did not guide a verified meal");
+            yield return Capture("mortality-03-lesson-used");Save();
+            WriteReport("mortality-report.json",new List<string>{"synthetic prolonged-starvation boundary caused verified death","death saved/reloaded","same-world same-inhabitant return without ecology/time rewind","owned inventory recovered once","one grounded existing-mechanic lesson","remembered death lesson followed by verified energy-restoring meal"});Application.Quit(0);
         }
         IEnumerator ResumeAcceptance()
         {
