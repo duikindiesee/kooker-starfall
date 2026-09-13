@@ -74,7 +74,7 @@ namespace CityLife.World
                     else
                     {
                         result.rawAnswer = await work.ConfigureAwait(false); cancellation.ThrowIfCancellationRequested();
-                        result.rawReceived = true; result.schemaValid = Parse(result.rawAnswer, 1, out result.dialogue, out result.reflection);
+                        result.rawReceived = result.rawAnswer != null; result.schemaValid = Parse(result.rawAnswer, 1, out result.dialogue, out result.reflection);
                         result.status = result.schemaValid ? "parsed-awaiting-live-admission" : "schema-rejected";
                     }
                 }
