@@ -1,5 +1,7 @@
 # Optional local thoughts — 0.0.5-preview.1
 
+Future persistence must follow the [save and world lifecycle contract](SAVE-GAME-CONTRACT.md): stable world-scoped inhabitant identity, a joined brain/history checkpoint, cancellation of in-flight inference and fresh action validation after load. This is a planned gate, deferred behind proving a genuine local-model thought; current preview resets are transient diagnostic behavior, not complete-game save/reset semantics.
+
 The [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md) distinguishes the playable client, optional inference, per-inhabitant brains and the separate native memory service.
 
 **Subsequent diagnostic update:** manual 5-second and 30-second runs passed 64 and 66 checks respectively. Each attempted one completion, received no reply before its deadline and completed deterministic fallback delivery. The 30-second run timed out at 30003 ms. [Preserved results](HYBRID-DIAGNOSTIC-30S.md) supersede the earlier blocked-launch status without rewriting its historical evidence. A valid real proposal/dialogue/reflection remains unverified.

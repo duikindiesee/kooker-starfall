@@ -1,5 +1,7 @@
 # Verification record
 
+The [save and world lifecycle gate](SAVE-GAME-CONTRACT.md#required-fixtures-and-actual-player-acceptance) records future deterministic/isolation fixtures and actual-player save, quit, relaunch, reload, new-character/new-world and reset/archive acceptance. These requirements are not completed results; the existing evidence below remains scoped to its original builds and tests.
+
 This is a new island foundation preview. Native desktop control was paused by the user after the first visible image and Night-button check. Background scenario evidence is kept separate from native controls and window presentation. Full CityLife gameplay is outside this milestone.
 
 | Claim | Status | Evidence | Remaining gap |

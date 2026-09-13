@@ -1,5 +1,7 @@
 # World foundation
 
+The later [save and world lifecycle contract](SAVE-GAME-CONTRACT.md) is the authoritative planned gate for full-world save slots, new characters/worlds and recovery. It extends the base/edit boundary described here; it does not claim that this foundation already saves NPC brains, weather or private memory together.
+
 ## Identity and physical scale
 
 `Assets/CityLife/Resources/IslandDefinition.json` pins `citylife.desert-island.v1`, seed 4242 and all generation settings. Its full SHA256 fingerprint includes an explicit ordered configuration and source commit. The default world ID is `citylife-island-foundation-4242-v1`; it is not the browser's `seed-4242` world.

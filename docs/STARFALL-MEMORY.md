@@ -2,6 +2,8 @@
 
 See the [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md) for how Unity, optional inference, inhabitant brains and this service fit together, including the current connections and planned launcher.
 
+The [save/new-game contract](SAVE-GAME-CONTRACT.md) records the next architectural gate: a complete checkpoint must bind Unity state to the exact world-scoped event and private-record boundary. This is planned work after the living-thought priority. The current service has no save-slot/continuation coordinator or gameplay reset operation; its ledger alone cannot restore all physical world state.
+
 Starfall has its own memory service and versioned contracts. It does not import Reflection or Archive Keeper code, personal archives, credentials, configuration or data volumes. Their broad ideas—event evidence, append-only history and separate instance storage—are reference points only. The implementation belongs to this Starfall repository.
 
 ```mermaid

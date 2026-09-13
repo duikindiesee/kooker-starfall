@@ -1,5 +1,7 @@
 # Kooker: Starfall — living sea plan
 
+Later lifecycle requirement, recorded 13 September 2026: the [save and world lifecycle contract](SAVE-GAME-CONTRACT.md) governs persistent world/animal identities and any future authoritative food/ecology state. The original bounded visual-population scope below remains a historical design; it does not implement a saved ecosystem or food chain.
+
 Design record: **10 September 2026**. **Every feature and acceptance check below is planned and unimplemented in the current Starfall preview.** This document prepares the user's request, **“Sea with life in it”**. It authorizes no world changes before the tree acceptance gate. It contains no visual score or implementation-pass claim.
 
 The current preview remains the approximately 60 m tree and blue-giant study described in [STARFALL.md](STARFALL.md). This plan adds a later coastal slice to the new world direction; it does not reinterpret the earlier island as the requested landscape.

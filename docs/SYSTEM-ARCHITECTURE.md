@@ -6,6 +6,8 @@ The playable client and its deterministic action authority remain the center of 
 
 The current client evidence covers separate preview/courtyard studies. The [wider world and living sea](STARFALL-LIVING-SEA.md) remain separate work.
 
+The next architectural gate is [versioned save slots and new-game identity](SAVE-GAME-CONTRACT.md), requirement revision `starfall.save.requirements.v1`. It is recorded only: the sole implementation priority remains proving one genuine local-model thought. The planned save coordinator below is not installed or live-wired.
+
 ## Component diagram
 
 Solid arrows are implemented paths, including paths exercised only in isolated fixtures. Dotted arrows are optional, planned or not connected to the player; their labels specify which. A tested component does not imply every connection around it is live. Green denotes implemented/tested, amber an implemented adapter not attached to the player, grey planned work, and red an unverified external result.
@@ -37,8 +39,8 @@ flowchart TB
 
     subgraph Memory["Isolated Starfall memory / wiki service"]
         API["Local API and capability checks<br/>Separate publisher and per-inhabitant capabilities"]
-        Private["Per-inhabitant namespace<br/>Stable identity, episodes, beliefs and dreams"]
-        Facts["Shared confirmed past-event facts<br/>Derived world and subject wiki pages"]
+        Private["Per-inhabitant namespace within the configured world<br/>Stable identity, episodes, beliefs and dreams"]
+        Facts["Shared confirmed past-event facts within the configured world<br/>Derived per-world and subject wiki pages"]
         Dream["Sleep-gated offline dream rules<br/>Summaries and tentative associations only"]
         DB[("Starfall SQLite<br/>Append-only events and derived records")]
         Volume["Dedicated Starfall data volume<br/>Container recipe validated; not deployed"]
@@ -56,6 +58,21 @@ flowchart TB
     Brain -.-> Comms
     Comms -.->|received claims remain attributed claims| Brain
 
+    Save["PLANNED: save and load coordinator<br/>Versioned slots; world and inhabitant identity; validated whole-checkpoint joins"]
+    Slots[("PLANNED: immutable checkpoint generations<br/>Unity state, world history, private records and recovery manifests")]
+    Authority -.->|PLANNED: safe-tick state and durable outbox barrier| Save
+    Brain -.->|PLANNED: brain snapshot; cancel pending inference| Save
+    API -.->|PLANNED: matching ledger and private-record snapshot| Save
+    Save -.->|PLANNED: atomic commit, migration, backup and recovery| Slots
+    Slots -.->|PLANNED: complete validation before session activation| Save
+    Save -.->|PLANNED: restore authoritative state| Authority
+    Save -.->|PLANNED: restore matching isolated history| API
+    Archived[("PLANNED: archived slots and verified backups<br/>Complete world/history binding; excluded from active-session reads")]
+    Slots -.->|PLANNED: explicit archive or versioned backup| Archived
+    Archived -.->|PLANNED: explicit restore through complete validation| Save
+    Delete["PLANNED: separate explicit deletion<br/>Never part of reset, new world or recovery"]
+    Archived -.->|only explicitly selected data| Delete
+
     Operator --> Client
     Operator --> Bridge
     Operator --> API
@@ -72,7 +89,7 @@ flowchart TB
     classDef excluded fill:#ffffff,stroke:#545b64,color:#353b43
     class Operator,Client,Brain,Gate,Authority,Bridge,API,Private,Facts,Dream,DB tested
     class Export,Volume unwired
-    class Launcher,Comms planned
+    class Launcher,Comms,Save,Slots,Archived,Delete planned
     class Excluded excluded
     class Inference unverified
 ```
@@ -99,11 +116,14 @@ The database stores both authoritative event evidence and separately typed deriv
 | Communication between inhabitants | Planned | No message router, conversation protocol, sharing capability or delivery loop is implemented. | [Current API route inventory](../services/starfall-memory/contracts/API-v1.md) has no messaging route. | Addressing, sender/recipient identity, allowed disclosure, delivery evidence, recipient memory and conversation tests. |
 | Current manual setup | Implemented and tested within documented scope | Launch a versioned player; optionally configure/opt into inference; initialize and start memory separately; explicitly publish/read/dream through the local CLI. | [Player/provider setup](HYBRID-NPC.md), [memory setup](STARFALL-MEMORY.md), [CLI integration checks](../evidence/milestones/starfall-memory/local-slice-v1/integration-report.json) | These steps are not a unified installer or a live game-memory connection. |
 | Single Starfall launcher/installer | Planned | No integrated launcher, installation bundle or automatic service management exists. | Current [player build tools](../tools/build-npc.ps1) and [memory CLI](../services/starfall-memory/local.py) are separate tools. | Unified install/update/start/stop, compatible versions, isolation, health checks, rollback and end-to-end user acceptance. |
+| Versioned save slots and new-game lifecycle | Planned; requirements recorded | No complete-game save coordinator or player save/load flow exists. Existing edit persistence and memory transactions are separate boundaries. | [Save/new-game contract v1](SAVE-GAME-CONTRACT.md), [existing edit boundary](WORLD-FOUNDATION.md) | Unique world/seed per new game, stable world-scoped inhabitants, complete atomic checkpoints, validated load/migration, backup/recovery, isolation fixtures and actual save/quit/relaunch/load acceptance. Deferred behind the living-thought priority. |
+| Archive, backup and explicit deletion boundary | Planned; requirements recorded | Archived worlds retain their complete state/history and are excluded from active-session queries. Reset creates a fresh slot; archive and destructive deletion are separate choices. | [Archive/restore and recovery contract](SAVE-GAME-CONTRACT.md) | Versioned verified backups, explicit archive/restore UI, corruption recovery and proof that no other slot or personal archive is modified. |
 
 ## Authority, identity and privacy boundaries
 
 - **Unity owns world truth and actions.** Inference sees bounded snapshots and can return proposals only. Deterministic checks admit or reject them. Memory/dream text has no world mutation or permission authority.
 - **A brain is an inhabitant's logical identity and decision context.** It does not require a dedicated LLM process/model for each NPC. A future shared inference engine must still keep contexts and capabilities separate; that multi-inhabitant runtime is not implemented here.
+- **A saved world is a unique instance, not a seed or template name.** The planned lifecycle assigns a new world and slot for each new game and stable `(world_id, inhabitant_id)` identities within it. New character preserves the existing world. Reset defaults to a fresh slot, preserving the old one. Save/load must bind authoritative Unity state and the exact memory/history boundary; incompatible partial joins fail before activation. See [checkpoint, migration and recovery requirements](SAVE-GAME-CONTRACT.md).
 - **The publisher is trusted Unity/operator code.** The memory service authenticates it and validates event/history invariants; it does not rerun physics or prove a compromised engine truthful. The service/operator configuration contains publisher and inhabitant capabilities. Individual brains must receive only their own capability, never that whole file.
 - **Private memory stays private by namespace.** Shared confirmed facts describe past events in the world. Beliefs/theories remain attributed and uncertain, even when they cite real evidence. Future communication must explicitly deliver an allowed message; it must not grant general access to another inhabitant's memory or silently promote a received claim to world truth.
 - **Personal Reflection is outside this system.** No personal Reflection archive, credentials, environment files or volumes are imported, discovered, mounted or shared. Starfall uses its own schema, configuration, keys and storage. Reflection/Archive Keeper are inspiration only, not runtime dependencies or migration targets.
@@ -119,7 +139,7 @@ The desired launcher/installer should become one Starfall entry point that:
 2. Keeps inference optional, discovers a deliberately selected local provider, and supports deterministic play without a model. Existing external model installations remain separately owned.
 3. Gives the trusted event publisher and each inhabitant the correct separate capability, then starts and health-checks the components actually required for that session.
 4. Connects a tested durable player outbox, bounded memory retrieval and verified gameplay sleep scheduling; reports whether each integration is ready, unavailable or using fallback.
-5. Provides start/stop, inspectable evidence, explicit schema migration, backup, update and rollback without replacing older worlds or connecting personal archives.
+5. Provides start/stop, inspectable evidence, versioned save slots and distinct new-world/new-character operations, explicit schema migration, export/import, backup, update and rollback without replacing older worlds or connecting personal archives. Loading validates a complete world/history checkpoint, and derived wiki rebuilds retain immutable evidence.
 6. Passes installation-to-play acceptance in the actual interface, including service failure/offline recovery. A successful installer process or health endpoint alone will not establish that result.
 
 This is the target design, not an implemented launcher specification or authorization to deploy it.
@@ -128,7 +148,7 @@ This is the target design, not an implemented launcher specification or authoriz
 
 Update this diagram and installation-state table in the same change that adds/removes a component, connects a live boundary, changes capability/storage scope, or changes installation behavior. Link the exact retained source, test, runtime or release evidence that justifies each status; identify which build/context was tested. Record unverified gaps instead of promoting a component because code, a configuration file or a package exists. Preserve older evidence snapshots. Recheck runtime availability when reporting a live state; this document does not run a monitor or scheduled task.
 
-Supporting detail: [world foundation](WORLD-FOUNDATION.md), [hybrid NPC](HYBRID-NPC.md), [latest local-model diagnostic](HYBRID-DIAGNOSTIC-30S.md), [native memory](STARFALL-MEMORY.md), [reviewed memory evidence](../evidence/milestones/starfall-memory/local-slice-v1/README.md).
+Supporting detail: [world foundation](WORLD-FOUNDATION.md), [save/new-game architectural gate](SAVE-GAME-CONTRACT.md), [hybrid NPC](HYBRID-NPC.md), [latest local-model diagnostic](HYBRID-DIAGNOSTIC-30S.md), [native memory](STARFALL-MEMORY.md), [reviewed memory evidence](../evidence/milestones/starfall-memory/local-slice-v1/README.md).
 
 
 ## 13 September: request-local reasoning-off diagnostic failed
@@ -139,3 +159,4 @@ Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-pla
 ## 13 September: smaller-model endpoint pass, player launch blocked
 
 Isolated source 45cac4a requires nonempty dialogue/reflection in both provider schema and strict parser. The separate player built with zero errors/warnings and 54 hybrid checks. LM Studio installed google/gemma-4-e4b Q4_K_M locally (6326843776 bytes including projector), preserving the existing loaded 26B model. At the user's direction, the endpoint probe used the already-loaded MLX E4B on Irwins-Mac-mini-2.local through laptop loopback: the corrected strict response completed in 3046 ms with zero reasoning tokens. This is linked-Mac compute, not laptop-only inference. Automatic approval review blocked the compiled-player launch with the sole reason blocked by policy; no new player thought or screenshot acceptance is claimed. Exact report, hashes, endpoint responses and prepared manual launcher: evidence/local/thought-e4b-20260913/REPORT.md. Component action authority and earlier artifacts remain unchanged.
+
