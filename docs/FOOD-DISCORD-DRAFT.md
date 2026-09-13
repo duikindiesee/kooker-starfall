@@ -8,10 +8,10 @@ Somewhere between the warm canyon and the turquoise water, a small purple-red be
 
 Our first inhabitant doesn't arrive knowing its name or whether it is food. A safe lesson becomes an observation, an action, a meal — and a memory. The bush remains when the fruit is gone. Time, water and a little space decide what grows next.
 
-The separate Starfall food prototype now has a tested berry-and-water loop, planting, regrowth and world-scoped saving. Its first compiled run passed 59 checks and a separate-process reload. This is a small component player, not yet the combined living world or a finished game.
+The separate Starfall food prototype now has a tested berry-and-water loop, planting, regrowth and world-scoped saving. Its v0.1.2 compiled loop passed 79 checks and a separate-process reload. This is a small component player, not yet the combined living world or a finished game.
 
-We are extending that foundation toward a tiny Eden: fallen seeds, rare beginnings, bodies that need care, and lessons that outlast a return to the refuge. Those additions receive their own evidence before we call them proven. Poisonous plants, predators and defenses remain future chapters.
+The tiny Eden now has finite fallen seeds and rare beginnings: a declared seed produced a naturally germinated bush that matured in the player. A separate, explicitly staged starvation test preserved the world through death and return, recovered the inhabitant's inventory, and carried one grounded lesson into the next meal. Bodies need care; knowledge is what travels forward. Poisonous plants, predators and defenses remain future chapters.
 
 ---
 
-Evidence anchor: `evidence/local/visible-20260913-182902/runtime-report.json` and `relaunch-report.json`. Refresh these factual sentences after the v0.1.1 acceptance pass. No externally posted claim is implied by this file.
+Evidence anchors: `evidence/local/v012-loop-20260913-192342/`, `v012-eden-20260913-192606/` and `v012-mortality-20260913-192553/`. Use only the subsequently inspected final visual checkpoint as attached media; v0.1.2 had stale HUD glyphs and v0.1.3 had a black world viewport. Those images are retained failures. No externally posted claim is implied by this file.
