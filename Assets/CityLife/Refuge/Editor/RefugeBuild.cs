@@ -32,8 +32,8 @@ namespace CityLife.World.Editor
    for(int i=0;i<12;i++){float a=i*Mathf.PI/6;Rock("Hearth boundary stone "+i,hearth+new Vector3(Mathf.Cos(a)*.64f,.1f,Mathf.Sin(a)*.64f),new Vector3(.31f,.24f,.27f));}
    for(int i=0;i<4;i++){var log=Box("Hearth fuel log "+i,hearth+new Vector3(0,.13f+i*.055f,0),new Vector3(.8f,.12f,.12f),wood);log.transform.rotation=Quaternion.Euler(0,i*58,0);}
    var mat=Box("Primitive sleeping mat",bed+Vector3.up*.035f,new Vector3(2.2f,.07f,1),straw);
-   for(int i=0;i<22;i++)Box("Mat weave "+i,bed+new Vector3(-1.05f+i*.1f,.08f,0),new Vector3(.035f,.025f,1),wood);
-   Box("Rolled grass pillow",bed+new Vector3(-.85f,.15f,0),new Vector3(.32f,.2f,.75f),straw);
+   for(int i=0;i<22;i++)Object.DestroyImmediate(Box("Mat weave "+i,bed+new Vector3(-1.05f+i*.1f,.08f,0),new Vector3(.035f,.025f,1),wood).GetComponent<Collider>());
+   Object.DestroyImmediate(Box("Rolled grass pillow",bed+new Vector3(-.85f,.15f,0),new Vector3(.32f,.2f,.75f),straw).GetComponent<Collider>());
    Box("Modest stone storage base",storage+Vector3.up*.15f,new Vector3(.85f,.3f,.65f),stone);
    for(int i=0;i<6;i++)Box("Stored fuel "+i,storage+new Vector3((i%2)*.2f-.1f,.4f+(i/2)*.13f,0),new Vector3(.13f,.12f,.6f),wood);
    var runtime=camera.gameObject.AddComponent<Starfall.Refuge.RefugeRuntime>();camera.gameObject.AddComponent<Starfall.Refuge.RefugeRain>().World=runtime;runtime.View=camera;runtime.Hearth=hearth;runtime.Bed=bed;runtime.Storage=storage;runtime.Roof=GameObject.Find("Refuge roof").GetComponent<Collider>();
