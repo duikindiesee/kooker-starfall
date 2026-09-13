@@ -1,5 +1,30 @@
 # Starfall system architecture and installation state
 
+## Isolated food workstream — 13 September 2026
+
+Durable rule: [knowledge is progression](STARFALL-WORLD-RULES.md). [Survival stages](STARFALL-SURVIVAL-ROADMAP.md) are roadmap, not automatic combined-build additions. Poisonous plants, predators and learned defenses are later gates.
+
+```mermaid
+flowchart LR
+  P[Existing NPC perception] --> A[Food action authority]
+  A --> S[World and inhabitant scoped food save]
+  A --> L[Visible receipts and provenance]
+  E[Bounded Eden fixed ticks] --> S
+  B[Staged physiology and death-return] --> S
+  S --> L
+  W[Combined environment and save] -. adapter not integrated .-> A
+  L -. food schema not connected .-> M[External Starfall memory]
+```
+
+| Component | Installation/evidence state | Remaining gap |
+|---|---|---|
+| Food v0.1.0 player | Local build; 45 model and 14 actual-player-script checks; separate-process reload passed | Visual label/water revision; human acceptance separate |
+| Food v0.1.1 additions | Staged metabolism, persistent death/return and clearer checkpoint under validation | Compile/runtime evidence pending |
+| Combined adapter | [Exact boundary](FOOD-INTEGRATION.md) documented | Not wired; combined checkout untouched |
+| External memory | No food/death publisher/service connection | Schema/capability review |
+
+Evidence: `evidence/local/visible-20260913-182902/`. The architecture below retains its earlier snapshot; food component checks do not upgrade those connections.
+
 This is the repository-owned map of the Starfall system. Reviewed **13 September 2026** against memory source `0445e0f`, the preserved hybrid preview.2 evidence, and the recorded local Windows player. It is an implementation/installation snapshot, not a live service-health monitor. Cloning this repository does not install its ignored player builds, model runtime, private configuration or database.
 
 The playable client and its deterministic action authority remain the center of the world. Optional inference can suggest bounded goals and text. Starfall memory records verified events and derives memories/wiki/dreams. Neither model output nor a memory record can directly change world state or grant a permission.

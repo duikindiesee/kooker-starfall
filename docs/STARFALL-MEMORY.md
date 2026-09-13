@@ -1,5 +1,11 @@
 # Native Starfall memory — first local slice
 
+## Durable survival knowledge contract — 13 September 2026
+
+[Knowledge is progression](STARFALL-WORLD-RULES.md). Survival beliefs are scoped to `(worldId, generationId, inhabitantId)`, with body `incarnationId` as event context rather than a new memory identity. Return after death preserves learned facts; new world/reset/new inhabitant does not inherit them. Facts arise from permitted perception, outcomes, attributed testimony and verified death lessons. A general belief record must carry assertion/form, evidence IDs, confidence, last observation and appended contradiction/correction links. Unseen locations cannot enter planner snapshots as facts.
+
+The food fixture stores specific tutorial/nutrition/observed-ecology provenance and hash-linked death records in its world save. It has no live connection to this service. The pickup/deliver export schema must not be reused with false action labels; food/death/return schema extensions and world-generation capability mapping require separate review. At most one eligible known-mechanic insight is derived per verified death. General confidence/correction is roadmap work. See the [adapter](FOOD-INTEGRATION.md) and [roadmap](STARFALL-SURVIVAL-ROADMAP.md).
+
 See the [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md) for how Unity, optional inference, inhabitant brains and this service fit together, including the current connections and planned launcher.
 
 Starfall has its own memory service and versioned contracts. It does not import Reflection or Archive Keeper code, personal archives, credentials, configuration or data volumes. Their broad ideas—event evidence, append-only history and separate instance storage—are reference points only. The implementation belongs to this Starfall repository.
