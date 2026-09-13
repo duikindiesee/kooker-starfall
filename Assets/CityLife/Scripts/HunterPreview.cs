@@ -38,8 +38,8 @@ namespace CityLife.World
   private IEnumerator Capture(string name){yield return new WaitForEndOfFrame();string file=name+".png";ScreenCapture.CaptureScreenshot(Path.Combine(directory,file));report.captures.Add(file);yield return null;}
   private void Audit(){report.frames++;var club=Model.GetComponent<HunterClubCarry>();if(club)report.minClubGroundClearance=Mathf.Min(report.minClubGroundClearance,club.GroundClearance);foreach(var r in Model.GetComponentsInChildren<SkinnedMeshRenderer>()){if(!r.name.StartsWith("Hunter "))continue;var m=new Mesh();r.BakeMesh(m);var bounds=m.bounds;float e=bounds.extents.magnitude;report.maxClothingExtent=Mathf.Max(report.maxClothingExtent,e);if(float.IsNaN(e)||e>3)throw new InvalidOperationException("Invalid deformation on "+r.name);Destroy(m);}}
   private bool gripVerify;
-  [Serializable]class GripTuning {public Vector3 curlAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=.24f,elbowOut=.22f;}
-  [Serializable]class GripSample {public string pose;public float maximumHandPenetration;public string deepestBone;}
+  [Serializable]class GripTuning {public Vector3 curlAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.22f,wristDeviation=30f;}
+  [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
   private void MeasureGrip(string label) {
    var club=Model.GetComponent<HunterClubCarry>();
@@ -54,6 +54,9 @@ namespace CityLife.World
      float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
      float radius=Mathf.Lerp(.016f,.038f,fraction)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));
      float depth=radius-new Vector2(point.x-.012f*Mathf.Sin(fraction*5),point.z).magnitude;
+     if(bone.Contains("thumb"))sample.maxThumbPenetration=Mathf.Max(sample.maxThumbPenetration,depth);
+     else if(bone.Contains("hand")||bone.Contains("lowerarm"))sample.maxPalmForearmPenetration=Mathf.Max(sample.maxPalmForearmPenetration,depth);
+     else sample.maxFingerPenetration=Mathf.Max(sample.maxFingerPenetration,depth);
      if(depth>sample.maximumHandPenetration){sample.maximumHandPenetration=depth;sample.deepestBone=bone;}
     }Destroy(mesh);
    }
@@ -74,7 +77,7 @@ namespace CityLife.World
   }
   private IEnumerator GripVerify() {
    var args=Environment.GetCommandLineArgs();int tuningIndex=Array.IndexOf(args,"-hunterGripTuning");
-   if(tuningIndex>=0&&tuningIndex+1<args.Length){var tuning=JsonUtility.FromJson<GripTuning>(File.ReadAllText(args[tuningIndex+1]));var grip=Model.GetComponent<HunterClubCarry>();grip.DiagnosticCurlAdjustment=tuning.curlAdjustment;grip.DiagnosticAnchorAdjustment=tuning.anchorAdjustment;grip.ForearmSlope=tuning.forearmSlope;grip.ElbowOut=tuning.elbowOut;File.Copy(args[tuningIndex+1],Path.Combine(directory,"diagnostic-tuning.json"),true);}
+   if(tuningIndex>=0&&tuningIndex+1<args.Length){var tuning=JsonUtility.FromJson<GripTuning>(File.ReadAllText(args[tuningIndex+1]));var grip=Model.GetComponent<HunterClubCarry>();grip.DiagnosticCurlAdjustment=tuning.curlAdjustment;grip.DiagnosticAnchorAdjustment=tuning.anchorAdjustment;grip.ForearmSlope=tuning.forearmSlope;grip.ElbowOut=tuning.elbowOut;grip.WristDeviation=tuning.wristDeviation;File.Copy(args[tuningIndex+1],Path.Combine(directory,"diagnostic-tuning.json"),true);}
    foreach(string pose in new[]{"Idle","Walk","Crouch","CrouchWalk","SitEnter","Sit","SitExit","Pickup"}) {
     Seat(pose.StartsWith("Sit"));SetPose(pose);Actor.Animator.Play(pose,0,0);
     for(int i=0;i<45;i++){yield return null;Audit();if(i==10||i==30)yield return GripViews(pose+"-"+i);}
