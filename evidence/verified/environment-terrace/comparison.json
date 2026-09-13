@@ -1,0 +1,33 @@
+{
+  "baselineCommit": "ff5edad",
+  "baselineRun": "player-05-stress",
+  "revisedRun": "player-07-terrace",
+  "physicsChecks": 20,
+  "maxPhysicsMeasurementDelta": 0.0,
+  "unchangedSource": [
+    {
+      "path": "Assets/CityLife/Environment/EnvironmentModel.cs",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "Assets/CityLife/Environment/EnvironmentMotion.cs",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "Assets/CityLife/Environment/EnvironmentChecks.cs",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "Assets/CityLife/Environment/EnvironmentPhysicsChecks.cs",
+      "unchangedFromBaseline": true
+    },
+    {
+      "path": "Assets/CityLife/Environment/EnvironmentPlayerEvidence.cs",
+      "unchangedFromBaseline": true
+    }
+  ],
+  "baselineP95ms": 16.71640396118164,
+  "revisedP95ms": 16.760799407958984,
+  "revisedP99ms": 16.983299255371094,
+  "status": "PASS"
+}

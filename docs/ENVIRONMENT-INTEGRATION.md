@@ -1,0 +1,15 @@
+# Coastal and inhabitant integration boundary
+
+Environment sources live only in `Assets/CityLife/Environment`; `EnvironmentWater.shader` is additive. No coastal, NPC-brain or memory worktree is edited.
+
+The coastal task proposed (13 September 2026) `starfall.coastal-world.v1`, x [-600,600], z [-400,1200] metres, water datum -2 m. These are design inputs, not implemented terrain or verified playable bounds. The current `CoastalEnvironmentSurface` adapts only `starfall.coastal-slice.v1`, content `terrain-r2-weathered-banks`, x [-90,90], z [-55,145]. Its ground query samples the existing immutable coastal generator. Motion must still collide with the actual mesh; analytical samples are for environmental queries and conservative water/slope boundaries.
+
+Implement `IEnvironmentSurface` for the eventual main world: versioned ID/revision, physical bounds, finite point containment, ground height/normal, water surface, bed-to-surface depth and current. Surface-relative signed immersion is `WaterLevel(position) - position.y` and is meaningful only where `WaterDepth(position)>0`. Unknown terrain must return false; a decorative sea extension is never physical containment. Current is zero in the component adapter because no current field is implemented.
+
+Player and autonomous inhabitant can consume `EnvironmentClock.Sample` and `ExposureState`; central simulation has no network or AI dependencies. The harness's capsule seeking a marked shelter is a local stimulus/response probe, not an NPC-brain implementation. A real inhabitant should combine this perception with its own navigation and memory decisions. Stable shelter IDs and discoverable anchors remain owned by the world branch.
+
+Water is a visual wind-response surface and optional rigid-body buoyancy here. The dry-shore walker explicitly blocks deep water. Main-world swimming, underwater controls, land-water-return traversal and saved character/body state need a coordinated integration change and separate compiled-player evidence.
+
+Run `tools/build-environment.ps1`, then the returned `StarfallEnvironment.exe` with `-environmentAuto -environmentEvidence <absolute new folder> -screen-width 1280 -screen-height 720 -screen-fullscreen 0 -logFile <local log>`. The executable runs focused physics tests and saves four actual rendered frames plus its result. Use a new evidence folder per run. Without `-environmentAuto`, WASD/RMB/Space operate the coastal-fixture walker; P pauses; F5/F9 save/load only environment clock/exposure. Local synthetic saves and raw logs stay under ignored local folders.
+
+Add `-environmentStress` to run 128 rigid bodies and a 512-sample precipitation pool. The frame CSV records width/height throughout; any departure from 1280x720 fails the benchmark rather than attributing results to the initial resolution. Weather phases start at their transition boundary and run for eight wall-clock seconds each; midpoint/end samples prove transitions in the executable. This is an accelerated, scripted 32-second fixture measurement, not an extended main-world soak test.

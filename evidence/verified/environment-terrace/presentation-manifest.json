@@ -1,0 +1,8 @@
+{
+    "revision": "starfall.environment-terrace.v1",
+    "beforeColliderFingerprint": "41e80845912d39fc8cd0d44cd678d946f8aa55c2f791fd5c1b01f3c931f89137",
+    "afterColliderFingerprint": "41e80845912d39fc8cd0d44cd678d946f8aa55c2f791fd5c1b01f3c931f89137",
+    "collidersUnchanged": true,
+    "supportPiers": 6,
+    "scope": "Render-only supported test terrace; no new walkable/collision surfaces. All existing test positions and physics components retained."
+}

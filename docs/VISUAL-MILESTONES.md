@@ -468,3 +468,12 @@ Colour and bank contrast improved after one revision. Water realism/outlet seam,
 ## Coastal main-world workstream - 13 September 2026
 
 See [main-world acceptance](COASTAL-MAIN-WORLD.md). Panorama direction supersedes the close-up component study. The isolated component-player source is unverified: its initial Unity process exited during compilation with no build result. A separate component bake is active in the original coastal worktree; coordination is pending. No new visual or playable acceptance is claimed.
+## Environment foundation component player - 13 September 2026
+
+Separate codex/starfall-environment workstream. [Acceptance record](ENVIRONMENT-ACCEPTANCE.md) distinguishes implementation, 12,410 model checks, 20 compiled-player physics/controller checks, rendered harness frames and outstanding main-world/input-device acceptance. Two fixed-resolution stress runs passed with 128 bodies and 512 precipitation capacity; p95 frames were 16.72 and 16.68 ms. Earlier buoyancy and resolution failures remain documented. No previous world build is replaced.
+
+![Actual compiled environment fixture in cold weather; test apparatus and local shelter probe](../evidence/milestones/environment-foundation/cold.png)
+
+## Supported Starfall environment terrace - 13 September 2026
+
+[Matching compiled-player before/after comparison](ENVIRONMENT-TERRACE-COMPARISON.md): the visual slab is now a supported sandstone test terrace with structural bracing, coherent materials and a blue-giant sky. Original tests and collision conditions are unchanged; all 20 physical measurements match the preserved baseline exactly. The revised 128-body/512-precipitation player passed at p95 16.76 ms. Earlier builds and evidence remain intact.

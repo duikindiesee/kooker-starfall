@@ -1,0 +1,8 @@
+{
+  "first": "PASS",
+  "repeat": "PASS",
+  "physicsChecks": 20,
+  "maxPhysicsMeasurementDelta": 0.0,
+  "weatherEndpointVectorsIdentical": true,
+  "scope": "Same Windows executable and machine; fixed-tick model repeatability independently tested. Does not claim cross-machine PhysX determinism."
+}
