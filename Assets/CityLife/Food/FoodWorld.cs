@@ -96,7 +96,7 @@ namespace Starfall.Food
             if(Model==null||Paused)return;Model.State.body.active=pending;Model.State.body.sheltered=Vector3.Distance(Actor.position,new Vector3(0,0,-2))<2;Model.FixedStep(false);
             if(Model.State.body.dead){pending=false;Auto=false;RefreshVisuals();return;}
             if(Model.State.fruitStock!=lastStock){Record("ecology",Model.State.fruitStock>lastStock?"A berry ripened; seasonal water budget consumed.":"Individual fruit removed; bush persists.");lastStock=Model.State.fruitStock;}
-            if(Model.State.gardenStage!=lastStage){Record("growth","Garden stage: "+Stage(Model.State.gardenStage));lastStage=Model.State.gardenStage;}
+            if(Model.State.gardenStage!=lastStage){Record("growth","Garden stage: "+Stage(Model.State.gardenStage,Model.State.gardenEstablished));lastStage=Model.State.gardenStage;}
             if(pending)
             {
                 pendingTime+=Time.fixedDeltaTime;
@@ -142,10 +142,10 @@ namespace Starfall.Food
                     for(int i=0;i<2;i++){var fruit=Shape("Wild ripe berry "+i,PrimitiveType.Sphere,pos+new Vector3(-.35f+i*.7f,1.35f,-.4f),Vector3.one*.4f,ripe);fruit.transform.SetParent(v.transform,true);}
                     wildVisuals.Add(b.site,v);string id="berry"+(b.site+1);if(!Targets.ContainsKey(id))AddTarget(id,pos+Vector3.up,pos+Vector3.back*1.1f);Targets[id].WorldId=Perception.WorldId;
                 }
-                v.SetActive(!b.dead);v.transform.localScale=Vector3.one*(b.growth>=EdenEcology.Mature?1:.2f+.6f*b.growth/EdenEcology.Mature);
+                v.SetActive(!b.dead);Targets["berry"+(b.site+1)].gameObject.SetActive(!b.dead);v.transform.localScale=Vector3.one*(b.growth>=EdenEcology.Mature?1:.2f+.6f*b.growth/EdenEcology.Mature);
                 for(int i=0;i<2;i++)v.transform.GetChild(i+1).gameObject.SetActive(i<b.stock);
             }
-            foreach(var pair in wildVisuals)if(!s.bushes.Exists(b=>b.site==pair.Key&&!b.dead))pair.Value.SetActive(false);
+            foreach(var pair in wildVisuals)if(!s.bushes.Exists(b=>b.site==pair.Key&&!b.dead)){pair.Value.SetActive(false);Targets["berry"+(pair.Key+1)].gameObject.SetActive(false);}
             foreach(var d in s.drops)
             {
                 if(!dropVisuals.TryGetValue(d.id,out var v)){v=Shape("Dropped seed "+d.id,PrimitiveType.Sphere,Site(d.site)+new Vector3(.25f, .18f,-.3f),Vector3.one*.16f,Mat(new Color(.94f,.73f,.47f)));dropVisuals.Add(d.id,v);}
@@ -178,7 +178,7 @@ namespace Starfall.Food
         {
             string w=reset?Model.State.world:"food-"+Guid.NewGuid().ToString("N");int seed=Model.State.seed;Model=new FoodModel(w,"g-"+Guid.NewGuid().ToString("N"),seed);BindScope();SetActor(new Vector3(0,0,-2));RefreshVisuals();Record("reset","Clean seeded world. Acquired food knowledge and inventory cleared; old saves preserved.");
         }
-        static string Stage(int i)=>i==0?"empty":i==1?"seedling":i==2?"growing":i==3?"ripe":"dead";
+        static string Stage(int i,bool established=false)=>i==0?"empty":i==1?(established?"regrowing":"seedling"):i==2?"growing":i==3?"ripe":"dead";
         void OnGUI()
         {
             if(Model==null)return;GUI.matrix=Matrix4x4.Scale(new Vector3(Screen.width/1280f,Screen.height/720f,1));var s=Model.State;
@@ -187,7 +187,7 @@ namespace Starfall.Food
             GUI.Label(new Rect(22,48,850,38),$"Energy {s.satiety/100f:F1}% • Hydration {s.hydration/100f:F1}% • Fullness {s.body.stomach/100f:F0}% • Berries {s.carriedFruit} • Seeds {s.seeds}",text);
             GUI.Label(new Rect(22,75,850,38),$"Reserve {s.body.fat/100f:F0}% • Protein {s.body.protein/100f:F0}% • Health {s.body.health/100f:F0}% • Fatigue {s.body.fatigue/100f:F0}% | {(s.body.dead?"AWAITING RETURN":s.hydration<2000?"THIRST: seek known freshwater":s.satiety<2000?"HUNGRY: use known food":s.knowsBerry?"Berry known":"Berry UNKNOWN")} | Tick {s.tick}",small);
             GUI.Box(new Rect(895,115,385,605),"");GUI.Label(new Rect(910,128,350,30),"PERCEIVE → DECIDE → ACT",new GUIStyle(title){fontSize=19});
-            GUI.Label(new Rect(910,165,350,70),$"Bush: {s.fruitStock}/{2+(int)((uint)s.seed%2)} ripe • next {s.regrowthProgress}/30 s\nSeason: {(s.wetSeason?"wet":"dry")} • soil water {s.soilWater}\nGarden: {Stage(s.gardenStage)} • freshwater {s.freshwaterMl} ml",small);
+            GUI.Label(new Rect(910,165,350,70),$"Bush: {s.fruitStock}/{2+(int)((uint)s.seed%2)} ripe • next {s.regrowthProgress}/30 s\nSeason: {(s.wetSeason?"wet":"dry")} • soil water {s.soilWater}\nGarden: {Stage(s.gardenStage,s.gardenEstablished)} • freshwater {s.freshwaterMl} ml",small);
             int first=Math.Max(0,Log.Entries.Count-6);float y=244;for(int i=first;i<Log.Entries.Count;i++){var e=Log.Entries[i];GUI.Label(new Rect(910,y,350,69),$"{e.tick:000}  {e.phase.ToUpperInvariant()}\n{e.result}",small);y+=72;}
             GUI.Box(new Rect(0,576,895,144),"");GUI.enabled=!pending&&!Paused;
             if(GUI.Button(new Rect(15,590,165,32),"Learn berry (lesson)"))Queue(FoodAction.Inspect,"berry","Read safe designed discovery lesson");
@@ -206,7 +206,7 @@ namespace Starfall.Food
             if(GUI.Button(new Rect(910,680,110,28),s.body.dead?"Return":"Camp aid")){if(s.body.dead)ExecuteNow(FoodAction.Return,"inventory");else Queue(FoodAction.CampAid,"inventory","Explicit assisted recovery; counted in save");}
             if(GUI.Button(new Rect(1025,680,110,28),"Rest / wake")){pending=false;s.body.resting=!s.body.resting;Auto=false;Record("rest","Rest toggled; shelter verified by location.");}
             if(GUI.Button(new Rect(1140,680,125,28),s.bags.Count>0?"Recover bag":"Other bush"))Queue(s.bags.Count>0?FoodAction.Recover:FoodAction.Gather,s.bags.Count>0?"refuge":"berry2","Visit observed resource / owned recovery chest");
-            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.1 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
+            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.2 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
             if(cameraView!=null)
             {
                 WorldLabel("berry",s.knowsBerry?"STARFALL BERRY":"UNKNOWN BERRY\nRead signed lesson");
@@ -260,7 +260,9 @@ namespace Starfall.Food
             Record("acceptance","Rare natural germination observed for declared fixture seed "+Model.State.seed);yield return Capture("eden-02-rare-germination");
             yield return new WaitForSeconds(61);Paused=true;
             if(!Model.State.bushes.Exists(b=>b.site>=2&&b.growth==EdenEcology.Mature))throw new Exception("Natural seedling failed to mature");
-            yield return Capture("eden-03-new-bush");Save();WriteReport("eden-report.json",new List<string>{"unharvested fruit dropped finite seeds","seed age and outcome survived actual reload","rare natural germination seed "+Model.State.seed,"natural seedling matured over time","population <=4: "+EdenEcology.Living(Model.State)});Application.Quit(0);
+            yield return Capture("eden-03-new-bush");Save();int population=EdenEcology.Living(Model.State);Fresh(false);
+            if(Perception.Sense(Model.State.tick).Exists(o=>o.id=="berry3"||o.id=="berry4")||Model.State.knowsBerry||Model.State.drops.Count!=0)throw new Exception("Natural ecology interaction target leaked across fresh world");
+            yield return Capture("eden-04-fresh-world-isolation");Save();WriteReport("eden-report.json",new List<string>{"unharvested fruit dropped finite seeds","seed age and outcome survived actual reload","rare natural germination seed "+Model.State.seed,"natural seedling matured over time","population <=4: "+population,"fresh world clears natural plants, seed state, knowledge and interaction targets"});Application.Quit(0);
         }
         IEnumerator MortalityAcceptance()
         {
