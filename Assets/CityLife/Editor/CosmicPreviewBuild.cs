@@ -77,6 +77,7 @@ namespace CityLife.World.Editor
                     // Use the legacy midphase for the dense frozen wood, without simplifying its geometry.
                     if(frozenR19&&filter.name=="Bark")c.cookingOptions&=~MeshColliderCookingOptions.UseFastMidphase;
                     c.sharedMesh=filter.sharedMesh;
+                    if(integrated)filter.gameObject.layer=8;
                     woodColliders++;
                 }
             camera.enabled=true;camera.tag="MainCamera";

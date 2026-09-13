@@ -72,7 +72,7 @@ namespace CityLife.World.Editor
             foreach (Transform t in model.GetComponentsInChildren<Transform>()) t.gameObject.layer = 9;
 
             actor.View = camera.gameObject.AddComponent<CharacterPreviewCamera>(); actor.View.Target = actor.transform;
-            actor.View.Yaw = 165; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
+            actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
             // Reuse the accepted interaction fixture's authority, not its old floor/courtyard.
             new GameObject("Warm starlight").AddComponent<Light>().enabled = false;
             NpcPreviewStage.Configure(actor, camera, folder);
@@ -86,7 +86,19 @@ namespace CityLife.World.Editor
             var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(-87, -1, -52); controls.CameraMaximum = new Vector3(87, 90, 142);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
-            camera.fieldOfView = 60; actor.View.Yaw = 165; actor.View.Pitch = 12; actor.View.Follow();
+            camera.fieldOfView = 60; actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Follow();
+            // The original study plane only covers one heading. Use its retained
+            // procedural material on an enclosing sphere for freely turning players.
+            var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
+            if (galaxy != null)
+            {
+                var skyTemplate = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                galaxy.GetComponent<MeshFilter>().sharedMesh = skyTemplate.GetComponent<MeshFilter>().sharedMesh;
+                Object.DestroyImmediate(skyTemplate);
+                galaxy.transform.position = Vector3.zero;
+                galaxy.transform.rotation = Quaternion.identity;
+                galaxy.transform.localScale = Vector3.one * 9000;
+            }
             var environment = actorObject.AddComponent<IntegratedEnvironment>(); environment.Brain = brain;
             environment.Surface = brain.TerrainNavigation; environment.View = camera;
             environment.Sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).First(l => l.type == LightType.Directional && l.enabled);

@@ -58,10 +58,15 @@ namespace CityLife.World
             CheckThat("autonomous-delivery", Brain.Actions.Deliveries > 0, Brain.LastResult + "; failures=" + Brain.FailureCount);
             yield return Capture("02-autonomous-delivery");
             yield return Tap(Key.Tab);
+            // Test traversal in the known starting corridor; the first delivery
+            // finishes beside a solid depot, where backward motion may be blocked.
+            Brain.Actor.Place(Brain.SpawnPosition); Physics.SyncTransforms();
+            Controls.View.Yaw = 0; yield return null;
             var before = Brain.transform.position;
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.S)); yield return new WaitForSeconds(1);
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
-            CheckThat("possessed-body-traversal", Brain.Possessed && Vector3.Distance(before, Brain.transform.position) > .3f, "Same actor; actual CharacterController movement.");
+            CheckThat("possessed-body-traversal", Brain.Possessed && Vector3.Distance(before, Brain.transform.position) > .3f,
+                "Starting corridor; same CharacterController. From " + before + " to " + Brain.transform.position);
             var lookBefore = Controls.View.transform.rotation;
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
             InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(45, -12) }.WithButton(MouseButton.Right)); yield return null;
