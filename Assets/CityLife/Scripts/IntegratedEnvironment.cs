@@ -69,10 +69,11 @@ namespace CityLife.World
             var textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22 };
             float panelWidth = Mathf.Min(570, Screen.width * .48f);
             float panelLeft = Screen.width - panelWidth - 12;
-            GUI.Box(new Rect(panelLeft, 12, panelWidth, 116), "");
+            GUI.Box(new Rect(panelLeft, 12, panelWidth, 154), "");
             GUI.Label(new Rect(panelLeft + 12, 18, panelWidth - 24, 108),
-                controls.Mode + "\n" + (controls.Looking ? "Mouse captured / Escape releases and pauses" : "Click or right-click in the world to look") +
+                controls.Mode + "\n" + (!Application.isFocused ? "Click this window to focus controls" : controls.Looking ? "Mouse captured / Escape releases and pauses" : "Click or right-click in the world to look") +
                 "\nTab: possess | F: spectator | P: options | F11: display\nSensitivity: P > Controls > Mouse look", textStyle);
+            if (GUI.Button(new Rect(panelLeft + 12, 130, panelWidth - 24, 30), "Options", new GUIStyle(GUI.skin.button) { fontSize = 22 })) controls.OpenMenu();
             GUI.Box(new Rect(panelLeft, Screen.height - 140, panelWidth, 128), "");
             GUI.Label(new Rect(panelLeft + 12, Screen.height - 134, panelWidth - 24, 116),
                 "STARFALL / REGIONAL CANDIDATE " + Application.version +
