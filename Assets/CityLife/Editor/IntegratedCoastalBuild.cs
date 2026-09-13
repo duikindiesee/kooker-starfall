@@ -145,7 +145,11 @@ namespace CityLife.World.Editor
             var shape = rain.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(18, 1, 18);
             var velocity = rain.velocityOverLifetime; velocity.enabled = true; velocity.space = ParticleSystemSimulationSpace.World; velocity.y = -13;
             var emission = rain.emission; emission.rateOverTime = 0;
-            rain.GetComponent<ParticleSystemRenderer>().sharedMaterial = Material("Rain droplets", new Color(.45f, .76f, 1));
+            var rainRenderer = rain.GetComponent<ParticleSystemRenderer>();
+            rainRenderer.sharedMaterial = Material("Rain droplets", new Color(.45f, .76f, 1));
+            rainRenderer.renderMode = ParticleSystemRenderMode.Stretch;
+            rainRenderer.lengthScale = 3;
+            rainRenderer.velocityScale = .04f;
             rain.Play(); environment.Rain = rain;
             var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment;
             Time.fixedDeltaTime = .02f; Physics.gravity = Vector3.down * 9.81f;
