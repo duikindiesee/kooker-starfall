@@ -73,6 +73,8 @@ The preview has no implemented multiplayer, bot connections or saved-world loadi
 
 ## Save and new-game contract — planned
 
+The [current-component coastal candidate](docs/INTEGRATED-CANDIDATE.md) is being assembled separately; its combined runtime acceptance is still pending. The [round-planet and boat progression plan](docs/PLANET-MIGRATION.md) preserves this near-term flat regional build and defines a separate spherical proof.
+
 These are recorded requirements; complete-game save/load is not implemented or runtime-proven. The next implementation priority remains one genuine local-model thought.
 
 | Operation | Contract |

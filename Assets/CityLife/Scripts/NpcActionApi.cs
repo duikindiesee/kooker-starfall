@@ -54,7 +54,7 @@ namespace CityLife.World
                 return Finish(Deny("out-of-reach"));
             Physics.SyncTransforms();
             Vector3 eye = actor.position + Vector3.up * 1.6f, delta = target.SightPoint - eye;
-            if (Physics.Raycast(eye, delta.normalized, delta.magnitude, 1 << 8, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(eye, delta.normalized, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore))
                 return Finish(Deny("line-of-sight-blocked"));
             if (action == NpcActionKind.Pickup)
             {

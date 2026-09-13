@@ -30,7 +30,7 @@ namespace CityLife.World
                 if (item == null || !item.isActiveAndEnabled || item.WorldId != WorldId || string.IsNullOrEmpty(item.StableId)) continue;
                 if (Vector3.Distance(transform.position, item.SightPoint) > Radius) continue;
                 Vector3 ray = item.SightPoint - (transform.position + Vector3.up * 1.6f);
-                if (Physics.Raycast(transform.position + Vector3.up * 1.6f, ray.normalized, ray.magnitude, 1 << 8, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(transform.position + Vector3.up * 1.6f, ray.normalized, ray.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore))
                 { OccludedCount++; continue; }
                 if (seen.ContainsKey(item.StableId)) throw new InvalidOperationException("Duplicate visible object id: " + item.StableId);
                 seen.Add(item.StableId, new NpcObservation { id = item.StableId, kind = item.Kind,

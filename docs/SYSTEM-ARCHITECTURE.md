@@ -1,5 +1,7 @@
 # Starfall system architecture and installation state
 
+Integration workstream update, 13 September 2026: [the separate current-component candidate](INTEGRATED-CANDIDATE.md) assembles coastal terrain, the environment adapter, an autonomous inhabitant and accepted clothing. Source integration is in progress; combined-player/native-input/coverage acceptance remains unverified. [Planet migration](PLANET-MIGRATION.md) is a staged future gate; the immediate region stays flat and finite. The historical component installation evidence below does not promote this new executable to accepted.
+
 This is the repository-owned map of the Starfall system. Reviewed **13 September 2026** against memory source `0445e0f`, the preserved hybrid preview.2 evidence, and the recorded local Windows player. It is an implementation/installation snapshot, not a live service-health monitor. Cloning this repository does not install its ignored player builds, model runtime, private configuration or database.
 
 The playable client and its deterministic action authority remain the center of the world. Optional inference can suggest bounded goals and text. Starfall memory records verified events and derives memories/wiki/dreams. Neither model output nor a memory record can directly change world state or grant a permission.
@@ -67,6 +69,11 @@ flowchart TB
     Slots -.->|PLANNED: complete validation before session activation| Save
     Save -.->|PLANNED: restore authoritative state| Authority
     Save -.->|PLANNED: restore matching isolated history| API
+    Region["IN PROGRESS: isolated flat coastal candidate<br/>Terrain collision adapter, environment, clothed NPC and mouse controls"]
+    Planet["PLANNED: separate spherical proof and later planet streaming<br/>Radial gravity, continuous ocean, navigation and versioned saves"]
+    Region -.->|combined-player acceptance still pending| Client
+    Region -.->|regional surface and weather adapter| Brain
+    Planet -.->|explicit future version / migration; no automatic conversion| Region
     Archived[("PLANNED: archived slots and verified backups<br/>Complete world/history binding; excluded from active-session reads")]
     Slots -.->|PLANNED: explicit archive or versioned backup| Archived
     Archived -.->|PLANNED: explicit restore through complete validation| Save
@@ -89,7 +96,8 @@ flowchart TB
     classDef excluded fill:#ffffff,stroke:#545b64,color:#353b43
     class Operator,Client,Brain,Gate,Authority,Bridge,API,Private,Facts,Dream,DB tested
     class Export,Volume unwired
-    class Launcher,Comms,Save,Slots,Archived,Delete planned
+    class Launcher,Comms,Save,Slots,Archived,Delete,Planet planned
+    class Region unverified
     class Excluded excluded
     class Inference unverified
 ```
@@ -118,6 +126,8 @@ The database stores both authoritative event evidence and separately typed deriv
 | Single Starfall launcher/installer | Planned | No integrated launcher, installation bundle or automatic service management exists. | Current [player build tools](../tools/build-npc.ps1) and [memory CLI](../services/starfall-memory/local.py) are separate tools. | Unified install/update/start/stop, compatible versions, isolation, health checks, rollback and end-to-end user acceptance. |
 | Versioned save slots and new-game lifecycle | Planned; requirements recorded | No complete-game save coordinator or player save/load flow exists. Existing edit persistence and memory transactions are separate boundaries. | [Save/new-game contract v1](SAVE-GAME-CONTRACT.md), [existing edit boundary](WORLD-FOUNDATION.md) | Unique world/seed per new game, stable world-scoped inhabitants, complete atomic checkpoints, validated load/migration, backup/recovery, isolation fixtures and actual save/quit/relaunch/load acceptance. Deferred behind the living-thought priority. |
 | Archive, backup and explicit deletion boundary | Planned; requirements recorded | Archived worlds retain their complete state/history and are excluded from active-session queries. Reset creates a fresh slot; archive and destructive deletion are separate choices. | [Archive/restore and recovery contract](SAVE-GAME-CONTRACT.md) | Versioned verified backups, explicit archive/restore UI, corruption recovery and proof that no other slot or personal archive is modified. |
+| Integrated coastal candidate | Source integration in progress; runtime unverified | Separate regional build and adapters. Existing component evidence remains scoped to original executables. | [Dependencies and same-executable gates](INTEGRATED-CANDIDATE.md) | Compile, native traversal/mouse/menu/display, autonomous actions, environment/shelter and clothing coverage in one player. |
+| Round planet and island/boat progression | Planned | Immediate terrain remains flat/streamable and finite. No spherical runtime, boat travel or coordinate/save migration exists. | [Staged migration and smallest spherical proof](PLANET-MIGRATION.md) | Curvature/gravity/camera/ocean/navigation/save proof, streaming/resource persistence and later boat travel. |
 
 ## Authority, identity and privacy boundaries
 

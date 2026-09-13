@@ -18,6 +18,12 @@ namespace CityLife.World
         public PreviewDisplayMode Display;
         public bool AllowUnfocusedTestInput;
         public bool SuppressInput;
+        public bool SuppressView;
+        public bool PersistentMouseCapture;
+        [Range(.04f, .3f)] public float LookSensitivity = .12f;
+        public Vector3 CameraMinimum = new Vector3(-22, .7f, -22), CameraMaximum = new Vector3(22, 18, 22);
+        private bool resumeCapture;
+        private int captureFrame = -10;
         [NonSerialized] public Keyboard TestKeyboard;
         [NonSerialized] public Mouse TestMouse;
         public bool MenuOpen { get; private set; }
@@ -79,12 +85,14 @@ namespace CityLife.World
             if (key.lKey.wasPressedThisFrame) Hud.Detailed = !Hud.Detailed;
             if (mouse != null)
             {
-                if (mouse.rightButton.wasPressedThisFrame) CapturePointer();
-                if (mouse.rightButton.wasReleasedThisFrame) ReleasePointer();
-                if (Looking)
+                if (mouse.rightButton.wasPressedThisFrame || (PersistentMouseCapture && mouse.leftButton.wasPressedThisFrame &&
+                    (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))) CapturePointer();
+                if (!PersistentMouseCapture && mouse.rightButton.wasReleasedThisFrame) ReleasePointer();
+                if (Looking && (!PersistentMouseCapture || Time.frameCount > captureFrame + 1))
                 {
-                    Vector2 delta = mouse.delta.ReadValue(); yaw += delta.x * .12f;
-                    pitch = Mathf.Clamp(pitch - delta.y * .12f, -75, 75);
+                    Vector2 delta = Vector2.ClampMagnitude(mouse.delta.ReadValue(), 400);
+                    yaw = Mathf.Repeat(yaw + delta.x * LookSensitivity, 360);
+                    pitch = Mathf.Clamp(pitch - delta.y * LookSensitivity, -75, 75);
                 }
             }
             // Movement alone never changes ownership. The same axes serve the explicitly selected mode.
@@ -104,11 +112,11 @@ namespace CityLife.World
         {
             if (!initialized || MenuOpen || DisplayShortcutActive || Brain.Possessed || !FreeSpectator) return;
             freePosition += cameraMotion * NpcAutonomy.StepSeconds;
-            freePosition = new Vector3(Mathf.Clamp(freePosition.x, -22, 22), Mathf.Clamp(freePosition.y, .7f, 18), Mathf.Clamp(freePosition.z, -22, 22));
+            freePosition = new Vector3(Mathf.Clamp(freePosition.x, CameraMinimum.x, CameraMaximum.x), Mathf.Clamp(freePosition.y, CameraMinimum.y, CameraMaximum.y), Mathf.Clamp(freePosition.z, CameraMinimum.z, CameraMaximum.z));
         }
         private void LateUpdate()
         {
-            if (!initialized) return;
+            if (!initialized || SuppressView) return;
             if (!MenuOpen && !DisplayShortcutActive)
             {
                 if (Brain.Possessed || !FreeSpectator) { View.Yaw = yaw; View.Pitch = Mathf.Clamp(pitch, -8, 65); View.Follow(); }
@@ -132,6 +140,7 @@ namespace CityLife.World
         public void OpenMenu()
         {
             if (MenuOpen) return;
+            resumeCapture = PersistentMouseCapture && Looking;
             ReleasePointer(); savedTimeScale = Time.timeScale; Time.timeScale = 0;
             Brain.MenuPaused = true; Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
             if (Brain.OptionalPlanner != null) Brain.OptionalPlanner.Cancel("options-opened");
@@ -142,15 +151,18 @@ namespace CityLife.World
             if (!MenuOpen) return;
             ReleasePointer(); MenuOpen = false; overlay.SetActive(false);
             Brain.MenuPaused = false; Time.timeScale = savedTimeScale;
+            if (resumeCapture && (Application.isFocused || AllowUnfocusedTestInput)) CapturePointer();
+            resumeCapture = false;
         }
         public void ReleasePointer()
         {
-            if (!Looking) return;
             Looking = false;
             if (!AllowUnfocusedTestInput) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
         }
         private void CapturePointer()
         {
+            if (MenuOpen || DisplayShortcutActive) return;
+            captureFrame = Time.frameCount;
             Looking = true;
             if (!AllowUnfocusedTestInput) { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
         }
@@ -167,6 +179,7 @@ namespace CityLife.World
         }
         private IEnumerator ToggleDisplayShortcut()
         {
+            bool restoreCapture = PersistentMouseCapture && Looking;
             ReleasePointer(); shortcutTimeScale = Time.timeScale; shortcutPaused = Brain.MenuPaused;
             DisplayShortcutActive = true; Time.timeScale = 0; Brain.MenuPaused = true;
             Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
@@ -177,7 +190,8 @@ namespace CityLife.World
                 while (Display.IsChanging) yield return null;
             }
             finally
-            { Time.timeScale = shortcutTimeScale; Brain.MenuPaused = shortcutPaused; DisplayShortcutActive = false; }
+            { Time.timeScale = shortcutTimeScale; Brain.MenuPaused = shortcutPaused; DisplayShortcutActive = false;
+                if (restoreCapture && !MenuOpen && (Application.isFocused || AllowUnfocusedTestInput)) CapturePointer(); }
         }
         private void BuildMenu()
         {
@@ -248,7 +262,19 @@ namespace CityLife.World
                     "\nL: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
                 if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
+                if (PersistentMouseCapture) Option("Mouse look sensitivity", () => ShowPage("Mouse"));
                 Option("Back", () => ShowPage("Root"));
+            }
+            else if (page == "Mouse")
+            {
+                PageTitle.text = "PAUSED / Mouse look";
+                PageBody.text = "Sensitivity: " + LookSensitivity.ToString("F2") + " degrees per input pixel.\n" +
+                    (PersistentMouseCapture ? "Click or right-click in the world to capture the pointer.\nEscape releases it and opens options; Resume restores the prior capture state." : "Hold right mouse to look; release it to free the pointer.") +
+                    "\nMenus keep the pointer visible. Capture/resize motion is discarded to avoid jumps.\nThis setting applies to both spectator and possessed-character views.";
+                Option("Lower sensitivity", () => { LookSensitivity = Mathf.Max(.04f, LookSensitivity - .02f); ShowPage("Mouse"); });
+                Option("Higher sensitivity", () => { LookSensitivity = Mathf.Min(.3f, LookSensitivity + .02f); ShowPage("Mouse"); });
+                Option("Reset sensitivity", () => { LookSensitivity = .12f; ShowPage("Mouse"); });
+                Option("Back", () => ShowPage("Controls"));
             }
             else if (page == "Thoughts")
             {

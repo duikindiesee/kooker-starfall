@@ -1,0 +1,141 @@
+using System;
+using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace CityLife.World.Editor
+{
+    public static class IntegratedCoastalBuild
+    {
+        public const string Version = "0.0.7-integrated.1";
+        public static bool Requested => System.Environment.GetCommandLineArgs().Contains("-starfallIntegrated");
+        public static void Run()
+        {
+            if (!Requested || !Application.isBatchMode) throw new InvalidOperationException("Explicit isolated integrated batch required.");
+            UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
+            NpcMilestoneValidation.Run(); NpcHybridValidation.Run();
+            KokerboomRender.BuildCoastalPlayableSlice();
+        }
+        public static void Attach(Camera camera, GameObject ground, string folder)
+        {
+            CharacterAssetImport.Run();
+            foreach (var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None)) collider.gameObject.layer = 8;
+            ground.layer = 10;
+            var actorObject = new GameObject("First coastal inhabitant"); actorObject.layer = 9;
+            var actor = actorObject.AddComponent<CharacterPreviewActor>(); actor.ExternalDrive = true;
+            actor.Capsule = actorObject.AddComponent<CharacterController>();
+            actor.Capsule.height = 1.85f; actor.Capsule.center = new Vector3(0, .93f, 0); actor.Capsule.radius = .3f;
+            actor.Capsule.skinWidth = .025f; actor.Capsule.stepOffset = .25f; actor.Capsule.slopeLimit = 45;
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(CharacterAssetImport.Body));
+            model.transform.SetParent(actorObject.transform, false); model.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            actor.Animator = model.GetComponent<Animator>();
+            if (actor.Animator.avatar == null || !actor.Animator.avatar.isValid || !actor.Animator.avatar.isHuman) throw new InvalidOperationException("Humanoid avatar invalid.");
+            actor.Animator.applyRootMotion = false; actor.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            var clips = AssetDatabase.LoadAllAssetsAtPath(CharacterAssetImport.Motions).OfType<AnimationClip>().ToArray();
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(folder + "/IntegratedHumanoid.controller");
+            foreach (var pair in new[] { ("Idle", "Idle_Loop"), ("Walk", "Walk_Loop"), ("Interact", "Interact"),
+                ("Crouch", "Crouch_Idle_Loop"), ("CrouchWalk", "Crouch_Fwd_Loop"), ("Sit", "Sitting_Idle_Loop"),
+                ("SitEnter", "Sitting_Enter"), ("SitExit", "Sitting_Exit"), ("Pickup", "PickUp_Table") })
+            {
+                var state = controller.layers[0].stateMachine.AddState(pair.Item1);
+                state.motion = clips.Single(c => c.name == pair.Item2 || c.name == "Armature|" + pair.Item2);
+                if (pair.Item1 == "Idle") controller.layers[0].stateMachine.defaultState = state;
+            }
+            actor.Animator.runtimeAnimatorController = controller;
+            Material Material(string name, Color color)
+            {
+                var m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = name };
+                m.color = color; m.SetFloat("_Smoothness", .15f); AssetDatabase.CreateAsset(m, folder + "/" + name + ".mat"); return m;
+            }
+            var skin = Material("Integrated skin", Color.white);
+            skin.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CharacterAssetImport.Root + "Skin_Dark.png"));
+            skin.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CharacterAssetImport.Root + "Skin_Normal.png")); skin.EnableKeyword("_NORMALMAP");
+            var eyes = Material("Integrated eyes", Color.white); eyes.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CharacterAssetImport.Root + "Eye_Brown.png"));
+            var brows = Material("Integrated brows", new Color(.045f, .027f, .017f));
+            foreach (var renderer in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+            { renderer.sharedMaterial = renderer.name == "Eyes" ? eyes : renderer.name == "Eyebrows" ? brows : skin; renderer.updateWhenOffscreen = true; }
+            // A passed, explicitly merged clothing revision is mandatory before baking a candidate.
+            var outfit = typeof(IntegratedCoastalBuild).Assembly.GetType("CityLife.World.Editor.HunterOutfitAuthoring");
+            if (outfit == null) throw new InvalidOperationException("Accepted hunter clothing revision has not been integrated.");
+            outfit.GetMethod("Attach").Invoke(null, new object[] { model, folder });
+            model.transform.localScale = new Vector3(1.15f, 1, 1.08f);
+            foreach (Transform t in model.GetComponentsInChildren<Transform>()) t.gameObject.layer = 9;
+
+            actor.View = camera.gameObject.AddComponent<CharacterPreviewCamera>(); actor.View.Target = actor.transform;
+            actor.View.Yaw = 165; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
+            // Reuse the accepted interaction fixture's authority, not its old floor/courtyard.
+            new GameObject("Warm starlight").AddComponent<Light>().enabled = false;
+            NpcPreviewStage.Configure(actor, camera, folder);
+            Object.DestroyImmediate(camera.GetComponent<NpcPreviewSmoke>());
+            var brain = actorObject.GetComponent<NpcAutonomy>(); brain.InstanceWorldId = NpcTerrainNavigation.RegionId;
+            brain.TerrainNavigation = actorObject.AddComponent<NpcTerrainNavigation>();
+            brain.Perception.WorldId = brain.InstanceWorldId;
+            foreach (var item in brain.Registry) item.WorldId = brain.InstanceWorldId;
+            brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
+            brain.SpawnPosition = new Vector3(-4, .02f, -5); actor.Place(brain.SpawnPosition);
+            var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
+            controls.CameraMinimum = new Vector3(-87, -1, -52); controls.CameraMaximum = new Vector3(87, 90, 142);
+            camera.GetComponent<NpcDecisionHud>().Detailed = false;
+            camera.fieldOfView = 60; actor.View.Yaw = 165; actor.View.Pitch = 12; actor.View.Follow();
+            var environment = actorObject.AddComponent<IntegratedEnvironment>(); environment.Brain = brain;
+            environment.Surface = brain.TerrainNavigation; environment.View = camera;
+            environment.Sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).First(l => l.type == LightType.Directional && l.enabled);
+            var stone = Material("Refuge sandstone", new Color(.48f, .32f, .21f));
+            GameObject Rock(string name, Vector3 position, Vector3 scale)
+            {
+                var rock = GameObject.CreatePrimitive(PrimitiveType.Sphere); rock.name = name; rock.layer = 8;
+                rock.transform.position = position; rock.transform.localScale = scale;
+                Object.DestroyImmediate(rock.GetComponent<Collider>());
+                rock.AddComponent<MeshCollider>().sharedMesh = rock.GetComponent<MeshFilter>().sharedMesh;
+                rock.GetComponent<Renderer>().sharedMaterial = stone; return rock;
+            }
+            Rock("First refuge / natural roof", new Vector3(-10, 4.2f, 0), new Vector3(10, 2, 8));
+            Rock("First refuge / back rock", new Vector3(-14, 1.7f, 0), new Vector3(3, 5, 7));
+            Rock("First refuge / south rock", new Vector3(-11, 1.4f, -3), new Vector3(6, 4, 3));
+            Rock("First refuge / north rock", new Vector3(-11, 1.4f, 3), new Vector3(6, 4, 3));
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube); floor.name = "First refuge / dry rock floor"; floor.layer = 10;
+            floor.transform.position = new Vector3(-10, -.1f, 0); floor.transform.localScale = new Vector3(8, .8f, 5);
+            floor.GetComponent<Renderer>().sharedMaterial = stone;
+            var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = new Vector3(-7, .65f, 0);
+            var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
+            var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
+            place.Kind = NpcObjectKind.Place; place.Approach = refuge.transform;
+            brain.Registry = brain.Registry.Concat(new[] { place }).ToArray();
+
+            var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
+            if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
+            giant.transform.position = new Vector3(120, 420, 2800); giant.transform.localScale = Vector3.one * 650;
+            var moonPositions = new[] { new Vector3(-800, 640, 3400), new Vector3(1400, 800, 3600), new Vector3(-450, 2100, 4200) };
+            var moonSizes = new[] { 95f, 70f, 52f }; var moons = new Transform[3];
+            var moonMaterial = Material("Distant moon rock", new Color(.5f, .65f, .77f));
+            for (int i = 0; i < moons.Length; i++)
+            {
+                var moon = new GameObject("Distant moon " + (i + 1)); moon.transform.position = moonPositions[i]; moon.transform.localScale = Vector3.one * moonSizes[i];
+                moon.AddComponent<MeshFilter>().sharedMesh = giant.GetComponent<MeshFilter>().sharedMesh;
+                moon.AddComponent<MeshRenderer>().sharedMaterial = moonMaterial; moons[i] = moon.transform;
+            }
+            camera.farClipPlane = 6000;
+            var celestial = camera.gameObject.AddComponent<IntegratedCelestial>(); celestial.Environment = environment; celestial.Giant = giant.transform; celestial.Moons = moons;
+            var rainObject = new GameObject("Regional precipitation"); var rain = rainObject.AddComponent<ParticleSystem>(); rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = rain.main; main.maxParticles = 512; main.startLifetime = 1.4f; main.startSpeed = 0; main.startSize = .045f;
+            main.startColor = new Color(.5f, .78f, .95f, .5f); main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.useUnscaledTime = false;
+            var shape = rain.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(18, 1, 18);
+            var velocity = rain.velocityOverLifetime; velocity.enabled = true; velocity.space = ParticleSystemSimulationSpace.World; velocity.y = -13;
+            var emission = rain.emission; emission.rateOverTime = 0;
+            rain.GetComponent<ParticleSystemRenderer>().sharedMaterial = Material("Rain droplets", new Color(.45f, .76f, 1));
+            rain.Play(); environment.Rain = rain;
+            var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment;
+            Time.fixedDeltaTime = .02f; Physics.gravity = Vector3.down * 9.81f;
+            File.WriteAllText(folder + "/component-binding.json", JsonUtility.ToJson(new Binding(), true));
+        }
+        [Serializable] private sealed class Binding
+        {
+            public string worldId = NpcTerrainNavigation.RegionId, terrain = CoastalTerrain.ContentRevision,
+                scope = "Finite current-component regional candidate; full main world, boats, ecology and save/load remain unimplemented.";
+        }
+    }
+}

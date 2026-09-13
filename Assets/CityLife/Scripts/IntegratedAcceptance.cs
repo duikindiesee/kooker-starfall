@@ -1,0 +1,123 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+
+namespace CityLife.World
+{
+    public sealed class IntegratedAcceptance : MonoBehaviour
+    {
+        public NpcAutonomy Brain;
+        public NpcPlayerControls Controls;
+        public IntegratedEnvironment Environment;
+        private string directory;
+        private readonly List<string> errors = new List<string>();
+        private readonly Report report = new Report();
+        private Keyboard keyboard;
+        private Mouse mouse;
+        [Serializable] public sealed class Check { public string name, evidence; public bool passed; }
+        [Serializable] public sealed class Report
+        {
+            public string status = "RUNNING", version, worldId, inputScope = "Actual compiled-player Input System devices; separate native mouse/window acceptance required.";
+            public int deliveries; public List<Check> checks = new List<Check>(); public List<string> captures = new List<string>(), errors = new List<string>();
+        }
+        private void CheckThat(string name, bool pass, string evidence) => report.checks.Add(new Check { name = name, passed = pass, evidence = evidence });
+        private IEnumerator Tap(Key key)
+        {
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(key)); yield return null;
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+        }
+        private IEnumerator Capture(string name)
+        {
+            yield return new WaitForEndOfFrame();
+            var texture = ScreenCapture.CaptureScreenshotAsTexture();
+            File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
+        }
+        private IEnumerator Start()
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            if (Array.IndexOf(args, "-integratedSmoke") < 0) yield break;
+            int at = Array.IndexOf(args, "-integratedEvidence");
+            if (at < 0 || at + 1 >= args.Length || !Path.IsPathFullyQualified(args[at + 1])) throw new InvalidOperationException("Explicit absolute evidence directory required.");
+            directory = args[at + 1];
+            if (Directory.Exists(directory) && Directory.GetFileSystemEntries(directory).Length != 0) throw new IOException("Evidence already exists.");
+            Directory.CreateDirectory(directory);
+            Application.logMessageReceived += Log;
+            report.version = Application.version; report.worldId = Brain.InstanceWorldId;
+            keyboard = InputSystem.AddDevice<Keyboard>("IntegratedAcceptanceKeyboard"); mouse = InputSystem.AddDevice<Mouse>("IntegratedAcceptanceMouse");
+            Controls.TestKeyboard = keyboard; Controls.TestMouse = mouse; Controls.AllowUnfocusedTestInput = true;
+            yield return null; yield return null;
+            CheckThat("world-binding", Brain.Ready && Brain.Perception.WorldId == Brain.InstanceWorldId && Brain.InstanceWorldId == NpcTerrainNavigation.RegionId, Brain.InstanceWorldId);
+            CheckThat("clothing-attached", Brain.GetComponentsInChildren<SkinnedMeshRenderer>().Length > 2 && Brain.transform.GetComponentsInChildren<Transform>().Length > 20, "Visual coverage inspected separately in retained frames.");
+            yield return Capture("01-default-coastal-inhabitant");
+            float until = Time.realtimeSinceStartup + 55;
+            while (Brain.Actions.Deliveries < 1 && Time.realtimeSinceStartup < until) yield return null;
+            CheckThat("autonomous-delivery", Brain.Actions.Deliveries > 0, Brain.LastResult + "; failures=" + Brain.FailureCount);
+            yield return Capture("02-autonomous-delivery");
+            yield return Tap(Key.Tab);
+            var before = Brain.transform.position;
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.S)); yield return new WaitForSeconds(1);
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+            CheckThat("possessed-body-traversal", Brain.Possessed && Vector3.Distance(before, Brain.transform.position) > .3f, "Same actor; actual CharacterController movement.");
+            var lookBefore = Controls.View.transform.rotation;
+            InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(45, -12) }.WithButton(MouseButton.Right)); yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState()); yield return null;
+            CheckThat("possessed-captured-look", Controls.Looking && Quaternion.Angle(lookBefore, Controls.View.transform.rotation) > 1, "Persistent capture survives button release; virtual input only.");
+            yield return Capture("03-possessed-look");
+            yield return Tap(Key.Escape); long tick = Environment.Clock.Tick; int npcTick = Brain.Tick;
+            yield return new WaitForSecondsRealtime(.3f);
+            CheckThat("pause-releases-and-stops-simulation", Controls.MenuOpen && !Controls.Looking && Brain.Tick == npcTick && Environment.Clock.Tick == tick, "Both clocks stopped while menu open.");
+            yield return Capture("04-paused-options");
+            yield return Tap(Key.P);
+            CheckThat("resume-restores-capture", !Controls.MenuOpen && Controls.Looking, "Prior play capture intent restored.");
+            var oldMode = Screen.fullScreenMode;
+            yield return Tap(Key.F11); yield return new WaitForSecondsRealtime(1);
+            CheckThat("fullscreen-transition", Screen.fullScreenMode != oldMode && !Controls.DisplayShortcutActive && Controls.Looking, Screen.fullScreenMode.ToString());
+            yield return Capture("05-fullscreen");
+            yield return Tap(Key.F11); yield return new WaitForSecondsRealtime(1);
+            CheckThat("window-restoration", Screen.fullScreenMode == oldMode && Controls.Looking, Screen.fullScreenMode.ToString());
+            yield return Tap(Key.Tab); yield return Tap(Key.F);
+            var spectator = Controls.View.transform.position;
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(.5f);
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+            CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed && Vector3.Distance(spectator, Controls.View.transform.position) > .5f, "Same world and NPC; free camera input.");
+            InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
+            lookBefore = Controls.View.transform.rotation;
+            InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(-35, 10) }.WithButton(MouseButton.Right)); yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState()); yield return null;
+            CheckThat("spectator-captured-look", Controls.Looking && Quaternion.Angle(lookBefore, Controls.View.transform.rotation) > 1, "Same sensitivity/capture path in free camera.");
+            yield return Tap(Key.Escape); CheckThat("spectator-escape-release", Controls.MenuOpen && !Controls.Looking, "Pointer intent released."); yield return Tap(Key.P);
+            yield return Tap(Key.F);
+            Brain.ManualSimulation = true; Controls.SuppressInput = true; Controls.SuppressView = true; Controls.View.ExternalView = true;
+            for (int weather = 0; weather < 4; weather++)
+            {
+                Environment.Clock.Tick = weather * 1500 + 300;
+                Controls.View.transform.SetPositionAndRotation(new Vector3(-19, 8, -18), Quaternion.LookRotation(new Vector3(9, 4, 75) - new Vector3(-19, 8, -18)));
+                yield return new WaitForSeconds(.4f); yield return Capture("06-weather-" + Environment.Weather);
+            }
+            Controls.View.transform.position = new Vector3(-7, 1.9f, 0); Controls.View.transform.LookAt(new Vector3(-11, 1.4f, 0));
+            yield return Capture("07-refuge-entry");
+            CheckThat("refuge-discoverable", Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place), "Place has no pickup/delivery authority; live memory is not connected.");
+            foreach (string pose in new[] { "Idle", "Crouch", "Sit" })
+            {
+                Brain.Actor.Animator.Play(pose, 0, 0); Brain.Actor.Animator.Update(.5f);
+                for (int i = 0; i < 4; i++)
+                {
+                    var pivot = Brain.transform.position + Vector3.up * .9f;
+                    Controls.View.transform.position = pivot + Quaternion.Euler(12, i * 90, 0) * Vector3.back * 3.2f; Controls.View.transform.LookAt(pivot);
+                    yield return Capture("08-clothing-" + pose + "-" + i);
+                }
+            }
+            report.deliveries = Brain.Actions.Deliveries; report.errors.AddRange(errors);
+            CheckThat("no-runtime-errors", errors.Count == 0, errors.Count + " recorded errors");
+            report.status = report.checks.Exists(x => !x.passed) ? "FAIL" : "PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING";
+            File.WriteAllText(Path.Combine(directory, "integrated-runtime.json"), JsonUtility.ToJson(report, true));
+            Application.Quit(report.checks.Exists(x => !x.passed) ? 4 : 0);
+        }
+        private void Log(string message, string stack, LogType type) { if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert) errors.Add(message); }
+    }
+}

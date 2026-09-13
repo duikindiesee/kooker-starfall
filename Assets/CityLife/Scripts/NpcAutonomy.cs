@@ -14,6 +14,9 @@ namespace CityLife.World
         public NpcDecisionLog Log;
         public NpcOptionalPlanner OptionalPlanner;
         public NpcInteractable[] Registry;
+        public string InstanceWorldId = WorldId;
+        public Vector3 SpawnPosition = new Vector3(0, .02f, -5);
+        public NpcTerrainNavigation TerrainNavigation;
         public bool ManualSimulation, Running = true;
         public bool MenuPaused { get; set; }
         public bool Possessed { get; private set; }
@@ -46,8 +49,8 @@ namespace CityLife.World
             goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
             perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception";
             Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
-            Actor.Place(new Vector3(0, .02f, -5)); Actor.transform.rotation = Quaternion.identity;
-            Actions = new NpcActionApi(AgentId, WorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), Registry);
+            Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
+            Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), Registry);
             Physics.SyncTransforms();
         }
         private void FixedUpdate() { if (Ready && !ManualSimulation) StepTick(); }
@@ -59,7 +62,7 @@ namespace CityLife.World
             if (!possessed) Running = true;
             if (!possessed && goal != null)
             {
-                route = NpcGridNavigation.Plan(transform.position, goal.approach);
+                route = PlanRoute(goal.approach);
                 previousPosition = transform.position; stalledTicks = 0; lastSeenTick = Tick;
                 if (route == null) Fail("no-route-after-possession");
             }
@@ -95,7 +98,7 @@ namespace CityLife.World
                 var remembered = goal == null ? null : Perception.Current.Find(x => x.id == goal.id);
                 if (remembered != null) { lastSeenTick = Tick; }
             }
-            if (Possessed) { Actor.Step(ManualDirection, StepSeconds); return; }
+            if (Possessed) { Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds); return; }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }
@@ -131,7 +134,7 @@ namespace CityLife.World
                 previousWait = ""; lastSeenTick = goal.seenAtTick; ChosenGoals.Add(goal.id);
                 Log.Record(Tick, "goal", DescribePerception(), goal.id,
                     Actions.Held == null ? "collect" : "deliver", proposed ? "validated optional proposal; deterministic navigation and action checks" : "nearest eligible perception; distance=" + goal.distanceMillimetres + "mm; stable-id tie break");
-                route = NpcGridNavigation.Plan(transform.position, goal.approach);
+                route = PlanRoute(goal.approach);
                 if (route == null) { Fail("no-route"); Actor.Step(Vector3.zero, StepSeconds); return; }
                 previousPosition = transform.position; stalledTicks = 0;
             }
@@ -152,6 +155,7 @@ namespace CityLife.World
             previousPosition = transform.position;
             if (stalledTicks >= 100) Fail("movement-stalled");
         }
+        private Queue<Vector3> PlanRoute(Vector3 target) => TerrainNavigation == null ? NpcGridNavigation.Plan(transform.position, target) : TerrainNavigation.Plan(transform.position, target);
         private static float FlatDistance(Vector3 a, Vector3 b) { a.y = b.y = 0; return Vector3.Distance(a, b); }
         private void Fail(string code, bool record = true)
         {

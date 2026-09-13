@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CityLife.World
 {
-    public enum NpcObjectKind { Item, Destination }
+    public enum NpcObjectKind { Item, Destination, Place }
     public sealed class NpcInteractable : MonoBehaviour
     {
         public string StableId;

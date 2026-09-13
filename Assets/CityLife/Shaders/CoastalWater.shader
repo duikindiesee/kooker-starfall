@@ -52,9 +52,18 @@ Shader "CityLife/CoastalWater"
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
+            float3 _StarfallWind;
+            float _StarfallEnvironmentTime, _StarfallIntegratedWeather;
             float3 WavePhase(float2 p)
             {
                 float t = _Time.y;
+                if (_StarfallIntegratedWeather > .5)
+                {
+                    float speed = length(_StarfallWind.xz);
+                    float2 direction = speed > .001 ? _StarfallWind.xz / speed : float2(1,0);
+                    p = float2(dot(p,direction), dot(p,float2(-direction.y,direction.x)));
+                    t = _StarfallEnvironmentTime * max(.3,sqrt(speed)*.5);
+                }
                 return float3(dot(p,float2(.31,.19)) + t*.62,
                     dot(p,float2(-.16,.37)) - t*.47,
                     dot(p,float2(.09,.12)) + t*.29);
@@ -68,7 +77,7 @@ Shader "CityLife/CoastalWater"
                 UNITY_TRANSFER_INSTANCE_ID(input,o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 float3 p = TransformObjectToWorld(input.positionOS.xyz);
-                float strength = lerp(.42,1,SeaBlend(p.z)) * _WaveStrength;
+                float strength = lerp(.42,1,SeaBlend(p.z)) * saturate(_WaveStrength);
                 p.y += dot(sin(WavePhase(p.xz)),float3(.045,.034,.032)) * strength;
                 o.positionWS = p;
                 o.positionCS = TransformWorldToHClip(p);
@@ -129,7 +138,7 @@ Shader "CityLife/CoastalWater"
                     water = lerp(water,filteredBed,transmission);
                 }
 
-                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * _WaveStrength;
+                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
                 float3 phase = WavePhase(input.positionWS.xz);
                 // Derivative filtering prevents fine wave fields shimmering into distant stripes.
                 float3 attenuation = 1-smoothstep(.6,2.1,abs(ddx(phase))+abs(ddy(phase)));

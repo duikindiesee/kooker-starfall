@@ -40,7 +40,7 @@ namespace CityLife.World
             if (Target == null) return;
             Vector3 pivot = Target.position + Vector3.up * 1.05f;
             Vector3 offset = Quaternion.Euler(Pitch, Yaw, 0) * Vector3.back;
-            Occluded = Physics.SphereCast(pivot, .2f, offset, out RaycastHit hit, Distance, 1 << 8, QueryTriggerInteraction.Ignore);
+            Occluded = Physics.SphereCast(pivot, .2f, offset, out RaycastHit hit, Distance, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
             ActualDistance = Occluded ? Mathf.Max(.3f, hit.distance - .08f) : Distance;
             transform.position = pivot + offset * ActualDistance;
             transform.LookAt(pivot);

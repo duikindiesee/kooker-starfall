@@ -24,12 +24,14 @@ namespace CityLife.World.Editor
             if(frozenR19&&(!System.Text.RegularExpressions.Regex.IsMatch(sourceCommit,"^[0-9a-f]{40}$")||componentHash!=FrozenComponentHash))
                 throw new InvalidOperationException("Frozen R19 build requires an exact source commit and unchanged component mesh hash.");
             IslandValidation.Run();
+            bool integrated=IntegratedCoastalBuild.Requested;
             string id=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             string folder="Assets/CityLife/GeneratedPreview-"+id;
-            string buildName=coastalPreview?"KookerStarfallCoastal-0.0.6-preview.1-"+id:frozenR19?"KookerStarfallR19-"+R19Version+"-"+id:"KookerStarfall-"+id;
+            string buildName=integrated?"KookerStarfallIntegrated-"+IntegratedCoastalBuild.Version+"-"+id:coastalPreview?"KookerStarfallCoastal-0.0.6-preview.1-"+id:frozenR19?"KookerStarfallR19-"+R19Version+"-"+id:"KookerStarfall-"+id;
             string buildDirectory="Builds/"+buildName;
             if(Directory.Exists(folder)||Directory.Exists(buildDirectory))throw new IOException("Preview output already exists; existing builds are preserved.");
             Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+            if(integrated)IntegratedCoastalBuild.Attach(camera,coastalGround!=null?coastalGround:ground,folder);
             var persisted=new Dictionary<Object,Object>();int assetIndex=0;
             Object Persist(Object source)
             {
@@ -63,6 +65,8 @@ namespace CityLife.World.Editor
                 renderer.sharedMaterials=materials;
             }
             if(coastalPreview&&coastalGround!=null)ground=coastalGround;
+            foreach(var existingCollider in Object.FindObjectsByType<MeshCollider>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+                existingCollider.sharedMesh=(Mesh)Persist(existingCollider.sharedMesh);
             MeshCollider collider=ground.GetComponent<MeshCollider>();if(collider==null)collider=ground.AddComponent<MeshCollider>();
             collider.sharedMesh=ground.GetComponent<MeshFilter>().sharedMesh;
             int woodColliders=0;
@@ -76,12 +80,16 @@ namespace CityLife.World.Editor
                     woodColliders++;
                 }
             camera.enabled=true;camera.tag="MainCamera";
+            if(integrated) ground.layer=10;
+            else
+            {
             ground.layer=8;
             var explorer=camera.gameObject.AddComponent<CosmicPreviewExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
             if(coastalPreview){explorer.MinimumX=CoastalTerrain.MinX+2;explorer.MaximumX=CoastalTerrain.MaxX-2;explorer.MinimumZ=CoastalTerrain.MinZ+2;explorer.MaximumZ=CoastalTerrain.MaxZ-2;camera.gameObject.AddComponent<CoastalPreviewSmoke>();}
             else if(frozenR19)camera.gameObject.AddComponent<CosmicPreviewSmoke>();
             if(frozenR19)camera.gameObject.AddComponent<PreviewDisplayMode>();
 
+            }
             if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
 
             var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
@@ -105,14 +113,14 @@ namespace CityLife.World.Editor
                 for(int i=0;i<oldPipelines.Length;i++)
                 {QualitySettings.SetQualityLevel(i);oldPipelines[i]=QualitySettings.renderPipeline;capturedPipelines=i+1;}
                 QualitySettings.SetQualityLevel(oldQuality);
-                PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=coastalPreview?"Kooker Starfall Coastal Preview":frozenR19?"Kooker Starfall R19 "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=coastalPreview?"0.0.6-preview.1":frozenR19?R19Version:"0.0.1-wip";
+                PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=integrated?"Kooker Starfall - Integrated Coastal Candidate":coastalPreview?"Kooker Starfall Coastal Preview":frozenR19?"Kooker Starfall R19 "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=integrated?IntegratedCoastalBuild.Version:coastalPreview?"0.0.6-preview.1":frozenR19?R19Version:"0.0.1-wip";
                 PlayerSettings.defaultScreenWidth=1600;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;
                 if(frozenR19){PlayerSettings.resizableWindow=true;PlayerSettings.allowFullscreenSwitch=false;}
                 GraphicsSettings.defaultRenderPipeline=pipeline;
                 for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
                 QualitySettings.SetQualityLevel(oldQuality);
                 string scene=folder+"/CosmicPreview.unity";EditorSceneManager.SaveScene(camera.gameObject.scene,scene);AssetDatabase.SaveAssets();
-                string output=buildDirectory+(coastalPreview?"/KookerStarfallCoastal.exe":frozenR19?"/KookerStarfallR19.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
+                string output=buildDirectory+(integrated?"/KookerStarfallIntegrated.exe":coastalPreview?"/KookerStarfallCoastal.exe":frozenR19?"/KookerStarfallR19.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=Path.GetFullPath(output),target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
                 var evidence=new BuildEvidence{status=report.summary.result.ToString(),output=output,scene=scene,product=PlayerSettings.productName,bytes=(long)report.summary.totalSize,seconds=report.summary.totalTime.TotalSeconds,errors=(int)report.summary.totalErrors,warnings=(int)report.summary.totalWarnings,scope="Separate local WIP tree and blue-giant inspection stage. No IslandBootstrap, saved world, multiplayer or bot integrations. Visual gate not passed; source hybrid and runtime movement remain under review.",utc=DateTime.UtcNow.ToString("O")};
                 evidence.buildId=buildName;evidence.version=PlayerSettings.bundleVersion;evidence.sourceCommit=sourceCommit;
@@ -127,6 +135,7 @@ namespace CityLife.World.Editor
                     evidence.rockColliders=Object.FindObjectsByType<MeshCollider>(FindObjectsSortMode.None).Count(c=>c.gameObject.name.StartsWith("Stratified shore rock ",StringComparison.Ordinal));
                     evidence.scope="Separate bounded coastal player using starfall.coastal-slice.v1: frozen R19 tree, rocky bank, luminous turquoise river/sea, canyon terrain, blue giant and procedural galaxy. Actual runtime acceptance is recorded separately. No living-sea populations, swimming, save loading, bots, networking or current-player replacement.";
                 }
+                if(integrated)evidence.scope="Finite coastal integration candidate with environment adapter, autonomous inhabitant and hunter clothing. Actual combined-player acceptance recorded separately; no full-world, save/load, swimming or boat claim.";
                 File.WriteAllText(Path.Combine(evidenceDirectory,"preview-build.json"),JsonUtility.ToJson(evidence,true));
                 if(report.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Cosmic WIP preview build failed.");
                 Debug.Log("COSMIC_PREVIEW_BUILD_SUCCEEDED "+output);
