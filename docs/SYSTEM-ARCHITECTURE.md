@@ -10,7 +10,7 @@ The current client evidence covers separate preview/courtyard studies. The [wide
 
 Solid arrows are implemented paths, including paths exercised only in isolated fixtures. Dotted arrows are optional, planned or not connected to the player; their labels specify which. A tested component does not imply every connection around it is live. Green denotes implemented/tested, amber an implemented adapter not attached to the player, grey planned work, and red an unverified external result.
 
-```mermaid
+`````mermaid
 flowchart TB
     Operator["Current manual setup<br/>Separate player, optional model runtime and memory commands"]
     Launcher["PLANNED: single Starfall launcher / installer"]
@@ -150,7 +150,7 @@ The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.m
 
 [One living-memory thought](LIVING-MEMORY-THOUGHT.md) describes the separate 0.0.6-memory-preview.1 adapter and runner. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. A new reflection-only protocol cannot express actions and retains the 1500 ms deadline. This candidate has not yet passed actual-player acceptance and does not replace existing releases.
 
-`mermaid
+```mermaid
 flowchart LR
   A[Actual Unity receipt] --> E[New explicit JSONL export]
   E --> P[Scoped publisher capability]
@@ -159,4 +159,4 @@ flowchart LR
   R --> M[Bounded reflection-only request]
   M --> G[Strict parse and live admission]
   G --> H[HUD interpretation plus event citation]
-` 
+```

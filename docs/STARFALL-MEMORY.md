@@ -4,7 +4,7 @@ See the [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md)
 
 Starfall has its own memory service and versioned contracts. It does not import Reflection or Archive Keeper code, personal archives, credentials, configuration or data volumes. Their broad ideas—event evidence, append-only history and separate instance storage—are reference points only. The implementation belongs to this Starfall repository.
 
-```mermaid
+`````mermaid
 flowchart TD
     U[Trusted Unity action receipts and sleep signals] --> E[Explicit versioned JSONL export]
     E --> P[Publisher capability and event validation]
@@ -91,7 +91,7 @@ The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.m
 
 [One living-memory thought](LIVING-MEMORY-THOUGHT.md) describes the separate 0.0.6-memory-preview.1 adapter and runner. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. A new reflection-only protocol cannot express actions and retains the 1500 ms deadline. This candidate has not yet passed actual-player acceptance and does not replace existing releases.
 
-`mermaid
+```mermaid
 flowchart LR
   A[Actual Unity receipt] --> E[New explicit JSONL export]
   E --> P[Scoped publisher capability]
@@ -100,4 +100,4 @@ flowchart LR
   R --> M[Bounded reflection-only request]
   M --> G[Strict parse and live admission]
   G --> H[HUD interpretation plus event citation]
-` 
+```
