@@ -9,9 +9,10 @@ Build a Living World supplied the following on 13 September 2026:
 - Worktree `work/starfall-integrated`, branch `codex/starfall-integrated-preview`.
 - Proposed world `starfall.integrated-coastal.v1`, revision `terrain-r2-weathered-banks.integrated1`, zone `first-refuge`.
 - This is the 180 x 200 m regional coast. It is not the proposed 1200 x 1600 m main world.
-- Tentative horizontal points: entrance x=-7,z=3; interior x=-11,z=0, on the dry west neck. These are **not measured spawn/floor elevations or authored cave geometry**.
+- Updated candidate points: entrance (-6.5,0.3,0); interior (-10.5,0.3,0). These supersede the earlier horizontal suggestions and remain **unverified by actual-player rays/navigation**.
 - Ground must be measured against the actual layer-10 terrain mesh, cross-checked with `CoastalTerrain.Height`. Cave roof/walls require their own authored colliders.
-- No cave is authored yet. Floor, lowest ingress sill and maximum tide/surge/flood stage are unknown. Flood safety is unverified.
+- Cave geometry is now authored in `starfall-integrated/Assets/CityLife/Editor/IntegratedCoastalBuild.cs`, but not yet compiled/accepted: roof ellipsoid centre (-10,4.2,0), scale (10,2,8); back rock (-14,1.7,0), scale (3,5,7); sides (-11,1.4,+/-3), scale (6,4,3); floor box centre (-10,-0.1,0), scale (8,0.8,5), nominal top y=0.3. Actual floor, lowest ingress sill, enclosure and clearance measurements remain unknown. Flood safety is unverified.
+- The current fixed-datum regional model uses water y=-2 and vertical sine amplitudes 0.045+0.034+0.032=0.111 m. A conservative wave-surface upper bound is -1.889 m **if the actual runtime `_WaveStrength` is bounded to 0..1**. Source inspection found `Range(0,1)` in shader properties but no `saturate`/runtime clamp in the vertex displacement; an inspector range alone does not enforce that invariant. Verify the built material and prevent out-of-range writes before crediting this bound. No tide/surge system exists in this regional model; this bound does not describe a future planetary ocean.
 
 ## Contract: starfall.environment-zone.v1
 
@@ -30,7 +31,7 @@ All distances/elevations are metres in the world +Y frame; wind points toward tr
 
 The contract computes `freeboard = min(lowestRefugeFloorY, lowestConnectedIngressY) - maximumDesignWaterY`. Unknown maximum water, unknown floor/sill, nonfinite values or insufficient clearance keep `QualifiesAsDryRefuge=false`. Wind/rain attenuation may still be physically measurable in an unverified or flood-prone shelter; that must not be mislabeled a safe refuge.
 
-The water maximum is the **local upper water-surface envelope**, including the applicable ocean tide, surge, river flood/runoff and wave crest, with its source/revision/design event recorded. The current visual wave amplitude is not a flood bound. Never substitute the -2 m nominal water datum for this unknown maximum. Assess every hydraulically connected opening, not only the visible doorway. Geometry changes invalidate prior floor/ingress measurements.
+The water maximum is the **local upper water-surface envelope**, including the applicable ocean tide, surge, river flood/runoff and wave crest, with its source/revision/design event recorded. A validated fixed-datum/wave bound may be accepted for the explicitly limited current regional model after its runtime invariants are verified; it is not a future tide/surge/flood guarantee. Never substitute the -2 m nominal datum alone. Assess every hydraulically connected opening, not only the visible doorway. Geometry or water-model changes invalidate prior measurements/bounds. With nominal floor y=0.3 and the conditional upper water y=-1.889, nominal floor clearance is 2.189 m, but this arithmetic does not verify the lowest connected ingress, actual floor, material bounds or flood safety.
 
 `RockAirTargetC` represents an explicitly authored thermal-buffer model, calibrated environmental measurement or established heat source. In the tests it is a synthetic 12 C input; that number is **not** an assertion about the future cave. Missing thermal validation yields no warming credit. Warmer shelter does not imply instant drying, and actors enter carrying their previous wetness.
 
