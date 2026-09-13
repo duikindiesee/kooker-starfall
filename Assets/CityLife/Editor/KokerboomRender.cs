@@ -146,6 +146,16 @@ namespace CityLife.World.Editor
                     && (!ph02FittedMode || (ph02FitMetrics != null && ph02FitMetrics.numericChecksPassed && ph02FitReadback != null && ph02FitReadback.passed))
                     && (!ph02FamilyMode || (ph02FamilyChecks!=null&&ph02FamilyChecks.numericChecksPassed&&ph02FamilyMeshReadbackPassed));
                 WriteReport(technicalPass);
+                if(coastalMode && technicalPass && Argument("-coastalPlayer", "0") == "1")
+                {
+                    CoastalCamera(new Vector3(-7,1.85f,-5),new Vector3(0,4,14));
+                    CoastalPlayerBuild.Build(camera,coast.GetComponentInChildren<MeshCollider>().gameObject,new Dictionary<string,string>{
+                        {"Hidden/CityLife/KokerboomGasInspection",GasShader},
+                        {"Hidden/CityLife/KokerboomAtmosphereInspection",AtmosphereShader},
+                        {"Hidden/CityLife/KokerboomStarsInspection",StarShader},
+                        {"Hidden/Starfall/CoastalGalaxy",CoastalGalaxyShader}
+                    },outputDirectory,true,Argument("-previewSourceCommit",""),ph02FamilyMeshSha256);
+                }
                 if(playablePreviewMode&&technicalPass)
                 {
                     PreviewEye();

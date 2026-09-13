@@ -463,3 +463,8 @@ Observed after the user authorized visible launch. No agent movement input was s
 ![Actual Unity coastal R02 side-view](../evidence/milestones/coastal/round-02/2026-09-10-01-coastal-side-composition.png)
 
 Colour and bank contrast improved after one revision. Water realism/outlet seam, geological detail and flora visibility remain open. Visual work stops here for user review; no underwater-life or native coastal-player completion is claimed.
+
+
+## Coastal main-world workstream - 13 September 2026
+
+See [main-world acceptance](COASTAL-MAIN-WORLD.md). Panorama direction supersedes the close-up component study. The isolated component-player source is unverified: its initial Unity process exited during compilation with no build result. A separate component bake is active in the original coastal worktree; coordination is pending. No new visual or playable acceptance is claimed.
