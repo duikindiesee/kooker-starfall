@@ -17,6 +17,8 @@ flowchart TB
 
     subgraph Unity["Unity playable client"]
         Client["Rendering, player input and control modes<br/>Implemented and tested"]
+        Hunter["Hunter clothing and passive club<br/>Isolated preview; final visual acceptance pending"]
+        Client -.->|preview only; main-world seam absent| Hunter
         Brain["Inhabitant brain: identity, perception, goals and planning<br/>One courtyard NPC tested"]
         Gate["Bounded proposal validation and fallback<br/>Implemented and tested"]
         Authority["Deterministic action authority<br/>Navigation, physics, reach, ownership, capacity and permissions"]
@@ -85,6 +87,7 @@ The database stores both authoritative event evidence and separately typed deriv
 
 | Component / claim | Status | Installation or wiring state | Evidence | Remaining gap |
 |---|---|---|---|---|
+| Hunter clothing and passive club | Isolated implementation; acceptance pending | Separate timestamped character-courtyard preview; no network, combat, weather or main-world attachment | [Component and provenance](HUNTER-CLOTHING.md) | Full native motion/clipping review; coastal avatar attachment point not yet implemented |
 | Unity playable client and controls | Implemented and tested | Separate local Windows builds; recorded hybrid preview.2 executable exists in the build checkout. Player is launched manually. | [Hybrid build/release record](../evidence/verified/hybrid-diagnostic-release.json), [66-check actual-player run](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/npc-runtime.json) | Physical input, sustained performance and other devices remain separate acceptance; builds are not installed by a repository clone. |
 | Deterministic NPC/action authority | Implemented and tested | Runs inside Unity. Current action API owns pickup/delivery mutations and rechecks live permission, reach, sight, ownership and capacity. | [Action boundary](../Assets/CityLife/Scripts/NpcActionApi.cs), [26 action/perception checks](../evidence/milestones/starfall-memory/local-slice-v1/npc-validation.json) | More world actions require explicit authority contracts and checks. |
 | Per-inhabitant brain | Implemented and tested for one courtyard NPC | Unity autonomy/planner components hold the current NPC's observations, goals and context. | [NPC autonomy](../Assets/CityLife/Scripts/NpcAutonomy.cs), [optional planner](../Assets/CityLife/Scripts/NpcOptionalPlanner.cs), [hybrid audit](HYBRID-NPC-AUDIT.md) | Multiple independent live NPC brains and lifecycle/identity assignment are planned. Two memory fixture identities do not establish that runtime. |

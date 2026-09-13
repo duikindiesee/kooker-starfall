@@ -36,14 +36,15 @@ namespace CityLife.World.Editor
         public static void Run() => Build(false);
         public static void RunNpc() => Build(true);
         public static void RunHybrid() => Build(true, true);
-        private static void Build(bool npc, bool hybrid = false)
+        public static void RunHunter() => Build(false, false, true);
+        private static void Build(bool npc, bool hybrid = false, bool hunter = false)
         {
             if (!Application.isBatchMode) throw new InvalidOperationException("Use the isolated batch build.");
             IslandValidation.Run();
             if (npc) NpcMilestoneValidation.Run();
             if (hybrid) NpcHybridValidation.Run();
             string versionName = hybrid ? "0.0.5-preview.2" : npc ? "0.0.4-preview.1" : Version;
-            string executable = hybrid ? "KookerStarfallHybrid" : npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
+            string executable = hunter ? "KookerStarfallHunter" : hybrid ? "KookerStarfallHybrid" : npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
             string id = executable + "-" + versionName + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             folder = "Assets/CityLife/GeneratedPreview-Character-" + id; materialCount = 0;
             string output = "Builds/" + id + "/" + executable + ".exe";
@@ -111,6 +112,10 @@ namespace CityLife.World.Editor
                 if (pair.Item1 == "Idle") states.defaultState = state;
             }
             actor.Animator.runtimeAnimatorController = controller;
+            if (hunter) foreach (var pair in new[] { ("Crouch", "Crouch_Idle_Loop"), ("CrouchWalk", "Crouch_Fwd_Loop"), ("Sit", "Sitting_Idle_Loop"), ("SitEnter", "Sitting_Enter"), ("SitExit", "Sitting_Exit"), ("Pickup", "PickUp_Table") })
+            {
+                var state=states.AddState(pair.Item1);state.motion=clips.Single(c=>c.name==pair.Item2||c.name=="Armature|"+pair.Item2);
+            }
             Material skin = Lit("Original Quaternius skin", Color.white);
             skin.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CharacterAssetImport.Root + "Skin_Dark.png"));
             skin.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(CharacterAssetImport.Root + "Skin_Normal.png"));
@@ -123,6 +128,7 @@ namespace CityLife.World.Editor
                 r.sharedMaterial = r.name == "Eyes" ? eyes : r.name == "Eyebrows" ? brows : skin;
                 r.updateWhenOffscreen = true;
             }
+            if (hunter) { HunterOutfitAuthoring.Attach(model, folder); model.transform.localScale=new Vector3(1.15f,1,1.08f); foreach(Transform t in model.GetComponentsInChildren<Transform>())t.gameObject.layer=9; }
             var cameraObject = new GameObject("Following camera");
             var camera = cameraObject.AddComponent<Camera>(); camera.tag = "MainCamera";
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.025f, .055f, .105f);
@@ -134,6 +140,7 @@ namespace CityLife.World.Editor
             roamer.DestinationStand = Marker("Destination interaction stand", new Vector3(6, 0, 2));
             roamer.DestinationSocket = Marker("Destination crystal socket", new Vector3(6, 1.08f, 3));
             var smoke = cameraObject.AddComponent<CharacterPreviewSmoke>(); smoke.Actor = actor; smoke.View = actor.View; smoke.Roamer = roamer;
+            if(hunter) { var preview=actorObject.AddComponent<HunterPreview>();preview.Actor=actor;preview.View=actor.View;preview.Roamer=roamer;preview.Model=model.transform; }
             Directory.CreateDirectory("evidence/local/character");
             File.WriteAllText("evidence/local/character/selected-clips.json", JsonUtility.ToJson(new ClipEvidence {
                 body = "Superhero_Male_FullBody", selectedClips = new[] { "Idle_Loop", "Walk_Loop", "Interact" },
@@ -171,7 +178,7 @@ namespace CityLife.World.Editor
             bool resize = PlayerSettings.resizableWindow;
             try
             {
-                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = hybrid ? "Kooker Starfall - Optional local thoughts" : npc ? "Kooker Starfall - Inhabitant decisions" : "Kooker Starfall - First inhabitant";
+                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = hunter ? "Kooker Starfall - Hunter clothing preview" : hybrid ? "Kooker Starfall - Optional local thoughts" : npc ? "Kooker Starfall - Inhabitant decisions" : "Kooker Starfall - First inhabitant";
                 PlayerSettings.bundleVersion = versionName; PlayerSettings.defaultScreenWidth = npc ? 1600 : 1280; PlayerSettings.defaultScreenHeight = npc ? 900 : 720;
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.runInBackground = true; PlayerSettings.resizableWindow = true;
                 GraphicsSettings.defaultRenderPipeline = pipeline;
@@ -187,6 +194,7 @@ namespace CityLife.World.Editor
                     utc = DateTime.UtcNow.ToString("O"), scope = "Separate character courtyard; free Standard assets; scripted bounded roaming; no saved world or learning." };
                 if (npc) evidence.scope = "Separate deterministic NPC perception, autonomous goals and validated actions; no LLM, learning, saved world or network.";
                 if (hybrid) evidence.scope = "Optional local high-level proposals; disabled by default; deterministic world actions and offline fallback; no learning.";
+                if (hunter) evidence.scope = "Isolated hunter clothing courtyard preview; original garment on retained rig; no main-world integration or hunting mechanics.";
                 File.WriteAllText(hybrid ? "evidence/local/hybrid/build.json" : npc ? "evidence/local/npc/build.json" : "evidence/local/character/build.json", JsonUtility.ToJson(evidence, true));
                 if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Character build failed.");
                 Debug.Log("CHARACTER_PREVIEW_BUILD_SUCCEEDED " + output);
