@@ -4,7 +4,7 @@ See the [system architecture and installation-state map](SYSTEM-ARCHITECTURE.md)
 
 Starfall has its own memory service and versioned contracts. It does not import Reflection or Archive Keeper code, personal archives, credentials, configuration or data volumes. Their broad ideas—event evidence, append-only history and separate instance storage—are reference points only. The implementation belongs to this Starfall repository.
 
-`````mermaid
+```mermaid
 flowchart TD
     U[Trusted Unity action receipts and sleep signals] --> E[Explicit versioned JSONL export]
     E --> P[Publisher capability and event validation]

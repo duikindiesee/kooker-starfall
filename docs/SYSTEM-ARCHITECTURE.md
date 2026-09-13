@@ -10,7 +10,7 @@ The current client evidence covers separate preview/courtyard studies. The [wide
 
 Solid arrows are implemented paths, including paths exercised only in isolated fixtures. Dotted arrows are optional, planned or not connected to the player; their labels specify which. A tested component does not imply every connection around it is live. Green denotes implemented/tested, amber an implemented adapter not attached to the player, grey planned work, and red an unverified external result.
 
-`````mermaid
+```mermaid
 flowchart TB
     Operator["Current manual setup<br/>Separate player, optional model runtime and memory commands"]
     Launcher["PLANNED: single Starfall launcher / installer"]
