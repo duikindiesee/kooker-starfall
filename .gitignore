@@ -8,6 +8,8 @@ UserSettings/
 *.csproj
 *.sln
 *.slnx
+!tools/environment-zones/ContractChecks.csproj
+tools/environment-zones/bin/
 *.user
 *.pidb
 *.pdb
