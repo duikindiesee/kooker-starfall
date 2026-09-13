@@ -17,12 +17,12 @@ namespace Starfall.Refuge
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
   readonly CaveZonePolicy policy=new CaveZonePolicy(WorldId,Revision,"first-refuge",3,.1f,.01f);
   public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY;public string Notice="Explore the first refuge";
-  int restTicks;public bool Sleeping=>Resting&&restTicks>=150;float yaw,pitch,fall;bool paused;ZoneExposure exposure;public ZoneWeather Local;string output;
+  int restTicks;public bool Sleeping=>Resting&&restTicks>=150;GameObject[] storedLogs;float yaw,pitch,fall;bool paused;ZoneExposure exposure;public ZoneWeather Local;string output;
   bool Automated=>System.Environment.GetCommandLineArgs().Contains("-refugeAcceptance");
   [Serializable] public class Check {public string name;public bool pass;public float value;}
   [Serializable] public class Report {public string world=WorldId,revision=Revision,scope="Compiled regional refuge player, scripted controller acceptance; not human input or integrated NPC acceptance";public List<Check> checks=new List<Check>();public float floor,ingress,waterUpper=-1.889f;public int frames;public float frameP95;}
   readonly Report report=new Report();readonly List<float> frames=new List<float>();
-  void Start(){yaw=View.transform.eulerAngles.y;pitch=View.transform.eulerAngles.x;Application.targetFrameRate=60;ValidateGeometry();Fire.Extinguish();if(Automated)StartCoroutine(Accept());}
+  void Start(){storedLogs=Enumerable.Range(0,6).Select(i=>GameObject.Find("Stored fuel "+i)).ToArray();yaw=View.transform.eulerAngles.y;pitch=View.transform.eulerAngles.x;Application.targetFrameRate=60;ValidateGeometry();Fire.Extinguish();if(Automated)StartCoroutine(Accept());}
   public void ValidateGeometry()
   {
    Physics.SyncTransforms();FloorY=float.PositiveInfinity;bool valid=true;
@@ -51,7 +51,7 @@ namespace Starfall.Refuge
   public bool Rest(){if(Vector3.Distance(Body.transform.position,Bed)>2)return false;Resting=!Resting;restTicks=0;Notice=Resting?"Resting on the mat — dreams and memory are planned":"Awake";return true;}
   void Update()
   {
-   if(Automated&&frames.Count<100000)frames.Add(Time.unscaledDeltaTime*1000);Flame.SetActive(Fire.Burning);FireLight.enabled=Fire.Burning;FireLight.intensity=Fire.Burning?2.5f+.15f*Mathf.Sin(Fire.Tick*.17f):0;
+   if(Automated&&frames.Count<100000)frames.Add(Time.unscaledDeltaTime*1000);for(int i=0;i<storedLogs.Length;i++)if(storedLogs[i]!=null)storedLogs[i].SetActive(i<Fire.ReserveLogs);Flame.SetActive(Fire.Burning);FireLight.enabled=Fire.Burning;FireLight.intensity=Fire.Burning?2.5f+.15f*Mathf.Sin(Fire.Tick*.17f):0;
    if(!Automated&&Application.isFocused){var k=Keyboard.current;var m=Mouse.current;if(k!=null){if(k.pKey.wasPressedThisFrame)paused=!paused;if(k.eKey.wasPressedThisFrame&&Vector3.Distance(Body.transform.position,Hearth)<2.5f){if(Fire.Burning)Fire.Extinguish();else Ignite();}if(k.rKey.wasPressedThisFrame)Rest();if(k.tKey.wasPressedThisFrame&&Vector3.Distance(Body.transform.position,Storage)<2)Notice=Fire.AddLog()?"Moved one stored log to hearth":"Storage empty or hearth full";if(k.escapeKey.wasPressedThisFrame)Resting=false;Vector3 d=new Vector3((k.dKey.isPressed?1:0)-(k.aKey.isPressed?1:0),0,(k.wKey.isPressed?1:0)-(k.sKey.isPressed?1:0));Move(Quaternion.Euler(0,yaw,0)*d,Mathf.Min(Time.deltaTime,.05f));}if(m!=null&&m.rightButton.isPressed){var delta=m.delta.ReadValue();yaw+=delta.x*.12f;pitch=Mathf.Clamp(pitch-delta.y*.12f,-65,65);}}
    if(!Automated){View.transform.position=Body.transform.position+Vector3.up*(Resting?.45f:1.65f);View.transform.rotation=Quaternion.Euler(pitch,yaw,Resting?12:0);}
   }
