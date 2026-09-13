@@ -7,7 +7,7 @@ namespace CityLife.World.Editor
 {
  public static class RefugeBuild
  {
-  public const string Version="0.0.8-refuge.1";
+  public const string Version="0.0.8-refuge.2";
   public static bool Requested=>System.Environment.GetCommandLineArgs().Contains("-starfallRefuge");
   public static void Run(){if(!Requested||!Application.isBatchMode)throw new InvalidOperationException("Explicit refuge batch required");KokerboomRender.RenderCoastalSlice();}
   public static void Attach(Camera camera,GameObject ground)
@@ -15,10 +15,10 @@ namespace CityLife.World.Editor
    foreach(var c in Object.FindObjectsByType<Collider>())c.gameObject.layer=8;
    ground.layer=8;
    var root=new GameObject("First refuge / authored v1");
-   Material Mat(string n,Color c){return new Material(Shader.Find("Universal Render Pipeline/Lit")){name=n,color=c};}
-   var stone=Mat("Refuge ochre stone",new Color(.48f,.30f,.18f));var straw=Mat("Refuge woven grass",new Color(.49f,.37f,.18f));var wood=Mat("Refuge dry wood",new Color(.20f,.11f,.055f));
+   Material Mat(string n,Color c){var m=new Material(Shader.Find("Universal Render Pipeline/Lit")){name=n,color=c};m.SetFloat("_Smoothness",.06f);return m;}
+   var stone=new Material(Shader.Find("CityLife/CoastalRocks")){name="Refuge stratified sandstone"};stone.SetColor("_BaseColor",new Color(.48f,.32f,.20f));var straw=Mat("Refuge woven grass",new Color(.49f,.37f,.18f));var wood=Mat("Refuge dry wood",new Color(.20f,.11f,.055f));
    GameObject Box(string n,Vector3 p,Vector3 s,Material m){var o=GameObject.CreatePrimitive(PrimitiveType.Cube);o.name=n;o.layer=8;o.transform.SetParent(root.transform);o.transform.position=p;o.transform.localScale=s;o.GetComponent<Renderer>().sharedMaterial=m;return o;}
-   GameObject Rock(string n,Vector3 p,Vector3 s){var o=GameObject.CreatePrimitive(PrimitiveType.Sphere);o.name=n;o.layer=8;o.transform.SetParent(root.transform);o.transform.position=p;o.transform.localScale=s;Object.DestroyImmediate(o.GetComponent<Collider>());o.AddComponent<MeshCollider>().sharedMesh=o.GetComponent<MeshFilter>().sharedMesh;o.GetComponent<Renderer>().sharedMaterial=stone;return o;}
+   GameObject Rock(string n,Vector3 p,Vector3 s){var o=GameObject.CreatePrimitive(PrimitiveType.Sphere);o.name=n;o.layer=8;o.transform.SetParent(root.transform);o.transform.position=p;o.transform.localScale=s;Object.DestroyImmediate(o.GetComponent<Collider>());o.GetComponent<MeshFilter>().sharedMesh=Starfall.Refuge.RefugeStone.Mesh();o.AddComponent<MeshCollider>().sharedMesh=o.GetComponent<MeshFilter>().sharedMesh;o.GetComponent<Renderer>().sharedMaterial=stone;return o;}
    // Supported floor, wide ramp and a single unobstructed east opening.
    Box("Refuge floor",new Vector3(-10, .8f,0),new Vector3(8,2,6),stone);
    var ramp=new GameObject("Refuge entrance ramp");ramp.layer=8;ramp.transform.SetParent(root.transform);
@@ -38,7 +38,7 @@ namespace CityLife.World.Editor
    for(int i=0;i<6;i++)Box("Stored fuel "+i,storage+new Vector3((i%2)*.2f-.1f,.4f+(i/2)*.13f,0),new Vector3(.13f,.12f,.6f),wood);
    var runtime=camera.gameObject.AddComponent<Starfall.Refuge.RefugeRuntime>();camera.gameObject.AddComponent<Starfall.Refuge.RefugeRain>().World=runtime;runtime.View=camera;runtime.Hearth=hearth;runtime.Bed=bed;runtime.Storage=storage;runtime.Roof=GameObject.Find("Refuge roof").GetComponent<Collider>();
    var body=new GameObject("Refuge player capsule");body.layer=9;var capsule=body.AddComponent<CharacterController>();capsule.height=1.8f;capsule.center=new Vector3(0,.9f,0);capsule.radius=.3f;capsule.stepOffset=.25f;capsule.slopeLimit=45;capsule.skinWidth=.025f;body.transform.position=new Vector3(-4,.05f,-4);runtime.Body=capsule;
-   camera.transform.position=body.transform.position+Vector3.up*1.65f;camera.transform.rotation=Quaternion.LookRotation(new Vector3(-7,2.5f,0)-camera.transform.position);camera.nearClipPlane=.08f;
+   camera.transform.position=body.transform.position+Vector3.up*1.65f;camera.transform.rotation=Quaternion.LookRotation(new Vector3(-7,2.5f,0)-camera.transform.position);camera.nearClipPlane=.08f;camera.fieldOfView=65;
    var flame=Rock("Contained hearth flame",hearth+Vector3.up*.43f,new Vector3(.26f,.55f,.26f));Object.DestroyImmediate(flame.GetComponent<Collider>());var glow=Mat("Amber fire",new Color(1,.22f,.015f));glow.EnableKeyword("_EMISSION");glow.SetColor("_EmissionColor",new Color(3,.55f,.03f));flame.GetComponent<Renderer>().sharedMaterial=glow;runtime.Flame=flame;
    var light=new GameObject("Hearth light").AddComponent<Light>();light.type=LightType.Point;light.color=new Color(1,.44f,.13f);light.range=7;light.shadows=LightShadows.Soft;light.transform.position=hearth+Vector3.up*.7f;runtime.FireLight=light;
    var giant=GameObject.Find("Blue gas giant - procedural volumetric cloud bands");if(giant!=null){giant.transform.position=new Vector3(120,420,2800);giant.transform.localScale=Vector3.one*650;camera.farClipPlane=6000;}
