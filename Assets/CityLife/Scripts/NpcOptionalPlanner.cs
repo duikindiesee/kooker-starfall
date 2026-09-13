@@ -15,7 +15,9 @@ namespace CityLife.World
         public bool Configured => provider != null;
         public bool Pending => pending != null;
         public bool ReplyReady => pending != null && pending.IsCompleted;
-        public int TimeoutMilliseconds = 1500;
+        public const int DefaultGameplayTimeoutMilliseconds = 1500;
+        public int TimeoutMilliseconds = DefaultGameplayTimeoutMilliseconds;
+        private int diagnosticDeadlineMilliseconds;
         public const int SessionRequestLimit = 12;
         public string Status { get; private set; } = "Local thoughts off";
         public string Dialogue { get; private set; } = "";
@@ -40,7 +42,7 @@ namespace CityLife.World
         public void Configure(INpcProposalProvider configured)
         {
             Cancel("provider-reconfigured"); if (provider is IDisposable disposable) disposable.Dispose();
-            provider = configured; EnabledByUser = false; count = 0; nextRequestTick = 0;
+            provider = configured; EnabledByUser = false; count = 0; nextRequestTick = 0; diagnosticDeadlineMilliseconds = 0;
             Status = configured == null ? "Local thoughts unavailable; rules active" : "Local thoughts ready / off";
         }
         public void SetEnabled(bool enabled)
@@ -62,7 +64,16 @@ namespace CityLife.World
             Status = "Thought cancelled; rules active";
         }
         public void ResetSession()
-        { Cancel("world-reset"); nextRequestTick = waitUntil = count = 0; Dialogue = Reflection = Plan = ""; }
+        { Cancel("world-reset"); nextRequestTick = waitUntil = count = diagnosticDeadlineMilliseconds = 0; Dialogue = Reflection = Plan = ""; }
+        public void UseDiagnosticProbeDeadline(int milliseconds)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (!NpcPreviewSmoke.Requested || Array.IndexOf(args, "-npcRealProbe") < 0 ||
+                (milliseconds != 5000 && milliseconds != 30000) ||
+                (milliseconds == 30000 && Array.IndexOf(args, "-npcDiagnostic30") < 0))
+                throw new InvalidOperationException("A diagnostic deadline requires the explicit real-probe smoke flags.");
+            diagnosticDeadlineMilliseconds = milliseconds;
+        }
         private void OnDisable() => Cancel("planner-disabled");
         private void OnDestroy() { Cancel("planner-destroyed"); if (provider is IDisposable disposable) disposable.Dispose(); }
         private void Record(NpcProposalAudit row)
@@ -107,7 +118,9 @@ namespace CityLife.World
             if (eligible.Length == 0) return false;
             context = new NpcProposalContext { RequestId = ++sequence, Tick = Brain.Tick, Cargo = cargo, Eligible = eligible, LastOutcome = Brain.LastResult };
             cancellation = new CancellationTokenSource(); count++;
-            pending = NpcProposalBroker.Request(provider, context, TimeoutMilliseconds, cancellation.Token);
+            pending = diagnosticDeadlineMilliseconds == 0
+                ? NpcProposalBroker.Request(provider, context, TimeoutMilliseconds, cancellation.Token)
+                : NpcProposalBroker.RequestDiagnostic(provider, context, diagnosticDeadlineMilliseconds, cancellation.Token);
             Status = provider.Name + " / thinking; body waiting"; return true;
         }
     }

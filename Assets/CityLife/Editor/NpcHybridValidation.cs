@@ -96,6 +96,29 @@ namespace CityLife.World.Editor
             var request = (Dictionary<string, object>)NpcBoundedJson.Parse(NpcLocalProposalProvider.BuildRequest(context, "explicit-model"), 16384);
             Need((string)request["model"] == "explicit-model" && (bool)request["stream"] == false && request.ContainsKey("response_format") && !request.ContainsKey("tools"),
                 "adapter-request-explicit-model-structured-output-no-tools");
+            bool normalRejectsDiagnostic = false;
+            try { NpcProposalBroker.Request(fake, context, 30000, CancellationToken.None).GetAwaiter().GetResult(); }
+            catch (ArgumentOutOfRangeException) { normalRejectsDiagnostic = true; }
+            Need(normalRejectsDiagnostic, "normal-provider-path-still-rejects-30-second-timeout");
+            fake.Handler = (c, token) => Task.FromResult(good);
+            var diagnostic = NpcProposalBroker.RequestDiagnostic(fake, context, 30000, CancellationToken.None).GetAwaiter().GetResult();
+            Need(diagnostic.Proposal != null && diagnostic.Audit.schemaValid, "diagnostic-path-validates-the-same-proposal-schema");
+            using (var cancel = new CancellationTokenSource())
+            {
+                fake.Handler = (c, token) => new TaskCompletionSource<string>().Task;
+                var pendingDiagnostic = NpcProposalBroker.RequestDiagnostic(fake, context, 30000, cancel.Token); cancel.Cancel();
+                Need(pendingDiagnostic.GetAwaiter().GetResult().Audit.outcome == "cancelled", "long-diagnostic-remains-cancellable");
+            }
+            var plannerObject = new GameObject("Diagnostic boundary validation");
+            try
+            {
+                var planner = plannerObject.AddComponent<NpcOptionalPlanner>();
+                Need(planner.TimeoutMilliseconds == 1500, "gameplay-default-remains-1500ms");
+                bool guarded = false;
+                try { planner.UseDiagnosticProbeDeadline(30000); } catch (InvalidOperationException) { guarded = true; }
+                Need(guarded && planner.TimeoutMilliseconds == 1500, "diagnostic-cannot-be-enabled-without-smoke-flags");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(plannerObject); }
             report.status = "PASS"; Directory.CreateDirectory("evidence/local/hybrid");
             File.WriteAllText("evidence/local/hybrid/validation.json", JsonUtility.ToJson(report, true));
             Debug.Log("NPC_HYBRID_VALIDATION_PASSED " + report.checks.Count);

@@ -472,3 +472,7 @@ The male Superhero body imports as Humanoid and uses idle, walk and Interact. Th
 ## Optional local thoughts — 13 September 2026
 
 Separate 0.0.5-preview.1 courtyard; [implementation, controls and acceptance boundaries](HYBRID-NPC.md). The optional planner supplies bounded high-level proposals and fictional text while deterministic actions retain authority. Runtime-03 passed 60 actual-player checks covering default-off behavior, explicit opt-in, fake-provider blue-goal delivery, denied proposals, unavailable-service delivery, timeout/late discard, pause cancellation and both F11 display transitions. Earlier failed runs are retained. Final packaged observations and the one real-local probe are linked by the release evidence when produced; physical input/performance acceptance remains separate. The living-sea environment is still separate world work.
+
+## Manual local inference and longer diagnostic - 13 September 2026
+
+The manual real-provider run reached inventory, attempted one completion, timed out at 5000 ms and completed deterministic delivery (64 checks). [Actual manual observations and the next diagnostic boundary](HYBRID-DIAGNOSTIC-30S.md) preserve that result separately. A 30-second probe is diagnostic-only; normal gameplay remains 1500 ms. Its new actual outcome is pending manual execution.

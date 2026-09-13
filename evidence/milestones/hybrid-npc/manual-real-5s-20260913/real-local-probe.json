@@ -1,0 +1,32 @@
+{
+    "status": "SAFE_FALLBACK_AND_DELIVERY",
+    "model": "google/gemma-4-26b-a4b-qat",
+    "execution": "Existing deterministic goal/navigation/action boundary only; one provider attempt; no load/unload/settings calls",
+    "limitation": "Single synthetic local probe with 5000ms diagnostic budget; normal play uses 1500ms. Not a reliability benchmark. A sent HTTP attempt alone does not prove completed inference.",
+    "deliveries": 1,
+    "completionRequestsAttempted": 1,
+    "deadlineMilliseconds": 5000,
+    "providerReached": true,
+    "completionHttpResponseReceived": false,
+    "audit": {
+        "requestId": 7,
+        "tick": 1,
+        "provider": "local-lm-studio",
+        "outcome": "timeout",
+        "proposedGoal": "",
+        "proposedTarget": "",
+        "dialogue": "",
+        "reflection": "",
+        "cargo": "",
+        "lastOutcome": "Waiting for perception",
+        "eligibleIds": [
+            "amber",
+            "blue"
+        ],
+        "plan": [],
+        "milliseconds": 5000,
+        "schemaValid": false,
+        "rawReplyReceived": false,
+        "replyBytes": 0
+    }
+}

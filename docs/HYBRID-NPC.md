@@ -1,5 +1,7 @@
 # Optional local thoughts — 0.0.5-preview.1
 
+**Subsequent diagnostic update:** a manual 5-second real run passed 64 checks with one attempted completion, no reply before its deadline and deterministic fallback delivery. [Preserved results and the separate 30-second diagnostic](HYBRID-DIAGNOSTIC-30S.md) supersede the earlier blocked-launch status without rewriting its historical evidence. A valid real proposal/dialogue/reflection remains unverified.
+
 This separate courtyard extends the accepted deterministic NPC checkpoint, source `34752eb`. Optional local model proposals can suggest one high-level collect/deliver/wait goal, a short advisory plan, fictional dialogue and a brief generated reflection. The same inhabitant executes admitted goals through its existing deterministic navigation and action APIs. No learning, persistent model memory, saved-world migration or broad world integration is implemented.
 
 The Starfall visual direction remains the warm kokerboom landscape, immense blue gas giant, distant galaxy and a clear living sea. [The living-sea specification](STARFALL-LIVING-SEA.md) retains fish schools, rays, coral forms, aquatic plants, rock arches and underwater light as future scene work. The courtyard is a behavior/control study and does not claim that environment is complete.

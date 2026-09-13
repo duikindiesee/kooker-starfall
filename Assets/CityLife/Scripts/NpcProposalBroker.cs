@@ -30,10 +30,21 @@ namespace CityLife.World
     public static class NpcProposalBroker
     {
         // Timeout wins even when a provider ignores cancellation. A late reply has no continuation into the world.
-        public static async Task<NpcProposalResult> Request(INpcProposalProvider provider, NpcProposalContext context,
+        public static Task<NpcProposalResult> Request(INpcProposalProvider provider, NpcProposalContext context,
+            int timeoutMilliseconds, CancellationToken cancellation)
+            => RequestCore(provider, context, timeoutMilliseconds, 5000, cancellation);
+
+        // Separate diagnostic entry point; ordinary gameplay requests retain their existing bound.
+        public static Task<NpcProposalResult> RequestDiagnostic(INpcProposalProvider provider, NpcProposalContext context,
             int timeoutMilliseconds, CancellationToken cancellation)
         {
-            if (timeoutMilliseconds < 20 || timeoutMilliseconds > 5000) throw new ArgumentOutOfRangeException(nameof(timeoutMilliseconds));
+            if (timeoutMilliseconds != 5000 && timeoutMilliseconds != 30000) throw new ArgumentOutOfRangeException(nameof(timeoutMilliseconds));
+            return RequestCore(provider, context, timeoutMilliseconds, 30000, cancellation);
+        }
+        private static async Task<NpcProposalResult> RequestCore(INpcProposalProvider provider, NpcProposalContext context,
+            int timeoutMilliseconds, int maximumMilliseconds, CancellationToken cancellation)
+        {
+            if (timeoutMilliseconds < 20 || timeoutMilliseconds > maximumMilliseconds) throw new ArgumentOutOfRangeException(nameof(timeoutMilliseconds));
             var audit = new NpcProposalAudit { requestId = context.RequestId, tick = context.Tick, provider = provider.Name,
                 cargo = context.Cargo, lastOutcome = context.LastOutcome, eligibleIds = Array.ConvertAll(context.Eligible, x => x.id) };
             var result = new NpcProposalResult { Audit = audit }; var timer = Stopwatch.StartNew();
@@ -44,7 +55,7 @@ namespace CityLife.World
                 {
                     cancellation.ThrowIfCancellationRequested();
                     work = provider.ProposeAsync(context, local.Token);
-                    var deadline = Task.Delay(timeoutMilliseconds, cancellation);
+                    var deadline = Task.Delay(timeoutMilliseconds, local.Token);
                     if (await Task.WhenAny(work, deadline).ConfigureAwait(false) != work)
                     { audit.outcome = cancellation.IsCancellationRequested ? "cancelled" : "timeout"; }
                     else

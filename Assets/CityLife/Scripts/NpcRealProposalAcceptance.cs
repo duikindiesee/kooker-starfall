@@ -12,6 +12,8 @@ namespace CityLife.World
         [Serializable] private sealed class Report
         {
             public string status, model, execution, limitation;
+            public string selectedGoal, selectedTarget, dialogue, reflection;
+            public bool admittedTextDisplayed;
             public int deliveries;
             public int completionRequestsAttempted, deadlineMilliseconds;
             public bool providerReached, completionHttpResponseReceived;
@@ -26,9 +28,10 @@ namespace CityLife.World
             string model = Argument("-npcLocalModel");
             var provider = new NpcLocalProposalProvider(Argument("-npcLocalEndpoint"), model);
             planner.Configure(provider);
-            planner.TimeoutMilliseconds = 5000; planner.SetEnabled(true); hud.Detailed = true;
+            int diagnosticDeadline = Array.IndexOf(args, "-npcDiagnostic30") >= 0 ? 30000 : 5000;
+            planner.UseDiagnosticProbeDeadline(diagnosticDeadline); planner.SetEnabled(true); hud.Detailed = true;
             int before = planner.Audit.Count; brain.StepTick();
-            float deadline = Time.realtimeSinceStartup + 7;
+            float deadline = Time.realtimeSinceStartup + diagnosticDeadline / 1000f + 2;
             // Keep the synthetic scene snapshot stable while real wall-clock inference runs. No accelerated tick aging.
             while (!planner.ReplyReady && Time.realtimeSinceStartup < deadline) yield return null;
             need("real-probe-bounded-completion", planner.ReplyReady, "One actual local provider attempt completes or times out within the bounded probe window.");
@@ -36,9 +39,15 @@ namespace CityLife.World
                 "A completed HTTP/model reply has not yet passed the deterministic goal boundary and cannot touch the world.");
             brain.StepTick(); yield return null;
             need("real-probe-one-audited-attempt", planner.Audit.Count == before + 1 && !planner.Pending,
-                "Exactly one local provider attempt was consumed and audited.");
+                "Exactly one local provider attempt was consumed and audited; only the explicit diagnostic budget changes.");
             var audit = planner.Audit.Last();
             bool accepted = audit.outcome == "accepted-high-level-goal" || audit.outcome == "accepted-bounded-wait";
+            need("real-probe-at-most-one-completion", provider.CompletionRequestsAttempted <= 1,
+                "Exactly one completion is attempted if the configured model is already loaded; discovery failure can safely prevent that single attempt.");
+            bool displayed = accepted && planner.Dialogue.Length > 0 && planner.Reflection.Length > 0 &&
+                planner.Dialogue == audit.dialogue && planner.Reflection == audit.reflection;
+            need("real-probe-text-matches-admitted-proposal", !accepted || displayed,
+                "Admitted dialogue/reflection match the validated reply in the actual HUD; a rejected/missing reply does not claim generated text.");
             capture("40-real-local-proposal-outcome");
             planner.SetEnabled(false); // No second model call, even at delivery or on fallback.
             for (int i = 0; i < 2500 && brain.Actions.Deliveries == 0; i++) { brain.StepTick(); yield return null; }
@@ -49,8 +58,9 @@ namespace CityLife.World
             File.WriteAllText(Path.Combine(directory, "real-local-probe.json"), JsonUtility.ToJson(new Report {
                 status = accepted ? "VALIDATED_PROPOSAL_AND_DELIVERY" : "SAFE_FALLBACK_AND_DELIVERY", model = model, audit = audit,
                 execution = "Existing deterministic goal/navigation/action boundary only; one provider attempt; no load/unload/settings calls",
-                limitation = "Single synthetic local probe with 5000ms diagnostic budget; normal play uses 1500ms. Not a reliability benchmark. A sent HTTP attempt alone does not prove completed inference.",
-                deliveries = brain.Actions.Deliveries, completionRequestsAttempted = provider.CompletionRequestsAttempted, deadlineMilliseconds = 5000,
+                limitation = "Single synthetic local probe with " + diagnosticDeadline + "ms diagnostic budget; normal play uses 1500ms. Not a reliability benchmark. A sent HTTP attempt alone does not prove completed inference.",
+                deliveries = brain.Actions.Deliveries, completionRequestsAttempted = provider.CompletionRequestsAttempted, deadlineMilliseconds = diagnosticDeadline,
+                selectedGoal = audit.proposedGoal, selectedTarget = audit.proposedTarget, dialogue = planner.Dialogue, reflection = planner.Reflection, admittedTextDisplayed = displayed,
                 providerReached = provider.InventoryResponseReceived, completionHttpResponseReceived = provider.CompletionResponseReceived }, true));
             planner.Configure(null);
         }
