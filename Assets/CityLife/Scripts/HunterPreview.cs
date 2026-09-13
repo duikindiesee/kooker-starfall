@@ -10,7 +10,7 @@ namespace CityLife.World
  public sealed class HunterPreview : MonoBehaviour
  {
   public CharacterPreviewActor Actor;public CharacterPreviewCamera View;public CharacterPreviewRoamer Roamer;public Transform Model;
-  public string Pose="Walk";private string directory;private bool verifying,cold,sitTransition;private GameObject seat;private Report report=new Report();
+  public string Pose="Walk";private string directory;private bool verifying,cold,sitTransition,orbiting;private GameObject seat;private Report report=new Report();
   [Serializable]class Report {public string status="IN_PROGRESS",scope="Standalone player pose and skinning observations; visual clipping review required",utc;public int frames;public float maxClothingExtent,minClubGroundClearance=100;public bool carrying,delivered;public List<string> captures=new List<string>(),errors=new List<string>();}
   private void Awake(){var args=Environment.GetCommandLineArgs();verifying=Array.IndexOf(args,"-hunterVerify")>=0;
    int index=Array.IndexOf(args,"-hunterEvidence");directory=index>=0&&index+1<args.Length?args[index+1]:Path.Combine(Application.persistentDataPath,"HunterCaptures",DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
@@ -24,6 +24,7 @@ namespace CityLife.World
   private void Update(){if(verifying)return;var k=Keyboard.current;if(k==null)return;
    if(k.cKey.wasPressedThisFrame)SetPose("Crouch");if(k.xKey.wasPressedThisFrame)SetPose("CrouchWalk");if(k.tKey.wasPressedThisFrame&&!sitTransition)StartCoroutine(Sit());
    if(k.hKey.wasPressedThisFrame)Cold(!cold);
+   if(k.oKey.wasPressedThisFrame)orbiting=!orbiting;if(orbiting)View.Yaw+=Time.deltaTime*45f;
    if(k.pKey.wasPressedThisFrame)SetPose("Pickup");if(k.vKey.wasPressedThisFrame)Walk();
    if(k.digit1Key.wasPressedThisFrame){View.Yaw=180;View.Pitch=8;View.Distance=3.7f;}
    if(k.digit2Key.wasPressedThisFrame){View.Yaw=90;View.Pitch=10;View.Distance=3.7f;}
@@ -46,12 +47,15 @@ namespace CityLife.World
     foreach(float yaw in new[]{180f,90f,25f,155f}){View.Yaw=yaw;View.Distance=3.2f;Seat(true);
      foreach(string pose in new[]{"SitEnter","Sit","SitExit"}){SetPose(pose);Actor.Animator.Play(pose,0,0);for(int i=0;i<45;i++){Audit();if(i%10==0)yield return Capture("seated-"+variant+"-"+yaw+"-"+pose+"-"+i);yield return null;}}
     }Seat(false);
-   }Cold(false);
+   }
+   foreach(bool layers in new[]{false,true}){Cold(layers);Seat(true);SetPose("Sit");yield return new WaitForSeconds(.5f);
+    for(int i=0;i<360;i++){View.Yaw=i;View.Pitch=12;Audit();if(i%30==0)yield return Capture("orbit-"+(layers?"cold":"default")+"-"+i);yield return null;}
+   }Seat(false);Cold(false);
    Actor.ExternalDrive=false;Actor.TestControl=false;Actor.RefreshAnimation();Actor.Place(new Vector3(0,.03f,-5));View.Yaw=155;View.Distance=4.1f;Roamer.Begin();Pose="Pickup / carry verification";
    for(int i=0;i<2100&&!Roamer.Complete;i++){Audit();if(Roamer.Carrying&&!report.carrying){report.carrying=true;yield return Capture("06-carry-start");}if(Roamer.Carrying&&i%40==0)yield return Capture("07-carry-"+i);yield return null;}
    report.delivered=Roamer.Complete;yield return Capture("08-delivery");report.status=report.errors.Count==0&&report.carrying&&report.delivered?"MOTION_CAPTURED_VISUAL_REVIEW_REQUIRED":"FAIL";
    File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Application.Quit(report.status=="FAIL"?1:0);
   }
-  private void OnGUI(){GUI.Box(new Rect(Screen.width-460,18,442,166),"");GUI.Label(new Rect(Screen.width-445,30,420,142),"STARFALL / HUNTER CLOTHING PREVIEW\n"+Pose+" · "+(cold?"Cold layers":"Everyday")+"\nWASD walk · V resume · C/X crouch · T sit / stand\nP pickup · R delivery · H optional cold layers\n1 front · 2 side · 3 back · RMB orbit · F8 capture\nNo hunting, combat or weather integration.");}
+  private void OnGUI(){GUI.Box(new Rect(Screen.width-460,18,442,166),"");GUI.Label(new Rect(Screen.width-445,30,420,142),"STARFALL / HUNTER CLOTHING PREVIEW\n"+Pose+" · "+(cold?"Cold layers":"Everyday")+"\nWASD walk · V resume · C/X crouch · T sit / stand\nP pickup · R delivery · H optional cold layers\n1/2/3 views · O orbit · RMB look · F8 capture\nNo hunting, combat or weather integration.");}
  }
 }
