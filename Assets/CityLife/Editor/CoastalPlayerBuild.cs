@@ -110,7 +110,7 @@ namespace CityLife.World.Editor
                 for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
                 QualitySettings.SetQualityLevel(oldQuality);
                 string scene=folder+"/CoastalPlayer.unity";EditorSceneManager.SaveScene(camera.gameObject.scene,scene);AssetDatabase.SaveAssets();
-                string output=buildDirectory+(frozenR19?"/KookerStarfallCoastal.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
+                string output=buildDirectory+(RefugeBuild.Requested?"/StarfallRefuge.exe":frozenR19?"/KookerStarfallCoastal.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=Path.GetFullPath(output),target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
                 var evidence=new BuildEvidence{status=report.summary.result.ToString(),output=output,scene=scene,product=PlayerSettings.productName,bytes=(long)report.summary.totalSize,seconds=report.summary.totalTime.TotalSeconds,errors=(int)report.summary.totalErrors,warnings=(int)report.summary.totalWarnings,scope="Separate local WIP tree and blue-giant inspection stage. No IslandBootstrap, saved world, multiplayer or bot integrations. Visual gate not passed; source hybrid and runtime movement remain under review.",utc=DateTime.UtcNow.ToString("O")};
                 evidence.buildId=buildName;evidence.version=PlayerSettings.bundleVersion;evidence.sourceCommit=sourceCommit;
