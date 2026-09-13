@@ -1,0 +1,927 @@
+[
+  {
+    "path": "dstorage.dll",
+    "bytes": 206904,
+    "sha256": "CAE65787F61514BEC6F012F44546E68B19E39D8854A9AB52AF813370D44B272A"
+  },
+  {
+    "path": "dstoragecore.dll",
+    "bytes": 1482784,
+    "sha256": "CF85B19A92A8276F8BACA0DB9BBCD60735BAD50768DEB303D310E84D5F4FDD11"
+  },
+  {
+    "path": "StarfallEnvironment.exe",
+    "bytes": 667136,
+    "sha256": "A4C71B1BFC3E42D02F2F129FE04ADEF3EBF2343A662884E4B99598E9DFC90E7D"
+  },
+  {
+    "path": "UnityCrashHandler64.exe",
+    "bytes": 1772976,
+    "sha256": "43083969DB7C0093B63A7F5BB3BD7B1777CDB727C8456ADBD46FE7BAD2E45158"
+  },
+  {
+    "path": "UnityPlayer.dll",
+    "bytes": 38669232,
+    "sha256": "8698332FA0D299291B58E71A505DB6F20A8F291A2B7349421F93A4F9838ED895"
+  },
+  {
+    "path": "D3D12/D3D12Core.dll",
+    "bytes": 4725304,
+    "sha256": "625BD40005B1C3708695D5256ECF230D278E6B8EDBA5A88AF70F3D91324F3052"
+  },
+  {
+    "path": "MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll",
+    "bytes": 7834544,
+    "sha256": "6C40C0C2C257BDF5338D1B08F7C520AC1454CE07AFE9FE0325F5AF593BB6DFB2"
+  },
+  {
+    "path": "MonoBleedingEdge/EmbedRuntime/MonoPosixHelper.dll",
+    "bytes": 611240,
+    "sha256": "7021CF00974C68A4FCD3146D58A048921CB1783544D6D3288D29ACCF8092C6EA"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/browscap.ini",
+    "bytes": 311984,
+    "sha256": "4DDD50F31FB968F30BEDEFC253A46DC3F2890192D05CDAA9E0A64A056EEE807E"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/config",
+    "bytes": 3815,
+    "sha256": "5776169973A26A387B8B3E5C0F2301A7AB9A6DD7C7D3EFA22A96ABC47FBF8662"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/2.0/DefaultWsdlHelpGenerator.aspx",
+    "bytes": 60575,
+    "sha256": "751861040B69EA63A3827507B7C8DA9C7F549DC181C1C8AF4B7CA78CC97D710A"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/2.0/machine.config",
+    "bytes": 29066,
+    "sha256": "E91782A27FA39FC6C1D6EE8B08529F5D35052310D0006034B878EB04B8F2AF30"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/2.0/settings.map",
+    "bytes": 2622,
+    "sha256": "49C6160F9D54AF4270A3B4E997FC4A8301F79B9E2070118FA46DDBCBBC44F9A2"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/2.0/web.config",
+    "bytes": 11635,
+    "sha256": "CF2B54339E069B9E42F7D6795EECBF562C50C1011F4CA8F65F578FE52D97FF92"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/2.0/Browsers/Compat.browser",
+    "bytes": 1605,
+    "sha256": "8A1082057AC5681DCD4E9C227ED7FB8EB42AC1618963B5DE3B65739DD77E2741"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.0/DefaultWsdlHelpGenerator.aspx",
+    "bytes": 60575,
+    "sha256": "751861040B69EA63A3827507B7C8DA9C7F549DC181C1C8AF4B7CA78CC97D710A"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.0/machine.config",
+    "bytes": 33598,
+    "sha256": "E60AEC2C5115D65B3ACB3C55EA21576DBD770F579166C017125571E46AE560ED"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.0/settings.map",
+    "bytes": 2622,
+    "sha256": "CE1DB1AD8A9512073164E3ECCDC193F7EDA036E1A9733CAEC4635DE21B2865C8"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.0/web.config",
+    "bytes": 18802,
+    "sha256": "E38BB8CC68FE5B4EDECDFD288D094B9E8CED7629039B2A347682ABA0D8BD7492"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.0/Browsers/Compat.browser",
+    "bytes": 1605,
+    "sha256": "8A1082057AC5681DCD4E9C227ED7FB8EB42AC1618963B5DE3B65739DD77E2741"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.5/DefaultWsdlHelpGenerator.aspx",
+    "bytes": 60575,
+    "sha256": "751861040B69EA63A3827507B7C8DA9C7F549DC181C1C8AF4B7CA78CC97D710A"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.5/machine.config",
+    "bytes": 34056,
+    "sha256": "EE950004B576FB28DC85F4B0435ED04BF96612DE2E8B53BE84D07AFE85A0DE6C"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.5/settings.map",
+    "bytes": 2622,
+    "sha256": "CE1DB1AD8A9512073164E3ECCDC193F7EDA036E1A9733CAEC4635DE21B2865C8"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.5/web.config",
+    "bytes": 18811,
+    "sha256": "C4CBDDD4FD9347B58CC5A72B36DC4BA1AD2BB699E65869D05CD3FB9865F0D824"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/4.5/Browsers/Compat.browser",
+    "bytes": 1605,
+    "sha256": "8A1082057AC5681DCD4E9C227ED7FB8EB42AC1618963B5DE3B65739DD77E2741"
+  },
+  {
+    "path": "MonoBleedingEdge/etc/mono/mconfig/config.xml",
+    "bytes": 25817,
+    "sha256": "0C56E34C69124510FA8C19E7B4C2CA6C1C4FF460AE19F798DD0CA035809E396D"
+  },
+  {
+    "path": "StarfallEnvironment_BackUpThisFolder_ButDontShipItWithYourGame/x86_64/lib_burst_generated.txt",
+    "bytes": 229396,
+    "sha256": "CB35F1213AF5A59E40319823E96E69115A7F76B111BE8104D964577AA1E195E5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/app.info",
+    "bytes": 56,
+    "sha256": "CF05D7D8AAEE48E44DD37F665832AA4A4EA46EDD14FE4F9485C1DE48803692E2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/boot.config",
+    "bytes": 156,
+    "sha256": "DF03D45D1AF61CF52A4A9441015BEFD5ACD4CB8C479C4414140D04B7CBE2D400"
+  },
+  {
+    "path": "StarfallEnvironment_Data/globalgamemanagers",
+    "bytes": 84820,
+    "sha256": "328CA1C8DF8B31A7586865C686458D1B29696B144C6EE22D78AC55F1E1944C23"
+  },
+  {
+    "path": "StarfallEnvironment_Data/globalgamemanagers.assets",
+    "bytes": 864328,
+    "sha256": "33DE3DC5F00F764912C6EA05943BF3FF80317A1EC04054A006A4E77839CBD0B5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/globalgamemanagers.assets.resS",
+    "bytes": 3094752,
+    "sha256": "7119117CED695768BC8FEBF118107B55C0EA319D7E7BE34292CFD53C955C3DE2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/level0",
+    "bytes": 1212,
+    "sha256": "5C9826F606CCB0612180A18B2C70A736405E755FAA7204651DEB37328A8C6DB0"
+  },
+  {
+    "path": "StarfallEnvironment_Data/resources.assets",
+    "bytes": 132008,
+    "sha256": "2AA2B0562B30F7C920BF74579E815F08FDDA7F565527ACDD99D004BEDF0786C7"
+  },
+  {
+    "path": "StarfallEnvironment_Data/resources.assets.resS",
+    "bytes": 699072,
+    "sha256": "629F7CD34C2A1F554C680D9BC9EFD21E820055F77B6D6DA89EB693F134C3358E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/RuntimeInitializeOnLoads.json",
+    "bytes": 3956,
+    "sha256": "50E06FBFDB9F6C96D891F32DAF3C6A6C0499DD83ECC666D9B4B5B48EA6330D6C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/ScriptingAssemblies.json",
+    "bytes": 4671,
+    "sha256": "1CBF9559EB43BBD372D43478A34EA915C61CE45CE92CEC34AFC7231876FC1287"
+  },
+  {
+    "path": "StarfallEnvironment_Data/sharedassets0.assets",
+    "bytes": 7952,
+    "sha256": "418E5A1FDDE4F88B2AD1822A0BE722FF7CEB96CE0FE6DA2AB5AA63396C145F86"
+  },
+  {
+    "path": "StarfallEnvironment_Data/sharedassets0.assets.resS",
+    "bytes": 524288,
+    "sha256": "393EFE6399536384AA91BDFC4E64F244B4D3E1FBB6A4FF145C483FFEE64CCB36"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Assembly-CSharp.dll",
+    "bytes": 163328,
+    "sha256": "E0F6BB81D6C300CFBC458B6F4B72BF48F71C67182607FB8C0AD6466211A90C97"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Mono.Security.dll",
+    "bytes": 241152,
+    "sha256": "A7128A85C5CE748CFCC64BE97B7FAB4119F4636C917A0303BFA2582F86282ED8"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/mscorlib.dll",
+    "bytes": 4632064,
+    "sha256": "ACBFA8295DA5B5E5A2C68C7B2DBC9CD7A5829C0AE031AF22BE4F6A49FD626F8F"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/netstandard.dll",
+    "bytes": 90112,
+    "sha256": "6AE62E082DC494A2433984177F60CA4DB5FAE69B1F360A8B33754172B310B8C5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Buffers.dll",
+    "bytes": 4608,
+    "sha256": "762F8FDBE975E05B76BE5FE996C53CE7C75E4A2830F2F50B02A5948EF6BA0AEB"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Collections.Immutable.dll",
+    "bytes": 252680,
+    "sha256": "5B1B1C83BA3D135C2FDFE425842FBE9C7432878B7E468623ACB554C69B4C130F"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.ComponentModel.Composition.dll",
+    "bytes": 257024,
+    "sha256": "D949BD6214C26B38A190E66FE976038E3845AEA6C6980D3EB58E78B75EDF98A5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Configuration.dll",
+    "bytes": 124928,
+    "sha256": "7170A8FA3363A8EBD59E8B9931509F595DF009F11E1885707A3C3BC0A3FF5648"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Core.dll",
+    "bytes": 1113088,
+    "sha256": "15081EAC9F71FD7817A7D42A963651C89C666A4C21499F2076FB3AB7AACD9B9A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Data.DataSetExtensions.dll",
+    "bytes": 29696,
+    "sha256": "DA75CEEBBEF879968AAA721090DF162E7A6FE1C7BA32F4BB5D05523385C53E8C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Data.dll",
+    "bytes": 2125312,
+    "sha256": "557BD378CAA400C4DE52BD73225A948F1A1E41586C52E307AAA042F77B33D648"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.dll",
+    "bytes": 2641920,
+    "sha256": "0C49D192FC91F2EADE9C12C3960D8B90161560507D96EBCC9D878A2390A2CAC6"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Drawing.dll",
+    "bytes": 489984,
+    "sha256": "1657E6EB247364CD232FC6C80DF1AB6804732B6644639F18C80E48AF1174FD63"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.EnterpriseServices.dll",
+    "bytes": 44544,
+    "sha256": "7FCC7078F244AB3A5E8549A8ACD2905B71AA8A31DDA917AB60817C5B13924D64"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.IO.Compression.dll",
+    "bytes": 114688,
+    "sha256": "35242DDC40F673D10767E3AB3381718864170CFFBC710501374E911DF700FDA0"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.IO.Compression.FileSystem.dll",
+    "bytes": 18432,
+    "sha256": "E7F2784C57088326F8DE52A79426102A2250C2F31922030E9FED0CB64740E242"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Memory.dll",
+    "bytes": 4608,
+    "sha256": "C4F030A2CBA7DA7CDCF493257C24560E203D355904AEE490D645A935842F834A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Net.Http.dll",
+    "bytes": 122880,
+    "sha256": "A6227DE2834BC7019A10E69A7CA0BB0908D5092B8BC279ED428B27ECF583A681"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Numerics.dll",
+    "bytes": 119296,
+    "sha256": "711616207139CFBF471F4F344A32ADE842077314F03C19A0846A98ECACE3FC5D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Reflection.Metadata.dll",
+    "bytes": 487584,
+    "sha256": "AFCFD6C166FE0D59F45CC6363082806F6A7EA8CEED9DC6C75EEC9FD79CCB5717"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Runtime.CompilerServices.Unsafe.dll",
+    "bytes": 19256,
+    "sha256": "FD67ABC4C4AF10AFFBCD42FD68A2A7BC361B26714AFE6965D4D0D139459D8297"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Runtime.Serialization.dll",
+    "bytes": 934400,
+    "sha256": "AA96283B3009B39C4ED8DFCDE146B0E0BCAFA09F9BE24A959D0C16DD6F54AE8A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Security.dll",
+    "bytes": 320000,
+    "sha256": "21C2CC73F1CECC8B5BFC42171A22412DFD8E04AC42978DE90C00ECB507583D62"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.ServiceModel.Internals.dll",
+    "bytes": 215040,
+    "sha256": "C90168F6F28B2355C6C11D38EE39FA18F44EA839C877CCCE8934BEE50E7FB479"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Transactions.dll",
+    "bytes": 35328,
+    "sha256": "E5FF61CC9163810AA4C1FD9A00E929070E6733ECA6D6669B7ECE5169EC3739EF"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Xml.dll",
+    "bytes": 3160064,
+    "sha256": "EE620F038A3A2589A118F0E7A030FE398B082015FBF83AC1474FB55B521D0BD7"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/System.Xml.Linq.dll",
+    "bytes": 136704,
+    "sha256": "638F8C5F44AAB1FD5755FDF2873683F3CA0F0FB0A3AAECFDBF1D2C2280C5983E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Burst.dll",
+    "bytes": 5120,
+    "sha256": "4CF4A6336438E91BFAB99482D898934A07A4CF47E788D90262A9D03400B12DDA"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.dll",
+    "bytes": 442368,
+    "sha256": "DEEEE304B7C9AB425E853742BD962CCCB0ABCFA709B5558BF4DAE9E832A2A509"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.LowLevel.ILSupport.dll",
+    "bytes": 5120,
+    "sha256": "FF50383F807F9692E4913B97E47D86FEFCB8FAA33D6D48CD3E3FD6FC7FFB448D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.Tests.CoreCLR.InternalJobNestedPrivate.dll",
+    "bytes": 4608,
+    "sha256": "570E253254FBEE4CC9A47289F7AA1D0D5B1E4C7B6C47902E45B22EB2AE993A1B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.Tests.CoreCLR.PrivateJobNested.dll",
+    "bytes": 4096,
+    "sha256": "8EF81FC9B7532C53B714B8C74CD9C793526FFF70CEB683398777C08F01420A57"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.Tests.CoreCLR.ProtectedJobNested.dll",
+    "bytes": 4096,
+    "sha256": "600242F40A8400B72F215A9378F0BAC63989A7D90E5E764E5E62A2D702FC8668"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Collections.Tests.CoreCLR.PublicJobPrivateGeneric.dll",
+    "bytes": 4608,
+    "sha256": "FBA9AD950524B6552EE7F7D4D3D25C6B878F164825CBE7F2AF9E9821894BE079"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.InputSystem.dll",
+    "bytes": 1089024,
+    "sha256": "D6DE736A2BF1B4DA6B95FD65E0376DB8E270DA78D161A8EBE306165E273F4C9E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.InputSystem.ForUI.dll",
+    "bytes": 15360,
+    "sha256": "42C07559CF3135E8106141D213B2A6A3C42D94B5C63560FE4955F484AF6728FB"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.InternalAPIEngineBridge.004.dll",
+    "bytes": 4096,
+    "sha256": "308B3917F86DE822EEBA6DBB659078689A25B003AD4CD8219571F16DA3D395AD"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.InternalAPIEngineBridge.ObjectDispatcher.Runtime.dll",
+    "bytes": 5632,
+    "sha256": "A9880C7956EC4E6FF54BB53D139F5CDFF8FC7DDC846C38125E113FE1525D3833"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.dll",
+    "bytes": 3584,
+    "sha256": "051FF07E789C602B2A4AF622D8DD0554A690133F9C7EF588578D87F5C3849B97"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.PathTracing.Runtime.dll",
+    "bytes": 152576,
+    "sha256": "A1A5DDF0D01BC5085A236155761F6EB63F81E98708D241821529D55FAEF52559"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Profiling.Core.dll",
+    "bytes": 8192,
+    "sha256": "AE4655197C526EB921F4D021DD9E769897E81E1F6DFED85CCBE276C7024E5B99"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipeline.Universal.ShaderLibrary.dll",
+    "bytes": 7680,
+    "sha256": "0622F64BF61249ECC7D6319115CB5B9144E2AEC138BF67DFED53647B2B70E145"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Core.Runtime.dll",
+    "bytes": 1075200,
+    "sha256": "CFE37458104DA9DD54C7BD16DF812C16C7FC2E7F767053B403775BD12E898437"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Core.Runtime.Shared.dll",
+    "bytes": 11264,
+    "sha256": "6054255A3AA3624089A2FECE4F1F842738C2F5057272A57A3A97A12007CB52FB"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Core.ShaderLibrary.dll",
+    "bytes": 3584,
+    "sha256": "78E81BE2EEA94B29E220E665072DCBC62D3D01007A6D9E4797B053AFE3565F4B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.GPUDriven.Runtime.dll",
+    "bytes": 272896,
+    "sha256": "5AA46B148F276A326647FD970FD8C6BA68D2FCC3D460263FE7FE28890E20B4F0"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll",
+    "bytes": 3584,
+    "sha256": "FDC82EE708B9CAF0672C2D81329AF50E0FD6B9D8D3C008C703177810C34C405F"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Universal.2D.Runtime.dll",
+    "bytes": 214016,
+    "sha256": "8654A27F7CA7810417276E5DBF5E9CB7FDFFE393FA54FAEFB2CEA6412104E7B2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Universal.Config.Runtime.dll",
+    "bytes": 4096,
+    "sha256": "2C8F0FED7F6B6DE3F2867650E4A12B7886FF5CA976E34EFD9CFF3DCEDFE2915D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Universal.Runtime.dll",
+    "bytes": 733696,
+    "sha256": "C75BE5FF16FC27696436A4C9ED28F7929AC087462671F1F98C56CDD6E984CA31"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.RenderPipelines.Universal.Shaders.dll",
+    "bytes": 3584,
+    "sha256": "95A8E3D09CF8E6D9900A0E0A7E4C1B0DF1AAE8265193B1D78D28B48B74D6C1C2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.Scripting.dll",
+    "bytes": 70568,
+    "sha256": "A8A97AF5C9537C1E04CBD66F3EE2580BB54AA39162A4C573B51A7B6D69C55E37"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.SurfaceCache.Runtime.dll",
+    "bytes": 35328,
+    "sha256": "2CD3D0E8CBB8ADB0B886F95096302B2D84538D5692A596921B8E7FCAD330734C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.TextMeshPro.dll",
+    "bytes": 438784,
+    "sha256": "319275A65FA56DF420B1B8FF406667CA62FAB9879CE7809C7BB70334CC9A61F0"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/Unity.UnifiedRayTracing.Runtime.dll",
+    "bytes": 96768,
+    "sha256": "C591A306AA7C629BC54486D797226B311E7BB13A0FB1F2F8883F1BFA52F4579C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AccessibilityModule.dll",
+    "bytes": 49584,
+    "sha256": "4E151D100F8E1BF1F28074E319317A6BD86E8FDE39411D574D6E0A88A6481061"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AdaptivePerformanceModule.dll",
+    "bytes": 122280,
+    "sha256": "4B521A7A0C0260BF6634F97CD7A01E968E8FD56F10362ADF52E873FE95187DC2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AIModule.dll",
+    "bytes": 87472,
+    "sha256": "4CF7D923F42E5B143B494336C626E171BC6A378AC10BF1BEDF390607B82E63D4"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AMDModule.dll",
+    "bytes": 21936,
+    "sha256": "3061A85A0745F4C4C605A92E3895F416E39A5A0734AEB58A56164396F63B7BA2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AndroidJNIModule.dll",
+    "bytes": 121264,
+    "sha256": "A63F30E84FCB21AF164F97C72C681D19044A9278096E33C0E0819ED5753E2008"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AnimationModule.dll",
+    "bytes": 218024,
+    "sha256": "2FCC22910FC549E40A271AFD567EFC03429FC70017B2513A47729E2807496FCE"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ARModule.dll",
+    "bytes": 27568,
+    "sha256": "ACE87359A988DE6C83680792A0AC2CF95B1B009648E2F43C4F9421CFCC9D26D4"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AssetBundleModule.dll",
+    "bytes": 42928,
+    "sha256": "4E4FE4EE0E60B98E81E598CF622B9BFF69340AC9E936D607BD800498333161FE"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.AudioModule.dll",
+    "bytes": 142248,
+    "sha256": "620E9F9D8A439A1697CC72046071A2C837E5CB65D2A864AABFAB3718FD92EB1C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.BurstModule.dll",
+    "bytes": 337840,
+    "sha256": "C741536A274C3296CCEBC86723FB0452CA9DFD3DD0B75537A5BAB6C5A7DC0544"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ClothModule.dll",
+    "bytes": 38312,
+    "sha256": "1B82B85C52D524F243C52D83B80B51E64011DC6FC37350B4A2E1A5AB642C440D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ClusterInputModule.dll",
+    "bytes": 30120,
+    "sha256": "DDA0129119B816203B34565B76ABE075DB43F6288F0958369CA6E28877845150"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ClusterRendererModule.dll",
+    "bytes": 28592,
+    "sha256": "C52C2C485596F1A460632C0A17ECFF5C61CB1FC31135C0A724017FB9DFACCB4F"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ContentLoadModule.dll",
+    "bytes": 56240,
+    "sha256": "D23921912C63D12F2B5F34701F5DA57C6CAF13E4111B01498F5A2CD0BB0E4A7B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.CoreModule.dll",
+    "bytes": 2026920,
+    "sha256": "636AEDC7DEC237B979BF587355BD3ED603DD648B22197208217D0FC0B44C5E16"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.CrashReportingModule.dll",
+    "bytes": 28584,
+    "sha256": "10F71ABA71CE10B1DF475CDEBB263B4D4D6CF4E5D664090F4DDD71A0B1D59965"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.DirectorModule.dll",
+    "bytes": 42928,
+    "sha256": "80B9A3EADA7257DBD68ADA638F55A7E9AB922AB5EBC9C51B5F3F3FE7E7917089"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.dll",
+    "bytes": 225712,
+    "sha256": "7AFBB2C5EAF48D4137CBF3ED6EA7FDEA3DC829B1E0D3756092AFD0DE7DBB39D3"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.DSPGraphModule.dll",
+    "bytes": 33200,
+    "sha256": "772DEDBAA40B359958BCE64845154A3D256B409762E4FA7575ECCF2330421D60"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.GameCenterModule.dll",
+    "bytes": 46504,
+    "sha256": "9D2EFCC9BB5A51DEDBF9EC591A796EF463CA5DEF8E3A5810D5CAE566A8985741"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.GIModule.dll",
+    "bytes": 26032,
+    "sha256": "49B319100DD87E255E488939018F3B02117C15106E665A28E2E2262EB5B11404"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.GraphicsStateCollectionSerializerModule.dll",
+    "bytes": 14248,
+    "sha256": "24DE5B762B641DE6EDD8B09A11C86A72B1BF399EBC84EF87B600A654A92EF47E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.GridModule.dll",
+    "bytes": 32680,
+    "sha256": "9FA4A084446060E7A54E019CA2EB318533ADB9DCD653AAE1BBD907B118C18214"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.HierarchyCoreModule.dll",
+    "bytes": 111528,
+    "sha256": "B6D6491924789FE2597C7E2F080522C9030E151FFA5780A11D37CC9A1DC75CF9"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.HierarchyModule.dll",
+    "bytes": 113584,
+    "sha256": "E7E79EFB6C59C5F71946CBB842106BE3A5540BE4C2B9BE45A886CAAAFE7C8E7E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.HotReloadModule.dll",
+    "bytes": 26024,
+    "sha256": "A9605C853CD27A9A0EECAFDA77A544B30943ABF558D61EF16FAC15F509C4D5F3"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.IdentifiersModule.dll",
+    "bytes": 16816,
+    "sha256": "0E8ABE3D70F81D1F462BD9D1A0CAEFC4F9F01C0945633BD427F4679DFF4C2A0A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ImageConversionModule.dll",
+    "bytes": 34216,
+    "sha256": "C8DEB80F28ECC82F1B8FF7875190AA70800FA17BA6CF8CB6118CFEA86FB89674"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.IMGUIModule.dll",
+    "bytes": 190888,
+    "sha256": "3DE25843E26BB08E9B980DC18133123D1306120577AF5CF2042D52AE5932787E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.InputForUIModule.dll",
+    "bytes": 56744,
+    "sha256": "DA897A9730463E9D2EE350C684586048D9B255E204587889A4EBF970DF09D5DF"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.InputLegacyModule.dll",
+    "bytes": 42928,
+    "sha256": "3DC72EC665FDCB2C554E1F79B92153AACB29A96F3DAD5CBFE7954C802385F46D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.InputModule.dll",
+    "bytes": 32688,
+    "sha256": "88CF1687F95DE29DEE34709CE75D37B1A4DF1C3C436671E7227FDA1858408FAE"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.InsightsModule.dll",
+    "bytes": 15784,
+    "sha256": "25FF95E330261130C2004527E2EF9A6E8776FDA7F8F71748D242E4B4E675DE94"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.JSONSerializeModule.dll",
+    "bytes": 29096,
+    "sha256": "F79018C26C84FCE63C2D18083FB1F2324E92938BC57B8876AD37EEC666634D39"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.LocalizationModule.dll",
+    "bytes": 29096,
+    "sha256": "E7F9D46B486BE9188978C87990C187A2746ED4ABB81E29C0563C752C57399C26"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ManagedKernelModule.dll",
+    "bytes": 14248,
+    "sha256": "257C17A48673226DC6744139582D432FE1E1ADBFC1FD6CD7C2FA2B59D8AC7639"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.MarshallingModule.dll",
+    "bytes": 100784,
+    "sha256": "245AF0A62D3734AF034EB528F9944A74F02C8D05242F44C165B6E47623F1C23A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.MathematicsModule.dll",
+    "bytes": 740776,
+    "sha256": "C0B06E51CC40EA29995890110655C0F482F6735C78F5EEFC5F85D7BC96D63BFA"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.MultiplayerModule.dll",
+    "bytes": 18352,
+    "sha256": "4699563E88ED36C9C117BBEC497BFC1287F30D514CEC9342BA4757BF73D3081A"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.NVIDIAModule.dll",
+    "bytes": 41392,
+    "sha256": "2366A0BA332DC82A24839A02383FED66E7EF48E06F5E77A04B042038EA4ECCFD"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ParticleSystemModule.dll",
+    "bytes": 169384,
+    "sha256": "19FCAF1601C6C1F35687482FBBEFED341753E680776BC9B5D52DABA5DE380ECA"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.PerformanceReportingModule.dll",
+    "bytes": 27056,
+    "sha256": "30849CADD8D8CC13BE13D0C9F8BA966D66AF46A4BDDF0E5AF4FFD06030CB9D90"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.Physics2DModule.dll",
+    "bytes": 222640,
+    "sha256": "55AC55FCB92367F08A3A0F4234ACB8500017CF1683110B15EC11889090B213EE"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.PhysicsBackendPhysXModule.dll",
+    "bytes": 14256,
+    "sha256": "688A84D5D7FD46A5CE42D6E917C8BF8EFFC666D222BC058690853C038EBBFFA4"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.PhysicsCore2DModule.dll",
+    "bytes": 482728,
+    "sha256": "24E281043705C060B074E43290D01C7E91F9651807FEFBD314DD5C3CD5AA53A2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.PhysicsModule.dll",
+    "bytes": 181672,
+    "sha256": "908F97D9587493C6A87E3E393F34443D2FE3EF20D040DC9C3854A269AD06BA48"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.PropertiesModule.dll",
+    "bytes": 124848,
+    "sha256": "BA73C7E6965461B93ADA4EBB79E3254FC4E9FDEC252E99D0FCB3992AA3263746"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.RenderAs2DModule.dll",
+    "bytes": 27568,
+    "sha256": "AAF462F0A22E761D550ED7A24212E943EDAEE2EBE2EEBCD847537181ABBB434F"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll",
+    "bytes": 26032,
+    "sha256": "3CFE991A3F8054D0E8E9B988DB914EEB01FF5B069F76381B842426F2C94A3C43"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ScreenCaptureModule.dll",
+    "bytes": 28072,
+    "sha256": "2CEA805FED1000243B9F3D5A8523622A0E06CBA8DE2F22D4FE8781C3CDF439E4"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ScriptingModule.dll",
+    "bytes": 65968,
+    "sha256": "55D3B906179B08B3C6D5DD450ED6C351ABF0AAA25D745D5755F05FFEEF7F80C8"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.ShaderVariantAnalyticsModule.dll",
+    "bytes": 26032,
+    "sha256": "9F85C383A80A450F66F0427A4C2A8990595B43D822DD021409D703ED9EB7DB5B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.SpriteMaskModule.dll",
+    "bytes": 30640,
+    "sha256": "D3D6DF97BD130262C86CDCF3BB2BED413A5FFC9C276499F9F5A8358343DBA205"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.SpriteShapeModule.dll",
+    "bytes": 34216,
+    "sha256": "BF0EECCCA11EE05B5067485DBFA90AF8B0588189947E63758F843B04D9558319"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.StreamingModule.dll",
+    "bytes": 28072,
+    "sha256": "7A8430C412550F64B45005CFCCC67CA18DF4B08BA02D04CAAC764E9EFD095EE2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.SubstanceModule.dll",
+    "bytes": 31144,
+    "sha256": "65A7A147BB3489CC595DB21767B95266BBF404CA49FA91FC48173D17E1C952C3"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.SubsystemsModule.dll",
+    "bytes": 42928,
+    "sha256": "022FD296256B533D605E71C36EB8CA8567E327F598D52CE2B3B7977B0854062C"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TerrainModule.dll",
+    "bytes": 132520,
+    "sha256": "65CCB0F05C44E1A131D89220739D11904DBE2BADA89DB7EA7AB607583D3A1C91"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TerrainPhysicsModule.dll",
+    "bytes": 27568,
+    "sha256": "8F91B99D8D45C9BA9478DE53FB0A72F65C8AE9F330D8030C700EEDEF5F0CD3B6"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TetgenModule.dll",
+    "bytes": 26024,
+    "sha256": "97C0C7CC0ED2BDC3F4343843E01370508D4AF355F90F4F0D74EB1F143CBEBA38"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TextCoreFontEngineModule.dll",
+    "bytes": 86448,
+    "sha256": "C9829FE31B8E6D03D7C8719C89DD81044B5451B69A89F32547D39FBE61317150"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TextCoreTextEngineModule.dll",
+    "bytes": 313776,
+    "sha256": "A1B0A27149A0EF6EE429E701E9ACE71ADE565DBBF9148688DE9CA9590C5A7A45"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TextRenderingModule.dll",
+    "bytes": 39344,
+    "sha256": "DD363516F288032B3684E51A32FA42BE53109AD89056C78002AA3C6427469439"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TilemapModule.dll",
+    "bytes": 75696,
+    "sha256": "9A9604A9B39D5BDFC535BDA5E944F33B417FBA84E52030EAA05C9027E672240B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TimelineFoundationModule.dll",
+    "bytes": 167336,
+    "sha256": "CBB8DF317D55364D8903D6842C69067F4536C369D5303677FCDE6C8B58BC51A1"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.TLSModule.dll",
+    "bytes": 34224,
+    "sha256": "E9589CBEF1004B219C74D825E0FFC253F3FA057D5248CB5AF79C149C68A765FB"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.U2DRuntimeModule.dll",
+    "bytes": 73648,
+    "sha256": "57F627C6A97C8E77F055967F843C6843C2288EEC9F03B42836FB69EEE69B5421"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UI.dll",
+    "bytes": 269312,
+    "sha256": "1DCC550F98B0F6E08622D84376D7B5120E671C13D2D6FD34843231C1CE3059E2"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UIElementsModule.dll",
+    "bytes": 2532264,
+    "sha256": "243204C231EA37545D15EF81795D3ECDCF398A77164A66B28DDF5C781980298E"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UIModule.dll",
+    "bytes": 56744,
+    "sha256": "DAD94EEAB6641FCB39A0A6791D49EC65C3ECC421DEC7F7B0EA7F560EE57BBF2D"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UmbraModule.dll",
+    "bytes": 26032,
+    "sha256": "4A4C68C68EE0B09A6CB9DFFEB2FF96C6131972C2FA53876D0A2BAF57D446E066"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityAnalyticsCommonModule.dll",
+    "bytes": 36776,
+    "sha256": "9862DAE026BE970204C492D266F7D2709EBFF812A01E43CD5653E5977001E8AF"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityAnalyticsModule.dll",
+    "bytes": 61872,
+    "sha256": "B80ECBF40CC6FF41394D6536AE39DE6DD41995078E9892E7F228D1D276984220"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityConnectModule.dll",
+    "bytes": 29616,
+    "sha256": "574B283ACF5672148CA744DFBD3033A52289CCA179F6C69B15C75B01F02E91DC"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityConsentModule.dll",
+    "bytes": 16304,
+    "sha256": "2943EE532CF8FFC78F90587544DC400F17309D8812B859EFE578E28326DE03D5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityCurlModule.dll",
+    "bytes": 28080,
+    "sha256": "BB1C5D581C762D85FF0464C49A4EE021FBE02483C684ED3E516EB8E331731084"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityWebRequestAssetBundleModule.dll",
+    "bytes": 30632,
+    "sha256": "70EE9DBB435963585B80E3ADEF6943CB3CD9540CEAB3CBB388F1D0E1B523E955"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityWebRequestAudioModule.dll",
+    "bytes": 30640,
+    "sha256": "3635AA369307E1A07FCA83C4B355C0666E6146B4743A56F0C8C1FBA16F5A59CF"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityWebRequestModule.dll",
+    "bytes": 80816,
+    "sha256": "45CF91F413E1D125C90082C2B5E217E25D91E1AC080FF7E037209602AD015D73"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityWebRequestTextureModule.dll",
+    "bytes": 29616,
+    "sha256": "9EED6E947B712CE0781634CA51011663D007BE69F0643F84F652D4E929DB7184"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.UnityWebRequestWWWModule.dll",
+    "bytes": 35240,
+    "sha256": "3D610CF6C4BC43F12425FE17E070D2B658A0AAD18E29D7FE78A3C94C08A5A1C5"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.VectorGraphicsModule.dll",
+    "bytes": 229296,
+    "sha256": "4F40855D6BC8A5D0148CB84E134DB76D277332FCD29D32DC729CBB5D89D084C1"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.VehiclesModule.dll",
+    "bytes": 33192,
+    "sha256": "2ECF6A8E28F424656E5F57B2007FE841C5076B243CAF38F77A914F3B6F02F939"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.VFXModule.dll",
+    "bytes": 82344,
+    "sha256": "0BA6B2EB39DEBD82609803D2C76D4C56FD8BAA8E6EB23AD8B21E637C3977B0B1"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.VideoModule.dll",
+    "bytes": 48560,
+    "sha256": "66833DFDB0B502D3EEB9FB4A651615E2E8009EAC64923A1754E82B6A34C50AA6"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.VirtualTexturingModule.dll",
+    "bytes": 43952,
+    "sha256": "4C9CE894D97EAA14C55117EE96A3BFE62D61BF842E5B468F9AEC71D192E79B45"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.WindModule.dll",
+    "bytes": 28584,
+    "sha256": "118DB6B55C6C53D5C4EDC7E51DE9678BA686AF4B836F59D4CE48ED127D70563B"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Managed/UnityEngine.XRModule.dll",
+    "bytes": 96176,
+    "sha256": "0D781D97397D2525128B5025939FC8464271CB2891E8DD88D39871C3017C49DB"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Plugins/x86_64/lib_burst_generated.dll",
+    "bytes": 530944,
+    "sha256": "1126BB03B54E7B963F309C5097AFE03BA8302DFF34AFA5981EE9CA391B89A204"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Resources/unity default resources",
+    "bytes": 5919584,
+    "sha256": "696B9AFAEE02B5D45978634F1450EF18423C19177933B997FD8EE364D70CDD61"
+  },
+  {
+    "path": "StarfallEnvironment_Data/Resources/unity_builtin_extra",
+    "bytes": 638156,
+    "sha256": "35A6BF44197CBA192A541D9812C0B979A47472E921526FCF2978889AB73E372A"
+  }
+]

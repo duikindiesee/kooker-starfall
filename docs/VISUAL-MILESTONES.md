@@ -463,3 +463,9 @@ Observed after the user authorized visible launch. No agent movement input was s
 ![Actual Unity coastal R02 side-view](../evidence/milestones/coastal/round-02/2026-09-10-01-coastal-side-composition.png)
 
 Colour and bank contrast improved after one revision. Water realism/outlet seam, geological detail and flora visibility remain open. Visual work stops here for user review; no underwater-life or native coastal-player completion is claimed.
+
+## Environment foundation component player - 13 September 2026
+
+Separate codex/starfall-environment workstream. [Acceptance record](ENVIRONMENT-ACCEPTANCE.md) distinguishes implementation, 12,410 model checks, 20 compiled-player physics/controller checks, rendered harness frames and outstanding main-world/input-device acceptance. Two fixed-resolution stress runs passed with 128 bodies and 512 precipitation capacity; p95 frames were 16.72 and 16.68 ms. Earlier buoyancy and resolution failures remain documented. No previous world build is replaced.
+
+![Actual compiled environment fixture in cold weather; test apparatus and local shelter probe](../evidence/milestones/environment-foundation/cold.png)
