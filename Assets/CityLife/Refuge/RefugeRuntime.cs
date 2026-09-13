@@ -12,7 +12,7 @@ namespace Starfall.Refuge
 {
  public sealed class RefugeRuntime:MonoBehaviour
  {
-  public const string WorldId="starfall.refuge-regional.v1", Revision="terrain-r2-weathered-banks.refuge1";
+  public const string WorldId="starfall.refuge-regional.v1", Revision="terrain-r2-weathered-banks.refuge2";
   public Camera View;public CharacterController Body;public Vector3 Hearth,Bed,Storage;public Collider Roof;public GameObject Flame;public Light FireLight;
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
   readonly CaveZonePolicy policy=new CaveZonePolicy(WorldId,Revision,"first-refuge",3,.1f,.01f);
