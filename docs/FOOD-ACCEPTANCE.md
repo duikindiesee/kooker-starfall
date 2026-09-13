@@ -11,10 +11,13 @@ This is a separate primitive Unity component fixture. It does not replace the co
 | v0.1.1 loop | Passed 65 model + 14 scripted player checks and exact separate-process reload | `evidence/local/v011-loop-20260913-190548/` | Not a controlled performance benchmark; p95 59.08 ms with other work active |
 | v0.1.1 natural lifecycle | Passed five checks using declared seed 25, with no injected seed outcome | `evidence/local/v011-eden-20260913-191125/eden-report.json` | Long ecology receipts still overlapped; final revision pending |
 | v0.1.1 death and return | Passed six rendered scripted checks | `evidence/local/v011-mortality-20260913-190919/mortality-report.json` | Starts at a labelled synthetic final-starvation boundary, not hours of natural play |
-| Final world-switch and log correction | Source implemented; compiled verification pending | `FoodWorld.BindScope`, `RefreshVisuals`, `EdenAcceptance`, `OnGUI` | Requires v0.1.2 build, lifecycle run and visual inspection |
+| v0.1.2 world-switch isolation | Passed 79 loop/model checks, separate reload, six mortality and six Eden checks | `evidence/local/v012-loop-20260913-192342/`, `v012-mortality-20260913-192553/`, `v012-eden-20260913-192606/` | Rapid HUD state changes revealed framebuffer ghosting; these images fail final visual acceptance |
+| v0.1.3 background clear | Source implemented; compiled verification pending | `FoodWorld.MakeScene` full-frame background camera | Requires new executable and inspected changing HUD |
 | Combined-world integration | Not performed | [Adapter contract](FOOD-INTEGRATION.md) | Integrator must connect terrain sites, weather/water, actor identity, navigation and atomic save authority |
 
 The mortality run preserves death hash, world tick and ecology through return, recovers the owned inventory once, and follows the remembered lesson with a verified energy-restoring meal. Model checks separately cover delayed dehydration/starvation, fat use, rest, activity, overeating, protein effects, repeated deaths with no fabricated lesson, immutable snapshot retention and world/inhabitant isolation.
+
+Prior player preservation: `evidence/local/preservation/final-prior-builds-corrected.json` compares all 185 v0.1.0 and 186 v0.1.1 files by SHA-256 and reports no changes. The preceding `final-prior-builds.json` used the wrong baseline field name for v0.1.0; its failure is a comparison-script error, not a missing build. Keep it as diagnostic history. `evidence/local/final-secret-scan.log` records Gitleaks 8.30.1 passing 112 reachable commits and current publishable files; private fixture saves remain ignored.
 
 ## Launch and controls
 
