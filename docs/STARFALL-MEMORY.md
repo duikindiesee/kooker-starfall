@@ -82,3 +82,5 @@ docker compose -f services/starfall-memory/compose.yaml config --quiet
 ```
 
 The integration harness checks actual loopback ingestion, exact event hashes, idempotency, rejection boundaries, per-inhabitant memory, shared facts/private theories, sleep gating, immutable history and process restart persistence. Every invocation requires a new evidence directory. Reviewed synthetic evidence is retained separately from private database/configuration/raw logs. [Reviewed results](../evidence/milestones/starfall-memory/local-slice-v1/README.md) record the tested source and remaining gaps.
+
+Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.

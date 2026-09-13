@@ -125,3 +125,5 @@ Integrations developed in other branches must cite their reviewed contract versi
 | Save/new-game requirements | Recorded, revision v1 | This contract and the linked architecture map | Implementation starts only after the living-thought priority; detailed schemas/migrations still need review. |
 | Existing terrain and memory boundaries | Separately implemented/tested within their recorded scope | [World foundation](WORLD-FOUNDATION.md), [memory slice evidence](../evidence/milestones/starfall-memory/local-slice-v1/README.md) | A coordinated full-world checkpoint, production lifecycle identities and continuation binding. |
 | Save/quit/relaunch/load in the actual player | Unimplemented and unverified | No actual-player save/load result is asserted by this document | All fixture and actual-player gates above. |
+
+Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.

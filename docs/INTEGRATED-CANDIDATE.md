@@ -52,3 +52,5 @@ Every accepted feature needs a linked trail: clearly labelled concept art/refere
 Write the candidate's public-facing draft only from its verified results; a failure or incomplete gate stays visible in the draft. External posting requires explicit per-update approval. This workstream does not send media or summaries to Discord automatically.
 
 Club acceptance reopened: the previously attached club is excluded from this candidate because the clothing owner reported knuckle intersection. Accepted clothing is retained; a corrected grip requires a separate clean handoff and compiled pose review.
+
+Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.
