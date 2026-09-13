@@ -12,6 +12,7 @@ namespace CityLife.World
         public CharacterPreviewRoamer Roamer;
         public float WalkSpeed = 1.65f;
         public bool TestControl;
+        public bool ExternalDrive;
         public Vector3 TestDirection;
         public float ActualSpeed { get; private set; }
         public float Travelled { get; private set; }
@@ -26,13 +27,15 @@ namespace CityLife.World
             gestureUntil = Time.time + 2f;
             Animate("Interact");
         }
+        public void CancelGesture() { gestureUntil = 0; Animate("Idle"); }
         public void Place(Vector3 position)
         {
             Capsule.enabled = false; transform.position = position; Capsule.enabled = true;
-            fallingSpeed = 0; Physics.SyncTransforms();
+            fallingSpeed = 0; gestureUntil = 0; Physics.SyncTransforms();
         }
         private void Update()
         {
+            if (ExternalDrive) return;
             Vector3 direction = Vector3.zero;
             if (TestControl) direction = TestDirection;
             else if (Roamer != null && Roamer.Running) direction = Roamer.Direction;
@@ -52,8 +55,12 @@ namespace CityLife.World
                     }
                 }
             }
-            if (Time.time < gestureUntil) direction = Vector3.zero;
             float dt = Mathf.Min(Time.deltaTime, .05f);
+            Step(direction, dt);
+        }
+        public void Step(Vector3 direction, float dt)
+        {
+            if (Time.time < gestureUntil) direction = Vector3.zero;
             Vector3 before = transform.position;
             direction.y = 0; direction = Vector3.ClampMagnitude(direction, 1);
             if (Capsule.isGrounded && fallingSpeed < 0) fallingSpeed = -2;

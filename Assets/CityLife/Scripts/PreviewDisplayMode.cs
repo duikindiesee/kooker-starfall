@@ -9,6 +9,9 @@ namespace CityLife.World
     /// <summary>Changes only this player's display mode; the scene and controller stay alive.</summary>
     public sealed class PreviewDisplayMode : MonoBehaviour
     {
+        public bool MenuOnly;
+        public bool IsChanging => changing;
+        public void ToggleFromMenu() => Toggle("pause-menu");
         private int windowWidth = 1600, windowHeight = 900;
         private bool changing;
         private string notice = "", evidenceFile;
@@ -32,7 +35,7 @@ namespace CityLife.World
 
         private void Update()
         {
-            if (CosmicPreviewSmoke.Requested) return;
+            if (CosmicPreviewSmoke.Requested || MenuOnly) return;
             if (!changing) RememberWindowSize();
             Keyboard keyboard = Keyboard.current;
             if (Application.isFocused && keyboard != null &&
@@ -116,7 +119,7 @@ namespace CityLife.World
 
         private void OnGUI()
         {
-            if (CosmicPreviewSmoke.Requested) return;
+            if (CosmicPreviewSmoke.Requested || MenuOnly) return;
             if (labelStyle == null)
             {
                 labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };

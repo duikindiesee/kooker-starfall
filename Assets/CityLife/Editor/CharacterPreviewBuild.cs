@@ -33,13 +33,18 @@ namespace CityLife.World.Editor
         private static Transform Marker(string name, Vector3 position)
         { var o = new GameObject(name); o.transform.position = position; return o.transform; }
 
-        public static void Run()
+        public static void Run() => Build(false);
+        public static void RunNpc() => Build(true);
+        private static void Build(bool npc)
         {
             if (!Application.isBatchMode) throw new InvalidOperationException("Use the isolated batch build.");
             IslandValidation.Run();
-            string id = "KookerStarfallCharacter-" + Version + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            if (npc) NpcMilestoneValidation.Run();
+            string versionName = npc ? "0.0.4-preview.1" : Version;
+            string executable = npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
+            string id = executable + "-" + versionName + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             folder = "Assets/CityLife/GeneratedPreview-Character-" + id; materialCount = 0;
-            string output = "Builds/" + id + "/KookerStarfallCharacter.exe";
+            string output = "Builds/" + id + "/" + executable + ".exe";
             if (Directory.Exists(folder) || Directory.Exists(Path.GetDirectoryName(output))) throw new IOException("Unique output already exists.");
             Directory.CreateDirectory(folder); AssetDatabase.Refresh();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -132,6 +137,7 @@ namespace CityLife.World.Editor
                 body = "Superhero_Male_FullBody", selectedClips = new[] { "Idle_Loop", "Walk_Loop", "Interact" },
                 allImportedClips = clips.Select(x => x.name).ToArray(), humanoid = actor.Animator.avatar.isValid && actor.Animator.avatar.isHuman
             }, true));
+            if (npc) NpcPreviewStage.Configure(actor, camera, folder);
 
             var oldGraphics = GraphicsSettings.defaultRenderPipeline;
             var sourcePipeline = oldGraphics as UniversalRenderPipelineAsset ??
@@ -158,21 +164,22 @@ namespace CityLife.World.Editor
             bool resize = PlayerSettings.resizableWindow;
             try
             {
-                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = "Kooker Starfall - First inhabitant";
-                PlayerSettings.bundleVersion = Version; PlayerSettings.defaultScreenWidth = 1280; PlayerSettings.defaultScreenHeight = 720;
+                PlayerSettings.companyName = "Kooker"; PlayerSettings.productName = npc ? "Kooker Starfall - Inhabitant decisions" : "Kooker Starfall - First inhabitant";
+                PlayerSettings.bundleVersion = versionName; PlayerSettings.defaultScreenWidth = npc ? 1600 : 1280; PlayerSettings.defaultScreenHeight = npc ? 900 : 720;
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.runInBackground = true; PlayerSettings.resizableWindow = true;
                 GraphicsSettings.defaultRenderPipeline = pipeline;
                 for (int i = 0; i < previous.Length; i++) { QualitySettings.SetQualityLevel(i); QualitySettings.renderPipeline = pipeline; }
                 QualitySettings.SetQualityLevel(quality);
-                string scenePath = folder + "/FirstInhabitant.unity"; EditorSceneManager.SaveScene(scene, scenePath); AssetDatabase.SaveAssets();
+                string scenePath = folder + (npc ? "/InhabitantDecisions.unity" : "/FirstInhabitant.unity"); EditorSceneManager.SaveScene(scene, scenePath); AssetDatabase.SaveAssets();
                 Directory.CreateDirectory(Path.GetDirectoryName(output));
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { scenePath }, locationPathName = Path.GetFullPath(output),
                     target = BuildTarget.StandaloneWindows64, options = BuildOptions.None });
-                var evidence = new BuildEvidence { buildId = id, version = Version, output = output, scene = scenePath,
+                var evidence = new BuildEvidence { buildId = id, version = versionName, output = output, scene = scenePath,
                     status = report.summary.result.ToString(), errors = (int)report.summary.totalErrors, warnings = (int)report.summary.totalWarnings,
                     seconds = report.summary.totalTime.TotalSeconds, bytes = (long)report.summary.totalSize,
                     utc = DateTime.UtcNow.ToString("O"), scope = "Separate character courtyard; free Standard assets; scripted bounded roaming; no saved world or learning." };
-                File.WriteAllText("evidence/local/character/build.json", JsonUtility.ToJson(evidence, true));
+                if (npc) evidence.scope = "Separate deterministic NPC perception, autonomous goals and validated actions; no LLM, learning, saved world or network.";
+                File.WriteAllText(npc ? "evidence/local/npc/build.json" : "evidence/local/character/build.json", JsonUtility.ToJson(evidence, true));
                 if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Character build failed.");
                 Debug.Log("CHARACTER_PREVIEW_BUILD_SUCCEEDED " + output);
             }

@@ -7,6 +7,8 @@ namespace CityLife.World
     {
         public Transform Target;
         public float Yaw = 155, Pitch = 15, Distance = 4.8f;
+        public bool SuppressInput;
+        public bool ExternalView;
         public float ActualDistance { get; private set; }
         public bool Occluded { get; private set; }
         private bool looking;
@@ -18,7 +20,7 @@ namespace CityLife.World
         private void OnDisable() => ReleasePointer();
         private void Update()
         {
-            if (CharacterPreviewSmoke.Requested) return;
+            if (CharacterPreviewSmoke.Requested || SuppressInput || ExternalView) return;
             if (!Application.isFocused) { ReleasePointer(); return; }
             var mouse = Mouse.current;
             if (mouse == null) return;
@@ -32,7 +34,7 @@ namespace CityLife.World
             }
             Distance = Mathf.Clamp(Distance - mouse.scroll.ReadValue().y * .002f, 2.3f, 8);
         }
-        private void LateUpdate() => Follow();
+        private void LateUpdate() { if (!ExternalView) Follow(); }
         public void Follow()
         {
             if (Target == null) return;
