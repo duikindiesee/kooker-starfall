@@ -21,7 +21,7 @@ flowchart TB
 
     subgraph Unity["Unity playable client"]
         Client["Rendering, player input and control modes<br/>Implemented and tested"]
-        Hunter["Hunter clothing and passive club<br/>Isolated coverage/motion passed; main-world integration pending"]
+        Hunter["Hunter clothing and passive club<br/>Clothing coverage passed; club grip reopened; integration pending"]
         Client -.->|preview only; main-world seam absent| Hunter
         Brain["Inhabitant brain: identity, perception, goals and planning<br/>One courtyard NPC tested"]
         Gate["Bounded proposal validation and fallback<br/>Implemented and tested"]

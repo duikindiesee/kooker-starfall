@@ -1,5 +1,7 @@
 # Hunter clothing component
 
+Grip acceptance reopened: the 180511 preview's club appeared to emerge through the knuckles. Its clothing coverage and accepted exposed shoulders are retained, but its club attachment MUST NOT be integrated as accepted. The grip-only successor is undergoing standalone close-hand motion review; the earlier release record is historical evidence, not proof of a corrected grip.
+
 Compatibility base: `75fc4cb`, retained Quaternius Superhero male, Humanoid avatar and UAL1 clips. The revised hunter has full-length inner trousers beneath short split waist panels, a sleeveless vest, heavy cord belt, pouch and foot wraps. The copied body has a small local bulk/jaw adjustment and the model scales to (1.15, 1, 1.08). Source FBX files remain unchanged. Hood and short mantle are optional, off by default; weather activation is not wired. A passive left-hand wooden club leaves the right-hand pickup free. No hunting, combat, scavenging or tanning mechanic is added.
 
 ## Provenance
@@ -10,7 +12,7 @@ The fitted vest, trouser, foot-wrap and cold-layer shells derive from the retain
 
 Call `HunterOutfitAuthoring.Attach(model, outputAssetFolder)` once in an isolated editor build while the retained imported model is in its bind pose. Call AFTER the existing body/eye/brow material assignment loop, and before animation evaluation. The generator creates a visual child, uses the same bone transforms, exact source mesh bindposes and renderer coordinate space, and masks covered faces only on a cloned mesh. Then apply the model scale from `RunHunter`. It never modifies the source FBX, actor root, controller, hand socket or original avatar. It does not add an Animator, physics or network state. Assign layer 9 to the generated hierarchy as in `RunHunter`.
 
-`HunterClubCarry` updates only the visual prop in LateUpdate, using the left palm and a downward/outward direction with clearance from the actor's ground datum. It adds no collider or combat behavior. On uneven terrain the main-world integration must supply/validate actual ground clearance; the current evidence is a flat courtyard. The right hand and its existing delivery logic are untouched.
+`HunterClubCarry.AuthorGrip` records the palm anchor, shaft axis and left-finger flexion from the imported bind rig. LateUpdate applies that grip after animation, retaining the animated wrist and forearm. The shaft follows the palm instead of an independent world-space downward direction. It adds no collider or combat behavior. On uneven terrain the main-world integration must supply/validate actual ground clearance; the current evidence is a flat courtyard. The right hand and its existing delivery logic are untouched.
 
 The test controls are a separate `HunterPreview` component and MUST NOT be installed in the main-world actor. The preview adds crouch, sit and pickup test states to a new generated controller; the original controller states remain intact. The authoring function currently targets the inspected body proportions and must reject/review any body or bind-pose substitution.
 

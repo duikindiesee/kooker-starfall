@@ -13,6 +13,7 @@ namespace CityLife.World
   public string Pose="Walk";private string directory;private bool verifying,cold,sitTransition,orbiting;private GameObject seat;private Report report=new Report();
   [Serializable]class Report {public string status="IN_PROGRESS",scope="Standalone player pose and skinning observations; visual clipping review required",utc;public int frames;public float maxClothingExtent,minClubGroundClearance=100;public bool carrying,delivered;public List<string> captures=new List<string>(),errors=new List<string>();}
   private void Awake(){var args=Environment.GetCommandLineArgs();verifying=Array.IndexOf(args,"-hunterVerify")>=0;
+   gripVerify=Array.IndexOf(args,"-hunterGripVerify")>=0;verifying|=gripVerify;
    int index=Array.IndexOf(args,"-hunterEvidence");directory=index>=0&&index+1<args.Length?args[index+1]:Path.Combine(Application.persistentDataPath,"HunterCaptures",DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
    report.utc=DateTime.UtcNow.ToString("O");Application.logMessageReceived+=OnLog;}
   private void OnDestroy(){Application.logMessageReceived-=OnLog;}
@@ -36,7 +37,63 @@ namespace CityLife.World
   private IEnumerator Sit(){sitTransition=true;if(Pose=="Sit"){SetPose("SitExit");yield return new WaitForSeconds(1.1f);Walk();}else{Seat(true);SetPose("SitEnter");yield return new WaitForSeconds(1.35f);SetPose("Sit");}sitTransition=false;}
   private IEnumerator Capture(string name){yield return new WaitForEndOfFrame();string file=name+".png";ScreenCapture.CaptureScreenshot(Path.Combine(directory,file));report.captures.Add(file);yield return null;}
   private void Audit(){report.frames++;var club=Model.GetComponent<HunterClubCarry>();if(club)report.minClubGroundClearance=Mathf.Min(report.minClubGroundClearance,club.GroundClearance);foreach(var r in Model.GetComponentsInChildren<SkinnedMeshRenderer>()){if(!r.name.StartsWith("Hunter "))continue;var m=new Mesh();r.BakeMesh(m);var bounds=m.bounds;float e=bounds.extents.magnitude;report.maxClothingExtent=Mathf.Max(report.maxClothingExtent,e);if(float.IsNaN(e)||e>3)throw new InvalidOperationException("Invalid deformation on "+r.name);Destroy(m);}}
+  private bool gripVerify;
+  [Serializable]class GripTuning {public Vector3 curlAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=.24f,elbowOut=.22f;}
+  [Serializable]class GripSample {public string pose;public float maximumHandPenetration;public string deepestBone;}
+  private List<GripSample> gripSamples=new List<GripSample>();
+  private void MeasureGrip(string label) {
+   var club=Model.GetComponent<HunterClubCarry>();
+   var sample=new GripSample{pose=label};
+   foreach(var body in Model.GetComponentsInChildren<SkinnedMeshRenderer>()) {
+    if(body.name.StartsWith("Hunter "))continue;
+    var mesh=new Mesh();body.BakeMesh(mesh);var vertices=mesh.vertices;var weights=body.sharedMesh.boneWeights;
+    for(int i=0;i<vertices.Length;i++) {
+     var weight=weights[i];int boneIndex=weight.boneIndex0;string bone=body.bones[boneIndex].name;
+     if(!(bone.EndsWith("_l")&&(bone.Contains("hand")||bone.Contains("thumb")||bone.Contains("index")||bone.Contains("middle")||bone.Contains("ring")||bone.Contains("pinky")||bone.Contains("lowerarm"))))continue;
+     Vector3 point=club.Club.InverseTransformPoint(body.transform.TransformPoint(vertices[i]));
+     float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
+     float radius=Mathf.Lerp(.016f,.038f,fraction)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));
+     float depth=radius-new Vector2(point.x-.012f*Mathf.Sin(fraction*5),point.z).magnitude;
+     if(depth>sample.maximumHandPenetration){sample.maximumHandPenetration=depth;sample.deepestBone=bone;}
+    }Destroy(mesh);
+   }
+   gripSamples.Add(sample);
+  }
+  [Serializable]class GripMeasurements {public string scope="Conservative cylinder-envelope vertex penetration in club local metres; polygon surfaces and edge-only intersections still require visual review.";public List<GripSample> samples;}
+  private IEnumerator GripViews(string label) {
+   float speed=Actor.Animator.speed;Actor.Animator.speed=0;Time.timeScale=0;
+   yield return new WaitForEndOfFrame();MeasureGrip(label);
+   foreach(float yaw in new[]{180f,90f,0f,270f}) {
+    View.Yaw=yaw;View.Distance=3.2f;View.Pitch=10;View.ExternalView=false;
+    yield return Capture("grip-"+label+"-body-"+yaw);
+    View.ExternalView=true;var center=Model.GetComponent<HunterClubCarry>().GripCenter;
+    View.transform.position=center+Quaternion.Euler(12,yaw,0)*Vector3.back*.48f;View.transform.LookAt(center);
+    yield return Capture("grip-"+label+"-hand-"+yaw);
+   }
+   View.ExternalView=false;Actor.Animator.speed=speed;Time.timeScale=1;
+  }
+  private IEnumerator GripVerify() {
+   var args=Environment.GetCommandLineArgs();int tuningIndex=Array.IndexOf(args,"-hunterGripTuning");
+   if(tuningIndex>=0&&tuningIndex+1<args.Length){var tuning=JsonUtility.FromJson<GripTuning>(File.ReadAllText(args[tuningIndex+1]));var grip=Model.GetComponent<HunterClubCarry>();grip.DiagnosticCurlAdjustment=tuning.curlAdjustment;grip.DiagnosticAnchorAdjustment=tuning.anchorAdjustment;grip.ForearmSlope=tuning.forearmSlope;grip.ElbowOut=tuning.elbowOut;File.Copy(args[tuningIndex+1],Path.Combine(directory,"diagnostic-tuning.json"),true);}
+   foreach(string pose in new[]{"Idle","Walk","Crouch","CrouchWalk","SitEnter","Sit","SitExit","Pickup"}) {
+    Seat(pose.StartsWith("Sit"));SetPose(pose);Actor.Animator.Play(pose,0,0);
+    for(int i=0;i<45;i++){yield return null;Audit();if(i==10||i==30)yield return GripViews(pose+"-"+i);}
+   }
+   Seat(false);Actor.ExternalDrive=false;Actor.TestControl=false;Actor.RefreshAnimation();Actor.Place(new Vector3(0,.03f,-5));Roamer.Begin();
+   for(int i=0;i<2100&&!Roamer.Complete;i++) {
+    yield return null;Audit();
+    if(Roamer.Carrying&&!report.carrying){report.carrying=true;yield return GripViews("carry-start");}
+    if(Roamer.Carrying&&i%90==0)yield return GripViews("carry-"+i);
+    if(Actor.Animator.GetCurrentAnimatorStateInfo(0).IsName("Interact")&&i%15==0)yield return GripViews("interaction-"+i);
+   }
+   report.delivered=Roamer.Complete;yield return GripViews("delivery");
+   for(int i=0;i<45;i++){yield return null;Audit();if(i%15==0)yield return GripViews("delivery-settle-"+i);}
+   File.WriteAllText(Path.Combine(directory,"grip-measurements.json"),JsonUtility.ToJson(new GripMeasurements{samples=gripSamples},true));
+   report.status=report.errors.Count==0&&report.carrying&&report.delivered?"GRIP_CAPTURED_VISUAL_REVIEW_REQUIRED":"FAIL";
+   File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Application.Quit(report.status=="FAIL"?1:0);
+  }
   private IEnumerator Verify(){Time.captureDeltaTime=1f/30;QualitySettings.vSyncCount=0;Application.targetFrameRate=30;Actor.Place(new Vector3(0,.03f,-5));
+   if(gripVerify){yield return GripVerify();yield break;}
    View.Yaw=180;View.Pitch=10;View.Distance=3.6f;SetPose("Idle");yield return new WaitForSeconds(.7f);yield return Capture("01-idle-front");
    View.Yaw=0;yield return Capture("02-idle-back");View.Yaw=90;yield return Capture("03-idle-side");
    View.Yaw=155;Actor.ExternalDrive=false;Actor.TestControl=true;Actor.TestDirection=Vector3.forward;Pose="Walk verification";
