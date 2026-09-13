@@ -1,0 +1,231 @@
+{
+  "schema": "starfall.memory.integration-proof.v1",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "actual-unity-validation-passed",
+      "passed": true
+    },
+    {
+      "name": "unity-export-sha256-matches-actual-proof",
+      "passed": true
+    },
+    {
+      "name": "events-pin-the-verified-unity-source",
+      "passed": true
+    },
+    {
+      "name": "isolated-offline-process-ready",
+      "passed": true
+    },
+    {
+      "name": "unauthenticated-access-rejected",
+      "passed": true
+    },
+    {
+      "name": "inhabitant-cannot-publish-events",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-1-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-1-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-2-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-2-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-3-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-3-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-4-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-4-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "transport-retry-is-idempotent",
+      "passed": true
+    },
+    {
+      "name": "awake-dream-rejected",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-5-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-5-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-6-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-6-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "sleep-produces-evidence-linked-tentative-association",
+      "passed": true
+    },
+    {
+      "name": "same-sleep-dream-is-idempotent",
+      "passed": true
+    },
+    {
+      "name": "other-inhabitant-dream-does-not-borrow-delivery",
+      "passed": true
+    },
+    {
+      "name": "cited-private-belief-recorded",
+      "passed": true
+    },
+    {
+      "name": "cross-inhabitant-evidence-rejected",
+      "passed": true
+    },
+    {
+      "name": "belief-cannot-promote-itself-to-fact",
+      "passed": true
+    },
+    {
+      "name": "no-event-edit-or-permission-route",
+      "passed": true
+    },
+    {
+      "name": "dreams-and-beliefs-preserve-ledger-and-confirmed-facts",
+      "passed": true
+    },
+    {
+      "name": "subject-wiki-page-separates-confirmed-delivery-from-dream-theory",
+      "passed": true
+    },
+    {
+      "name": "wiki-separates-shared-facts-from-private-beliefs",
+      "passed": true
+    },
+    {
+      "name": "query-cannot-switch-memory-namespace",
+      "passed": true
+    },
+    {
+      "name": "browser-origin-rejected",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-7-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-7-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "verified-wake-closes-dream-window",
+      "passed": true
+    },
+    {
+      "name": "actual-unity-event-8-ingested",
+      "passed": true
+    },
+    {
+      "name": "event-8-content-address-verified",
+      "passed": true
+    },
+    {
+      "name": "new-sleep-creates-separate-derived-record",
+      "passed": true
+    },
+    {
+      "name": "episodic-memories-stay-in-identity-namespace",
+      "passed": true
+    },
+    {
+      "name": "isolated-offline-process-ready",
+      "passed": true
+    },
+    {
+      "name": "process-restart-preserves-verified-ledger",
+      "passed": true
+    },
+    {
+      "name": "process-restart-preserves-derived-dream",
+      "passed": true
+    },
+    {
+      "name": "process-restart-preserves-episodic-memory",
+      "passed": true
+    },
+    {
+      "name": "local-cli-read-completed",
+      "passed": true
+    },
+    {
+      "name": "local-cli-reads-own-persisted-memory",
+      "passed": true
+    },
+    {
+      "name": "local-cli-publish-completed",
+      "passed": true
+    },
+    {
+      "name": "local-cli-replays-export-idempotently",
+      "passed": true
+    },
+    {
+      "name": "local-cli-dream-completed",
+      "passed": true
+    },
+    {
+      "name": "local-cli-uses-verified-sleep-window",
+      "passed": true
+    },
+    {
+      "name": "ephemeral-capability-file-removed-after-proof",
+      "passed": true
+    }
+  ],
+  "unitySourceCommit": "ad6013873ea7c360c571e83dc097712a5501db71",
+  "unityExportSha256": "371bbdeada72c45e77c982b780c7f087db13321359d1f1733cb0e31094b69e6b",
+  "serviceSourceSha256": {
+    "core.py": "72b48fdb80355e47a112edada035903f9e8619545ea6139490ee01eebbc7b3e2",
+    "server.py": "484010542ef14de8092fb55f37560db4979911e8ba37c3553daeef84e519d6a7",
+    "offline_guard.py": "892e078c3206610ecb5fec1864b0d3661b918c1e612f03526dd3bc7557d49136",
+    "prove_local.py": "515d9b3cb9aafd2250d88ea12f650d16ea865b569cc76700e76fc4c012cfb57b",
+    "local.py": "b74e5e8860ad3fbb245a0c3a81c3b19b4490cd176cf3d3c40bcc4f135f562b6c"
+  },
+  "ledger": {
+    "events": 8,
+    "head": "f0bf3c8286690e76167ebe231eecadb692ba6d452e43cd24b6b92bc351f68c69",
+    "schema": "starfall.health.v1",
+    "status": "ok",
+    "world_id": "starfall.memory-proof.v1"
+  },
+  "capabilityIsolation": "New synthetic tokens; private runtime directory; filtered child environment; token file removed",
+  "transport": "Actual loopback HTTP process with outbound socket connections and DNS disabled by test guard",
+  "limitations": [
+    "Unity editor action fixture, not live player integration",
+    "Sleep/wake are explicit fixture transitions, not a finished game sleep controller",
+    "Trusted publisher attests engine events; the service validates provenance and invariants but does not run Unity physics",
+    "Offline rules produce dreams; no LLM or learning",
+    "Compose was not deployed; no personal archive, credential or volume was connected"
+  ]
+}

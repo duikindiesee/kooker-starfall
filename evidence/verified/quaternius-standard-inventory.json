@@ -1,0 +1,94 @@
+{
+  "downloads": [
+    {
+      "publisher": "Quaternius",
+      "source": "https://quaternius.itch.io/universal-base-characters",
+      "tier": "Standard",
+      "paid": false,
+      "uploadId": "15861669",
+      "filename": "Universal Base Characters[Standard].zip",
+      "bytes": 128968391,
+      "sha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+      "retrievedUtc": "2026-09-12T19:49:50.2016714Z"
+    },
+    {
+      "publisher": "Quaternius",
+      "source": "https://quaternius.itch.io/universal-animation-library",
+      "tier": "Standard",
+      "paid": false,
+      "uploadId": "17958403",
+      "filename": "Universal Animation Library[Standard].zip",
+      "bytes": 15904933,
+      "sha256": "cc73fc4e495b82958207316596317a3f40b9fa38065bde1027937452da537724",
+      "retrievedUtc": "2026-09-12T19:50:02.4124513Z"
+    }
+  ],
+  "includedLicense": "CC0-1.0 notices inside both exact archives",
+  "baseBodies": [
+    "Superhero_Male_FullBody",
+    "Superhero_Female_FullBody"
+  ],
+  "missingBaseBodies": [
+    "Regular",
+    "Teen"
+  ],
+  "importedClips": {
+    "body": "Superhero_Male_FullBody",
+    "selectedClips": [
+      "Idle_Loop",
+      "Walk_Loop",
+      "Interact"
+    ],
+    "allImportedClips": [
+      "Armature|Jog_Fwd_Loop",
+      "Armature|Hit_Head",
+      "Armature|Crouch_Idle_Loop",
+      "Armature|Idle_Torch_Loop",
+      "Armature|Punch_Jab",
+      "Armature|Walk_Loop",
+      "Armature|Sitting_Idle_Loop",
+      "Armature|Driving_Loop",
+      "Armature|Spell_Simple_Enter",
+      "Armature|Spell_Simple_Shoot",
+      "Armature|Pistol_Aim_Down",
+      "Armature|Sprint_Loop",
+      "Armature|Pistol_Idle_Loop",
+      "Armature|Spell_Simple_Exit",
+      "Armature|Pistol_Reload",
+      "Armature|Jump_Loop",
+      "Armature|Pistol_Aim_Up",
+      "Armature|Sword_Attack",
+      "Armature|Interact",
+      "Armature|Jump_Start",
+      "Armature|Pistol_Aim_Neutral",
+      "Armature|Hit_Chest",
+      "Armature|Sitting_Exit",
+      "Armature|Swim_Idle_Loop",
+      "Armature|Punch_Cross",
+      "Armature|Pistol_Shoot",
+      "Armature|PickUp_Table",
+      "Armature|Push_Loop",
+      "Armature|Roll",
+      "Armature|Death01",
+      "Armature|Fixing_Kneeling",
+      "Armature|Spell_Simple_Idle_Loop",
+      "Armature|Crouch_Fwd_Loop",
+      "Armature|Sitting_Talking_Loop",
+      "Armature|Jump_Land",
+      "Armature|A_TPose",
+      "Armature|Swim_Fwd_Loop",
+      "Armature|Walk_Formal_Loop",
+      "Armature|Idle_Talking_Loop",
+      "Armature|Sitting_Enter",
+      "Armature|Idle_Loop",
+      "Armature|Sword_Idle",
+      "Armature|Dance_Loop"
+    ],
+    "humanoid": true
+  },
+  "actionCountExcludingTPose": 42,
+  "crawl": "absent",
+  "independentHeadAndArmAiming": "not supplied by these clips; not implemented",
+  "rootMotion": "Original RM archive member preserved; no-RM file selected",
+  "blendSource": "Absent from Standard; not purchased"
+}

@@ -1,0 +1,110 @@
+{
+  "assets": [
+    {
+      "id": "quaternius-standard-superhero_male_fullbody",
+      "name": "Superhero_Male_FullBody",
+      "publisher": "Quaternius",
+      "downloadedUtc": "2026-09-12T19:49:50.2016714Z",
+      "modifications": "None; original archive member copied byte-for-byte. Import settings are separate Unity metadata.",
+      "authors": [
+        "Quaternius"
+      ],
+      "license": "CC0-1.0",
+      "sourceUrl": "https://quaternius.itch.io/universal-base-characters",
+      "downloadUrl": "https://quaternius.itch.io/universal-base-characters",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://quaternius.itch.io/universal-base-characters",
+      "localPath": "Assets/CityLife/Characters/QuaterniusStandard/Superhero_Male_FullBody.fbx",
+      "licenseNoticePath": "Assets/CityLife/Characters/QuaterniusStandard/BASE-LICENSE.txt",
+      "sha256": "79344418d754a59730b79d1874752e9592143db34abe8adf138fa9a92a4768e9",
+      "bytes": 826876,
+      "archiveSha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+      "archiveMember": "Universal Base Characters[Standard]/Base Characters/Unity/Superhero_Male_FullBody.fbx"
+    },
+    {
+      "id": "quaternius-standard-skin_dark",
+      "name": "Skin_Dark",
+      "publisher": "Quaternius",
+      "downloadedUtc": "2026-09-12T19:49:50.2016714Z",
+      "modifications": "None; original archive member copied byte-for-byte. Import settings are separate Unity metadata.",
+      "authors": [
+        "Quaternius"
+      ],
+      "license": "CC0-1.0",
+      "sourceUrl": "https://quaternius.itch.io/universal-base-characters",
+      "downloadUrl": "https://quaternius.itch.io/universal-base-characters",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://quaternius.itch.io/universal-base-characters",
+      "localPath": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Dark.png",
+      "licenseNoticePath": "Assets/CityLife/Characters/QuaterniusStandard/BASE-LICENSE.txt",
+      "sha256": "df680cbc1967a61e85998bfafb8f7bc0a36dd604bb3266486c4b06b1a184bb45",
+      "bytes": 1384380,
+      "archiveSha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+      "archiveMember": "Universal Base Characters[Standard]/Base Characters/Textures/T_Superhero_Male_Dark.png"
+    },
+    {
+      "id": "quaternius-standard-eye_brown",
+      "name": "Eye_Brown",
+      "publisher": "Quaternius",
+      "downloadedUtc": "2026-09-12T19:49:50.2016714Z",
+      "modifications": "None; original archive member copied byte-for-byte. Import settings are separate Unity metadata.",
+      "authors": [
+        "Quaternius"
+      ],
+      "license": "CC0-1.0",
+      "sourceUrl": "https://quaternius.itch.io/universal-base-characters",
+      "downloadUrl": "https://quaternius.itch.io/universal-base-characters",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://quaternius.itch.io/universal-base-characters",
+      "localPath": "Assets/CityLife/Characters/QuaterniusStandard/Eye_Brown.png",
+      "licenseNoticePath": "Assets/CityLife/Characters/QuaterniusStandard/BASE-LICENSE.txt",
+      "sha256": "d08e3356a83211bc6ca21fe3a8e39f4b5c1a3b8f85457fc2c0fb57be09935025",
+      "bytes": 35958,
+      "archiveSha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+      "archiveMember": "Universal Base Characters[Standard]/Base Characters/Textures/T_Eye_Brown.png"
+    },
+    {
+      "id": "quaternius-standard-skin_normal",
+      "name": "Skin_Normal",
+      "publisher": "Quaternius",
+      "downloadedUtc": "2026-09-12T19:49:50.2016714Z",
+      "modifications": "None; original archive member copied byte-for-byte. Import settings are separate Unity metadata.",
+      "authors": [
+        "Quaternius"
+      ],
+      "license": "CC0-1.0",
+      "sourceUrl": "https://quaternius.itch.io/universal-base-characters",
+      "downloadUrl": "https://quaternius.itch.io/universal-base-characters",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://quaternius.itch.io/universal-base-characters",
+      "localPath": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Normal.png",
+      "licenseNoticePath": "Assets/CityLife/Characters/QuaterniusStandard/BASE-LICENSE.txt",
+      "sha256": "9b25cf9200216eb754b79cf4c63b5380c419780788322f3c57cdd2b3e02679a6",
+      "bytes": 4252937,
+      "archiveSha256": "fdbf1804c90dfc1ea03e992bff7da2dfd1a79318e13270a660180f9308455f40",
+      "archiveMember": "Universal Base Characters[Standard]/Base Characters/Textures/Normals Unity - Godot/T_Superhero_Male_Normal.png"
+    },
+    {
+      "id": "quaternius-standard-ual1_standard",
+      "name": "UAL1_Standard",
+      "publisher": "Quaternius",
+      "downloadedUtc": "2026-09-12T19:50:02.4124513Z",
+      "modifications": "None; original archive member copied byte-for-byte. Import settings are separate Unity metadata.",
+      "authors": [
+        "Quaternius",
+        "Gonzalo Furnier"
+      ],
+      "license": "CC0-1.0",
+      "sourceUrl": "https://quaternius.itch.io/universal-animation-library",
+      "downloadUrl": "https://quaternius.itch.io/universal-animation-library",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://quaternius.itch.io/universal-animation-library",
+      "localPath": "Assets/CityLife/Characters/QuaterniusStandard/UAL1_Standard.fbx",
+      "licenseNoticePath": "Assets/CityLife/Characters/QuaterniusStandard/ANIMATION-LICENSE.txt",
+      "sha256": "21b32d912da3cb93426d974fb945e86f5b2e86970acd2ce89905e0fbf9f1dcc2",
+      "bytes": 23754684,
+      "archiveSha256": "cc73fc4e495b82958207316596317a3f40b9fa38065bde1027937452da537724",
+      "archiveMember": "Universal Animation Library[Standard]/Unity/UAL1_Standard.fbx"
+    }
+  ]
+}

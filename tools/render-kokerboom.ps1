@@ -130,7 +130,7 @@ $report = Get-Content -Raw -LiteralPath $metricsPath | ConvertFrom-Json
 if($R19PlayablePreview){
     if($report.mode -ne 'frozen-r19-playable-preview-stage' -or $report.ph02FoliageTintStrength -ne 1 -or -not $report.ph02FamilyChecks.numericChecksPassed -or -not $report.ph02FamilyMeshReadbackPassed){throw 'Frozen R19 component, tint or mode did not pass.'}
     $buildRecord=Get-Content -LiteralPath (Join-Path $outputDirectory 'preview-build.json') -Raw | ConvertFrom-Json
-    if($buildRecord.status -ne 'Succeeded' -or $buildRecord.version -ne '0.0.2-preview.1' -or $buildRecord.sourceCommit -ne $previewSourceCommit){throw 'Separate R19 player did not build from the recorded source.'}
+    if($buildRecord.status -ne 'Succeeded' -or $buildRecord.version -ne '0.0.2-preview.2' -or $buildRecord.sourceCommit -ne $previewSourceCommit){throw 'Separate R19 player did not build from the recorded source.'}
 }
 $expectedPH02Mode=if($ph02ShotSelectionRequested){'hybrid-ph02-fitted-crown-scoped-inspection'}else{'hybrid-ph02-fitted-crown-family-experiment'}
 if($PH02Family -and ($report.mode -ne $expectedPH02Mode -or -not $report.ph02FamilyChecks.numericChecksPassed -or -not $report.ph02FamilyChecks.actualImportedGatePassed -or -not $report.ph02FamilyMeshReadbackPassed -or $report.ph02FoliageTintStrength -ne $PH02FoliageTint)){

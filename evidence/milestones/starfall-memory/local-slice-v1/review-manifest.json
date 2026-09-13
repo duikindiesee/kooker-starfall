@@ -1,0 +1,76 @@
+{
+  "schema": "starfall.memory.review.v1",
+  "files": [
+    {
+      "path": "container-config-validation.json",
+      "bytes": 1178,
+      "sha256": "b3bd8b267e2e13b9a3977369cdf8adad024c7ab234ae77e45e8c3eb6026a7e5c"
+    },
+    {
+      "path": "dream.json",
+      "bytes": 1397,
+      "sha256": "bdbd7cb20c7fcce7c16c16437ee117c36f5e981438ed67b9d45b2b4b40ddc9cf"
+    },
+    {
+      "path": "foundation-validation.json",
+      "bytes": 897,
+      "sha256": "669341bfb52307807101666a8db6b80b996a05069e65e42ac894c5fe8c3fedf3"
+    },
+    {
+      "path": "integration-report.json",
+      "bytes": 5935,
+      "sha256": "71e6001adbb27c57b0da69e29c619349c276f094f9a67fa7e0e4d487ab15b851"
+    },
+    {
+      "path": "isolated-settings-preservation.json",
+      "bytes": 943,
+      "sha256": "f452324d781f8efe86126a8229e6795bb2a766e4f31fc3e6d6980ef7fe6437d7"
+    },
+    {
+      "path": "ledger-checkpoint.json",
+      "bytes": 190,
+      "sha256": "c16a1e98fb05e029175f8555cb5de5f23c1427554c37dd731a73fdbb21318a48"
+    },
+    {
+      "path": "memories.json",
+      "bytes": 2585,
+      "sha256": "5f877c76ba147410f9aac167a2c508c3acff5f267db5d45c45122feee1a58414"
+    },
+    {
+      "path": "npc-validation.json",
+      "bytes": 1294,
+      "sha256": "0896e4c3e4e1f661a09b84d99aadb259d53097e0a0666e13ecc70a23ba1b18a2"
+    },
+    {
+      "path": "other-inhabitant-memories.json",
+      "bytes": 898,
+      "sha256": "8d4f44b94b36d14b01d66c37501eef0a487cfe049baffa08f16a46b7dadd03d4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3622,
+      "sha256": "6ac7fa77181f9b7b3de7c9f5a8598580755b2110b7541bb131f806b9b5355650"
+    },
+    {
+      "path": "service-validation.json",
+      "bytes": 5251,
+      "sha256": "68fff1f68fe43e7f8a2e48ebbcb475b7936d6573cffc5b253859797a983bea20"
+    },
+    {
+      "path": "unity-events.jsonl",
+      "bytes": 2503,
+      "sha256": "371bbdeada72c45e77c982b780c7f087db13321359d1f1733cb0e31094b69e6b"
+    },
+    {
+      "path": "unity-memory-validation.json",
+      "bytes": 971,
+      "sha256": "044c91960e1e2752a9c49845bb2644cc47672bde16fcf0a4a8d1771bb7148255"
+    },
+    {
+      "path": "wiki.json",
+      "bytes": 14029,
+      "sha256": "b5b8e72dffac5a1b7d69d00bd1854292d9da1643f455bd74f7dc7a1e386741d4"
+    }
+  ],
+  "scope": "Reviewed synthetic Unity and local service evidence only; raw logs, capabilities and databases excluded"
+}

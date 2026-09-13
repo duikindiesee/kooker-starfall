@@ -1,0 +1,24 @@
+{
+  "schema": "starfall.memory.preservation.v1",
+  "status": "PASS",
+  "baselineSource": "ad6013873ea7c360c571e83dc097712a5501db71",
+  "files": [
+    {
+      "path": "ProjectSettings/GraphicsSettings.asset",
+      "sha256": "9aece12c440f0c95c29190ae21a478321723e0b57932c2ea14c80b26cbe0c377"
+    },
+    {
+      "path": "ProjectSettings/QualitySettings.asset",
+      "sha256": "1ab7cdabfb4845731d43e9191f9129a3725f2593b3d33848a5d9bd47b1543949"
+    },
+    {
+      "path": "ProjectSettings/ProjectSettings.asset",
+      "sha256": "30fb9a05332965d6d8a6861f85194f2f628190c72ab47f33a5e0f0d283ce5a3b"
+    },
+    {
+      "path": "Assets/Settings/UniversalRenderPipelineGlobalSettings.asset",
+      "sha256": "71b89dc8c4a589e8bba40275ef8ad4fb924deb7d6a7bb49239c5ea463f799545"
+    }
+  ],
+  "scope": "Four tracked settings in the isolated memory checkout match the pre-editor source. The current player was not wired to the exporter or memory service."
+}

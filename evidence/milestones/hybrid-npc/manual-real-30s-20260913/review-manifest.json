@@ -1,0 +1,37 @@
+{
+  "schema": "starfall.manual-probe-review.v1",
+  "runUtc": "2026-09-13T12:35:25.3383221Z",
+  "buildId": "KookerStarfallHybrid-0.0.5-preview.2-20260913-094348",
+  "status": "PASS",
+  "checks": 66,
+  "probeStatus": "SAFE_FALLBACK_AND_DELIVERY",
+  "review": "Actual player PNGs inspected; timeout followed by deterministic delivery. No real reply or admitted text.",
+  "files": [
+    {
+      "path": "npc-runtime.json",
+      "bytes": 73994,
+      "sha256": "c109fd0d6097f048604339624652a69042cfca3a98cc5de40d3fa97fbfb5360c"
+    },
+    {
+      "path": "real-local-probe.json",
+      "bytes": 1244,
+      "sha256": "6498c6bff58d67e987b3e4018c82e9826da4ac2edc59f37333765fa598c75804"
+    },
+    {
+      "path": "40-real-local-proposal-outcome.png",
+      "bytes": 347473,
+      "sha256": "e111c176e628ec17fb8bc39d19b4b0cf9226163dd39d6c3325e5c5ca36080c3e"
+    },
+    {
+      "path": "41-real-probe-delivery-or-fallback.png",
+      "bytes": 393209,
+      "sha256": "f133cf44820d3ca97fdbd6ae6e986eb28eac7646d540f35961e8c04a48cc0f6b"
+    }
+  ],
+  "limitations": [
+    "Single synthetic offscreen player probe",
+    "Physical input and gameplay performance unverified",
+    "Model inventory reached; completion attempt does not prove server inference",
+    "Earlier build packages and prepared/blocked evidence remain historical artifacts"
+  ]
+}

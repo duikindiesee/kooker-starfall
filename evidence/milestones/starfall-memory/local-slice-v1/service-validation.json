@@ -1,0 +1,121 @@
+{
+  "schema": "starfall.memory.service-tests.v1",
+  "status": "PASS",
+  "python": "3.12.14",
+  "checks": [
+    {
+      "test": "test_memory.HttpTests.test_belief_cannot_assign_actor_world_or_confirmed_status.test_belief_cannot_assign_actor_world_or_confirmed_status",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_config_capabilities_are_unique_and_not_examples.test_config_capabilities_are_unique_and_not_examples",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_local_initializer_creates_private_unique_capabilities_without_printing_them.test_local_initializer_creates_private_unique_capabilities_without_printing_them",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_missing_capability_and_browser_origin_rejected.test_missing_capability_and_browser_origin_rejected",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_no_event_edit_delete_or_game_action_api.test_no_event_edit_delete_or_game_action_api",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_parser_duplicate_keys_nonfinite_and_size_bounds.test_parser_duplicate_keys_nonfinite_and_size_bounds",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_publisher_and_inhabitant_roles_cannot_cross.test_publisher_and_inhabitant_roles_cannot_cross",
+      "passed": true
+    },
+    {
+      "test": "test_memory.HttpTests.test_rejected_post_delivers_http_response_without_tcp_reset.test_rejected_post_delivers_http_response_without_tcp_reset",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_another_inhabitant_cannot_claim_same_item_or_occupied_depot.test_another_inhabitant_cannot_claim_same_item_or_occupied_depot",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_atomic_rollback_when_derivation_fails.test_atomic_rollback_when_derivation_fails",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_beliefs_are_private_cited_and_never_confirmed.test_beliefs_are_private_cited_and_never_confirmed",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_cargo_and_receipt_replay_rejected.test_cargo_and_receipt_replay_rejected",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_concurrent_retries_append_exactly_once.test_concurrent_retries_append_exactly_once",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_cross_namespace_or_missing_evidence_is_rejected.test_cross_namespace_or_missing_evidence_is_rejected",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_direct_sql_update_and_delete_are_blocked.test_direct_sql_update_and_delete_are_blocked",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_dream_requires_sleep_and_never_mutates_events_or_facts.test_dream_requires_sleep_and_never_mutates_events_or_facts",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_events_derive_cited_episodes_and_past_facts.test_events_derive_cited_episodes_and_past_facts",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_idempotent_retry_and_conflicting_reuse.test_idempotent_retry_and_conflicting_reuse",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_identity_cannot_be_overwritten_in_new_session.test_identity_cannot_be_overwritten_in_new_session",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_invalid_envelopes_leave_no_event_or_memory.test_invalid_envelopes_leave_no_event_or_memory",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_ledger_tampering_is_detected.test_ledger_tampering_is_detected",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_memory_pagination_stays_in_namespace.test_memory_pagination_stays_in_namespace",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_new_schema_and_wrong_database_namespace_fail_closed.test_new_schema_and_wrong_database_namespace_fail_closed",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_restart_retains_ledger_and_dream.test_restart_retains_ledger_and_dream",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_sleep_state_rejects_actions_duplicate_sleep_and_awake_dreams.test_sleep_state_rejects_actions_duplicate_sleep_and_awake_dreams",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_source_gaps_tick_regression_and_unknown_identity.test_source_gaps_tick_regression_and_unknown_identity",
+      "passed": true
+    },
+    {
+      "test": "test_memory.LedgerTests.test_wiki_subject_page_keeps_theories_separate.test_wiki_subject_page_keeps_theories_separate",
+      "passed": true
+    }
+  ],
+  "sourceSha256": {
+    "core.py": "72b48fdb80355e47a112edada035903f9e8619545ea6139490ee01eebbc7b3e2",
+    "server.py": "484010542ef14de8092fb55f37560db4979911e8ba37c3553daeef84e519d6a7",
+    "test_memory.py": "1cf825e01cacdddbecc27feda1c8d0ecb4509c22aaf6c60f111ccc47a0945e18",
+    "local.py": "b74e5e8860ad3fbb245a0c3a81c3b19b4490cd176cf3d3c40bcc4f135f562b6c"
+  }
+}

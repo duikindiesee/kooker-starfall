@@ -184,6 +184,8 @@ namespace CityLife.World
             else { flying = true; Notice("Fly mode · Q / E change height."); }
         }
 
+        internal void ReleasePointerForDisplay() => ReleasePointer();
+
         private void ReleasePointer()
         {
             if (CosmicPreviewSmoke.Requested) return;

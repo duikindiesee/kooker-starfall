@@ -1,0 +1,2704 @@
+{
+    "status": "PASS",
+    "utc": "2026-09-12T18:39:19.1083719Z",
+    "version": "0.0.2-preview.2",
+    "unityVersion": "6000.6.0f1",
+    "scene": "CosmicPreview",
+    "failure": "",
+    "scope": "R19 baked standalone player: automatic controller-method verification and actual URP camera RenderTexture captures. No real keyboard/mouse, native window, HUD, user acceptance, offline/telemetry or FPS verification.",
+    "renderPath": "urp-single-camera-request-offscreen",
+    "rockCollision": "SKIPPED: rock collision is unimplemented in this bounded R19 preview; rocks are the next milestone.",
+    "elapsedSeconds": 1.368438720703125,
+    "cameraFieldOfView": 52.0,
+    "cameraNearClip": 0.019999999552965164,
+    "cameraFarClip": 1500.0,
+    "initialCameraPosition": {
+        "x": 5.0407328605651855,
+        "y": 0.9353527426719666,
+        "z": -18.85378074645996
+    },
+    "initialCameraRotation": {
+        "x": 352.3544006347656,
+        "y": 345.7540283203125,
+        "z": -1.076789786225163e-7
+    },
+    "mainVertices": 3745751,
+    "mainTriangles": 6550207,
+    "runtimeErrorCount": 0,
+    "runtimeErrors": [],
+    "trunkBoundsCentre": {
+        "x": 0.04086613655090332,
+        "y": 2.8690834045410156,
+        "z": -0.013595104217529297
+    },
+    "trunkBoundsSize": {
+        "x": 4.767072677612305,
+        "y": 7.458264350891113,
+        "z": 5.96439266204834
+    },
+    "predictedContact": {
+        "collider": "Mature inspection tree/Bark",
+        "distance": 3.609598159790039,
+        "start": {
+            "x": 0.04086613655090332,
+            "y": 1.8277615308761597,
+            "z": 4.568601131439209
+        },
+        "aim": {
+            "x": 0.04086613655090332,
+            "y": 1.8277615308761597,
+            "z": -0.013595104217529297
+        },
+        "point": {
+            "x": 0.01193725410848856,
+            "y": 0.2372601330280304,
+            "z": 0.6909253001213074
+        },
+        "normal": {
+            "x": 0.10331522673368454,
+            "y": 0.26964208483695984,
+            "z": 0.957402229309082
+        }
+    },
+    "checks": [
+        {
+            "name": "camera-and-controller",
+            "detail": "Smoke must be attached to the baked scene camera with its controller.",
+            "pass": true
+        },
+        {
+            "name": "camera-is-main",
+            "detail": "Actual baked main camera is used.",
+            "pass": true
+        },
+        {
+            "name": "camera-enabled",
+            "detail": "Baked camera is enabled with a nonempty culling mask.",
+            "pass": true
+        },
+        {
+            "name": "render-target-created",
+            "detail": "1600 x 900 ARGB32, depth 24.",
+            "pass": true
+        },
+        {
+            "name": "urp-single-camera-request",
+            "detail": "URP request support after offscreen warmup.",
+            "pass": true
+        },
+        {
+            "name": "R19-main-root",
+            "detail": "Mature inspection tree must exist in the baked scene.",
+            "pass": true
+        },
+        {
+            "name": "main-mesh-triangles-Bark-0",
+            "detail": "Main mesh topology.",
+            "pass": true
+        },
+        {
+            "name": "main-mesh-triangles-Succulent rosettes-0",
+            "detail": "Main mesh topology.",
+            "pass": true
+        },
+        {
+            "name": "R19-main-geometry",
+            "detail": "Expected vertices/triangles=3745751/6550207; actual=3745751/6550207",
+            "pass": true
+        },
+        {
+            "name": "main-trunk-mesh-collider",
+            "detail": "Static non-convex collider on the actual main Bark mesh.",
+            "pass": true
+        },
+        {
+            "name": "material-present-Bark",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Bark",
+            "detail": "CityLife/KokerboomSurface",
+            "pass": true
+        },
+        {
+            "name": "material-present-Blue gas giant - procedural volumetric cloud bands",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Blue gas giant - procedural volumetric cloud bands",
+            "detail": "Hidden/CityLife/KokerboomGasInspection",
+            "pass": true
+        },
+        {
+            "name": "material-present-Succulent rosettes",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Succulent rosettes",
+            "detail": "CityLife/PH02FittedSupport",
+            "pass": true
+        },
+        {
+            "name": "R19-PH02-tint",
+            "detail": "Expected _FoliageTintStrength=1; actual=1",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 0",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 0",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 2",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 2",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 10",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 10",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Gas giant atmosphere - Fresnel shell",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Gas giant atmosphere - Fresnel shell",
+            "detail": "Hidden/CityLife/KokerboomAtmosphereInspection",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 7",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 7",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 4",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 4",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 1",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 1",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 8",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 8",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 6",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 6",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 15",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 15",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Succulent rosettes",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Succulent rosettes",
+            "detail": "CityLife/PH02FittedSupport",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 12",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 12",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Bark",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Bark",
+            "detail": "CityLife/KokerboomSurface",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 13",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 13",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 11",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 11",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Bark",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Bark",
+            "detail": "CityLife/KokerboomSurface",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 16",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 16",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Seeded procedural stars",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Seeded procedural stars",
+            "detail": "Hidden/CityLife/KokerboomStarsInspection",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 5",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 5",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 9",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 9",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Small sculpted 60m prototype ground and rocks",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Small sculpted 60m prototype ground and rocks",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Succulent rosettes",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Succulent rosettes",
+            "detail": "CityLife/PH02FittedSupport",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 14",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 14",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "material-present-Prototype angular grounded stone 3",
+            "detail": "Baked renderer material and shader.",
+            "pass": true
+        },
+        {
+            "name": "shader-supported-Prototype angular grounded stone 3",
+            "detail": "Universal Render Pipeline/Lit",
+            "pass": true
+        },
+        {
+            "name": "R19-PH02-material",
+            "detail": "The actual main crown uses the PH02 fitted shader.",
+            "pass": true
+        },
+        {
+            "name": "startup-walk",
+            "detail": "Controller starts in walk mode over the ground collider.",
+            "pass": true
+        },
+        {
+            "name": "startup-clearance",
+            "detail": "Ground clearance metres=1.85",
+            "pass": true
+        },
+        {
+            "name": "capture-01-startup",
+            "detail": "GPU readback is nonuniform, nonblack and not dominated by error-shader magenta; PNG retained even on failure.",
+            "pass": true
+        },
+        {
+            "name": "clear-walk-fixture",
+            "detail": "Ground and independent capsule casts establish a clear walking segment.",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "walk",
+            "pass": true
+        },
+        {
+            "name": "walk-movement",
+            "detail": "Displacement metres=1.80211389",
+            "pass": true
+        },
+        {
+            "name": "walk-clearance",
+            "detail": "Ground clearance metres=1.85",
+            "pass": true
+        },
+        {
+            "name": "F-to-fly",
+            "detail": "Uses the same ToggleMode as the real F input.",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "flight-rise",
+            "pass": true
+        },
+        {
+            "name": "fly-vertical-movement",
+            "detail": "Same fly Move/SweepSphere using E-equivalent direction.",
+            "pass": true
+        },
+        {
+            "name": "capture-02-flight",
+            "detail": "GPU readback is nonuniform, nonblack and not dominated by error-shader magenta; PNG retained even on failure.",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-0",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-0",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-0",
+            "pass": true
+        },
+        {
+            "name": "stage-bound-0",
+            "detail": "Actual=27; expected=27",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-1",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-1",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-1",
+            "pass": true
+        },
+        {
+            "name": "stage-bound-1",
+            "detail": "Actual=-27; expected=-27",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-2",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-2",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-2",
+            "pass": true
+        },
+        {
+            "name": "stage-bound-2",
+            "detail": "Actual=35; expected=35",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-3",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-3",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "bound-3",
+            "pass": true
+        },
+        {
+            "name": "stage-bound-3",
+            "detail": "Actual=-19; expected=-19",
+            "pass": true
+        },
+        {
+            "name": "F-to-walk",
+            "detail": "Same F transition snaps to measured ground.",
+            "pass": true
+        },
+        {
+            "name": "return-walk-clearance",
+            "detail": "Ground clearance metres=1.85",
+            "pass": true
+        },
+        {
+            "name": "trunk-approach-fixture",
+            "detail": "Starts with clear capsule; independent sweep must first hit the main tree Bark collider toward its actual bounds centre.",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "path-in-stage",
+            "detail": "trunk-approach",
+            "pass": true
+        },
+        {
+            "name": "main-trunk-collision",
+            "detail": "Actual main Bark sweep hit=True; advanced metres=3.589046; final four-step movement=0",
+            "pass": true
+        },
+        {
+            "name": "trunk-no-capsule-overlap",
+            "detail": "Reduced-radius independent overlap query after blocked walk.",
+            "pass": true
+        },
+        {
+            "name": "trunk-ground-clearance",
+            "detail": "Ground clearance metres=1.85",
+            "pass": true
+        },
+        {
+            "name": "capture-03-trunk-contact",
+            "detail": "GPU readback is nonuniform, nonblack and not dominated by error-shader magenta; PNG retained even on failure.",
+            "pass": true
+        },
+        {
+            "name": "three-valid-captures",
+            "detail": "Actual built-scene offscreen camera captures; no desktop or HUD evidence.",
+            "pass": true
+        }
+    ],
+    "meshes": [
+        {
+            "path": "Mature inspection tree/Bark",
+            "mesh": "Asset-16",
+            "vertices": 1002276,
+            "triangles": 2004548,
+            "subMeshes": 1,
+            "localBoundsCentre": {
+                "x": 0.04086613655090332,
+                "y": 2.8690834045410156,
+                "z": -0.013594985008239746
+            },
+            "localBoundsSize": {
+                "x": 4.767072677612305,
+                "y": 7.458264350891113,
+                "z": 5.96439266204834
+            }
+        },
+        {
+            "path": "Mature inspection tree/Succulent rosettes",
+            "mesh": "Asset-13",
+            "vertices": 2743475,
+            "triangles": 4545659,
+            "subMeshes": 1,
+            "localBoundsCentre": {
+                "x": -0.039084434509277344,
+                "y": 6.247838973999023,
+                "z": 0.0028039216995239258
+            },
+            "localBoundsSize": {
+                "x": 6.720977306365967,
+                "y": 2.9240241050720215,
+                "z": 7.866330146789551
+            }
+        }
+    ],
+    "materials": [
+        {
+            "renderer": "Mature inspection tree/Succulent rosettes",
+            "material": "Asset-33",
+            "shader": "CityLife/PH02FittedSupport",
+            "supported": true,
+            "hasFoliageTint": true,
+            "foliageTint": 1.0
+        },
+        {
+            "renderer": "Mature inspection tree/Bark",
+            "material": "Asset-37",
+            "shader": "CityLife/KokerboomSurface",
+            "supported": true,
+            "hasFoliageTint": false,
+            "foliageTint": -1.0
+        }
+    ],
+    "path": [
+        {
+            "phase": "startup",
+            "action": "loaded-scene",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.20062255859375,
+            "inputSeconds": 0.0,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.0,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9379091262817383,
+                "z": -18.85378074645996
+            },
+            "rotation": {
+                "x": 352.3544006347656,
+                "y": 345.7540283203125,
+                "z": -1.076789786225163e-7
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.7472591400146484,
+            "inputSeconds": 0.0,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.0,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9379091262817383,
+                "z": -18.85378074645996
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.7518634796142578,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.1803092360496521,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9273587465286255,
+                "z": -18.67378044128418
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8187503814697266,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.3606393039226532,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9164581298828125,
+                "z": -18.4937801361084
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8193893432617188,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.5409831553697586,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9053317904472351,
+                "z": -18.313779830932617
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8196029663085938,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.7212158441543579,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8961824178695679,
+                "z": -18.133779525756836
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8197135925292969,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 0.901396706700325,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8881180286407471,
+                "z": -17.953779220581055
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8221683502197266,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.0815775692462921,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8800535798072815,
+                "z": -17.773778915405273
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8223152160644531,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.2617673128843307,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8717930912971497,
+                "z": -17.593778610229492
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8294963836669922,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.4419707953929901,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8632382154464722,
+                "z": -17.41377830505371
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8315906524658203,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.6221134811639786,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8560775518417358,
+                "z": -17.23377799987793
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "walk",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.832000732421875,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.8021937757730484,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8507107496261597,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "flight",
+            "action": "same-F-transition",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8340053558349609,
+            "inputSeconds": 0.0,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 1.8021937757730484,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.8507107496261597,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8349742889404297,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 2.450000047683716,
+            "travelledMetres": 2.4021937996149063,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 1.4507107734680176,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8383369445800781,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 3.049999952316284,
+            "travelledMetres": 3.0021937042474747,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 2.050710678100586,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8386344909667969,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 3.6499998569488525,
+            "travelledMetres": 3.602193608880043,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 2.6507105827331543,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8389129638671875,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 4.25,
+            "travelledMetres": 4.202193513512611,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 3.2507104873657227,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8392963409423828,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 4.84999942779541,
+            "travelledMetres": 4.80219341814518,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 3.850710391998291,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8396663665771484,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 5.449999809265137,
+            "travelledMetres": 5.402193322777748,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 4.450710296630859,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8403244018554688,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 6.049999237060547,
+            "travelledMetres": 6.0021932274103165,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 5.050710201263428,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "flight-rise",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 0.8406295776367188,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 6.649999618530273,
+            "travelledMetres": 6.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 5.650710105895996,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 1.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "bound-0",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0786094665527344,
+            "inputSeconds": 0.0,
+            "groundClearance": 30.070768356323242,
+            "travelledMetres": 6.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 26.5,
+                "y": 30.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 90.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "bound-0",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0788211822509766,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.073678970336914,
+            "travelledMetres": 7.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 90.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-0",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.080453872680664,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.073678970336914,
+            "travelledMetres": 7.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 90.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-0",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0806865692138672,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.073678970336914,
+            "travelledMetres": 7.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 90.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-1",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0810222625732422,
+            "inputSeconds": 0.0,
+            "groundClearance": 30.092845916748047,
+            "travelledMetres": 7.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -26.5,
+                "y": 30.0,
+                "z": 0.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 270.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "bound-1",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0810413360595703,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.09290885925293,
+            "travelledMetres": 7.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 270.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-1",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0814151763916016,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.09290885925293,
+            "travelledMetres": 7.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 270.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-1",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0814895629882813,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.09290885925293,
+            "travelledMetres": 7.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -27.0,
+                "y": 30.0,
+                "z": -7.152557657263969e-8
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 270.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-2",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0818119049072266,
+            "inputSeconds": 0.0,
+            "groundClearance": 30.14695167541504,
+            "travelledMetres": 7.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": 34.5
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "bound-2",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0818195343017578,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.167339324951172,
+            "travelledMetres": 8.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": 35.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-2",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0819149017333984,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.167339324951172,
+            "travelledMetres": 8.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": 35.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-2",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0819816589355469,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.167339324951172,
+            "travelledMetres": 8.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": 35.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-3",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.082468032836914,
+            "inputSeconds": 0.0,
+            "groundClearance": 30.68197250366211,
+            "travelledMetres": 8.102193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": -18.5
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "bound-3",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0824775695800781,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.663904190063477,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -5.245366807571372e-8,
+                "y": 30.0,
+                "z": -19.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-3",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0829105377197266,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.663904190063477,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -5.245366807571372e-8,
+                "y": 30.0,
+                "z": -19.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "bound-3",
+            "action": "same-controller-Move",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0835838317871094,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 30.663904190063477,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": -5.245366807571372e-8,
+                "y": 30.0,
+                "z": -19.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "return-to-walk",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Fly",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.083963394165039,
+            "inputSeconds": 0.0,
+            "groundClearance": 5.849999904632568,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 4.937909126281738,
+                "z": -18.85378074645996
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "return-to-walk",
+            "action": "same-F-transition",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0840644836425781,
+            "inputSeconds": 0.0,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9379091262817383,
+                "z": -18.85378074645996
+            },
+            "rotation": {
+                "x": 2.6669552326202393,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "explicit-scenario-setup-not-movement",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.09527587890625,
+            "inputSeconds": 0.0,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 8.602193132042885,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086613655090332,
+                "y": 1.8277615308761597,
+                "z": 4.568601131439209
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0954132080078125,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 8.782263740897179,
+            "groundFound": true,
+            "position": {
+                "x": 0.040866121649742126,
+                "y": 1.8328098058700562,
+                "z": 4.388601303100586
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0961761474609375,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 8.962314248085022,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086610674858093,
+                "y": 1.8370816707611084,
+                "z": 4.208601474761963
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0971240997314453,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 9.142350599169731,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086609184741974,
+                "y": 1.8407078981399536,
+                "z": 4.02860164642334
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.097391128540039,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 9.32238718867302,
+            "groundFound": true,
+            "position": {
+                "x": 0.040866076946258545,
+                "y": 1.8443340063095093,
+                "z": 3.8486015796661377
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0978584289550781,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 9.502423778176308,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086606204509735,
+                "y": 1.847960114479065,
+                "z": 3.6686015129089355
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.098276138305664,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 9.682460367679596,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086604714393616,
+                "y": 1.8515863418579102,
+                "z": 3.4886014461517334
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0984878540039063,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 9.862495392560959,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086603224277496,
+                "y": 1.85513436794281,
+                "z": 3.3086013793945313
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0990791320800781,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.04250282049179,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086601734161377,
+                "y": 1.8567630052566528,
+                "z": 3.128601312637329
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0995330810546875,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.222514495253563,
+            "groundFound": true,
+            "position": {
+                "x": 0.040866002440452576,
+                "y": 1.85880708694458,
+                "z": 2.948601245880127
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.0997486114501953,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.402526170015335,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086598753929138,
+                "y": 1.8608511686325073,
+                "z": 2.768601179122925
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1000900268554688,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.582537844777107,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086597263813019,
+                "y": 1.862895131111145,
+                "z": 2.5886011123657227
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1005401611328125,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.76254951953888,
+            "groundFound": true,
+            "position": {
+                "x": 0.040865957736968994,
+                "y": 1.8649392127990723,
+                "z": 2.4086010456085205
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1008853912353516,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 10.94254969060421,
+            "groundFound": true,
+            "position": {
+                "x": 0.0408659428358078,
+                "y": 1.8651372194290161,
+                "z": 2.2286009788513184
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1013851165771484,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 11.122550085186958,
+            "groundFound": true,
+            "position": {
+                "x": 0.040865927934646606,
+                "y": 1.8654792308807373,
+                "z": 2.048600912094116
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1018543243408203,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 11.302550360560417,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086591303348541,
+                "y": 1.8658212423324585,
+                "z": 1.8686009645462036
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1021060943603516,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 11.482550635933876,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086589813232422,
+                "y": 1.8661632537841797,
+                "z": 1.688601016998291
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1025314331054688,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 11.662550911307335,
+            "groundFound": true,
+            "position": {
+                "x": 0.040865883231163025,
+                "y": 1.8665052652359009,
+                "z": 1.5086010694503784
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.102874755859375,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 11.842554792761803,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086586833000183,
+                "y": 1.8653146028518677,
+                "z": 1.3286011219024658
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "",
+            "elapsedSeconds": 1.1030635833740234,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.022560462355614,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086585342884064,
+                "y": 1.863879680633545,
+                "z": 1.1486011743545532
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1065654754638672,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1160087585449219,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1222877502441406,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1308326721191406,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1375465393066406,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1464595794677734,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.152933120727539,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1602058410644531,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1669178009033203,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        {
+            "phase": "trunk-approach",
+            "action": "same-controller-Move",
+            "mode": "Walk",
+            "actualSweepCollider": "Mature inspection tree/Bark",
+            "elapsedSeconds": 1.1742935180664063,
+            "inputSeconds": 0.05000000074505806,
+            "groundClearance": 1.850000023841858,
+            "travelledMetres": 12.191443547606468,
+            "groundFound": true,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            },
+            "input": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        }
+    ],
+    "captures": [
+        {
+            "file": "preview-smoke-20260912-183919-123-01-startup.png",
+            "width": 1600,
+            "height": 900,
+            "valid": true,
+            "minimumLuminance": 0.02836313657462597,
+            "maximumLuminance": 0.9807466864585876,
+            "magentaPixelFraction": 0.0,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 0.9379091262817383,
+                "z": -18.85378074645996
+            },
+            "rotation": {
+                "x": 352.3544006347656,
+                "y": 345.7540283203125,
+                "z": -1.076789786225163e-7
+            }
+        },
+        {
+            "file": "preview-smoke-20260912-183919-123-02-flight.png",
+            "width": 1600,
+            "height": 900,
+            "valid": true,
+            "minimumLuminance": 0.02836313657462597,
+            "maximumLuminance": 0.9810298085212708,
+            "magentaPixelFraction": 0.0,
+            "position": {
+                "x": 5.0407328605651855,
+                "y": 5.650710105895996,
+                "z": -17.05377769470215
+            },
+            "rotation": {
+                "x": 10.047057151794434,
+                "y": 343.533447265625,
+                "z": 0.0
+            }
+        },
+        {
+            "file": "preview-smoke-20260912-183919-123-03-trunk-contact.png",
+            "width": 1600,
+            "height": 900,
+            "valid": true,
+            "minimumLuminance": 0.02836313657462597,
+            "maximumLuminance": 0.7705129384994507,
+            "magentaPixelFraction": 0.0,
+            "position": {
+                "x": 0.04086583852767944,
+                "y": 1.8625333309173584,
+                "z": 0.9797234535217285
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 180.0,
+                "z": 0.0
+            }
+        }
+    ]
+}

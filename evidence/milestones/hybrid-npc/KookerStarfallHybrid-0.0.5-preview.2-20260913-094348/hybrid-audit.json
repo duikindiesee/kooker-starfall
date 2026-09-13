@@ -1,0 +1,139 @@
+{
+    "source": "Actual Unity player; deterministic fake and unavailable local HTTP provider",
+    "realInference": "not executed in this acceptance run",
+    "events": [
+        {
+            "requestId": 1,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "accepted-high-level-goal",
+            "proposedGoal": "collect",
+            "proposedTarget": "blue",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [
+                "observe",
+                "collect"
+            ],
+            "milliseconds": 18,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 207
+        },
+        {
+            "requestId": 2,
+            "tick": 372,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "accepted-high-level-goal",
+            "proposedGoal": "deliver",
+            "proposedTarget": "depot-east",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "blue",
+            "lastOutcome": "picked-up",
+            "eligibleIds": [
+                "depot-east",
+                "depot-north",
+                "depot-west"
+            ],
+            "plan": [
+                "observe",
+                "deliver"
+            ],
+            "milliseconds": 0,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 213
+        },
+        {
+            "requestId": 3,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "target-not-in-request",
+            "proposedGoal": "collect",
+            "proposedTarget": "reserved-red",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [
+                "observe",
+                "collect"
+            ],
+            "milliseconds": 0,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 215
+        },
+        {
+            "requestId": 4,
+            "tick": 1,
+            "provider": "local-lm-studio",
+            "outcome": "timeout",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [],
+            "milliseconds": 1565,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        },
+        {
+            "requestId": 5,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "timeout",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [],
+            "milliseconds": 40,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        },
+        {
+            "requestId": 6,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "options-opened",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "",
+            "eligibleIds": [],
+            "plan": [],
+            "milliseconds": 0,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        }
+    ]
+}

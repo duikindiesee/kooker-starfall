@@ -42,6 +42,8 @@ R16's historical full review remains **5.75/10, rejected under that rubric**; it
 
 ## 🎮 Build & run
 
+The separate **0.0.2-preview.2** build adds a visible fullscreen/windowed button. Both button transitions were verified in the actual player, restoring its window size and preserving scene/player state. See [display release evidence and remaining checks](docs/RELEASE-0.0.2-preview.2.md). The earlier builds remain available and unchanged.
+
 Use **Unity 6000.6.0f1** with Windows build support. URP **17.6.0** and Input System **1.20.0** are pinned in [Packages/manifest.json](Packages/manifest.json).
 
 The R06 reference is preserved. The separate **0.0.2-preview.1 R19 player** has now been built, packaged and observed in its native window. See the [release notes, version mapping and checksums](docs/RELEASE-0.0.2-preview.1.md). To create another distinct R19 build from committed source:
@@ -50,7 +52,7 @@ The R06 reference is preserved. The separate **0.0.2-preview.1 R19 player** has 
 .\tools\render-kokerboom.ps1 -Round round-100 -R19PlayablePreview
 ~~~
 
-Choose an unused round number; the label only identifies evidence and does not affect world generation. The script renders two study views and bakes a Windows player into `Builds/KookerStarfallR19-0.0.2-preview.1-<UTC>/`. It preserves earlier captures, refuses to run alongside another Unity editor and does not launch the player. Open `KookerStarfallR19.exe` from the resulting folder; keep the data folder and DLLs beside it.
+Choose an unused round number; the label only identifies evidence and does not affect world generation. The script renders two study views and bakes a Windows player into `Builds/KookerStarfallR19-0.0.2-preview.2-<UTC>/`. It preserves earlier captures, refuses to run alongside another Unity editor and does not launch the player. Open `KookerStarfallR19.exe` from the resulting folder; keep the data folder and DLLs beside it.
 
 The new player uses the frozen R19 PH02 family and explicit tint1. Its automatic player checks cover actual rendering, walking, ground clearance, flight, stage bounds and trunk collision. Native startup and the versioned HUD were observed after an authorized launch; the user explored without agent movement input. Full native controls, sustained performance and other-device execution remain unverified. R06 remains unchanged and separately available. The legacy `-PlayablePreview` route selects a different PH01 hybrid; it does not reproduce R06 or this R19 release.
 
@@ -63,6 +65,7 @@ The new player uses the frozen R19 PH02 family and explicit tint1. Its automatic
 | Q / E | Lower / raise flight height |
 | Escape | Release the pointer |
 | Alt + Enter | Toggle window / fullscreen |
+| Display button at top right | Enter fullscreen / return to the remembered window size |
 
 Walking follows the ground at 1.85 m eye clearance and stays within the study. This is an inspection controller; rocks do not yet have complete collision. F12 capture requires an explicit absolute folder passed with `-previewEvidence`; the preview does not capture automatically.
 
@@ -83,9 +86,11 @@ The preview has no implemented multiplayer, bot connections or saved-world loadi
 | Start here | Reference |
 |---|---|
 | World direction and naming | [Starfall](docs/STARFALL.md) · [Living sea](docs/STARFALL-LIVING-SEA.md) |
+| System architecture and installation | [Components, authority/privacy boundaries and current setup status](docs/SYSTEM-ARCHITECTURE.md) |
 | Images and review | [Visual catalogue](docs/KOKERBOOM-VISUAL-REVIEW.html) · [Milestones](docs/VISUAL-MILESTONES.md) · [Tree critique](docs/KOKERBOOM-CRITIQUE.md) |
 | Assets and provenance | [Asset catalogue](docs/ASSET-CATALOGUE.md) · [Credits](docs/ASSET-CREDITS.md) · [Portable notices](Assets/CityLife/Art/THIRD-PARTY-NOTICES.txt) |
 | Determinism and saved edits | [World foundation](docs/WORLD-FOUNDATION.md) · [Legacy island](docs/LEGACY-ISLAND.md) |
+| Native memory service | [Starfall memory: local ledger, episodes, wiki and sleep-gated dreams](docs/STARFALL-MEMORY.md) |
 | Verification and contribution | [Evidence record](docs/VERIFICATION.md) · [CI and safeguards](docs/CI.md) |
 
 The repository is [duikindiesee/kooker-starfall](https://github.com/duikindiesee/kooker-starfall). Its history and draft review continue under the new name. Internal `CityLife.World` namespaces, `Assets/CityLife` paths, legacy product settings, world IDs and save contracts remain intact; branding does not migrate an existing world.

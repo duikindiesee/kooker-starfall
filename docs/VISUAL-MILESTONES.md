@@ -477,3 +477,48 @@ Separate codex/starfall-environment workstream. [Acceptance record](ENVIRONMENT-
 ## Supported Starfall environment terrace - 13 September 2026
 
 [Matching compiled-player before/after comparison](ENVIRONMENT-TERRACE-COMPARISON.md): the visual slab is now a supported sandstone test terrace with structural bracing, coherent materials and a blue-giant sky. Original tests and collision conditions are unchanged; all 20 physical measurements match the preserved baseline exactly. The revised 128-body/512-precipitation player passed at p95 16.76 ms. Earlier builds and evidence remain intact.
+## Display controls — 0.0.2-preview.2
+
+The visible fullscreen/windowed button passed both native transitions, restoring 1280×720 and preserving scene/player state. [Release evidence](RELEASE-0.0.2-preview.2.md) distinguishes these observations from automatic checks, unverified resize/shortcut acceptance, and the user's Escape stop. Earlier tree renders and players remain unchanged.
+
+![Actual restored preview.2 window](../evidence/milestones/display-toggle/native/03-restored-window.png)
+
+## First inhabitant � 12 September 2026
+
+Separate free Standard humanoid test courtyard, 0.0.3-preview.1. [Replay the actual standalone frames](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/replay.html).
+
+![Actual first-inhabitant walking frame](../evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/02-walking.png)
+
+The male Superhero body imports as Humanoid and uses idle, walk and Interact. The actual player passed 29 checks including deformed-foot grounding, collision, following camera obstruction and scripted crystal collection/delivery. This is scripted behavior; no learning is implemented. The 44.2 MB local ZIP passed 188-file integrity checks. Native controls/HUD acceptance remains pending; desktop input was not used. The existing R06/R19 runtime/release baseline retained 375 matching hashes. [Scope, evidence and one focused critique](FIRST-INHABITANT.md).
+
+## Optional local thoughts — 13 September 2026
+
+Separate 0.0.5-preview.1 courtyard; [implementation, controls and acceptance boundaries](HYBRID-NPC.md). The optional planner supplies bounded high-level proposals and fictional text while deterministic actions retain authority. Runtime-03 passed 60 actual-player checks covering default-off behavior, explicit opt-in, fake-provider blue-goal delivery, denied proposals, unavailable-service delivery, timeout/late discard, pause cancellation and both F11 display transitions. Earlier failed runs are retained. Final packaged observations and the one real-local probe are linked by the release evidence when produced; physical input/performance acceptance remains separate. The living-sea environment is still separate world work.
+
+## Manual local inference and longer diagnostic - 13 September 2026
+
+The manual real-provider run reached inventory, attempted one completion, timed out at 5000 ms and completed deterministic delivery (64 checks). [Actual manual observations and the next diagnostic boundary](HYBRID-DIAGNOSTIC-30S.md) preserve that result separately. A 30-second probe is diagnostic-only; normal gameplay remains 1500 ms. Its new actual outcome is pending manual execution.
+
+### Manual 30-second hybrid probe reviewed - 13 September 2026
+
+The user-launched preview.2 diagnostic passed all 66 actual-player checks with no recorded runtime errors. Exactly one completion was attempted after successful model inventory discovery. It timed out at 30003 ms with no completion HTTP response or raw reply. The actual player then selected amber through deterministic fallback and delivered it to depot-west. Real proposal text, dialogue and reflection remain unverified. The conditional admitted-text assertion is not evidence of generated text when no proposal arrived.
+
+The four reviewed JSON/PNG copies and their SHA256 manifest are retained in [manual-real-30s-20260913](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/README.md). The original 5-second run, blocked/prepared snapshots, accepted players and versioned packages remain historical artifacts. This evidence closeout issued no further inference request and changed no runtime source. Normal gameplay remains 1500 ms. The current status and remaining gap are recorded in [the diagnostic audit](HYBRID-DIAGNOSTIC-30S.md).
+
+### Native Starfall memory local slice - 13 September 2026
+
+A separate memory checkout now contains Starfall-owned versioned event/API contracts, a local SQLite/HTTP service, per-inhabitant episodes and identity, derived subject wiki pages, and explicit sleep-gated offline dreaming. Confirmed past events, private beliefs and dream theories remain distinct. The service cannot issue game actions or permission changes.
+
+The isolated Unity editor proof passed 12 export checks plus 2841 foundation assertions and 26 existing NPC checks. A separate local HTTP process with outbound connections/DNS denied passed 50 integration checks through eight actual Unity fixture events, derived output, CLI access and process restart. Twenty-seven service tests passed. This is a functional data-flow milestone, with no new visual/player acceptance claim. Sleep signals are explicit fixture transitions; a live outbox and gameplay sleep scheduler remain separate. No current player, personal archive or container deployment was connected.
+
+[Reviewed local proof](../evidence/milestones/starfall-memory/local-slice-v1/README.md) and [architecture/contracts](STARFALL-MEMORY.md) retain the exact evidence and limits. An automatic Unity change to the isolated checkout's URP global settings was restored from its pre-editor source; the proof wrapper now preserves that file as well as the three project settings files.
+
+
+## 13 September: request-local reasoning-off diagnostic failed
+
+Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-player request used reasoning_effort none and produced zero reasoning tokens. Prompt processing consumed about 24 seconds; incomplete JSON remained at the 30001 ms cancellation. The actual player correctly failed the genuine-thought gate: 65 checks passed, one failed, zero runtime errors; deterministic fallback delivered one item. Shared model inventory remained unchanged. Reviewed local report and inspected timeout screenshot: evidence/local/thought-reasoning-off-20260913/REPORT.md and runtime/40-real-local-proposal-outcome.png. No genuine thought or new visual acceptance is claimed. Existing artifacts and component authority boundaries are preserved.
+
+
+## 13 September: smaller-model endpoint pass, player launch blocked
+
+Isolated source 45cac4a requires nonempty dialogue/reflection in both provider schema and strict parser. The separate player built with zero errors/warnings and 54 hybrid checks. LM Studio installed google/gemma-4-e4b Q4_K_M locally (6326843776 bytes including projector), preserving the existing loaded 26B model. At the user's direction, the endpoint probe used the already-loaded MLX E4B on Irwins-Mac-mini-2.local through laptop loopback: the corrected strict response completed in 3046 ms with zero reasoning tokens. This is linked-Mac compute, not laptop-only inference. Automatic approval review blocked the compiled-player launch with the sole reason blocked by policy; no new player thought or screenshot acceptance is claimed. Exact report, hashes, endpoint responses and prepared manual launcher: evidence/local/thought-e4b-20260913/REPORT.md. Component action authority and earlier artifacts remain unchanged.

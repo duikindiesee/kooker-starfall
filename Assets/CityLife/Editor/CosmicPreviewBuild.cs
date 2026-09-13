@@ -14,7 +14,7 @@ namespace CityLife.World.Editor
     /// <summary>Bakes the inspected local stage, never an IslandBootstrap or user world/save.</summary>
     public static class CosmicPreviewBuild
     {
-        public const string R19Version="0.0.2-preview.1";
+        public const string R19Version="0.0.2-preview.2";
         public const string FrozenTreeCommit="fc30b2857be419172e740f0d338d5913145d75fb";
         public const string FrozenComponentHash="3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca";
         public static void Build(Camera camera,GameObject ground,Dictionary<string,string> shaderSources,string evidenceDirectory,bool frozenR19=false,string sourceCommit="",string componentHash="")
@@ -76,7 +76,11 @@ namespace CityLife.World.Editor
             camera.enabled=true;camera.tag="MainCamera";
             ground.layer=8;
             var explorer=camera.gameObject.AddComponent<CosmicPreviewExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
-            if(frozenR19)camera.gameObject.AddComponent<CosmicPreviewSmoke>();
+            if(frozenR19)
+            {
+                camera.gameObject.AddComponent<CosmicPreviewSmoke>();
+                camera.gameObject.AddComponent<PreviewDisplayMode>();
+            }
             if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
 
             var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
@@ -90,7 +94,8 @@ namespace CityLife.World.Editor
             pipelineSettings.ApplyModifiedPropertiesWithoutUndo();AssetDatabase.CreateAsset(pipeline,folder+"/Pipeline.asset");
             string oldCompany=PlayerSettings.companyName,oldProduct=PlayerSettings.productName,oldVersion=PlayerSettings.bundleVersion;
             int oldWidth=PlayerSettings.defaultScreenWidth,oldHeight=PlayerSettings.defaultScreenHeight,oldQuality=QualitySettings.GetQualityLevel();
-            bool oldBackground=PlayerSettings.runInBackground;FullScreenMode oldMode=PlayerSettings.fullScreenMode;
+            bool oldBackground=PlayerSettings.runInBackground,oldResize=PlayerSettings.resizableWindow,oldSwitch=PlayerSettings.allowFullscreenSwitch;
+            FullScreenMode oldMode=PlayerSettings.fullScreenMode;
             RenderPipelineAsset oldGraphics=GraphicsSettings.defaultRenderPipeline;
             var oldPipelines=new RenderPipelineAsset[QualitySettings.names.Length];
             int capturedPipelines=0;
@@ -101,6 +106,7 @@ namespace CityLife.World.Editor
                 QualitySettings.SetQualityLevel(oldQuality);
                 PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=frozenR19?"Kooker Starfall R19 "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=frozenR19?R19Version:"0.0.1-wip";
                 PlayerSettings.defaultScreenWidth=1600;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;
+                if(frozenR19){PlayerSettings.resizableWindow=true;PlayerSettings.allowFullscreenSwitch=false;}
                 GraphicsSettings.defaultRenderPipeline=pipeline;
                 for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
                 QualitySettings.SetQualityLevel(oldQuality);
@@ -123,6 +129,7 @@ namespace CityLife.World.Editor
             {
                 PlayerSettings.companyName=oldCompany;PlayerSettings.productName=oldProduct;PlayerSettings.bundleVersion=oldVersion;
                 PlayerSettings.defaultScreenWidth=oldWidth;PlayerSettings.defaultScreenHeight=oldHeight;PlayerSettings.fullScreenMode=oldMode;PlayerSettings.runInBackground=oldBackground;
+                PlayerSettings.resizableWindow=oldResize;PlayerSettings.allowFullscreenSwitch=oldSwitch;
                 GraphicsSettings.defaultRenderPipeline=oldGraphics;
                 for(int i=0;i<capturedPipelines;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=oldPipelines[i];}
                 QualitySettings.SetQualityLevel(oldQuality);AssetDatabase.SaveAssets();

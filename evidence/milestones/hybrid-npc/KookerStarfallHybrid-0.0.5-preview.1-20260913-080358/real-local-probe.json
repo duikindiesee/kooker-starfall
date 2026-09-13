@@ -1,0 +1,18 @@
+{
+  "status": "BLOCKED_BY_AUTOMATIC_APPROVAL_REVIEW",
+  "utc": "2026-09-13T08:07:06.5434137Z",
+  "buildId": "KookerStarfallHybrid-0.0.5-preview.1-20260913-080358",
+  "model": "google/gemma-4-26b-a4b-qat",
+  "loadedModelReadOnly": "Confirmed loaded via GET http://127.0.0.1:1234/api/v0/models",
+  "rejectedAction": "Launch the real-probe harness with one bounded request to the existing local model",
+  "reason": "blocked by policy",
+  "realProbeInvocationsExecuted": 0,
+  "inferenceRequestsSent": 0,
+  "providerReachedForInference": false,
+  "rawReplyReceived": false,
+  "parseResult": "not attempted",
+  "liveValidationResult": "not attempted",
+  "realModelGoal": "none",
+  "actualExecution": "Fake/offline suite completed deterministic deliveries; real model execution not attempted",
+  "remainingGap": "A permitted real-probe run is still required. No model/settings changes were made."
+}

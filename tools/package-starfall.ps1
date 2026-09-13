@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory)][ValidatePattern('^KookerStarfallR19-0\.0\.2-preview\.1-[0-9]{8}-[0-9]{6}$')][string]$BuildName,
+    [Parameter(Mandatory)][ValidatePattern('^KookerStarfallR19-0\.0\.2-preview\.2-[0-9]{8}-[0-9]{6}$')][string]$BuildName,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string]$SourceCommit,
     [string]$PythonExecutable = 'python'
 )
@@ -21,7 +21,7 @@ $commitType = & git -C $projectRoot cat-file -t $SourceCommit
 if ($LASTEXITCODE -ne 0 -or $commitType -ne 'commit') { throw 'SourceCommit must identify an existing exact source commit.' }
 $SourceCommit = $SourceCommit.ToLowerInvariant()
 $treeBasisCommit = 'fc30b2857be419172e740f0d338d5913145d75fb'
-$releaseVersion = '0.0.2-preview.1'
+$releaseVersion = '0.0.2-preview.2'
 $releaseFolder = Join-Path $buildsRoot 'Download'
 if (Test-Path -LiteralPath $releaseFolder) {
     if (-not (Test-Path -LiteralPath $releaseFolder -PathType Container) -or ((Get-Item -LiteralPath $releaseFolder -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Download must be a real directory.' }
@@ -53,6 +53,10 @@ down/up. F12 capture and local input/evidence recording require an explicit
 absolute -previewEvidence folder supplied when launching the player.
 
 RELEASE NOTES - $releaseVersion
+Adds a visible fullscreen/windowed button and Alt+Enter shortcut. Restores
+the previous usable window dimensions without reloading the scene. The
+window can be resized. Earlier preview.1 and R06 artifacts are preserved.
+
 Separate playable build of the frozen R19 PH02 tree experiment: native-scale
 source crowns, fitted support, shared branch skin, blue-green foliage and
 revised ground contact. R19 is a review label, not the semantic version.
