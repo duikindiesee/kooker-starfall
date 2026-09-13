@@ -41,9 +41,11 @@ namespace CityLife.World
   [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.22f,wristDeviation=30f;}
   [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
+  [Serializable]class GripGeometry {public Vector3 handScale,clubScale;public List<Vector3> points=new List<Vector3>();public List<string> bones=new List<string>();}
   private void MeasureGrip(string label) {
    var club=Model.GetComponent<HunterClubCarry>();
    var sample=new GripSample{pose=label};
+   var geometry=new GripGeometry{handScale=Actor.Animator.GetBoneTransform(HumanBodyBones.LeftHand).lossyScale,clubScale=club.Club.lossyScale};
    foreach(var body in Model.GetComponentsInChildren<SkinnedMeshRenderer>()) {
     if(body.name.StartsWith("Hunter "))continue;
     var mesh=new Mesh();body.BakeMesh(mesh);var vertices=mesh.vertices;var weights=body.sharedMesh.boneWeights;
@@ -51,6 +53,7 @@ namespace CityLife.World
      var weight=weights[i];int boneIndex=weight.boneIndex0;string bone=body.bones[boneIndex].name;
      if(!(bone.EndsWith("_l")&&(bone.Contains("hand")||bone.Contains("thumb")||bone.Contains("index")||bone.Contains("middle")||bone.Contains("ring")||bone.Contains("pinky")||bone.Contains("lowerarm"))))continue;
      Vector3 point=club.Club.InverseTransformPoint(body.transform.TransformPoint(vertices[i]));
+     if(label=="Idle-30"){geometry.points.Add(point);geometry.bones.Add(bone);}
      float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
      float radius=Mathf.Lerp(.016f,.038f,fraction)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));
      float depth=radius-new Vector2(point.x-.012f*Mathf.Sin(fraction*5),point.z).magnitude;
@@ -61,6 +64,7 @@ namespace CityLife.World
     }Destroy(mesh);
    }
    gripSamples.Add(sample);
+   if(label=="Idle-30")File.WriteAllText(Path.Combine(directory,"grip-geometry.json"),JsonUtility.ToJson(geometry,true));
   }
   [Serializable]class GripMeasurements {public string scope="Conservative cylinder-envelope vertex penetration in club local metres; polygon surfaces and edge-only intersections still require visual review.";public List<GripSample> samples;}
   private IEnumerator GripViews(string label) {
@@ -81,6 +85,7 @@ namespace CityLife.World
    foreach(string pose in new[]{"Idle","Walk","Crouch","CrouchWalk","SitEnter","Sit","SitExit","Pickup"}) {
     Seat(pose.StartsWith("Sit"));SetPose(pose);Actor.Animator.Play(pose,0,0);
     for(int i=0;i<45;i++){yield return null;Audit();if(i==10||i==30)yield return GripViews(pose+"-"+i);}
+    if(Array.IndexOf(args,"-hunterGripQuick")>=0){File.WriteAllText(Path.Combine(directory,"grip-measurements.json"),JsonUtility.ToJson(new GripMeasurements{samples=gripSamples},true));Application.Quit();yield break;}
    }
    Seat(false);Actor.ExternalDrive=false;Actor.TestControl=false;Actor.RefreshAnimation();Actor.Place(new Vector3(0,.03f,-5));Roamer.Begin();
    for(int i=0;i<2100&&!Roamer.Complete;i++) {
