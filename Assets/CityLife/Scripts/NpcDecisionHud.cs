@@ -17,6 +17,7 @@ namespace CityLife.World
         public NpcPlayerControls Controls;
         private RectTransform backgroundRect, footerRect;
         private Text footer, thoughts;
+        public string LivingMemoryText;
         private void Awake()
         {
             var root = new GameObject("NPC decision panel", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -65,6 +66,7 @@ namespace CityLife.World
                 thoughts.text = "OPTIONAL LOCAL THOUGHTS\n" + planner.Status + "\nAdvisory plan: " + planner.Plan +
                     "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
                     "\n\nActions use deterministic checks. No learning.";
+                if (!string.IsNullOrEmpty(LivingMemoryText)) thoughts.text = LivingMemoryText;
                 footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts " + (planner.EnabledByUser ? "on" : "off");
             }
             Perceptions.gameObject.SetActive(Detailed); History.gameObject.SetActive(Detailed);

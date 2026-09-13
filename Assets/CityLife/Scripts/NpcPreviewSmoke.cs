@@ -52,6 +52,8 @@ namespace CityLife.World
         private void Awake()
         {
             if (!Requested) { enabled = false; return; }
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0 && Array.IndexOf(Environment.GetCommandLineArgs(), "-npcRealProbe") >= 0)
+                throw new InvalidOperationException("Choose one real inference acceptance path per player run.");
             started = Time.realtimeSinceStartup;
             report = new Report { utc = DateTime.UtcNow.ToString("O"), version = Application.version,
                 buildId = Path.GetFileName(Path.GetDirectoryName(Application.dataPath)),
@@ -203,6 +205,11 @@ namespace CityLife.World
                 {
                     var real = NpcRealProposalAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
                     while (real.MoveNext()) yield return real.Current;
+                }
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0)
+                {
+                    var memory = StarfallLivingMemoryAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
+                    while (memory.MoveNext()) yield return memory.Current;
                 }
             }
             Need("no-runtime-errors", Errors.Count == 0, "No player error/assert/exception.");

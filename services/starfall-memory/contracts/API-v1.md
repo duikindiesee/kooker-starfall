@@ -40,3 +40,8 @@ Dreaming currently uses deterministic templates and the last 32 own events at th
 ## Version and correction policy
 
 Unknown event, request, configuration and database versions are rejected. No automatic migration, world regeneration, identity rename, event rewrite, reset, transfer, death or depot-emptying event exists in v1. Those need explicit new contracts and migration tests. Corrections must be appended under a future explicit correction schema that preserves the superseded evidence; neither a dream nor an administrator API can silently overwrite history in this version. Derived processors are named/versioned so future rebuilds can be written separately and traced to their source events.
+
+
+## Planned knowledge/return extension (not API v1)
+
+See [knowledge progression and acceptance](../../../docs/STARFALL-KNOWLEDGE-PROGRESSION.md). Future records require source, original observation, outcome evidence, confidence basis and append-only corrections. Model inference remains interpretation. Death/return/life epochs and mechanic lessons require a versioned schema; unknown v1 fields/events stay rejected. No migration or change to old saves is authorized by this design.

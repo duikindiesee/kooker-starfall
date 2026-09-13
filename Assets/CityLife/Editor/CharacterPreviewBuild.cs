@@ -42,7 +42,7 @@ namespace CityLife.World.Editor
             IslandValidation.Run();
             if (npc) NpcMilestoneValidation.Run();
             if (hybrid) NpcHybridValidation.Run();
-            string versionName = hybrid ? "0.0.5-preview.2" : npc ? "0.0.4-preview.1" : Version;
+            string versionName = hybrid ? "0.0.6-memory-preview.1" : npc ? "0.0.4-preview.1" : Version;
             string executable = hybrid ? "KookerStarfallHybrid" : npc ? "KookerStarfallNpc" : "KookerStarfallCharacter";
             string id = executable + "-" + versionName + "-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             folder = "Assets/CityLife/GeneratedPreview-Character-" + id; materialCount = 0;

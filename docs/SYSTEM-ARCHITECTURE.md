@@ -139,3 +139,24 @@ Separate source d11f5b2 built successfully with 51 hybrid checks. One actual-pla
 ## 13 September: smaller-model endpoint pass, player launch blocked
 
 Isolated source 45cac4a requires nonempty dialogue/reflection in both provider schema and strict parser. The separate player built with zero errors/warnings and 54 hybrid checks. LM Studio installed google/gemma-4-e4b Q4_K_M locally (6326843776 bytes including projector), preserving the existing loaded 26B model. At the user's direction, the endpoint probe used the already-loaded MLX E4B on Irwins-Mac-mini-2.local through laptop loopback: the corrected strict response completed in 3046 ms with zero reasoning tokens. This is linked-Mac compute, not laptop-only inference. Automatic approval review blocked the compiled-player launch with the sole reason blocked by policy; no new player thought or screenshot acceptance is claimed. Exact report, hashes, endpoint responses and prepared manual launcher: evidence/local/thought-e4b-20260913/REPORT.md. Component action authority and earlier artifacts remain unchanged.
+
+
+## Knowledge progression and persistent death/return: design contract
+
+The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.md) define naive starting knowledge, provenance/confidence/corrections, persistent-world death and return, recoverable inventory, at-most-one grounded lesson, privacy, and staged ecology/survival milestones. These are planned, not runtime-proven. Death lessons and post-return reflection remain after the current one-living-thought proof. Existing memory event schema v1 and old saves are unchanged.
+
+
+## Isolated living-memory candidate: source prepared, runtime pending
+
+[One living-memory thought](LIVING-MEMORY-THOUGHT.md) describes the separate 0.0.6-memory-preview.1 adapter and runner. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. A new reflection-only protocol cannot express actions and retains the 1500 ms deadline. This candidate has not yet passed actual-player acceptance and does not replace existing releases.
+
+`mermaid
+flowchart LR
+  A[Actual Unity receipt] --> E[New explicit JSONL export]
+  E --> P[Scoped publisher capability]
+  P --> S[Isolated SQLite service]
+  S --> R[Own confirmed delivery only]
+  R --> M[Bounded reflection-only request]
+  M --> G[Strict parse and live admission]
+  G --> H[HUD interpretation plus event citation]
+` 

@@ -45,7 +45,7 @@ namespace CityLife.World
                     throw new FormatException("schema-empty-thought-text");
                 code = "schema-valid"; return true;
             }
-            catch (FormatException error) { code = error.Message; return false; }
+            catch (FormatException error) { proposal = null; code = error.Message; return false; }
         }
         // Rechecked at consumption against fresh perception, cargo and cooldown. Never invokes an action API.
         public static bool ValidateLive(NpcProposal proposal, NpcProposalContext requested, IReadOnlyList<NpcObservation> current,

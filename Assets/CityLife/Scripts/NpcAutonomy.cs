@@ -26,6 +26,8 @@ namespace CityLife.World
         public bool Ready { get; private set; }
         public string LastResult { get; private set; } = "Waiting for perception";
         public List<string> ChosenGoals = new List<string>();
+        public StarfallMemoryExport MemoryExport;
+        public string MemoryExportFailure { get; private set; } = "";
         private NpcObservation goal;
         private readonly Dictionary<string, int> retryAfter = new Dictionary<string, int>(StringComparer.Ordinal);
         private Queue<Vector3> route;
@@ -106,7 +108,13 @@ namespace CityLife.World
                 if (gestureTicks == 0)
                 {
                     var kind = Actions.Held == null ? NpcActionKind.Pickup : NpcActionKind.Deliver;
+                    string carriedItem = Actions.Held == null ? GoalId : Actions.Held.StableId;
                     var result = Actions.Execute(++requestId, kind, GoalId);
+                    if (MemoryExport != null && result.success && !result.duplicate)
+                    {
+                        try { MemoryExport.CompletedAction(AgentId, Tick, requestId, kind, GoalId, carriedItem, result); }
+                        catch (Exception) { MemoryExportFailure = "memory-export-failed"; }
+                    }
                     LastResult = result.code;
                     Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), GoalId, kind.ToString(), result.code,
                         result.success ? "" : "keep current cargo; exclude goal for 250 ticks; choose again");

@@ -80,3 +80,24 @@ docker compose -f services/starfall-memory/compose.yaml config --quiet
 ```
 
 The integration harness checks actual loopback ingestion, exact event hashes, idempotency, rejection boundaries, per-inhabitant memory, shared facts/private theories, sleep gating, immutable history and process restart persistence. Every invocation requires a new evidence directory. Reviewed synthetic evidence is retained separately from private database/configuration/raw logs. [Reviewed results](../evidence/milestones/starfall-memory/local-slice-v1/README.md) record the tested source and remaining gaps.
+
+
+## Knowledge progression and persistent death/return: design contract
+
+The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.md) define naive starting knowledge, provenance/confidence/corrections, persistent-world death and return, recoverable inventory, at-most-one grounded lesson, privacy, and staged ecology/survival milestones. These are planned, not runtime-proven. Death lessons and post-return reflection remain after the current one-living-thought proof. Existing memory event schema v1 and old saves are unchanged.
+
+
+## Isolated living-memory candidate: source prepared, runtime pending
+
+[One living-memory thought](LIVING-MEMORY-THOUGHT.md) describes the separate 0.0.6-memory-preview.1 adapter and runner. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. A new reflection-only protocol cannot express actions and retains the 1500 ms deadline. This candidate has not yet passed actual-player acceptance and does not replace existing releases.
+
+`mermaid
+flowchart LR
+  A[Actual Unity receipt] --> E[New explicit JSONL export]
+  E --> P[Scoped publisher capability]
+  P --> S[Isolated SQLite service]
+  S --> R[Own confirmed delivery only]
+  R --> M[Bounded reflection-only request]
+  M --> G[Strict parse and live admission]
+  G --> H[HUD interpretation plus event citation]
+` 
