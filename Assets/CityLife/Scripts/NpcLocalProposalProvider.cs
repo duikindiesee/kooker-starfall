@@ -12,7 +12,18 @@ namespace CityLife.World
     // Explicit local endpoint + model only. No discovery-based selection, load/unload, credentials or settings API.
     public sealed class NpcLocalProposalProvider : INpcProposalProvider, IDisposable
     {
-        public string Name => "local-lm-studio";
+        public string Name => "local-lm-studio / " + model;
+        private bool diagnosticReasoningOff;
+        public string LastRequestJson { get; private set; }
+        public string LastAnswer { get; private set; }
+        public void UseSingleDiagnosticReasoningOff()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (Array.IndexOf(args, "-npcSmoke") < 0 || Array.IndexOf(args, "-npcRealProbe") < 0 ||
+                Array.IndexOf(args, "-npcReasoningOff") < 0 || CompletionRequestsAttempted != 0)
+                throw new InvalidOperationException("Reasoning override requires explicit one-shot diagnostic flags.");
+            diagnosticReasoningOff = true;
+        }
         private readonly Uri origin;
         private readonly string model;
         private readonly HttpClient http;
@@ -42,7 +53,9 @@ namespace CityLife.World
                 throw new InvalidOperationException("Configured model is not already loaded.");
             cancellation.ThrowIfCancellationRequested();
             var message = new HttpRequestMessage(HttpMethod.Post, new Uri(origin, "v1/chat/completions"));
-            message.Content = new StringContent(BuildRequest(context, model), Encoding.UTF8, "application/json");
+            if (diagnosticReasoningOff && CompletionRequestsAttempted != 0) throw new InvalidOperationException("Single diagnostic request already used.");
+            LastRequestJson = BuildRequest(context, model, diagnosticReasoningOff);
+            message.Content = new StringContent(LastRequestJson, Encoding.UTF8, "application/json");
             Interlocked.Increment(ref completionRequests);
             string responseText = await Send(message, cancellation).ConfigureAwait(false);
             CompletionResponseReceived = true;
@@ -52,6 +65,7 @@ namespace CityLife.World
                 !choice.TryGetValue("finish_reason", out object finish) || (finish as string) != "stop" ||
                 !choice.TryGetValue("message", out object messageValue) || !(messageValue is Dictionary<string, object> reply) ||
                 !reply.TryGetValue("content", out object content) || !(content is string text)) throw new FormatException("Incomplete local completion.");
+            LastAnswer = text;
             return text;
         }
         private async Task<string> Send(HttpRequestMessage message, CancellationToken cancellation)
@@ -71,7 +85,7 @@ namespace CityLife.World
                 }
             }
         }
-        public static string BuildRequest(NpcProposalContext context, string model)
+        public static string BuildRequest(NpcProposalContext context, string model, bool diagnosticReasoningOff = false)
         {
             var options = context.Eligible.Select(x => (object)new Dictionary<string, object> {
                 ["id"] = x.id, ["goal"] = x.kind == NpcObjectKind.Item ? "collect" : "deliver", ["distance_mm"] = x.distanceMillimetres }).ToArray();
@@ -87,12 +101,14 @@ namespace CityLife.World
                 "\"goal\":{\"type\":\"string\",\"enum\":[\"collect\",\"deliver\",\"wait\"]},\"target_id\":{\"type\":\"string\",\"maxLength\":64}," +
                 "\"plan\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":3,\"items\":{\"type\":\"string\",\"enum\":[\"observe\",\"collect\",\"deliver\",\"wait\"]}}," +
                 "\"dialogue\":{\"type\":\"string\",\"maxLength\":160},\"reflection\":{\"type\":\"string\",\"maxLength\":160}}}";
-            return NpcBoundedJson.Encode(new Dictionary<string, object> {
+            var request = new Dictionary<string, object> {
                 ["model"] = model, ["stream"] = false, ["temperature"] = 0, ["max_tokens"] = 256,
                 ["messages"] = new object[] { new Dictionary<string, object> { ["role"] = "system", ["content"] = instruction },
                     new Dictionary<string, object> { ["role"] = "user", ["content"] = NpcBoundedJson.Encode(snapshot) } },
                 ["response_format"] = new Dictionary<string, object> { ["type"] = "json_schema", ["json_schema"] = new Dictionary<string, object> {
-                    ["name"] = "starfall_goal_v1", ["strict"] = true, ["schema"] = NpcBoundedJson.Parse(schema) } } });
+                    ["name"] = "starfall_goal_v1", ["strict"] = true, ["schema"] = NpcBoundedJson.Parse(schema) } } };
+            if (diagnosticReasoningOff) request["reasoning_effort"] = "none";
+            return NpcBoundedJson.Encode(request);
         }
         public void Dispose() => http.Dispose();
     }

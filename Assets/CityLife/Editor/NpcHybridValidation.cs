@@ -97,6 +97,16 @@ namespace CityLife.World.Editor
             Need((string)request["model"] == "explicit-model" && (bool)request["stream"] == false && request.ContainsKey("response_format") && !request.ContainsKey("tools"),
                 "adapter-request-explicit-model-structured-output-no-tools");
             bool normalRejectsDiagnostic = false;
+            Need(!request.ContainsKey("reasoning_effort"), "ordinary-requests-preserve-model-reasoning-default");
+            var noReasoning = (Dictionary<string, object>)NpcBoundedJson.Parse(NpcLocalProposalProvider.BuildRequest(context, "explicit-model", true), 16384);
+            Need((string)noReasoning["reasoning_effort"] == "none" && Convert.ToInt64(noReasoning["max_tokens"]) == 256 && noReasoning.ContainsKey("response_format"),
+                "diagnostic-reasoning-off-keeps-token-cap-and-schema");
+            using (var guardedProvider = new NpcLocalProposalProvider("http://127.0.0.1:1234", "explicit-model"))
+            {
+                bool guardedOverride = false;
+                try { guardedProvider.UseSingleDiagnosticReasoningOff(); } catch (InvalidOperationException) { guardedOverride = true; }
+                Need(guardedOverride, "reasoning-override-requires-diagnostic-flags");
+            }
             try { NpcProposalBroker.Request(fake, context, 30000, CancellationToken.None).GetAwaiter().GetResult(); }
             catch (ArgumentOutOfRangeException) { normalRejectsDiagnostic = true; }
             Need(normalRejectsDiagnostic, "normal-provider-path-still-rejects-30-second-timeout");

@@ -27,6 +27,8 @@ namespace CityLife.World
             brain.ResetState();
             string model = Argument("-npcLocalModel");
             var provider = new NpcLocalProposalProvider(Argument("-npcLocalEndpoint"), model);
+            bool genuineGate = Array.IndexOf(args, "-npcReasoningOff") >= 0;
+            if (genuineGate) provider.UseSingleDiagnosticReasoningOff();
             planner.Configure(provider);
             int diagnosticDeadline = Array.IndexOf(args, "-npcDiagnostic30") >= 0 ? 30000 : 5000;
             planner.UseDiagnosticProbeDeadline(diagnosticDeadline); planner.SetEnabled(true); hud.Detailed = true;
@@ -41,11 +43,13 @@ namespace CityLife.World
             need("real-probe-one-audited-attempt", planner.Audit.Count == before + 1 && !planner.Pending,
                 "Exactly one local provider attempt was consumed and audited; only the explicit diagnostic budget changes.");
             var audit = planner.Audit.Last();
+            if (provider.LastRequestJson != null) File.WriteAllText(Path.Combine(directory, "real-request.json"), provider.LastRequestJson);
             bool accepted = audit.outcome == "accepted-high-level-goal" || audit.outcome == "accepted-bounded-wait";
             need("real-probe-at-most-one-completion", provider.CompletionRequestsAttempted <= 1,
                 "Exactly one completion is attempted if the configured model is already loaded; discovery failure can safely prevent that single attempt.");
             bool displayed = accepted && planner.Dialogue.Length > 0 && planner.Reflection.Length > 0 &&
                 planner.Dialogue == audit.dialogue && planner.Reflection == audit.reflection;
+            if (accepted) File.WriteAllText(Path.Combine(directory, "accepted-answer.json"), provider.LastAnswer);
             need("real-probe-text-matches-admitted-proposal", !accepted || displayed,
                 "Admitted dialogue/reflection match the validated reply in the actual HUD; a rejected/missing reply does not claim generated text.");
             capture("40-real-local-proposal-outcome");
@@ -62,6 +66,9 @@ namespace CityLife.World
                 deliveries = brain.Actions.Deliveries, completionRequestsAttempted = provider.CompletionRequestsAttempted, deadlineMilliseconds = diagnosticDeadline,
                 selectedGoal = audit.proposedGoal, selectedTarget = audit.proposedTarget, dialogue = planner.Dialogue, reflection = planner.Reflection, admittedTextDisplayed = displayed,
                 providerReached = provider.InventoryResponseReceived, completionHttpResponseReceived = provider.CompletionResponseReceived }, true));
+            need("genuine-thought-required-when-requested", !genuineGate || (accepted && displayed && audit.schemaValid &&
+                provider.CompletionResponseReceived && provider.CompletionRequestsAttempted == 1),
+                "Reasoning-off acceptance requires a real completed, strictly parsed, live-admitted answer and matching HUD text. Fallback is not a pass.");
             planner.Configure(null);
         }
     }
