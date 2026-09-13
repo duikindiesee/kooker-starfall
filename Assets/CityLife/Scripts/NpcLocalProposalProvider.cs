@@ -100,7 +100,7 @@ namespace CityLife.World
                 "\"version\":{\"type\":\"integer\",\"const\":1},\"request_id\":{\"type\":\"integer\",\"const\":" + context.RequestId + "}," +
                 "\"goal\":{\"type\":\"string\",\"enum\":[\"collect\",\"deliver\",\"wait\"]},\"target_id\":{\"type\":\"string\",\"maxLength\":64}," +
                 "\"plan\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":3,\"items\":{\"type\":\"string\",\"enum\":[\"observe\",\"collect\",\"deliver\",\"wait\"]}}," +
-                "\"dialogue\":{\"type\":\"string\",\"maxLength\":160},\"reflection\":{\"type\":\"string\",\"maxLength\":160}}}";
+                "\"dialogue\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":160},\"reflection\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":160}}}";
             var request = new Dictionary<string, object> {
                 ["model"] = model, ["stream"] = false, ["temperature"] = 0, ["max_tokens"] = 256,
                 ["messages"] = new object[] { new Dictionary<string, object> { ["role"] = "system", ["content"] = instruction },

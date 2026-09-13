@@ -41,6 +41,8 @@ namespace CityLife.World
                     steps.Any(x => !(x is string s) || (s != "observe" && s != "collect" && s != "deliver" && s != "wait"))) throw new FormatException("schema-plan");
                 proposal = new NpcProposal { version = 1, request_id = requestId, goal = goal, target_id = target,
                     plan = steps.Cast<string>().ToArray(), dialogue = Text("dialogue", 160), reflection = Text("reflection", 160) };
+                if (string.IsNullOrWhiteSpace(proposal.dialogue) || string.IsNullOrWhiteSpace(proposal.reflection))
+                    throw new FormatException("schema-empty-thought-text");
                 code = "schema-valid"; return true;
             }
             catch (FormatException error) { code = error.Message; return false; }
