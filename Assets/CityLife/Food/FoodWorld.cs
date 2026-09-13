@@ -176,7 +176,7 @@ namespace Starfall.Food
         public void Reload(){pending=false;Auto=false;string w=Model.State.world,g=Model.State.generation;if(Model.Load(Slot,w,g)){SetActor(Model.State.actorPosition);BindScope();RefreshVisuals();Record("reload","Exact world state reloaded; no offline growth.");}else Record("reload","Load rejected; existing state retained.");}
         public void Fresh(bool reset)
         {
-            string w=reset?Model.State.world:"food-"+Guid.NewGuid().ToString("N");Model=new FoodModel(w,"g-"+Guid.NewGuid().ToString("N"),4242);BindScope();SetActor(new Vector3(0,0,-2));RefreshVisuals();Record("reset","Clean seeded world. Acquired food knowledge and inventory cleared; old saves preserved.");
+            string w=reset?Model.State.world:"food-"+Guid.NewGuid().ToString("N");int seed=Model.State.seed;Model=new FoodModel(w,"g-"+Guid.NewGuid().ToString("N"),seed);BindScope();SetActor(new Vector3(0,0,-2));RefreshVisuals();Record("reset","Clean seeded world. Acquired food knowledge and inventory cleared; old saves preserved.");
         }
         static string Stage(int i)=>i==0?"empty":i==1?"seedling":i==2?"growing":i==3?"ripe":"dead";
         void OnGUI()
