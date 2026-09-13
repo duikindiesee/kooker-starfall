@@ -1,5 +1,7 @@
 # Next playable sandbox slice
 
+Later lifecycle requirement, recorded 13 September 2026: the [save and world lifecycle contract](SAVE-GAME-CONTRACT.md) governs future authoritative physics/weather persistence and full-game reset/archive behavior. The transient fixture reset described in this historical sandbox plan does not authorize deletion of a saved world or its inhabitants' histories.
+
 The immediate milestone is a visible fullscreen/windowed button in a separate R19 player. Character integration follows it. This document records direction, not implemented gameplay or acceptance.
 
 The next small sandbox should use an upright, fictional ape-like Stone Age character with a following camera. The character should be able to walk, turn and interact with nearby objects. Asset selection requires an identifiable publisher, licence, inspectable rig and actual animation clips; no purchase is authorized.

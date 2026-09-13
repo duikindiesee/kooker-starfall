@@ -71,6 +71,19 @@ Walking follows the ground at 1.85 m eye clearance and stays within the study. T
 
 The preview has no implemented multiplayer, bot connections or saved-world loading. Offline operation and engine telemetry have not been fully validated. Legacy island build commands and controls remain in the [earlier island guide](docs/LEGACY-ISLAND.md).
 
+## Save and new-game contract — planned
+
+These are recorded requirements; complete-game save/load is not implemented or runtime-proven. The next implementation priority remains one genuine local-model thought.
+
+| Operation | Contract |
+|---|---|
+| Save / Load | Bind the authoritative Unity world, NPC brains and the exact private/shared history to one versioned, validated checkpoint. Restore the whole checkpoint after quit/relaunch; refuse incompatible partial joins. |
+| New Character | Keep the current world and seed; create a stable world-scoped inhabitant identity with its own private memory. |
+| New World / New Game | Create a fresh save slot, unique world identity and generated seed, with separate inhabitants and history. A deliberately repeated seed still creates a different world. |
+| Reset | Default to a fresh slot and preserve the old one. Explicit archive keeps the old world recoverable; deletion is a separate deliberate operation. |
+
+The authoritative [save and world lifecycle contract](docs/SAVE-GAME-CONTRACT.md) defines checkpointing, event identity, isolation, migration, backup/export/import, corruption recovery and evidence required from the actual player. The [architecture map](docs/SYSTEM-ARCHITECTURE.md) marks this work as planned.
+
 ## Evidence at a glance
 
 | Claim | Status | Evidence | Remaining gap |
@@ -90,6 +103,7 @@ The preview has no implemented multiplayer, bot connections or saved-world loadi
 | Images and review | [Visual catalogue](docs/KOKERBOOM-VISUAL-REVIEW.html) · [Milestones](docs/VISUAL-MILESTONES.md) · [Tree critique](docs/KOKERBOOM-CRITIQUE.md) |
 | Assets and provenance | [Asset catalogue](docs/ASSET-CATALOGUE.md) · [Credits](docs/ASSET-CREDITS.md) · [Portable notices](Assets/CityLife/Art/THIRD-PARTY-NOTICES.txt) |
 | Determinism and saved edits | [World foundation](docs/WORLD-FOUNDATION.md) · [Legacy island](docs/LEGACY-ISLAND.md) |
+| Next save/new-game architectural gate | [Versioned slots, world-scoped identities, atomic checkpoints and recovery](docs/SAVE-GAME-CONTRACT.md) · Requirements only, after the living-thought priority |
 | Native memory service | [Starfall memory: local ledger, episodes, wiki and sleep-gated dreams](docs/STARFALL-MEMORY.md) |
 | Verification and contribution | [Evidence record](docs/VERIFICATION.md) · [CI and safeguards](docs/CI.md) |
 
