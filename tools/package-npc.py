@@ -43,12 +43,12 @@ def main():
     figures = ''.join('<figure><a href="' + html.escape(name, quote=True) + '"><img loading="lazy" src="' +
                       html.escape(name, quote=True) + '" alt="Actual Unity player checkpoint"></a><figcaption>' +
                       html.escape(name.removesuffix('.png').replace('-', ' ')) + '</figcaption></figure>' for name in pictures)
-    rows = ''.join('<tr><td>' + html.escape(x['name']) + '</td><td>PASS</td><td>' + html.escape(x['evidence']) + '</td></tr>' for x in report['checks'])
+    rows = ''.join('<tr><td>' + html.escape(x['name']) + '</td><td>PASS</td><td>' + html.escape(x['evidence']) + '</td><td>This build only; native physical input and performance remain separate.</td></tr>' for x in report['checks'])
     review = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Starfall / Optional local thoughts</title><style>body{max-width:1200px;margin:0 auto;padding:28px;background:#071521;color:#e6f2f3;font:16px system-ui;line-height:1.5}a{color:#88dfdf}figure{margin:30px 0}img{width:100%;border-radius:8px}table{border-collapse:collapse;width:100%;font-size:14px}td{border-bottom:1px solid #345;padding:10px}figcaption{color:#adcad2}</style>
 <h1>Starfall / Optional local thoughts</h1><p>Actual standalone Unity player observations. Optional model proposals can select high-level goals, offer a short advisory plan and generate fictional dialogue/reflection. Deterministic physics, perception, navigation, permissions and action APIs remain in charge. No learning is implemented.</p>
 <p>Acceptance uses a labelled fake provider and an unavailable local HTTP endpoint. A separate real-inference record, when present, identifies its actual outcome. These captures prove Unity Input System handlers, not physical keyboard/mouse routing or sustained performance.</p>
-<p><a href="npc-runtime.json">Full runtime evidence and proposal audit</a></p>''' + figures + '<table><tr><th>Claim</th><th>Status</th><th>Evidence</th></tr>' + rows + '</table></html>'
+<p><a href="npc-runtime.json">Full runtime evidence and proposal audit</a> · <a href="real-local-probe.json">Real local probe status</a></p>''' + figures + '<table><tr><th>Claim</th><th>Status</th><th>Evidence</th><th>Remaining gap</th></tr>' + rows + '</table></html>'
     (evidence / 'review.html').write_text(review, encoding='utf-8')
     executable = Path(manifest['output']).name
     readme = f'''Kooker Starfall / Optional local thoughts / {manifest['version']}

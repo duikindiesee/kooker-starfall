@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-13T08:04:24.3658811Z",
+  "uniqueFiles": 743,
+  "failures": [],
+  "scope": "Earlier R06/R19/display/first-inhabitant releases and accepted 0.0.4 NPC runtime unchanged by SHA256"
+}

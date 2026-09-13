@@ -45,7 +45,9 @@ The opt-in `-npcRealProbe` smoke extension requires explicit `-npcLocalEndpoint`
 | Strict proposal/provider boundary | 43 focused checks passed | `NpcHybridValidation.Run`; retained validation JSON | Future schemas require new validation |
 | Actual default/fake/offline behavior and controls | 60 checks passed in runtime-03 | Retained runtime JSON, proposal audit and real player PNGs | Physical keyboard/mouse routing and sustained performance are separate |
 | F11 and graphics button preserve state | Both directions passed | Actual Screen mode/dimension transitions plus NPC identity/cargo/goal/log assertions | Other displays/devices not tested |
-| Real local inference | Pending final probe evidence | Inspect the final release's real-local-probe.json when present | No general latency/reliability or learning claim |
+| Real local inference | Blocked by automatic approval review | Final release real-local-probe.json records the rejected launch and zero inference requests | One permitted real probe is still required; no real-model response, execution or latency claim |
 | Living sea / full world | Planned separately | Living-sea design and user concept references | Marine life and swimming environment are not delivered here |
 
 Failed runtime-01 and runtime-02 are preserved locally. Runtime-02 exposed repeated provider waits after an offline timeout; the circuit-breaker repair in runtime-03 allowed a complete deterministic delivery. No earlier binary was replaced, and this work is local/unpublished.
+
+The final source-pinned player is `KookerStarfallHybrid-0.0.5-preview.1-20260913-080358`, built from `9a3bf77dc219abf89dc6b0fd72cffa3f811a3ae7`, with 0 build errors/warnings and a fresh 60/60 runtime pass. [Review actual player frames](../evidence/milestones/hybrid-npc/KookerStarfallHybrid-0.0.5-preview.1-20260913-080358/review.html), [release evidence](../evidence/verified/hybrid-npc-release.json), and [requirement audit](HYBRID-NPC-AUDIT.md).
