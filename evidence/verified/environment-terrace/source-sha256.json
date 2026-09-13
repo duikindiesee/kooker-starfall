@@ -1,0 +1,82 @@
+[
+  {
+    "path": "Assets/CityLife/Environment/Editor.meta",
+    "sha256": "B399DFAD4D1017B9448E4A28E1EA5A778D5CDAB1F0A5085138BA643C831BDDD4"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentChecks.cs",
+    "sha256": "CB07078AD37271AC1CC6396443B3E741535F22EFCF17B06F87815DA148964EB8"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentChecks.cs.meta",
+    "sha256": "9A6A6AB4B59693979D8FE38E43B4288CD0FD490E370FD58226D4399607EF5199"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentModel.cs",
+    "sha256": "3B188E7DE9CA5235495DB942F7D2D18D3488970C2D9E8793625E2F141430EA90"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentModel.cs.meta",
+    "sha256": "938F54B3772DA109103587325F2F6BBA9ADDEF4CD86DABFA22B82416C93F270B"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentMotion.cs",
+    "sha256": "C34BB059083D366B9A7E25A95A3767362C80C635C2DCEF9B40B4792FC305802A"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentMotion.cs.meta",
+    "sha256": "4A4DA25257E7BB0D7C9FA1FE7884C13FAC9B64651857D8ACEDDAB965625A6700"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPhysicsChecks.cs",
+    "sha256": "86856812FA864B2AF3B3A6A34FF348A5EDEC300A84E5FB6894488E7AC1D0A05F"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPhysicsChecks.cs.meta",
+    "sha256": "6F4DC9907AB58DB9B78A7E1A1C2E9DBFD0CD25670FD8239C0229C1565A80C070"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPlayerEvidence.cs",
+    "sha256": "9A9FE1B323239A628E1B02DEAFF1896E9FA1E4A01AD20F0285F058044CFDB396"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPlayerEvidence.cs.meta",
+    "sha256": "586827F601B6185338358EE310BE95D347C715DB5D672B48FF2118FA4A0E6FD9"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPresentation.cs",
+    "sha256": "2F9A3FAE8738FFFCE7A657A92D630E609D18484783CDC5CA98DCA93017D970CE"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPresentation.cs.meta",
+    "sha256": "4F6203852536A452972FE13C71EC0C0A4268BC5A2D65B47132435F2CA4EB8BD6"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentWorld.cs",
+    "sha256": "0BD1C2AA3BF98F1893975ED94BA99E4C9EBFDBB8A47B53D96E8C18D071DF887E"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentWorld.cs.meta",
+    "sha256": "5C8DF9C650C45D53E7291A796B80C27EC8B712F8199C6733987F4AC98FD52585"
+  },
+  {
+    "path": "Assets/CityLife/Environment/Scenes.meta",
+    "sha256": "4E67E6C3265864C7D425F120AF218B0171F049ED312985EFB5413BACBDD4D79C"
+  },
+  {
+    "path": "Assets/CityLife/Environment/Editor/EnvironmentBuild.cs",
+    "sha256": "63CC51F175E272EA4996C811517820560885A6CD8E61DF036008AC6AFAC2582D"
+  },
+  {
+    "path": "Assets/CityLife/Environment/Editor/EnvironmentBuild.cs.meta",
+    "sha256": "6AD096413C2F5E2D385032CB5821F810BAE802B9DE82FED66195D7BCC5D17D88"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/EnvironmentWater.shader",
+    "sha256": "26317B9F959E49027E9BF1166DDC40A7698E76428E2BF3C9D66E218854F6405F"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/EnvironmentSky.shader",
+    "sha256": "AF8621D83A3B19FECA8B5A50BDB9E1BA448B2B75BA0C095BD81FEC555CAF9386"
+  }
+]

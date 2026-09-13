@@ -62,6 +62,7 @@ namespace Starfall.EnvironmentFoundation
             View.farClipPlane=1500;View.clearFlags=CameraClearFlags.SolidColor;View.backgroundColor=new Color(.17f,.25f,.35f);
             var sun=new GameObject("Environment sun").AddComponent<Light>();sun.type=LightType.Directional;sun.intensity=2;sun.transform.rotation=Quaternion.Euler(45,-30,0);
             RenderSettings.ambientLight=new Color(.5f,.55f,.65f);
+            EnvironmentPresentation.Apply(this);
             if(Auto) gameObject.AddComponent<EnvironmentPlayerEvidence>();
         }
         void FixedUpdate()
@@ -97,6 +98,7 @@ namespace Starfall.EnvironmentFoundation
             if(arrow!=null){arrow.rotation=Quaternion.LookRotation(s.wind.sqrMagnitude>.01f?s.wind:Vector3.forward);arrow.localScale=new Vector3(.2f,.2f,Mathf.Max(.3f,s.wind.magnitude*.2f));}
             if(wave!=null)waterMaterial.color=new Color(.04f,.55f,.65f);
             Shader.SetGlobalVector("_StarfallWind",s.wind);Shader.SetGlobalFloat("_StarfallEnvironmentTime",seconds);
+            Shader.SetGlobalFloat("_StarfallWeather",s.precipitation);
         }
         public void SetPause(bool value){Clock.Paused=value;Time.timeScale=value?0:1;}
         string SavePath=>Path.Combine(Application.persistentDataPath,"environment-fixture-v1.json");

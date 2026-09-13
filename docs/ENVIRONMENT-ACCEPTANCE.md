@@ -1,5 +1,7 @@
 # Environment foundation: evidence and integration gates
 
+The subsequent [supported-terrace visual revision and before/after comparison](ENVIRONMENT-TERRACE-COMPARISON.md) preserves the baseline results below and provides its own compiled-player checks and separate executable.
+
 This workstream is an additive physical-environment foundation and a compiled Windows component-test player. It is not the panorama-scale world, an NPC brain, swimming implementation or a production deployment. Source is isolated on `codex/starfall-environment`, based on the preserved coastal checkpoint `30bdefb`.
 
 ## What is implemented
