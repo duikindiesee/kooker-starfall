@@ -18,6 +18,10 @@ namespace CityLife.World
         public float LookSensitivity = .10f;
         public float WalkSpeed = 3.6f;
         public float FlySpeed = 12f;
+        public float MinimumX = -27f;
+        public float MaximumX = 27f;
+        public float MinimumZ = -19f;
+        public float MaximumZ = 35f;
 
         public string CurrentMode => flying ? "Fly" : "Walk";
         public double TravelledMetres { get; private set; }
@@ -53,7 +57,7 @@ namespace CityLife.World
 
         private void Update()
         {
-            if (CosmicPreviewSmoke.Requested || !ready) return;
+            if (CosmicPreviewSmoke.Requested || CoastalPreviewSmoke.Requested || !ready) return;
             if (!Application.isFocused)
             {
                 ReleasePointer();
@@ -158,10 +162,10 @@ namespace CityLife.World
             return Physics.Raycast(origin, Vector3.down, out hit, 160f, GroundMask, QueryTriggerInteraction.Ignore);
         }
 
-        private static Vector3 ClampStage(Vector3 position)
+        private Vector3 ClampStage(Vector3 position)
         {
-            position.x = Mathf.Clamp(position.x, -27f, 27f);
-            position.z = Mathf.Clamp(position.z, -19f, 35f);
+            position.x = Mathf.Clamp(position.x, MinimumX, MaximumX);
+            position.z = Mathf.Clamp(position.z, MinimumZ, MaximumZ);
             return position;
         }
 
@@ -188,7 +192,7 @@ namespace CityLife.World
 
         private void ReleasePointer()
         {
-            if (CosmicPreviewSmoke.Requested) return;
+            if (CosmicPreviewSmoke.Requested || CoastalPreviewSmoke.Requested) return;
             if (!looking) return;
             looking = false;
             Cursor.lockState = CursorLockMode.None;
@@ -303,14 +307,14 @@ namespace CityLife.World
         internal bool SmokeGround(Vector3 point, out RaycastHit hit) => TryGround(point, out hit);
         internal void SmokeAim(Vector3 target)
         {
-            if (!CosmicPreviewSmoke.Requested || !ready) throw new InvalidOperationException("Smoke hook unavailable.");
+            if ((!CosmicPreviewSmoke.Requested && !CoastalPreviewSmoke.Requested) || !ready) throw new InvalidOperationException("Smoke hook unavailable.");
             Vector3 direction = target - CameraPosition;
             SetLook(Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg,
                 -Mathf.Atan2(direction.y, new Vector2(direction.x, direction.z).magnitude) * Mathf.Rad2Deg);
         }
         internal void SmokeStep(Vector3 input, bool fast, float seconds)
         {
-            if (!CosmicPreviewSmoke.Requested || !ready) throw new InvalidOperationException("Smoke hook unavailable.");
+            if ((!CosmicPreviewSmoke.Requested && !CoastalPreviewSmoke.Requested) || !ready) throw new InvalidOperationException("Smoke hook unavailable.");
             Move(Vector3.ClampMagnitude(input, 1f), fast, Mathf.Clamp(seconds, 0f, .05f));
             RecordChangedInput(input, fast);
         }

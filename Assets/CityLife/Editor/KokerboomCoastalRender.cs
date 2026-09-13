@@ -11,7 +11,9 @@ namespace CityLife.World.Editor
     {
         private static bool coastalMode;
         private static GameObject coast;
+        private static GameObject coastalTerrain;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
+        public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
         private static void Coastal()
         {
@@ -21,6 +23,7 @@ namespace CityLife.World.Editor
             {
                 coast=new GameObject("Starfall coastal slice v1 - separate world study");
                 GameObject terrain=CoastalTerrain.Create(coast.transform);
+                coastalTerrain=terrain;
                 GameObject rocks=CoastalRocks.Create(coast.transform);
                 GameObject water=CoastalWater.Create(coast.transform);
                 subjects.Add(new Subject{Root=terrain,Kind="coastal-terrain"});
@@ -31,6 +34,7 @@ namespace CityLife.World.Editor
                 VerifyCoastalCollision(terrain,rocks);
             }
             coast.SetActive(true);
+            if(coastalTerrain==null)coastalTerrain=GameObject.Find("Coastal terrain "+CoastalTerrain.DefinitionId+" seed "+CoastalTerrain.Seed);
             camera.GetComponent<UniversalAdditionalCameraData>().requiresDepthTexture=true;
             camera.GetComponent<UniversalAdditionalCameraData>().requiresColorTexture=true;
             camera.farClipPlane=1500;

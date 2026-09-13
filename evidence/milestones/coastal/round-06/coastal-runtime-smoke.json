@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "scope": "Actual built coastal player scene and controller route; hidden smoke, not user-visible native input acceptance.",
+  "checks": ["world-id", "terrain-collider", "rock-colliders", "water", "hero-tree", "blue-giant", "galaxy", "walk-input-route", "inside-bounds"]
+}
