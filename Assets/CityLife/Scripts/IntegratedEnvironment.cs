@@ -66,16 +66,19 @@ namespace CityLife.World
         {
             if (Brain.MenuPaused) return;
             var controls = View.GetComponent<NpcPlayerControls>();
-            GUI.Box(new Rect(Screen.width - 390, 12, 378, 84), "");
-            GUI.Label(new Rect(Screen.width - 378, 18, 355, 75),
+            var textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22 };
+            float panelWidth = Mathf.Min(570, Screen.width * .48f);
+            float panelLeft = Screen.width - panelWidth - 12;
+            GUI.Box(new Rect(panelLeft, 12, panelWidth, 116), "");
+            GUI.Label(new Rect(panelLeft + 12, 18, panelWidth - 24, 108),
                 controls.Mode + "\n" + (controls.Looking ? "Mouse captured / Escape releases and pauses" : "Click or right-click in the world to look") +
-                "\nTab possess / F spectator / P options / F11 display\nSensitivity: P > Controls > Mouse look");
-            GUI.Box(new Rect(Screen.width - 390, Screen.height - 115, 378, 103), "");
-            GUI.Label(new Rect(Screen.width - 378, Screen.height - 109, 355, 97),
+                "\nTab: possess | F: spectator | P: options | F11: display\nSensitivity: P > Controls > Mouse look", textStyle);
+            GUI.Box(new Rect(panelLeft, Screen.height - 140, panelWidth, 128), "");
+            GUI.Label(new Rect(panelLeft + 12, Screen.height - 134, panelWidth - 24, 116),
                 "STARFALL / REGIONAL CANDIDATE " + Application.version +
                 "\n" + Weather + " | wind " + Clock.Sample.wind.magnitude.ToString("F1") + " m/s | " + Clock.Sample.temperature.ToString("F0") + " C" +
                 "\nInhabitant wetness " + Exposure.Wetness01.ToString("P0") + " | " + (Exposure.Cold ? "cold exposure" : "comfortable") +
-                "\nRegional slice; swimming, boats and full saves pending");
+                "\nRegional slice; swimming, boats and full saves pending", textStyle);
         }
     }
 }
