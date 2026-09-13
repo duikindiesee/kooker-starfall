@@ -76,10 +76,10 @@ namespace CityLife.World
             if (GUI.Button(new Rect(panelLeft + 12, 130, panelWidth - 24, 30), "Options", new GUIStyle(GUI.skin.button) { fontSize = 22 })) controls.OpenMenu();
             GUI.Box(new Rect(panelLeft, Screen.height - 140, panelWidth, 128), "");
             GUI.Label(new Rect(panelLeft + 12, Screen.height - 134, panelWidth - 24, 116),
-                "STARFALL / REGIONAL CANDIDATE " + Application.version +
+                "STARFALL / Coastal preview" +
                 "\n" + Weather + " | wind " + Clock.Sample.wind.magnitude.ToString("F1") + " m/s | " + Clock.Sample.temperature.ToString("F0") + " C" +
                 "\nInhabitant wetness " + Exposure.Wetness01.ToString("P0") + " | " + (Exposure.Cold ? "cold exposure" : "comfortable") +
-                "\nRegional slice; swimming, boats and full saves pending", textStyle);
+                "\nSwimming, boats and full saves: planned", textStyle);
         }
     }
 }

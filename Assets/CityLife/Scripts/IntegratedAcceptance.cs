@@ -36,6 +36,14 @@ namespace CityLife.World
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
             File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
         }
+        private IEnumerator ClickMenuButton(int index)
+        {
+            var rect = GameObject.Find("Option " + index).GetComponent<RectTransform>();
+            var point = RectTransformUtility.WorldToScreenPoint(Controls.View.GetComponent<Camera>(), rect.TransformPoint(rect.rect.center));
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }); yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }.WithButton(MouseButton.Left)); yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }); yield return null; yield return null;
+        }
         private IEnumerator Start()
         {
             var args = System.Environment.GetCommandLineArgs();
@@ -80,6 +88,11 @@ namespace CityLife.World
             yield return new WaitForSecondsRealtime(.3f);
             CheckThat("pause-releases-and-stops-simulation", Controls.MenuOpen && !Controls.Looking && Brain.Tick == npcTick && Environment.Clock.Tick == tick, "Both clocks stopped while menu open.");
             yield return Capture("04-paused-options");
+            yield return ClickMenuButton(1);
+            CheckThat("pointer-opens-controls-menu", Controls.MenuOpen && Controls.Page == "Controls", "Actual UI pointer event routing through the canvas raycaster.");
+            yield return Capture("04b-pointer-controls");
+            if (Controls.Page == "Controls") yield return ClickMenuButton(3);
+            CheckThat("pointer-returns-to-options", Controls.MenuOpen && Controls.Page == "Root", "Pointer back action keeps simulation paused.");
             yield return Tap(Key.P);
             CheckThat("resume-restores-capture", !Controls.MenuOpen && Controls.Looking, "Prior play capture intent restored.");
             var oldMode = Screen.fullScreenMode;

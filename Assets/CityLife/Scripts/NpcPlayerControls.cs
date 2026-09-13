@@ -195,6 +195,8 @@ namespace CityLife.World
         }
         private void BuildMenu()
         {
+            if (Hud.Canvas.GetComponent<GraphicRaycaster>() == null)
+                Hud.Canvas.gameObject.AddComponent<GraphicRaycaster>();
             if (EventSystem.current == null)
             {
                 var events = new GameObject("Menu input", typeof(EventSystem), typeof(InputSystemUIInputModule));
