@@ -10,7 +10,7 @@ namespace CityLife.World
   public Transform[] GripBones; public Quaternion[] GripRotations;
   public Vector3 PalmAnchor, ShaftAxis; public Quaternion HandBasis;
   public Vector3[] FlexAxes; public Vector3 PalmAlong,PalmNormal;
-  public Vector3 DiagnosticCurlAdjustment; public Vector2 DiagnosticAnchorAdjustment;
+  public Vector3 DiagnosticCurlAdjustment,DiagnosticThumbAdjustment; public Vector2 DiagnosticAnchorAdjustment;
   public float ForearmSlope=-1.5f,ElbowOut=.22f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
@@ -48,7 +48,7 @@ namespace CityLife.World
     var bone=thumb[joint];var turn=Quaternion.FromToRotation(tip.position-bone.position,target-bone.position);
     bone.rotation=Quaternion.RotateTowards(Quaternion.identity,turn,12f)*bone.rotation;
    }
-   for(int i=0;i<3;i++){GripBones[12+i]=thumb[i];GripRotations[12+i]=thumb[i].localRotation;}
+   for(int i=0;i<3;i++){GripBones[12+i]=thumb[i];GripRotations[12+i]=thumb[i].localRotation;FlexAxes[12+i]=thumb[i].InverseTransformDirection(across);}
    for(int i=0;i<3;i++)thumb[i].localRotation=original[i];
   }
   private void LateUpdate(){if(!Animator||!Club||GripBones==null)return;
@@ -67,7 +67,7 @@ namespace CityLife.World
    Vector3 handDirection=Quaternion.AngleAxis(-WristDeviation,Actor.right)*forearmDirection;
    Vector3 shaftDirection=Vector3.ProjectOnPlane(Vector3.down,handDirection).normalized;
    hand.rotation=Quaternion.LookRotation(shaftDirection,handDirection)*Quaternion.Inverse(HandBasis);
-   for(int i=0;i<GripBones.Length;i++)GripBones[i].localRotation=i<12?GripRotations[i]*Quaternion.AngleAxis(-DiagnosticCurlAdjustment[i%3],FlexAxes[i]):GripRotations[i];
+   for(int i=0;i<GripBones.Length;i++)GripBones[i].localRotation=GripRotations[i]*Quaternion.AngleAxis(-(i<12?DiagnosticCurlAdjustment[i%3]:DiagnosticThumbAdjustment[i%3]),FlexAxes[i]);
    GripCenter=hand.TransformPoint(PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y);Club.position=GripCenter;
    Club.rotation=Quaternion.FromToRotation(Vector3.down,hand.TransformDirection(ShaftAxis));
    GroundClearance=Club.GetComponent<Renderer>().bounds.min.y-Actor.position.y;
