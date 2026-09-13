@@ -188,7 +188,11 @@ namespace Starfall.Food
             GUI.Label(new Rect(22,75,850,38),$"Reserve {s.body.fat/100f:F0}% • Protein {s.body.protein/100f:F0}% • Health {s.body.health/100f:F0}% • Fatigue {s.body.fatigue/100f:F0}% | {(s.body.dead?"AWAITING RETURN":s.hydration<2000?"THIRST: seek known freshwater":s.satiety<2000?"HUNGRY: use known food":s.knowsBerry?"Berry known":"Berry UNKNOWN")} | Tick {s.tick}",small);
             GUI.Box(new Rect(895,115,385,605),"");GUI.Label(new Rect(910,128,350,30),"PERCEIVE → DECIDE → ACT",new GUIStyle(title){fontSize=19});
             GUI.Label(new Rect(910,165,350,70),$"Bush: {s.fruitStock}/{2+(int)((uint)s.seed%2)} ripe • next {s.regrowthProgress}/30 s\nSeason: {(s.wetSeason?"wet":"dry")} • soil water {s.soilWater}\nGarden: {Stage(s.gardenStage,s.gardenEstablished)} • freshwater {s.freshwaterMl} ml",small);
-            int first=Math.Max(0,Log.Entries.Count-6);float y=244;for(int i=first;i<Log.Entries.Count;i++){var e=Log.Entries[i];GUI.Label(new Rect(910,y,350,69),$"{e.tick:000}  {e.phase.ToUpperInvariant()}\n{e.result}",small);y+=72;}
+            float used=0;int first=Log.Entries.Count;
+            while(first>0){var e=Log.Entries[first-1];float h=small.CalcHeight(new GUIContent($"{e.tick:000}  {e.phase.ToUpperInvariant()}\n{e.result}"),350)+10;if(used+h>420&&first<Log.Entries.Count)break;used+=h;first--;}
+            GUI.BeginGroup(new Rect(910,244,350,420));float y=0;
+            for(int i=first;i<Log.Entries.Count;i++){var e=Log.Entries[i];string line=$"{e.tick:000}  {e.phase.ToUpperInvariant()}\n{e.result}";float h=small.CalcHeight(new GUIContent(line),350);GUI.Label(new Rect(0,y,350,h),line,small);y+=h+10;}
+            GUI.EndGroup();
             GUI.Box(new Rect(0,576,895,144),"");GUI.enabled=!pending&&!Paused;
             if(GUI.Button(new Rect(15,590,165,32),"Learn berry (lesson)"))Queue(FoodAction.Inspect,"berry","Read safe designed discovery lesson");
             if(GUI.Button(new Rect(188,590,130,32),"Gather one"))Queue(FoodAction.Gather,"berry","Gather one ripe berry");

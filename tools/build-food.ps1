@@ -5,7 +5,7 @@ if(Get-Process Unity -ErrorAction SilentlyContinue){throw 'Another Unity editor 
 $taskEvidence=Join-Path $taskRoot ('evidence/local/build-'+[DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'))
 $null=New-Item -ItemType Directory -Path $taskEvidence
 $taskBackups=@{}
-foreach($taskName in @('ProjectSettings/GraphicsSettings.asset','ProjectSettings/QualitySettings.asset','ProjectSettings/ProjectSettings.asset','Assets/CityLife/Scenes/Island.unity')){
+foreach($taskName in @('ProjectSettings/GraphicsSettings.asset','ProjectSettings/QualitySettings.asset','ProjectSettings/ProjectSettings.asset','Assets/CityLife/Scenes/Island.unity','Assets/CityLife/Food/Scenes/FoodFixture.unity')){
     $taskPath=Join-Path $taskRoot $taskName
     $taskBackups[$taskPath]=[IO.File]::ReadAllBytes($taskPath)
 }
