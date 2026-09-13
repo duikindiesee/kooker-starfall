@@ -73,8 +73,11 @@ namespace CityLife.World
    hand.rotation=Quaternion.LookRotation(shaftDirection,handDirection)*Quaternion.Inverse(HandBasis);
    for(int i=0;i<GripBones.Length;i++){GripBones[i].localPosition=GripPositions[i];GripBones[i].localRotation=GripRotations[i]*Quaternion.AngleAxis(-(i<12?DiagnosticCurlAdjustment[i%3]:DiagnosticThumbAdjustment[i%3]),FlexAxes[i]);}
    for(int i=0;i<GripLeaves.Length;i++){GripLeaves[i].localPosition=LeafPositions[i];GripLeaves[i].localRotation=LeafRotations[i];}
-   GripCenter=hand.TransformPoint(PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y);Club.position=GripCenter;
-   Club.rotation=Quaternion.FromToRotation(Vector3.down,hand.TransformDirection(ShaftAxis));
+   // Share the hand's entire transform, including the retained model's nonuniform scale.
+   // A world rotation alone loses that scale/shear and lets the shaft drift through fingers.
+   if(Club.parent!=hand){Club.SetParent(hand,false);Club.localScale=Vector3.one;}
+   Club.localPosition=PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y;
+   Club.localRotation=Quaternion.FromToRotation(Vector3.down,ShaftAxis);GripCenter=Club.position;
    GroundClearance=Club.GetComponent<Renderer>().bounds.min.y-Actor.position.y;
   }
  }
