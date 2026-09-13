@@ -37,7 +37,7 @@ namespace CityLife.World
     var localAxis=bone.InverseTransformDirection(across);
     FlexAxes[i]=localAxis;
     // Negative rotation about index-to-little bends toward the palm, not the back of the hand.
-    float flex=i%3==0?new[]{40f,40f,35f,30f}[i/3]:i%3==1?50f:30f;
+    float flex=i%3==0?new[]{45f,45f,40f,35f}[i/3]:i%3==1?60f:45f;
     GripRotations[i]=bone.localRotation*Quaternion.AngleAxis(-flex,localAxis);
    }
    var thumb=new[]{Animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal),Animator.GetBoneTransform(HumanBodyBones.LeftThumbIntermediate),Animator.GetBoneTransform(HumanBodyBones.LeftThumbDistal)};
