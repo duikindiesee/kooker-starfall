@@ -41,11 +41,13 @@ namespace CityLife.World
   [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.6f,wristDeviation=30f;}
   [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
-  [Serializable]class GripGeometry {public Vector3 handScale,clubScale;public List<Vector3> points=new List<Vector3>();public List<string> bones=new List<string>();}
+  [Serializable]class GripGeometry {public Vector3 handScale,clubScale,anchorLongAxis,anchorPalmAxis;public List<Vector3> points=new List<Vector3>();public List<string> bones=new List<string>();}
   private void MeasureGrip(string label) {
    var club=Model.GetComponent<HunterClubCarry>();
    var sample=new GripSample{pose=label};
    var geometry=new GripGeometry{handScale=Actor.Animator.GetBoneTransform(HumanBodyBones.LeftHand).lossyScale,clubScale=club.Club.lossyScale};
+   var hand=Actor.Animator.GetBoneTransform(HumanBodyBones.LeftHand);
+   geometry.anchorLongAxis=club.Club.InverseTransformVector(hand.TransformVector(club.PalmAlong));geometry.anchorPalmAxis=club.Club.InverseTransformVector(hand.TransformVector(club.PalmNormal));
    foreach(var body in Model.GetComponentsInChildren<SkinnedMeshRenderer>()) {
     if(body.name.StartsWith("Hunter "))continue;
     var mesh=new Mesh();body.BakeMesh(mesh);var vertices=mesh.vertices;var weights=body.sharedMesh.boneWeights;
