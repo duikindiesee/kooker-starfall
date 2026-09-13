@@ -15,5 +15,9 @@ The manually launched diagnostic writes into a new evidence directory and refuse
 | Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
 | 5-second real attempt and bounded fallback | PASS | Retained manual run: 64 checks, one completion attempted, timeout at 5000 ms, actual delivery | No real model proposal/text was received |
-| Normal gameplay timeout remains 1500 ms | PASS | 48 focused checks, including default, normal limit and diagnostic flag guard | New actual-player regression still required |
+| Normal gameplay timeout remains 1500 ms | PASS | 48 focused checks plus the complete 60-check fake/offline actual-player pass | Physical native input/performance remain separate |
 | 30-second real proposal or fallback | Prepared for manual execution | New source-pinned build and manual launch command | Actual 30-second outcome remains unverified until that run finishes |
+
+The new executable is `Builds/KookerStarfallHybrid-0.0.5-preview.2-20260913-094348/KookerStarfallHybrid.exe`, compiled from source `585f2c1b2a168c5f800b6c7a84f41e4f0b4d1b29` with zero errors/warnings. [Copy the exact one-line manual PowerShell command](DIAGNOSTIC-30S-COMMAND.txt). It writes to the new local `runtime-real-30s-01` directory, refuses to reuse existing evidence and closes its own diagnostic process when finished.
+
+[New build/package evidence](../evidence/verified/hybrid-diagnostic-release.json) and [990-file preservation result](../evidence/verified/hybrid-diagnostic-preservation.json) include the preceding preview.1 package and the original manual 5-second run. The new package has 189 verified entries. Preparing and syntax-checking the manual command did not execute it or alter LM Studio.
