@@ -61,6 +61,13 @@ namespace CityLife.World.Editor
             var outfit = typeof(IntegratedCoastalBuild).Assembly.GetType("CityLife.World.Editor.HunterOutfitAuthoring");
             if (outfit == null) throw new InvalidOperationException("Accepted hunter clothing revision has not been integrated.");
             outfit.GetMethod("Attach").Invoke(null, new object[] { model, folder });
+            // Clothing remains accepted; the club grip was reopened for correction.
+            var heldClub = model.GetComponent<HunterClubCarry>();
+            if (heldClub != null)
+            {
+                if (heldClub.Club != null) Object.DestroyImmediate(heldClub.Club.gameObject);
+                Object.DestroyImmediate(heldClub);
+            }
             model.transform.localScale = new Vector3(1.15f, 1, 1.08f);
             foreach (Transform t in model.GetComponentsInChildren<Transform>()) t.gameObject.layer = 9;
 
