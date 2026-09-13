@@ -82,9 +82,9 @@ namespace Starfall.Food
             Check(mortality.Execute("mortality","g",2,FoodAction.Recover,"refuge",a).success&&ms.carriedFruit==2&&ms.bags[0].berries==0,"refuge inventory recovery exactly once");
             Starve();Check(ms.deaths.Count==2&&ms.deaths[0].hash==deathHash&&ms.knowsPlanting,"second death preserves immutable first event and teaches only new eligible mechanic");
             string deathPath=Path.Combine(folder,"death.json");mortality.Save(deathPath);var mortalityReload=new FoodModel("mortality","g",4242);Check(mortalityReload.Load(deathPath,"mortality","g")&&mortalityReload.Json()==mortality.Json(),"death body bags and lesson survive reload");
-            int oldSnapshots=Directory.GetFiles(folder,"death.json.snapshot-*.json").Length;
+            int oldSnapshots=Directory.GetFiles(folder,"snap-*.json").Length;
             mortality.Execute("mortality","g",3,FoodAction.Return,"inventory",a);Starve();Check(ms.deaths.Count==3&&ms.deaths[2].lesson=="","repeated death does not fabricate another lesson");
-            mortality.Save(deathPath);Check(Directory.GetFiles(folder,"death.json.snapshot-*.json").Length==oldSnapshots+1,"new save retains immutable prior snapshot");
+            mortality.Save(deathPath);Check(Directory.GetFiles(folder,"snap-*.json").Length==oldSnapshots+1,"new save retains immutable prior snapshot");
             var stranger=new FoodModel("mortality","g",4242);stranger.State.actorId="inhabitant-2";Check(!stranger.Load(deathPath,"mortality","g")&&!stranger.State.knowsBerry&&stranger.State.body.health==10000,"new inhabitant defaults and no cross-inhabitant memory leakage");
             return passed;
         }

@@ -175,7 +175,7 @@ namespace Starfall.Food
         {
             if(!Valid(State,State.world,State.generation))throw new InvalidOperationException("Invalid state");
             string payload=Json(),hash=Hash(payload);string json=JsonUtility.ToJson(new SaveEnvelope{payload=payload,sha256=hash},true);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));string snapshot=Path.GetFileName(path)+".snapshot-"+hash+".json";string immutable=Path.Combine(Path.GetDirectoryName(path),snapshot);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));string snapshot="snap-"+hash+".json";string immutable=Path.Combine(Path.GetDirectoryName(path),snapshot);
             if(!File.Exists(immutable)){string candidate=immutable+".tmp-"+Guid.NewGuid().ToString("N");using(var f=new FileStream(candidate,FileMode.CreateNew,FileAccess.Write,FileShare.None)){byte[] b=Encoding.UTF8.GetBytes(json);f.Write(b,0,b.Length);f.Flush(true);}File.Move(candidate,immutable);}
             else if(File.ReadAllText(immutable)!=json)throw new InvalidOperationException("Immutable snapshot conflict");
             string pointer=JsonUtility.ToJson(new SavePointer{snapshot=snapshot});string tmp=path+".tmp";
@@ -188,7 +188,7 @@ namespace Starfall.Food
             {
                 if(new FileInfo(path).Length>160000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
                 if(pointer!=null&&pointer.schema=="starfall.food-pointer.v1")
-                {if(string.IsNullOrEmpty(pointer.snapshot)||Path.GetFileName(pointer.snapshot)!=pointer.snapshot||!pointer.snapshot.StartsWith(Path.GetFileName(path)+".snapshot-",StringComparison.Ordinal))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>160000)return false;text=File.ReadAllText(snapshot);}
+                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>160000)return false;text=File.ReadAllText(snapshot);}
                 var e=JsonUtility.FromJson<SaveEnvelope>(text);return e!=null&&e.schema=="starfall.food-save.v1"&&e.payload!=null&&e.sha256==Hash(e.payload)&&Restore(e.payload,world,generation);
             }catch{return false;}
         }
