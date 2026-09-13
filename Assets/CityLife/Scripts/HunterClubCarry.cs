@@ -57,7 +57,8 @@ namespace CityLife.World
    var hand=Animator.GetBoneTransform(HumanBodyBones.LeftHand);
    // A relaxed bent elbow supports the weight. Preserve animated shoulder/root motion;
    // align the wrist with the forearm instead of twisting it to chase a world-space prop.
-   Vector3 upperDirection=(Vector3.down-Actor.right*ElbowOut).normalized;
+   float swing=Mathf.Clamp(Vector3.Dot((forearm.position-upper.position).normalized,Actor.forward),-.2f,.2f)*.65f;
+   Vector3 upperDirection=(Vector3.down-Actor.right*ElbowOut+Actor.forward*swing).normalized;
    upper.rotation=Quaternion.FromToRotation(forearm.position-upper.position,upperDirection)*upper.rotation;
    float lowPose=Mathf.InverseLerp(1.25f,.85f,upper.position.y-Actor.position.y);
    float slope=Mathf.Lerp(ForearmSlope,.3f,lowPose);
