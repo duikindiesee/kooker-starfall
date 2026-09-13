@@ -8,6 +8,7 @@ namespace CityLife.World
  {
   public Animator Animator; public Transform Actor,Club; public float Length=.62f;
   public Transform[] GripBones; public Quaternion[] GripRotations;
+  public Transform[] GripLeaves; public Quaternion[] LeafRotations; public Vector3[] GripPositions,LeafPositions;
   public Vector3 PalmAnchor, ShaftAxis; public Quaternion HandBasis;
   public Vector3[] FlexAxes; public Vector3 PalmAlong,PalmNormal;
   public Vector3 DiagnosticCurlAdjustment,DiagnosticThumbAdjustment; public Vector2 DiagnosticAnchorAdjustment;
@@ -50,6 +51,9 @@ namespace CityLife.World
    }
    for(int i=0;i<3;i++){GripBones[12+i]=thumb[i];GripRotations[12+i]=thumb[i].localRotation;FlexAxes[12+i]=thumb[i].InverseTransformDirection(across);}
    for(int i=0;i<3;i++)thumb[i].localRotation=original[i];
+   GripPositions=new Vector3[GripBones.Length];for(int i=0;i<GripBones.Length;i++)GripPositions[i]=GripBones[i].localPosition;
+   GripLeaves=new Transform[5];LeafRotations=new Quaternion[5];LeafPositions=new Vector3[5];
+   for(int i=0;i<5;i++){var leaf=GripBones[i*3+2].GetChild(0);GripLeaves[i]=leaf;LeafRotations[i]=leaf.localRotation;LeafPositions[i]=leaf.localPosition;}
   }
   private void LateUpdate(){if(!Animator||!Club||GripBones==null)return;
    var upper=Animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
@@ -67,7 +71,8 @@ namespace CityLife.World
    Vector3 handDirection=Quaternion.AngleAxis(-WristDeviation,Actor.right)*forearmDirection;
    Vector3 shaftDirection=Vector3.ProjectOnPlane(Vector3.down,handDirection).normalized;
    hand.rotation=Quaternion.LookRotation(shaftDirection,handDirection)*Quaternion.Inverse(HandBasis);
-   for(int i=0;i<GripBones.Length;i++)GripBones[i].localRotation=GripRotations[i]*Quaternion.AngleAxis(-(i<12?DiagnosticCurlAdjustment[i%3]:DiagnosticThumbAdjustment[i%3]),FlexAxes[i]);
+   for(int i=0;i<GripBones.Length;i++){GripBones[i].localPosition=GripPositions[i];GripBones[i].localRotation=GripRotations[i]*Quaternion.AngleAxis(-(i<12?DiagnosticCurlAdjustment[i%3]:DiagnosticThumbAdjustment[i%3]),FlexAxes[i]);}
+   for(int i=0;i<GripLeaves.Length;i++){GripLeaves[i].localPosition=LeafPositions[i];GripLeaves[i].localRotation=LeafRotations[i];}
    GripCenter=hand.TransformPoint(PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y);Club.position=GripCenter;
    Club.rotation=Quaternion.FromToRotation(Vector3.down,hand.TransformDirection(ShaftAxis));
    GroundClearance=Club.GetComponent<Renderer>().bounds.min.y-Actor.position.y;
