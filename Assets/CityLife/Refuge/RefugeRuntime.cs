@@ -26,7 +26,7 @@ namespace Starfall.Refuge
   public void ValidateGeometry()
   {
    Physics.SyncTransforms();FloorY=float.PositiveInfinity;bool valid=true;
-   for(float x=-12;x<=-7;x+=.5f)for(float z=-1.5f;z<=1.5f;z+=.5f){Vector3 p=new Vector3(x,2.1f,z);if(Vector2.Distance(new Vector2(x,z),new Vector2(Hearth.x,Hearth.z))<1||Vector2.Distance(new Vector2(x,z),new Vector2(Storage.x,Storage.z))<.8f)continue;if(!Physics.Raycast(p,Vector3.down,out var hit,2,1<<8,QueryTriggerInteraction.Ignore)){valid=false;continue;}FloorY=Mathf.Min(FloorY,hit.point.y);if(Physics.CheckCapsule(hit.point+Vector3.up*.36f,hit.point+Vector3.up*1.5f,.3f,1<<8,QueryTriggerInteraction.Ignore))valid=false;}
+   for(float x=-12;x<=-7;x+=.5f)for(float z=-1.5f;z<=1.5f;z+=.5f){Vector3 p=new Vector3(x,2.1f,z);if(Vector2.Distance(new Vector2(x,z),new Vector2(Hearth.x,Hearth.z))<1.15f||Vector2.Distance(new Vector2(x,z),new Vector2(Storage.x,Storage.z))<.95f)continue;if(!Physics.Raycast(p,Vector3.down,out var hit,2,1<<8,QueryTriggerInteraction.Ignore)){valid=false;continue;}FloorY=Mathf.Min(FloorY,hit.point.y);var overlaps=Physics.OverlapCapsule(hit.point+Vector3.up*.36f,hit.point+Vector3.up*1.5f,.3f,1<<8,QueryTriggerInteraction.Ignore);if(overlaps.Length>0){valid=false;Debug.Log("REFUGE_CLEARANCE "+p+" blocked by "+string.Join(",",overlaps.Select(c=>c.name)));}}
    IngressY=1.8f; // Closed solid floor perimeter: only connected opening is the east ramp crest.
    bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,1<<8))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
    GeometryVerified=valid&&crest&&Roof!=null&&Roof.enabled;
