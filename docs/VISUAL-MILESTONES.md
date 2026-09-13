@@ -527,3 +527,10 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 ## Integrated regional candidate - source checkpoint
 
 See [same-executable acceptance](INTEGRATED-CANDIDATE.md). Coastal, environment and inhabitant histories are combined only in an isolated branch. Source adapters, mouse capture and refuge/vista additions require compiled-player proof; no new visual or runtime acceptance is claimed. Planet conversion remains a separate future proof.
+## Hunter clothing - isolated functional checkpoint, 13 September 2026
+
+Short hide panels now sit over continuous inner trousers. The user accepted the exposed-shoulder silhouette. Actual compiled-player captures retain pelvis/seat coverage through reviewed sitting, standing, crouching, walking, pickup/carry and seated camera orbits. Optional cold layers are off by default. [Checkpoint, limits and provenance](HUNTER-CLOTHING.md).
+
+![Actual standalone player: seated pelvis coverage](../evidence/milestones/hunter-clothing/2026-09-13/seated-default-180-Sit-20.png)
+
+Build `KookerStarfallHunter-0.0.3-preview.1-20260913-180511`, source `8659a92`. Separate courtyard, not main-world integration. Manual shortcuts, integrated terrain/cameras and sustained performance remain separate acceptance.

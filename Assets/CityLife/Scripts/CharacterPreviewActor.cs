@@ -28,6 +28,7 @@ namespace CityLife.World
             Animate("Interact");
         }
         public void CancelGesture() { gestureUntil = 0; Animate("Idle"); }
+        public void RefreshAnimation() { state = ""; gestureUntil = 0; }
         public void Place(Vector3 position)
         {
             Capsule.enabled = false; transform.position = position; Capsule.enabled = true;
