@@ -84,6 +84,7 @@ namespace CityLife.World.Editor
             if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
 
             var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
+            if(RefugeBuild.Requested){pipeline.msaaSampleCount=2;pipeline.shadowDistance=30;pipeline.shadowCascadeCount=1;pipeline.mainLightShadowmapResolution=1024;pipeline.additionalLightsShadowmapResolution=512;}
             pipeline.hideFlags=HideFlags.None;
             var pipelineSettings=new SerializedObject(pipeline);var renderers=pipelineSettings.FindProperty("m_RendererDataList");
             for(int i=0;i<renderers.arraySize;i++)
