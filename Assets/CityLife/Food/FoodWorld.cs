@@ -48,6 +48,7 @@ namespace Starfall.Food
         }
         void MakeScene()
         {
+            var backdrop=new GameObject("Opaque HUD background").AddComponent<Camera>();backdrop.depth=-100;backdrop.clearFlags=CameraClearFlags.SolidColor;backdrop.backgroundColor=Color.black;backdrop.cullingMask=0;
             RenderSettings.ambientLight=new Color(.52f,.57f,.67f);RenderSettings.fog=true;RenderSettings.fogColor=new Color(.19f,.29f,.38f);RenderSettings.fogDensity=.012f;
             var light=new GameObject("Warm desert sun").AddComponent<Light>();light.type=LightType.Directional;light.intensity=1.8f;light.transform.rotation=Quaternion.Euler(48,-30,0);light.shadows=LightShadows.Soft;
             cameraView=new GameObject("Food camera").AddComponent<Camera>();cameraView.tag="MainCamera";cameraView.backgroundColor=new Color(.12f,.22f,.31f);cameraView.clearFlags=CameraClearFlags.SolidColor;cameraView.transform.position=new Vector3(11,12,-19);cameraView.transform.LookAt(new Vector3(-1,0,2));cameraView.fieldOfView=48;cameraView.farClipPlane=120;cameraView.rect=new Rect(0,.20f,.70f,.64f);cameraView.gameObject.AddComponent<AudioListener>();
@@ -210,7 +211,7 @@ namespace Starfall.Food
             if(GUI.Button(new Rect(910,680,110,28),s.body.dead?"Return":"Camp aid")){if(s.body.dead)ExecuteNow(FoodAction.Return,"inventory");else Queue(FoodAction.CampAid,"inventory","Explicit assisted recovery; counted in save");}
             if(GUI.Button(new Rect(1025,680,110,28),"Rest / wake")){pending=false;s.body.resting=!s.body.resting;Auto=false;Record("rest","Rest toggled; shelter verified by location.");}
             if(GUI.Button(new Rect(1140,680,125,28),s.bags.Count>0?"Recover bag":"Other bush"))Queue(s.bags.Count>0?FoodAction.Recover:FoodAction.Gather,s.bags.Count>0?"refuge":"berry2","Visit observed resource / owned recovery chest");
-            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.2 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
+            GUI.Label(new Rect(15,672,860,40),"Isolated Eden v0.1.3 • compressed growth: 30 s/berry, 60 s/garden • no model required",small);
             if(cameraView!=null)
             {
                 WorldLabel("berry",s.knowsBerry?"STARFALL BERRY":"UNKNOWN BERRY\nRead signed lesson");
