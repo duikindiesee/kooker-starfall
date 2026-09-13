@@ -68,7 +68,10 @@
     "preservedFiles": 990,
     "packageEntries": 189,
     "manualCommand": "docs/DIAGNOSTIC-30S-COMMAND.txt",
-    "actual30SecondRun": "not executed",
-    "priorManual5SecondRun": "PASS64; one completion attempted; no completion response; timeout at5000ms; deterministic fallback delivery"
+    "actual30SecondRun": "PASS66; one completion attempted; no completion response; timeout at30003ms; deterministic fallback delivery",
+    "priorManual5SecondRun": "PASS64; one completion attempted; no completion response; timeout at5000ms; deterministic fallback delivery",
+    "manual30SecondEvidence": "evidence/milestones/hybrid-npc/manual-real-30s-20260913",
+    "actual30SecondRunUtc": "2026-09-13T12:35:25.3383221Z",
+    "realProposalTextStatus": "UNVERIFIED: no raw reply, admitted proposal, dialogue or reflection"
   }
 }

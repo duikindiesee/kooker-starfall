@@ -476,3 +476,9 @@ Separate 0.0.5-preview.1 courtyard; [implementation, controls and acceptance bou
 ## Manual local inference and longer diagnostic - 13 September 2026
 
 The manual real-provider run reached inventory, attempted one completion, timed out at 5000 ms and completed deterministic delivery (64 checks). [Actual manual observations and the next diagnostic boundary](HYBRID-DIAGNOSTIC-30S.md) preserve that result separately. A 30-second probe is diagnostic-only; normal gameplay remains 1500 ms. Its new actual outcome is pending manual execution.
+
+### Manual 30-second hybrid probe reviewed - 13 September 2026
+
+The user-launched preview.2 diagnostic passed all 66 actual-player checks with no recorded runtime errors. Exactly one completion was attempted after successful model inventory discovery. It timed out at 30003 ms with no completion HTTP response or raw reply. The actual player then selected amber through deterministic fallback and delivered it to depot-west. Real proposal text, dialogue and reflection remain unverified. The conditional admitted-text assertion is not evidence of generated text when no proposal arrived.
+
+The four reviewed JSON/PNG copies and their SHA256 manifest are retained in [manual-real-30s-20260913](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/README.md). The original 5-second run, blocked/prepared snapshots, accepted players and versioned packages remain historical artifacts. This evidence closeout issued no further inference request and changed no runtime source. Normal gameplay remains 1500 ms. The current status and remaining gap are recorded in [the diagnostic audit](HYBRID-DIAGNOSTIC-30S.md).

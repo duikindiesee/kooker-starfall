@@ -1,5 +1,7 @@
 # Hybrid NPC requirement audit — 13 September 2026
 
+**Subsequent manual-run evidence:** the separate preview.2 30-second diagnostic passed all 66 checks; one completion attempt timed out at 30003 ms with no completion response or raw reply, followed by one deterministic delivery. [Current diagnostic audit](HYBRID-DIAGNOSTIC-30S.md) and [reviewed runtime evidence](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/README.md) supersede the blocked execution row below. Bounded fallback is verified; a valid real proposal/dialogue/reflection remains unverified. The following preview.1 audit is retained as its original historical snapshot.
+
 Local build `KookerStarfallHybrid-0.0.5-preview.1-20260913-080358`; runtime source `9a3bf77dc219abf89dc6b0fd72cffa3f811a3ae7`. The **real-inference gate remains incomplete**. All implemented fake/offline player requirements below passed on the final exact build.
 
 Evidence links: [final runtime with all 60 checks and proposal audit](../evidence/milestones/hybrid-npc/KookerStarfallHybrid-0.0.5-preview.1-20260913-080358/npc-runtime.json), [actual player gallery](../evidence/milestones/hybrid-npc/KookerStarfallHybrid-0.0.5-preview.1-20260913-080358/review.html), [43 focused checks](../evidence/verified/hybrid-proposal-validation.json), [26 deterministic action/perception checks](../evidence/verified/hybrid-deterministic-validation.json), [release/build/package evidence](../evidence/verified/hybrid-npc-release.json), [743-file preservation](../evidence/verified/hybrid-preservation.json).
