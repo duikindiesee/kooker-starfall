@@ -1,5 +1,7 @@
 # Coastal slice — first review checkpoint
 
+> A separate bounded player now exists as a later engineering checkpoint. See [Coastal playable checkpoint](COASTAL-PLAYABLE-CHECKPOINT.md). The four-screen panorama is the main visual authority; the fixed close camera below remains a component-study view.
+
 The first bounded Starfall coastal study is ready for user review. Three parallel workstreams built water/sea, canyon terrain, and the rocky tree bank with a small succulent set. The combined Unity scene retains the frozen R19 tree and adds the blue giant and a procedural distant galaxy. The supplied concepts are **provisional references**; an exact image/camera match is not claimed.
 
 ![Actual Unity second coastal side-view](../evidence/milestones/coastal/round-02/2026-09-10-01-coastal-side-composition.png)

@@ -16,7 +16,7 @@ A world in the making · Unity 6 · Windows preview
 
 Beneath a blue giant and a river of stars, warm desert gives way to luminous seas. Explore, shape, and one day inhabit a world still becoming.
 
-**That is the destination. The playable R19 release remains an approximately 60 m tree and blue-giant study.** This branch adds a separate [first coastal scene review](docs/COASTAL-SLICE.md): rocky tree bank, turquoise river/sea, canyon terrain and procedural galaxy in actual Unity views. It is not yet a coastal player or living sea. World shaping, houses, building tools, inhabitants, bots and shared-world connections are future work.
+**That is the destination.** This branch preserves the [first coastal scene review](docs/COASTAL-SLICE.md) and now adds a separate [bounded coastal player checkpoint](docs/COASTAL-PLAYABLE-CHECKPOINT.md): rocky tree bank, turquoise river/sea, canyon terrain and procedural galaxy in an actual built player. It is not yet the full panorama-scale world or living sea. World shaping, swimming, houses, building tools, inhabitants, bots and shared-world connections are future work.
 
 ## 🌌 The world ahead
 
@@ -76,7 +76,7 @@ The preview has no implemented multiplayer, bot connections or saved-world loadi
 | Visual reference and tree closeout | **R06 user approved**; frozen after the completed R19 review | [Baseline record](docs/TREE-BASELINE.md) | Experimental R19 is separate; remaining defects deferred, no further 9/10 polishing gate |
 | Revised experimental PH02 source | **R18 numeric PASS, 536 assertions** | [Exact report](evidence/verified/kokerboom-round-18-family-validation.json) | All 21 R19 captures complete; independent result 7.375/10, frozen; R16 failure preserved; separate R19 player now recorded below |
 | Starfall branding | Versioned R19 title and HUD observed | [Native window](evidence/milestones/starfall-r19-player/2026-09-10-native-r19-window.png) | None for naming |
-| Coastal world study | First two actual Unity comparison sets complete | [Review and gaps](docs/COASTAL-SLICE.md) | User review, native coastal player and living sea |
+| Coastal world study | Two comparison sets plus isolated Windows player smoke | [Review and gaps](docs/COASTAL-SLICE.md), [playable checkpoint](docs/COASTAL-PLAYABLE-CHECKPOINT.md) | Native user-input review, panorama-scale uplift and living sea |
 
 ## 🧭 Project guide
 

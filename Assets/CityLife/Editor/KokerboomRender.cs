@@ -148,12 +148,14 @@ namespace CityLife.World.Editor
                 WriteReport(technicalPass);
                 if(playablePreviewMode&&technicalPass)
                 {
-                    PreviewEye();
+                    if(coastalMode)CoastalCamera(new Vector3(21,4.6f,-25),new Vector3(0,3.4f,14));
+                    else PreviewEye();
                     CosmicPreviewBuild.Build(camera,cosmicFloor,new Dictionary<string,string>{
                         {"Hidden/CityLife/KokerboomGasInspection",GasShader},
                         {"Hidden/CityLife/KokerboomAtmosphereInspection",AtmosphereShader},
-                        {"Hidden/CityLife/KokerboomStarsInspection",StarShader}
-                    },outputDirectory,ph02FamilyMode,Argument("-previewSourceCommit",""),ph02FamilyMeshSha256);
+                        {"Hidden/CityLife/KokerboomStarsInspection",StarShader},
+                        {"Hidden/Starfall/CoastalGalaxy",CoastalGalaxyShader}
+                    },outputDirectory,ph02FamilyMode,Argument("-previewSourceCommit",""),ph02FamilyMeshSha256,coastalMode,coastalTerrain);
                 }
                 Debug.Log("KOKERBOOM_RENDER_FINISHED " + relativeDirectory + "/metrics.json technicalChecks=" + technicalPass + (playablePreviewMode&&ph02FamilyMode?"; frozen R19 integration evidence, not a new tree review.":"; visual acceptance requires independent critique."));
                 exitCode = technicalPass ? 0 : 3;
