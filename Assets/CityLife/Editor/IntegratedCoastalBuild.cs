@@ -16,7 +16,7 @@ namespace CityLife.World.Editor
         {
             if (!Requested || !Application.isBatchMode) throw new InvalidOperationException("Explicit isolated integrated batch required.");
             UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
-            NpcMilestoneValidation.Run(); NpcHybridValidation.Run();
+            IslandValidation.Run(); NpcMilestoneValidation.Run(); NpcHybridValidation.Run();
             KokerboomRender.BuildCoastalPlayableSlice();
         }
         public static void Attach(Camera camera, GameObject ground, string folder)
