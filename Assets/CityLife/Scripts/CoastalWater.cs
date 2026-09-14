@@ -81,9 +81,37 @@ namespace CityLife.World
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             renderer.lightProbeUsage = LightProbeUsage.Off;
-            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.BlendProbes;
             AddVisualSea(surface.transform, material);
+            SetLayerRecursively(surface,4); // built-in Water layer; excluded from its own probe
+            AddEnvironmentProbe(parent);
             return surface;
+        }
+
+        private static void AddEnvironmentProbe(Transform parent)
+        {
+            // A bounded realtime probe captures the actual canyon, sky and celestial geometry
+            // once when the scene starts. The water layer is excluded to avoid self-reflection.
+            var go=new GameObject("Coastal water environment reflection probe");
+            go.transform.SetParent(parent,false);
+            go.transform.localPosition=new Vector3(0,18,105);
+            var probe=go.AddComponent<ReflectionProbe>();
+            probe.mode=UnityEngine.Rendering.ReflectionProbeMode.Realtime;
+            probe.refreshMode=UnityEngine.Rendering.ReflectionProbeRefreshMode.OnAwake;
+            probe.timeSlicingMode=UnityEngine.Rendering.ReflectionProbeTimeSlicingMode.AllFacesAtOnce;
+            probe.boxProjection=true;
+            probe.size=new Vector3(520,300,820);
+            probe.nearClipPlane=.5f;
+            probe.farClipPlane=1200;
+            probe.resolution=128;
+            probe.intensity=1;
+            probe.cullingMask=~(1<<4);
+        }
+
+        private static void SetLayerRecursively(GameObject root,int layer)
+        {
+            root.layer=layer;
+            foreach(Transform child in root.transform) SetLayerRecursively(child.gameObject,layer);
         }
 
         private static void AddVisualSea(Transform parent, Material material)
@@ -126,7 +154,7 @@ namespace CityLife.World
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             renderer.lightProbeUsage = LightProbeUsage.Off;
-            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.BlendProbes;
         }
     }
 }

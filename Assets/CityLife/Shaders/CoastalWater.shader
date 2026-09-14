@@ -157,9 +157,11 @@ Shader "CityLife/CoastalWater"
                 half3 normalWS = normalize(float3(-nx,1,-nz));
                 half3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
-                // Keep turquoise readable in the intended navy lighting. This is a deliberately
-                // luminous art surface, not a physical ocean/sky reflection simulation.
-                water = lerp(water,_SkyReflection.rgb,fresnel*.28);
+                // Sample the real probe captured from the canyon/sky/celestial scene. A small
+                // navy baseline remains only when a platform returns an empty probe.
+                half3 environment=GlossyEnvironmentReflection(reflect(-view,normalWS),.24,1);
+                environment=max(environment,_SkyReflection.rgb*.18);
+                water = lerp(water,environment,fresnel*.44);
                 Light sun = GetMainLight();
                 float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);
                 // A small neutral/cool glint keeps the warm key from bleaching the whole colour.

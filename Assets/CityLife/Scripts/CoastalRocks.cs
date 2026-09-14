@@ -96,6 +96,20 @@ namespace CityLife.World
                 var bedRock=MeshObject("Submerged dark reef shelf "+i,RockMesh(4.2f+i*.55f,1.15f+i*.12f,3.2f+i*.42f,360+i),rock,root.transform,false);
                 bedRock.transform.localPosition=bed-Vector3.up*.10f;
                 bedRock.transform.localRotation=Quaternion.Euler(0,Lerp(-180,180,i,123),0);
+                // Two overlapping fractured ledges form one connected shelf silhouette.
+                // They remain render-only and stay below the same sampled bed level.
+                for(int ledge=0;ledge<2;ledge++)
+                {
+                    int id=470+i*11+ledge;
+                    Vector2 offset=ledge==0?new Vector2(3.4f,1.1f):new Vector2(-3.0f,-1.4f);
+                    Vector2 q=p+offset;
+                    float floor=CoastalTerrain.Height(q.x,q.y);
+                    if(floor>-2.28f) continue;
+                    var connected=MeshObject("Submerged connected reef ledge "+i+"-"+ledge,
+                        RockMesh(3.8f+ledge*.7f,.75f+ledge*.15f,2.6f+ledge*.8f,id),rock,root.transform,false);
+                    connected.transform.localPosition=new Vector3(q.x,floor-.12f,q.y);
+                    connected.transform.localRotation=Quaternion.Euler(0,Lerp(-35,35,id,124),0);
+                }
                 // Broken shelf rubble gives the clear-water view real silhouettes and
                 // scale variation instead of one isolated slab on a featureless bed.
                 // These are visual ecology only: no collider is authored here.
