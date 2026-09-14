@@ -125,8 +125,6 @@ Shader "CityLife/CoastalWater"
                 float depth = WaterDepth(input,measured);
                 float river = 1-exp(-depth*.30);
                 float deep = smoothstep(4,24,depth);
-                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
-                float3 phase = WavePhase(input.positionWS.xz);
                 half3 water = lerp(_ShallowColor.rgb,_RiverColor.rgb,river);
                 water = lerp(water,_DeepColor.rgb,deep);
                 // R01's unfiltered alpha blend transmitted the strongly lit orange bed, turning
@@ -134,21 +132,17 @@ Shader "CityLife/CoastalWater"
                 // transmission instead. Increasing depth absorbs the bed; sky never acts as bed.
                 if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
                 {
-                    float2 screenUV = GetNormalizedScreenSpaceUV(input.positionCS);
-                    // Refract the actual opaque bed by the same small wave families that
-                    // move the surface. This preserves grounded shelves and plants instead
-                    // of painting a second flat turquoise layer over them.
-                    float2 refraction = float2(sin(phase.x)+cos(phase.z*.83),
-                        cos(phase.y)-sin(phase.x*.71)) * .00135 * (1-deep) * saturate(depth*.8);
-                    half3 bed = SampleSceneColor(saturate(screenUV + refraction));
+                    half3 bed = SampleSceneColor(GetNormalizedScreenSpaceUV(input.positionCS));
                     // Preserve actual submerged rock/plant colour while water absorbs
                     // red fastest and blue slowest. One transmission path avoids both
                     // muddy double blending and monochrome cyan silhouettes.
                     half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.34,.105,.045));
-                    float transmission = .90*exp(-depth*.12);
+                    float transmission = .84*exp(-depth*.14);
                     water = lerp(water,transmittedBed,transmission);
                 }
 
+                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
+                float3 phase = WavePhase(input.positionWS.xz);
                 // Derivative filtering prevents fine wave fields shimmering into distant stripes.
                 float3 attenuation = 1-smoothstep(.6,2.1,abs(ddx(phase))+abs(ddy(phase)));
                 float3 c = cos(phase)*attenuation;
@@ -163,12 +157,12 @@ Shader "CityLife/CoastalWater"
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
                 // Keep turquoise readable in the intended navy lighting. This is a deliberately
                 // luminous art surface, not a physical ocean/sky reflection simulation.
-                water = lerp(water,_SkyReflection.rgb,fresnel*.42);
+                water = lerp(water,_SkyReflection.rgb,fresnel*.28);
                 Light sun = GetMainLight();
-                float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),84);
+                float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);
                 // A small neutral/cool glint keeps the warm key from bleaching the whole colour.
                 float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
-                water += half3(.55,.85,.95)*sunStrength*glint*.18;
+                water += half3(.55,.85,.95)*sunStrength*glint*.24;
                 float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
                 // Surface light is restrained to broad microvariation and specular glint.
                 // The visible connected caustic network belongs on the real bed below.
