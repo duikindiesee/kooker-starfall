@@ -24,7 +24,8 @@ namespace CityLife.World
         [Serializable] public sealed class Report
         {
             public string status = "RUNNING", version, worldId, inputScope = "Actual compiled-player Input System devices; separate native mouse/window acceptance required.";
-            public int deliveries; public List<Check> checks = new List<Check>(); public List<string> captures = new List<string>(), errors = new List<string>();
+            public int deliveries, memoryEvents; public List<Check> checks = new List<Check>(); public List<string> captures = new List<string>(), errors = new List<string>();
+            public List<NpcDecisionEvent> decisionEvents = new List<NpcDecisionEvent>();
         }
         private void CheckThat(string name, bool pass, string evidence) => report.checks.Add(new Check { name = name, passed = pass, evidence = evidence });
         private IEnumerator Tap(Key key)
@@ -71,10 +72,29 @@ namespace CityLife.World
             catch (Exception exception) { foodEvidence = exception.GetType().Name + ": " + exception.Message; }
             CheckThat("food-model-and-world-targets", foodPassed, foodEvidence);
             yield return Capture("01-default-coastal-inhabitant");
-            float until = Time.realtimeSinceStartup + 55;
-            while (Brain.Actions.Deliveries < 1 && Time.realtimeSinceStartup < until) yield return null;
-            CheckThat("autonomous-delivery", Brain.Actions.Deliveries > 0, Brain.LastResult + "; failures=" + Brain.FailureCount);
-            yield return Capture("02-autonomous-delivery");
+            string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
+            using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
+            {
+                memory.RegisterIdentity(NpcAutonomy.AgentId, "Inhabitant 01", Brain.Tick); Brain.MemoryExport = memory;
+                float until = Time.realtimeSinceStartup + 150;
+                while (Brain.Actions.Deliveries < 3 && Time.realtimeSinceStartup < until) yield return null;
+                Brain.MemoryExport = null; report.memoryEvents = memory.Count;
+            }
+            int occupied = 0, deliveredItems = 0;
+            foreach (var item in Brain.Registry)
+            {
+                if (item.Kind == NpcObjectKind.Destination && item.Occupant.Length > 0) occupied++;
+                if (item.Kind == NpcObjectKind.Item && item.DeliveredTo.Length > 0) deliveredItems++;
+            }
+            bool completeCycle = Brain.Actions.Deliveries == 3 && occupied == 3 && deliveredItems == 3 && Brain.Actions.Held == null;
+            CheckThat("complete-three-object-autonomy-cycle", completeCycle,
+                "deliveries=" + Brain.Actions.Deliveries + "; occupied=" + occupied + "; deliveredItems=" + deliveredItems +
+                "; held=" + (Brain.Actions.Held == null ? "none" : Brain.Actions.Held.StableId) + "; phase=" + Brain.Phase +
+                "; result=" + Brain.LastResult + "; failures=" + Brain.FailureCount);
+            CheckThat("remembered-action-receipts", report.memoryEvents == 7 && Brain.MemoryExportFailure.Length == 0,
+                "identity plus six successful pickup/delivery receipts; events=" + report.memoryEvents + "; export=" + Brain.MemoryExportFailure);
+            report.decisionEvents.AddRange(Brain.Log.Entries);
+            yield return Capture("02-complete-autonomy-cycle");
             yield return Tap(Key.Tab);
             // Test traversal in the known starting corridor; the first delivery
             // finishes beside a solid depot, where backward motion may be blocked.
