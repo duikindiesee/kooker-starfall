@@ -1,0 +1,35 @@
+{
+    "worldId": "starfall.coastal-world.v1",
+    "terrainContentRevision": "fish-river-canyon-r1",
+    "terrainSeed": 1904242,
+    "treeSeed": 4242,
+    "rockSeed": 4242,
+    "terrainSourceSha256": "8227b4f46eb8b27ddc343c00195f70fee38f1eabb09b915e5b36b9fc5342e742",
+    "rockSourceSha256": "f9239f5d7bb0c3ab32e0f00139b46acfec3165e18dbe939a2dd5ec15ded6a36d",
+    "waterSourceSha256": "776bb9e8d318674502acfa98a27525c09a704b7dbe1e9b44d28aa1093b3bdb4d",
+    "reference": "User attachments 02/03/06 provisional; exact requested frame pending",
+    "minimum": {
+        "x": -90.0,
+        "y": -18.0,
+        "z": -55.0
+    },
+    "maximum": {
+        "x": 90.0,
+        "y": 30.0,
+        "z": 145.0
+    },
+    "waterLevelMetres": -2.0,
+    "sideCameraPosition": {
+        "x": 21.0,
+        "y": 4.599999904632568,
+        "z": -25.0
+    },
+    "sideCameraTarget": {
+        "x": 0.0,
+        "y": 3.4000000953674316,
+        "z": 14.0
+    },
+    "fieldOfView": 52.0,
+    "visualOcean": "Additional surface x[-960,960],z[145,1015], visual only; outside active terrain/collision slice",
+    "acceptance": "Actual Unity composition and scene collider probes; no exact reference match, swimming or native coastal player acceptance"
+}
