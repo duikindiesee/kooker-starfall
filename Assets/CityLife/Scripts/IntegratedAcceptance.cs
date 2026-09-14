@@ -188,10 +188,12 @@ namespace CityLife.World
             CheckThat("resume-restores-capture", !Controls.MenuOpen && Controls.Looking, "Prior play capture intent restored.");
             var oldMode = Screen.fullScreenMode;
             yield return Tap(Key.F11); yield return new WaitForSecondsRealtime(1);
-            CheckThat("fullscreen-transition", Screen.fullScreenMode != oldMode && !Controls.DisplayShortcutActive && Controls.Looking, Screen.fullScreenMode.ToString());
+            CheckThat("fullscreen-transition", Screen.fullScreenMode == FullScreenMode.FullScreenWindow &&
+                Screen.fullScreenMode != oldMode && !Controls.DisplayShortcutActive && Controls.Looking, Screen.fullScreenMode.ToString());
             yield return Capture("05-fullscreen");
             yield return Tap(Key.F11); yield return new WaitForSecondsRealtime(1);
-            CheckThat("window-restoration", Screen.fullScreenMode == oldMode && Controls.Looking, Screen.fullScreenMode.ToString());
+            CheckThat("window-restoration", Screen.fullScreenMode == FullScreenMode.Windowed && Controls.Looking,
+                Screen.fullScreenMode + "; initial=" + oldMode + "; resizable window restored");
             yield return Tap(Key.Tab); yield return Tap(Key.F);
             var spectator = Controls.View.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);

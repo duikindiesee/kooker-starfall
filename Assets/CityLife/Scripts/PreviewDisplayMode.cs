@@ -62,7 +62,10 @@ namespace CityLife.World
         private IEnumerator ChangeMode(string source)
         {
             RememberWindowSize();
-            bool toFullscreen = Screen.fullScreenMode == FullScreenMode.Windowed;
+            // Windows may report a maximized resizable window separately. Treat it
+            // as windowed so the first toggle enters real borderless fullscreen.
+            bool toFullscreen = Screen.fullScreenMode == FullScreenMode.Windowed ||
+                Screen.fullScreenMode == FullScreenMode.MaximizedWindow;
             var mode = toFullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
             int displayWidth = Screen.mainWindowDisplayInfo.width;
             int displayHeight = Screen.mainWindowDisplayInfo.height;
