@@ -1,0 +1,12 @@
+{
+    "status": "PASS",
+    "scope": "compiled isolated food fixture",
+    "limitations": "Scripted runtime; human input acceptance and combined-world integration separate",
+    "checks": [
+        "separate-process exact snapshot match"
+    ],
+    "p95": 27.372400283813477,
+    "frames": 137,
+    "width": 1280,
+    "height": 720
+}

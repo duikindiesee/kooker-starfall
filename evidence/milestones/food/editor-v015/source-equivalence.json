@@ -1,0 +1,14 @@
+{
+  "standaloneSource": "8f790831f21717533018f638c0bd0df0976c462c",
+  "editorSource": "4ab8523f1023cb10406f64d56267698c248cc39d",
+  "runtimeSourceUnchanged": true,
+  "changedPaths": [
+    "Assets/CityLife/Food/Editor/FoodBuild.cs",
+    "docs/FOOD-ACCEPTANCE.md",
+    "docs/FOOD-INTEGRATION.md",
+    "docs/FOOD-STANDALONE-SIGNING.md",
+    "docs/FOOD-VISUAL-BLOCKER.md",
+    "docs/SYSTEM-ARCHITECTURE.md",
+    "docs/VISUAL-MILESTONES.md"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+    "status": "PASS",
+    "scope": "compiled isolated food fixture",
+    "limitations": "Scripted runtime; human input acceptance and combined-world integration separate",
+    "checks": [
+        "unharvested fruit dropped finite seeds",
+        "seed age and outcome survived actual reload",
+        "rare natural germination seed 25",
+        "natural seedling matured over time",
+        "population <=4: 3",
+        "fresh world clears natural plants, seed state, knowledge and interaction targets"
+    ],
+    "p95": 23.55680274963379,
+    "frames": 10843,
+    "width": 1280,
+    "height": 720
+}
