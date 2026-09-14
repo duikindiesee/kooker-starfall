@@ -66,6 +66,18 @@ namespace CityLife.World
 
         private IEnumerator ProcessEvents()
         {
+            using (var recallCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
+            {
+                recallCancellation.CancelAfter(5000);
+                var prior = client.RecallLatestConfirmedDelivery(recallCancellation.Token);
+                while (!prior.IsCompleted) yield return null;
+                if (!prior.IsFaulted && !prior.IsCanceled)
+                {
+                    var memory = prior.GetAwaiter().GetResult();
+                    if (memory != null) SetStatus("LIVING MEMORY / PRIOR JOURNEY\n" + memory.Summary + "\nVerified scoped recall; waiting for the next real action.");
+                }
+                else { var observed = prior.Exception; SetStatus("LIVING MEMORY\nPrior recall unavailable; new receipts still record locally.\nDeterministic autonomy continues."); }
+            }
             while (enabledForSession)
             {
                 if (pending.Count == 0) { yield return null; continue; }
@@ -103,9 +115,9 @@ namespace CityLife.World
                         yield return null;
                     }
                     var thought = thoughtTask.GetAwaiter().GetResult();
-                    bool current = thought.schemaValid && thought.milliseconds <= StarfallMemoryThought.DeadlineMilliseconds &&
-                        Brain.gameObject.GetEntityId() == identity && Brain.InstanceWorldId == memory.World && Brain.Tick >= requestedTick &&
-                        Brain.Registry != null && Array.Exists(Brain.Registry, x => x.StableId == memory.Target && x.Occupant == memory.Item);
+                    bool current = CanAdmitDeliveryThought(thought, memory, !Brain.MenuPaused && !Brain.Possessed && Brain.Running,
+                        Brain.gameObject.GetEntityId() == identity && Brain.InstanceWorldId == memory.World && Brain.Tick >= requestedTick,
+                        Brain.Registry != null && Array.Exists(Brain.Registry, x => x.StableId == memory.Target && x.Occupant == memory.Item));
                     SetStatus(current ? "REMEMBERED INSIGHT\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nThought: " + thought.reflection +
                         "\nMemory records facts; Unity controls actions." : "LIVING MEMORY\nVerified delivery: " + memory.Item + " -> " + memory.Target +
                         "\nDeterministic fallback / " + thought.status + ". Unity controls actions.");
@@ -122,6 +134,15 @@ namespace CityLife.World
                 return (string)data["action"] == "deliver" && (string)data["outcome"] == "delivered";
             }
             catch (Exception) { return false; }
+        }
+        public static bool CanAdmitDeliveryThought(StarfallMemoryThought.Result thought, StarfallLivingMemoryClient.Evidence memory,
+            bool controlsPermit, bool identityCurrent, bool deliveryCurrent)
+        {
+            if (thought == null || memory == null || !thought.schemaValid || thought.milliseconds > StarfallMemoryThought.DeadlineMilliseconds ||
+                !controlsPermit || !identityCurrent || !deliveryCurrent || string.IsNullOrWhiteSpace(thought.reflection) || string.IsNullOrWhiteSpace(memory.Item)) return false;
+            string[] words = thought.reflection.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+            return words.Length == 2 && (string.Equals(words[0], "delivered", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(words[0], "delivery", StringComparison.OrdinalIgnoreCase)) && string.Equals(words[1], memory.Item, StringComparison.OrdinalIgnoreCase);
         }
         private void SetStatus(string value) { if (Hud != null) Hud.LivingMemoryText = value; }
         private static string Safe(string value) => string.IsNullOrEmpty(value) ? "unknown error" : value.Length > 120 ? value.Substring(0, 120) : value;

@@ -24,12 +24,29 @@ if($playServiceConfig.world_id -ne $WorldId -or $playServiceConfig.publisher_id 
     @($playServiceConfig.inhabitants|Where-Object inhabitant_id -eq $InhabitantId).Count -ne 1){
     throw 'Existing private memory configuration does not match this world, inhabitant and build; migrate explicitly or choose a new storage path.'
 }
+function Assert-PrivateMemoryAcl([string]$Path,[bool]$RequireProtected){
+    $acl=Get-Acl -LiteralPath $Path
+    if($RequireProtected -and -not $acl.AreAccessRulesProtected){throw ('Private memory ACL inherits broader permissions: '+$Path)}
+    $allowed=@([Security.Principal.WindowsIdentity]::GetCurrent().User.Value,'S-1-5-18')
+    foreach($rule in $acl.Access){
+        if($rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow){continue}
+        try{$sid=$rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value}catch{throw ('Unverifiable private memory ACL identity: '+$rule.IdentityReference)}
+        if($allowed -notcontains $sid){throw ('Private memory ACL grants an unexpected identity: '+$sid)}
+    }
+}
+Assert-PrivateMemoryAcl $playPrivate $true
 $playReader=($playServiceConfig.inhabitants|Where-Object inhabitant_id -eq $InhabitantId).token
 $playListener=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,0);$playListener.Start();$playPort=([Net.IPEndPoint]$playListener.LocalEndpoint).Port;$playListener.Stop()
 $playClient=Join-Path $playPrivate ('player-'+$playBuild+'.json')
 $playClientJson=[ordered]@{world_id=$WorldId;inhabitant_id=$InhabitantId;publisher_id='unity-local';build_id=$playBuild;memory_endpoint=('http://127.0.0.1:'+$playPort);publisher_token=$playServiceConfig.publisher_token;reader_token=$playReader}|ConvertTo-Json -Compress
 [IO.File]::WriteAllText($playClient,$playClientJson,[Text.UTF8Encoding]::new($false))
-$playData=Join-Path $playStorage 'data';$null=New-Item -ItemType Directory -Force -Path $playData
+$playLegacyData=Join-Path $playStorage 'data'
+$playData=Join-Path $playPrivate 'data'
+if((Test-Path -LiteralPath (Join-Path $playLegacyData 'starfall-memory.sqlite3')) -and -not(Test-Path -LiteralPath (Join-Path $playData 'starfall-memory.sqlite3'))){
+    throw 'Memory database predates private placement; migrate it explicitly into the protected private/data directory before launch.'
+}
+$null=New-Item -ItemType Directory -Force -Path $playData
+Assert-PrivateMemoryAcl $playData $false
 $playLog=Join-Path $playStorage ('service-'+[DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss')+'.log')
 $playServiceArgs='"'+(Join-Path $playRoot 'services/starfall-memory/offline_guard.py')+'" --config "'+$playConfig+'" --data-dir "'+$playData+'" --port '+$playPort
 $playService=Start-Process -FilePath $playPython -ArgumentList $playServiceArgs -RedirectStandardOutput $playLog -RedirectStandardError ($playLog+'.err') -WindowStyle Hidden -PassThru

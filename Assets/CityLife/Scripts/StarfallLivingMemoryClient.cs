@@ -7,12 +7,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace CityLife.World
 {
     // Trusted engine transport; capabilities never enter the inference payload.
     public sealed class StarfallLivingMemoryClient : IDisposable
     {
+        public const int MaximumMemoryPages = 64;
         public sealed class Evidence
         {
             public string World, Actor, EventId, Item, Target, Summary, RecordJson;
@@ -93,15 +95,53 @@ namespace CityLife.World
             var result = new Evidence { World = (string)last["world_id"], Actor = (string)last["inhabitant_id"], EventId = eventId,
                 Tick = checked((int)(long)last["tick"]), Item = (string)data["item_id"], Target = (string)data["target_id"] };
             result.Summary = result.Actor + " delivered " + result.Item + " to " + result.Target + " at tick " + result.Tick + ".";
-            var page = Map(await Memory("v1/memories?after=0&limit=4", null, "reader_token", token).ConfigureAwait(false));
-            var items = (List<object>)page["items"];
-            if ((bool)page["has_more"] || items.Count > 4) throw new FormatException("retrieval-bound");
-            foreach (var item in items.Cast<Dictionary<string, object>>())
-                if ((string)item["world_id"] != result.World || (string)item["inhabitant_id"] != result.Actor ||
-                    (string)item["schema"] != "starfall.memory.record.v1" || (string)item["kind"] != "episode" || (string)item["epistemic_status"] != "confirmed_event") throw new FormatException("retrieval-scope");
-            var matches = items.Cast<Dictionary<string, object>>().Where(x => ((List<object>)x["evidence_ids"]).Count == 1 && (string)((List<object>)x["evidence_ids"])[0] == eventId).ToArray();
-            if (matches.Length != 1 || (string)matches[0]["summary"] != result.Summary || (long)matches[0]["tick"] != result.Tick) throw new FormatException("retrieved-delivery-mismatch");
-            result.RecordJson = NpcBoundedJson.Encode(matches[0]); return result;
+            long after = 0;
+            for (int pageNumber = 0; pageNumber < MaximumMemoryPages; pageNumber++)
+            {
+                var page = await MemoryPage(after, token).ConfigureAwait(false);
+                var match = page.items.Where(x => ((List<object>)x["evidence_ids"])[0] as string == eventId).ToArray();
+                if (match.Length == 1)
+                {
+                    if ((string)match[0]["summary"] != result.Summary || (long)match[0]["tick"] != result.Tick) throw new FormatException("retrieved-delivery-mismatch");
+                    result.RecordJson = NpcBoundedJson.Encode(match[0]); return result;
+                }
+                if (match.Length > 1) throw new FormatException("retrieved-delivery-mismatch");
+                if (!page.more) break;
+                after = page.after;
+            }
+            throw new FormatException("retrieved-delivery-mismatch-or-page-bound");
+        }
+        private async Task<(Dictionary<string, object>[] items, bool more, long after)> MemoryPage(long after, CancellationToken token)
+        {
+            string route = "v1/memories?after=" + after.ToString(CultureInfo.InvariantCulture) + "&limit=4";
+            var page = Map(await Memory(route, null, "reader_token", token).ConfigureAwait(false));
+            var items = ((List<object>)page["items"]).Cast<Dictionary<string, object>>().ToArray();
+            if (items.Length > 4) throw new FormatException("retrieval-bound");
+            foreach (var item in items)
+                if ((string)item["world_id"] != (string)config["world_id"] || (string)item["inhabitant_id"] != (string)config["inhabitant_id"] ||
+                    (string)item["schema"] != "starfall.memory.record.v1" || (string)item["kind"] != "episode" || (string)item["epistemic_status"] != "confirmed_event" ||
+                    ((List<object>)item["evidence_ids"]).Count != 1) throw new FormatException("retrieval-scope");
+            long next = (long)page["next_after"];
+            if (next < after || ((bool)page["has_more"] && (items.Length == 0 || next == after))) throw new FormatException("retrieval-cursor");
+            return (items, (bool)page["has_more"], next);
+        }
+        public async Task<Evidence> RecallLatestConfirmedDelivery(CancellationToken token)
+        {
+            Dictionary<string, object> latest = null; long after = 0;
+            for (int pageNumber = 0; pageNumber < MaximumMemoryPages; pageNumber++)
+            {
+                var page = await MemoryPage(after, token).ConfigureAwait(false);
+                if (page.items.Length > 0) latest = page.items[page.items.Length - 1];
+                if (!page.more)
+                {
+                    if (latest == null) return null;
+                    var refs = (List<object>)latest["evidence_ids"];
+                    return new Evidence { World = (string)latest["world_id"], Actor = (string)latest["inhabitant_id"], EventId = (string)refs[0],
+                        Tick = checked((int)(long)latest["tick"]), Summary = (string)latest["summary"], RecordJson = NpcBoundedJson.Encode(latest) };
+                }
+                after = page.after;
+            }
+            throw new FormatException("retrieval-page-bound");
         }
         public async Task<Evidence> PublishAndRetrieve(string[] events, CancellationToken token)
         {
