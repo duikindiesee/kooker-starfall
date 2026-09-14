@@ -39,6 +39,11 @@ namespace CityLife.World
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
             File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
         }
+        private void CaptureNow(string name)
+        {
+            var texture = ScreenCapture.CaptureScreenshotAsTexture();
+            File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
+        }
         private IEnumerator ClickMenuButton(int index)
         {
             var rect = GameObject.Find("Option " + index).GetComponent<RectTransform>();
@@ -65,12 +70,22 @@ namespace CityLife.World
             Controls.TestKeyboard = keyboard; Controls.TestMouse = mouse; Controls.AllowUnfocusedTestInput = true;
             yield return null; yield return null;
             CheckThat("world-binding", Brain.Ready && Brain.Perception.WorldId == Brain.InstanceWorldId && Brain.InstanceWorldId == NpcTerrainNavigation.RegionId, Brain.InstanceWorldId);
+            float sampledCliff = float.MinValue;
+            for (float z = CoastalTerrain.MinZ + 100; z < 600; z += 100)
+                for (float x = CoastalTerrain.MinX + 100; x < CoastalTerrain.MaxX; x += 100)
+                    sampledCliff = Mathf.Max(sampledCliff, CoastalTerrain.Height(x, z));
+            CheckThat("spacious-finite-canyon-world",
+                CoastalTerrain.MaxX - CoastalTerrain.MinX >= 1200 && CoastalTerrain.MaxZ - CoastalTerrain.MinZ >= 1600 && sampledCliff >= 80,
+                "bounds=" + (CoastalTerrain.MaxX-CoastalTerrain.MinX) + "x" + (CoastalTerrain.MaxZ-CoastalTerrain.MinZ) + "; sampledCliff=" + sampledCliff.ToString("F1") + "m");
             CheckThat("clothing-attached", Brain.GetComponentsInChildren<SkinnedMeshRenderer>().Length > 2 && Brain.transform.GetComponentsInChildren<Transform>().Length > 20, "Visual coverage inspected separately in retained frames.");
             string foodEvidence = "Integrated food adapter missing.";
             bool foodPassed = false;
             try { foodPassed = Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence); }
             catch (Exception exception) { foodEvidence = exception.GetType().Name + ": " + exception.Message; }
             CheckThat("food-model-and-world-targets", foodPassed, foodEvidence);
+            CheckThat("berry-bush-terrain-and-rock-clearance", Food != null && Food.Berry != null &&
+                Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f && Food.MinimumRockClearance >= 3f,
+                Food == null ? "food adapter missing" : "terrainDelta=" + Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") + "; rockClearance=" + Food.MinimumRockClearance.ToString("F2") + "m");
             yield return Capture("01-default-coastal-inhabitant");
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
@@ -147,9 +162,13 @@ namespace CityLife.World
                 Controls.View.transform.SetPositionAndRotation(new Vector3(-19, 8, -18), Quaternion.LookRotation(new Vector3(9, 4, 75) - new Vector3(-19, 8, -18)));
                 yield return new WaitForSeconds(.4f); yield return Capture("06-weather-" + Environment.Weather);
             }
-            Controls.View.transform.position = new Vector3(-7, 1.9f, 0); Controls.View.transform.LookAt(new Vector3(-11, 1.4f, 0));
+            var refugeObject = GameObject.Find("First refuge / authored v1");
+            var refugeCentre = refugeObject == null ? Vector3.zero : refugeObject.transform.position + new Vector3(-10,2.2f,0);
+            Controls.View.transform.position = refugeCentre + new Vector3(14,3,-9); Controls.View.transform.LookAt(refugeCentre);
             yield return Capture("07-refuge-entry");
-            CheckThat("refuge-discoverable", Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place), "Place has no pickup/delivery authority; live memory is not connected.");
+            CheckThat("refuge-discoverable", refugeObject != null && Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place) &&
+                refugeCentre.y > CoastalTerrain.Height(refugeCentre.x,refugeCentre.z),
+                "Authored geometry is above sampled terrain and registered as a non-pickup place; live memory is not connected.");
             foreach (string pose in new[] { "Idle", "Crouch", "Sit" })
             {
                 Brain.Actor.Animator.Play(pose, 0, 0); Brain.Actor.Animator.Update(.5f);
@@ -159,6 +178,11 @@ namespace CityLife.World
                     Controls.View.transform.position = pivot + Quaternion.Euler(12, i * 90, 0) * Vector3.back * 3.2f; Controls.View.transform.LookAt(pivot);
                     yield return Capture("08-clothing-" + pose + "-" + i);
                 }
+            }
+            if (Array.IndexOf(args, "-npcLivingMemory") >= 0)
+            {
+                var living = StarfallLivingMemoryAcceptance.Verify(Brain, Controls.Hud, CheckThat, CaptureNow, directory);
+                while (living.MoveNext()) yield return living.Current;
             }
             report.deliveries = Brain.Actions.Deliveries; report.errors.AddRange(errors);
             CheckThat("no-runtime-errors", errors.Count == 0, errors.Count + " recorded errors");

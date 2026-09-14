@@ -26,6 +26,7 @@ def main():
     host.add_argument('--exe', type=Path)
     host.add_argument('--editor', type=Path)
     parser.add_argument('--scene')
+    parser.add_argument('--integrated', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
@@ -59,7 +60,8 @@ def main():
     save(output / 'model-inventory-before.json', inventory)
     (output / 'model-devices.txt').write_text(devices, encoding='utf-8')
     build = 'editor-' + source if args.editor else exe.parent.name
-    initialize(output / 'private', 'starfall.npc-courtyard.v1', [build], ['inhabitant-01', 'inhabitant-02'])
+    world_id = 'starfall.integrated-coastal.v1' if args.integrated else 'starfall.npc-courtyard.v1'
+    initialize(output / 'private', world_id, [build], ['inhabitant-01', 'inhabitant-02'])
     config_path = output / 'private' / 'config.json'
     config = json.loads(config_path.read_text())
     with socket.socket() as port_socket:
@@ -100,9 +102,14 @@ def main():
         if args.editor:
             command += ['-projectPath', str(ROOT), '-executeMethod', 'CityLife.World.Editor.StarfallMemoryPlayMode.Run',
                 '-npcEditorRuntime', build, '-npcEditorScene', args.scene]
-        command += ['-npcSmoke', '-npcLivingMemory', '-npcMemoryClient', str(client_path),
+        if args.integrated:
+            if args.editor: raise RuntimeError('Integrated runner currently requires the separate compiled player')
+            command += ['-integratedSmoke', '-integratedEvidence', str(output / 'runtime')]
+        else:
+            command += ['-npcSmoke', '-npcEvidence', str(output / 'runtime')]
+        command += ['-npcLivingMemory', '-npcMemoryClient', str(client_path),
             '-npcLocalEndpoint', 'http://127.0.0.1:1234', '-npcLocalModel', 'google/gemma-4-e4b',
-            '-npcEvidence', str(output / 'runtime'), '-logFile', str(output / 'player.log')]
+            '-logFile', str(output / 'player.log')]
         save(output / 'launch.json', dict(build=build, sha256=hashlib.sha256(exe.read_bytes()).hexdigest(),
             memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500,
             execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,

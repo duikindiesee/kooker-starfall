@@ -21,7 +21,7 @@ namespace CityLife.World
             string[] args = Environment.GetCommandLineArgs();
             string Arg(string name) { int index = Array.IndexOf(args, name); return index >= 0 && index + 1 < args.Length ? args[index + 1] : null; }
             string build = NpcPreviewSmoke.RuntimeBuildId, session = "living-" + Guid.NewGuid().ToString("N");
-            var report = new Report { status = "IN_PROGRESS", world = NpcAutonomy.WorldId, inhabitant = NpcAutonomy.AgentId, build = build, session = session,
+            var report = new Report { status = "IN_PROGRESS", world = brain.InstanceWorldId, inhabitant = NpcAutonomy.AgentId, build = build, session = session,
                 source = (Application.isEditor ? "Unity Editor Play Mode runtime; NOT standalone-player acceptance. " : "Actual compiled Unity courtyard. ") + "Real action receipts; isolated SQLite HTTP persistence. Scripted traversal is not physical keyboard acceptance." };
             string exportPath = Path.Combine(directory, "living-events.jsonl");
             brain.ResetState(); brain.OptionalPlanner.Configure(null); hud.Detailed = true;
