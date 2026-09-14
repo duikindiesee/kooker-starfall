@@ -4,7 +4,8 @@ param(
     [string]$WorldId='starfall.integrated-coastal.v1',
     [string]$InhabitantId='inhabitant-01',
     [string]$ModelEndpoint,
-    [string]$Model
+    [string]$Model,
+    [string]$Evidence
 )
 $ErrorActionPreference='Stop'
 $playRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
@@ -60,6 +61,13 @@ try{
     if($playReady){
         $playOutbox=Join-Path $playPrivate 'outbox'
         $playArgs+=@('-npcLivingMemoryRuntime','-npcMemoryClient',$playClient,'-npcMemoryOutbox',$playOutbox,'-npcMemoryBuild',$playBuild)
+        if($Evidence){
+            $playEvidence=[IO.Path]::GetFullPath($Evidence)
+            if(Test-Path -LiteralPath $playEvidence){
+                if((Get-ChildItem -LiteralPath $playEvidence -Force|Select-Object -First 1)){throw 'Normal-play evidence directory must be empty.'}
+            }else{$null=New-Item -ItemType Directory -Path $playEvidence}
+            $playArgs+=@('-npcLivingMemoryEvidence',$playEvidence)
+        }
         if($ModelEndpoint -and $Model){$playArgs+=@('-npcLocalEndpoint',$ModelEndpoint,'-npcLocalModel',$Model)}
         elseif($ModelEndpoint -or $Model){Write-Warning 'Both ModelEndpoint and Model are required for optional thought; action memory will continue without model calls.'}
     }else{Write-Warning 'Living-memory service was unavailable; launching deterministic gameplay without memory integration.'}
