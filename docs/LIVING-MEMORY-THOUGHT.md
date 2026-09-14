@@ -35,3 +35,9 @@ Source `447faad`, build `KookerStarfallHybrid-0.0.6-memory-preview.1-20260913-18
 | Actual HUD admission guard | Passed | Player screenshot `runtime/51-living-memory-thought-or-fallback.png` visibly identifies event, actor and timeout; no thought admitted | Physical keyboard acceptance is separate |
 
 The complete living-memory thought is **not proven**. The compiled player exited with its explicit genuine-thought assertion failure. No timeout extension, partial-answer admission or endpoint-only substitution was used.
+
+## Minimal wire attempt — 14 September 2026
+
+Source `cae0ada3419a6bb739df6cf3196a90260c7b6a88`, build `KookerStarfallHybrid-0.0.6-memory-preview.2-20260914-060428`. The scalar response path compiled with 2841 world assertions, 26 NPC checks and 71 hybrid/memory checks passing. All 558 files in the three earlier builds retained their hashes.
+
+Actual player launch was blocked before startup/inference by Windows Application Control (`WinError 4551`). Code Integrity events 3033/3077 identified this executable as failing Enterprise signing requirements or policy. No policy bypass or alternate launch was attempted. Local evidence: `evidence/local/living-memory/run-20260914-scalar/REPORT.md` and `application-control-events.json`. A policy-compliant signed/approved executable is required before this version can establish runtime acceptance. This does not improve the previous failed thought result.

@@ -504,3 +504,6 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 ### 2026-09-13 — Living-memory compiled-player gate
 
 Build 0.0.6-memory-preview.1-20260913-185950 completed real amber pickup/delivery and persisted/retrieved its scoped episode. Actual rendered HUD binds inhabitant-01, world and event but visibly reports timeout at 1504 ms / 1500 ms and no model thought admitted. Complete thought acceptance FAILED. Evidence: evidence/local/living-memory/run-20260913-1902/runtime/51-living-memory-thought-or-fallback.png and living-memory.json. SQLite restart and namespace checks passed; all 372 prior-build file hashes unchanged. Death/return and knowledge progression remain design only; see docs/STARFALL-KNOWLEDGE-PROGRESSION.md.
+### 2026-09-14 — Minimal thought path; no new visual acceptance
+
+Source cae0ada compiled as 0.0.6-memory-preview.2-20260914-060428 with 71 hybrid/memory checks passing. Windows Application Control blocked startup (4551; Code Integrity3033/3077), so there is no new player capture or inference evidence. The prior fallback screenshot remains the latest actual observation. All558 prior-build file hashes unchanged. Full local report: evidence/local/living-memory/run-20260914-scalar/REPORT.md. Signing/policy compliance is required before the strict1500ms runtime gate can resume; no policy bypass attempted.
