@@ -39,3 +39,7 @@ The sea uses the original three directional sine waves on the GPU, with derivati
 The close-up pass adds procedural six-blade dry tufts and small stones plus a credited CC0 ground image at a three-metre tile scale. The image supplies triplanar surface detail while the biome palette controls colour. These decorations do not change the terrain fingerprint or saved edits. The **4 / Detail** camera selects an existing grass tuft near Landing without adding a plant for the view. Day/night remains an exploration preview, not the browser's canonical shared clock. See [asset credits](ASSET-CREDITS.md).
 
 Walking follows the highest-detail mesh triangles, blocks water/steep gradients and preserves eye clearance. A newly visited chunk can briefly display a coarser surface while detail settles; the grounding rule remains the fine grid. Flight/orbit allow large-distance inspection. This is a terrain explorer, with no character model, rigid-body traffic or object collision game yet. Later roads, plots and building tools can adopt Unity-native approaches without preserving the browser's implementation problems.
+
+## Knowledge is progression
+
+[World rule and staged roadmap](KNOWLEDGE-PROGRESSION.md): cognitively naive starts, provenance-tracked and correctable beliefs, cautious learning, fair hazards and save-scoped memory. This is a design requirement, not an installed feature. Safe hearth/bedding precedes predator pressure and defenses.

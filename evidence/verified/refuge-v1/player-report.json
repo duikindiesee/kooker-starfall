@@ -1,0 +1,192 @@
+{
+    "world": "starfall.refuge-regional.v1",
+    "revision": "terrain-r2-weathered-banks.refuge1",
+    "scope": "Compiled regional refuge player, scripted controller acceptance; not human input or integrated NPC acceptance",
+    "checks": [
+        {
+            "name": "geometry standing clearance",
+            "pass": false,
+            "value": 0.0
+        },
+        {
+            "name": "regional water material and mesh invariants",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "floor freeboard",
+            "pass": true,
+            "value": 3.689000129699707
+        },
+        {
+            "name": "connected ingress freeboard",
+            "pass": true,
+            "value": 3.689000129699707
+        },
+        {
+            "name": "route (-2.00, 0.00, -4.00)",
+            "pass": true,
+            "value": 48.0
+        },
+        {
+            "name": "route (-2.00, 0.00, 0.00)",
+            "pass": true,
+            "value": 81.0
+        },
+        {
+            "name": "route (-7.00, 1.80, 0.00)",
+            "pass": true,
+            "value": 98.0
+        },
+        {
+            "name": "route (-11.00, 1.80, 0.00)",
+            "pass": true,
+            "value": 84.0
+        },
+        {
+            "name": "route (-7.00, 1.80, 0.00)",
+            "pass": true,
+            "value": 79.0
+        },
+        {
+            "name": "route (-2.00, 0.00, 0.00)",
+            "pass": true,
+            "value": 100.0
+        },
+        {
+            "name": "route (-2.00, 0.00, -4.00)",
+            "pass": true,
+            "value": 81.0
+        },
+        {
+            "name": "route (-4.00, 0.00, -4.00)",
+            "pass": true,
+            "value": 48.0
+        },
+        {
+            "name": "back wall blocks body",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "roof blocks camera",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "round trip stayed dry",
+            "pass": true,
+            "value": 0.02499997615814209
+        },
+        {
+            "name": "remote fire action refused",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "route (-2.00, 0.00, -4.00)",
+            "pass": true,
+            "value": 45.0
+        },
+        {
+            "name": "route (-2.00, 0.00, 0.00)",
+            "pass": true,
+            "value": 81.0
+        },
+        {
+            "name": "route (-7.00, 1.80, 0.00)",
+            "pass": true,
+            "value": 98.0
+        },
+        {
+            "name": "hearth ignition through interaction gate",
+            "pass": false,
+            "value": 0.0
+        },
+        {
+            "name": "directional wind attenuation",
+            "pass": false,
+            "value": 2.0
+        },
+        {
+            "name": "hearth local warming",
+            "pass": false,
+            "value": 0.0
+        },
+        {
+            "name": "roof rain attenuation",
+            "pass": false,
+            "value": 1.0
+        },
+        {
+            "name": "storm interior rain attenuation",
+            "pass": false,
+            "value": 1.0
+        },
+        {
+            "name": "exterior remains exposed",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "removed roof withholds shelter and kills fire",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "route (-2.00, 0.00, -4.00)",
+            "pass": true,
+            "value": 119.0
+        },
+        {
+            "name": "route (-2.00, 0.00, 0.00)",
+            "pass": true,
+            "value": 80.0
+        },
+        {
+            "name": "route (-7.00, 1.80, 0.00)",
+            "pass": true,
+            "value": 98.0
+        },
+        {
+            "name": "route (-10.50, 1.80, -0.70)",
+            "pass": true,
+            "value": 76.0
+        },
+        {
+            "name": "rest interaction",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "rest state visible",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "sleep after settling",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "wake releases movement",
+            "pass": true,
+            "value": 0.0
+        },
+        {
+            "name": "route (-11.00, 1.80, 0.50)",
+            "pass": true,
+            "value": 37.0
+        },
+        {
+            "name": "finite storage interaction",
+            "pass": true,
+            "value": 0.0
+        }
+    ],
+    "floor": 1.7999999523162842,
+    "ingress": 1.7999999523162842,
+    "waterUpper": -1.8890000581741333,
+    "frames": 657,
+    "frameP95": 67.67009735107422
+}

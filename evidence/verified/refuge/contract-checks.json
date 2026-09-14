@@ -1,0 +1,6 @@
+{
+  "scope": "Pure C# synthetic fire model; includes 10000 repeatability ticks, not player acceptance",
+  "assertions": 10013,
+  "status": "PASS",
+  "command": "dotnet run --project tools/refuge/Checks.csproj"
+}

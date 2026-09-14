@@ -112,3 +112,7 @@ The authoritative [save and world lifecycle contract](docs/SAVE-GAME-CONTRACT.md
 The repository is [duikindiesee/kooker-starfall](https://github.com/duikindiesee/kooker-starfall). Its history and draft review continue under the new name. Internal `CityLife.World` namespaces, `Assets/CityLife` paths, legacy product settings, world IDs and save contracts remain intact; branding does not migrate an existing world.
 
 Contribute through branches and pull requests. Retain provenance, licences and earlier evidence. Keep credentials, private runtime profiles, player state, downloaded archives and raw machine logs out of the public repository.
+
+## Isolated first refuge test player
+
+This branch adds [First Refuge v2](docs/FIRST-REFUGE.md): a separate Windows player with rock overhang, contained hearth, mat/rest/sleep and finite fuel storage. Forty scripted checks passed twice. Concept art and actual-player images are labelled separately; performance is borderline and inhabitant/memory integration remains pending. The historical milestones below retain their original scope.

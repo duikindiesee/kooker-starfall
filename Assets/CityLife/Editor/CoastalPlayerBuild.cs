@@ -26,9 +26,11 @@ namespace CityLife.World.Editor
             string id=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             string folder="Assets/CityLife/GeneratedPreview-"+id;
             string buildName=frozenR19?"KookerStarfallCoastal-"+R19Version+"-"+id:"KookerStarfall-"+id;
+            if(RefugeBuild.Requested)buildName="KookerStarfallRefuge-"+RefugeBuild.Version+"-"+id;
             string buildDirectory="Builds/"+buildName;
             if(Directory.Exists(folder)||Directory.Exists(buildDirectory))throw new IOException("Preview output already exists; existing builds are preserved.");
             Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+            if(RefugeBuild.Requested)RefugeBuild.Attach(camera,ground);
             var persisted=new Dictionary<Object,Object>();int assetIndex=0;
             Object Persist(Object source)
             {
@@ -75,12 +77,14 @@ namespace CityLife.World.Editor
                     woodColliders++;
                 }
             camera.enabled=true;camera.tag="MainCamera";
-            ground.layer=8;
+            ground.layer=RefugeBuild.Requested?10:8;
             var explorer=camera.gameObject.AddComponent<CoastalExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
             camera.gameObject.AddComponent<CoastalSmoke>();
+            if(RefugeBuild.Requested){Object.DestroyImmediate(explorer);Object.DestroyImmediate(camera.GetComponent<CoastalSmoke>());}
             if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
 
             var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
+            if(RefugeBuild.Requested){pipeline.msaaSampleCount=2;pipeline.shadowDistance=30;pipeline.shadowCascadeCount=1;pipeline.mainLightShadowmapResolution=1024;pipeline.additionalLightsShadowmapResolution=512;}
             pipeline.hideFlags=HideFlags.None;
             var pipelineSettings=new SerializedObject(pipeline);var renderers=pipelineSettings.FindProperty("m_RendererDataList");
             for(int i=0;i<renderers.arraySize;i++)
@@ -101,12 +105,13 @@ namespace CityLife.World.Editor
                 {QualitySettings.SetQualityLevel(i);oldPipelines[i]=QualitySettings.renderPipeline;capturedPipelines=i+1;}
                 QualitySettings.SetQualityLevel(oldQuality);
                 PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=frozenR19?"Kooker Starfall Coastal "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=frozenR19?R19Version:"0.0.1-wip";
+                if(RefugeBuild.Requested){PlayerSettings.productName="Starfall First Refuge";PlayerSettings.bundleVersion=RefugeBuild.Version;}
                 PlayerSettings.defaultScreenWidth=1600;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;
                 GraphicsSettings.defaultRenderPipeline=pipeline;
                 for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
                 QualitySettings.SetQualityLevel(oldQuality);
                 string scene=folder+"/CoastalPlayer.unity";EditorSceneManager.SaveScene(camera.gameObject.scene,scene);AssetDatabase.SaveAssets();
-                string output=buildDirectory+(frozenR19?"/KookerStarfallCoastal.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
+                string output=buildDirectory+(RefugeBuild.Requested?"/StarfallRefuge.exe":frozenR19?"/KookerStarfallCoastal.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=Path.GetFullPath(output),target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
                 var evidence=new BuildEvidence{status=report.summary.result.ToString(),output=output,scene=scene,product=PlayerSettings.productName,bytes=(long)report.summary.totalSize,seconds=report.summary.totalTime.TotalSeconds,errors=(int)report.summary.totalErrors,warnings=(int)report.summary.totalWarnings,scope="Separate local WIP tree and blue-giant inspection stage. No IslandBootstrap, saved world, multiplayer or bot integrations. Visual gate not passed; source hybrid and runtime movement remain under review.",utc=DateTime.UtcNow.ToString("O")};
                 evidence.buildId=buildName;evidence.version=PlayerSettings.bundleVersion;evidence.sourceCommit=sourceCommit;

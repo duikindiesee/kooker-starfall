@@ -1,0 +1,13 @@
+{
+  "preservation": "6689/6689 previously inventoried build files unchanged",
+  "diffWhitespace": "PASS",
+  "discord": "Draft only, not posted",
+  "integration": "Not applied to combined world; no review receipt or protected-main action",
+  "powershellSyntax": "PASS, 14 scripts",
+  "sourceDeltaFromBuild": "No changes in Assets, Packages, ProjectSettings or tools after build source",
+  "player": "40/40 scripted checks PASS twice in visible v2",
+  "projectSafeguards": "PASS",
+  "sourceCommit": "88827d8ba38e541270250e9e4096f3b8046c8a08",
+  "secretScan": "PASS, Gitleaks 8.30.1 reachable history and publishable candidates",
+  "archive": "CRC integrity and SHA256 PASS"
+}

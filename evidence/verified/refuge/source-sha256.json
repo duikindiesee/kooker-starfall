@@ -1,0 +1,46 @@
+[
+  {
+    "file": "Assets/CityLife/Refuge/Editor.meta",
+    "sha256": "d0a6bc32662bedc43ccf9775a4929e9071fff829166c22c3346f5e85ae5728f9"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/HearthState.cs",
+    "sha256": "65bfee971a3932e4447b5e86b63e442a91a49aa7da40751a69a77b9432f879ef"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/HearthState.cs.meta",
+    "sha256": "38fb737c33991613675c015bdf1c0bab37212b56bc89eda074d2d49ab75a9889"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeRain.cs",
+    "sha256": "cca61de8bad11a6b23806a92dac2da741cc7576910a5d71a5a86cea5058bda34"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeRain.cs.meta",
+    "sha256": "8df41f710a203a5fc4bb8a66bb935dfbe2244602c2123bd04124c1ece0f89153"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeRuntime.cs",
+    "sha256": "3c440185bf4adf2ce0e7680d187e238a702740b579f79a1596ad9cc0d5f34e97"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeRuntime.cs.meta",
+    "sha256": "d9c89d18ad744f8d5a0b3682102e7a5a80690c3bea0398533fc7a132e71d7b65"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeStone.cs",
+    "sha256": "577d940fb11ec66b7cc5480b9a64b0616a8c7c2a86aa5a519afd7e7732fc8724"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/RefugeStone.cs.meta",
+    "sha256": "ac3eb9b6f38d5a06a6d5cc94544dcb18fd91d577135be72873757bc963afc036"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/Editor/RefugeBuild.cs",
+    "sha256": "7369b70a6312f6702650b8e8c8e977842c7cb98ee6af76ff7bb0ea61e5b3d70d"
+  },
+  {
+    "file": "Assets/CityLife/Refuge/Editor/RefugeBuild.cs.meta",
+    "sha256": "b57180fe88d4675c090f166f42e27d5a79a6b499d258579ba3ab8a47f12885fa"
+  }
+]
