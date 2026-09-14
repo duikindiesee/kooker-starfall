@@ -11,6 +11,7 @@ namespace Starfall.Food
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
         [field: SerializeField] public float MinimumRockClearance { get; private set; }
+        public int RockColliderCount { get; private set; }
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
         void EnsureModel()
@@ -63,6 +64,13 @@ namespace Starfall.Food
                     if (collider.name.StartsWith("Stratified shore rock")) return radius - .25f;
             }
             return 10f;
+        }
+        public float MeasureRuntimeRockClearance()
+        {
+            Physics.SyncTransforms(); RockColliderCount = 0;
+            foreach (var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
+                if (collider.gameObject.layer == 8 && collider.name.StartsWith("Stratified shore rock")) RockColliderCount++;
+            return MeasureRockClearance(BerryPosition);
         }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
         {

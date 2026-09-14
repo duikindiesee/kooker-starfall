@@ -99,9 +99,14 @@ namespace CityLife.World
             try { foodPassed = Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence); }
             catch (Exception exception) { foodEvidence = exception.GetType().Name + ": " + exception.Message; }
             CheckThat("food-model-and-world-targets", foodPassed, foodEvidence);
+            float runtimeRockClearance = Food == null ? 0 : Food.MeasureRuntimeRockClearance();
             CheckThat("berry-bush-terrain-and-rock-clearance", Food != null && Food.Berry != null &&
-                Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f && Food.MinimumRockClearance >= 3f,
-                Food == null ? "food adapter missing" : "terrainDelta=" + Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") + "; rockClearance=" + Food.MinimumRockClearance.ToString("F2") + "m");
+                Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f &&
+                Food.MinimumRockClearance >= 3f && runtimeRockClearance >= 3f && Food.RockColliderCount == 84,
+                Food == null ? "food adapter missing" : "position=" + Food.BerryPosition + "; terrainDelta=" +
+                Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") +
+                "; bakedClearance=" + Food.MinimumRockClearance.ToString("F2") + "m; runtimeClearance=" +
+                runtimeRockClearance.ToString("F2") + "m; layer8RockColliders=" + Food.RockColliderCount);
             yield return Capture("01-default-coastal-inhabitant");
             Controls.View.ExternalView = true; Controls.SuppressView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
