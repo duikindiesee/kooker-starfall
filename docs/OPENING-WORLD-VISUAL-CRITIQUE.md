@@ -128,3 +128,13 @@ unreachable refuge can be averaged away. Re-run relevant runtime regressions.
 If a pass barely improves the result, reassess the technique and report the
 plateau rather than endlessly polishing or lowering the bar. Do not declare
 completion until the visual bar and the user's final play review both pass.
+# Round 128 targeted comparison — 14 September 2026
+
+Root inspected the matching `2026-09-14-03-rocky-tree-bank.png` in coastal
+rounds 127 and 128. Removing duplicate alpha transmission visibly reduces the
+gray-green cast. This is a narrow improvement, not an overall score or acceptance.
+Water remains mostly flat teal with oversized light blobs; this view does not
+prove a readable reef bed or fine moving caustics. Broad slab-like rocks, pale
+trunk lighting and noisy cliff lines remain unlike the approved panorama.
+Next evidence must include an eye-level shallow-bed view and moving light on
+submerged surfaces, plus a matched wide composition. The 7.3/10 gate remains open.
