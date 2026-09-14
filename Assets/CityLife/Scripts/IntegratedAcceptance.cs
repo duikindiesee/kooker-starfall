@@ -187,17 +187,20 @@ namespace CityLife.World
             yield return Tap(Key.P);
             CheckThat("resume-restores-capture", !Controls.MenuOpen && Controls.Looking, "Prior play capture intent restored.");
             var oldMode = Screen.fullScreenMode;
+            var firstMode = oldMode == FullScreenMode.Windowed || oldMode == FullScreenMode.MaximizedWindow
+                ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
             yield return Tap(Key.F11);
             for (int displayFrame=0; displayFrame<600 &&
-                (Controls.DisplayShortcutActive || Screen.fullScreenMode != FullScreenMode.FullScreenWindow); displayFrame++) yield return null;
-            CheckThat("fullscreen-transition", Screen.fullScreenMode == FullScreenMode.FullScreenWindow &&
+                (Controls.DisplayShortcutActive || Screen.fullScreenMode != firstMode); displayFrame++) yield return null;
+            CheckThat("fullscreen-transition", Screen.fullScreenMode == firstMode &&
                 Screen.fullScreenMode != oldMode && !Controls.DisplayShortcutActive && Controls.Looking, Screen.fullScreenMode.ToString());
             yield return Capture("05-fullscreen");
+            var secondMode = firstMode == FullScreenMode.Windowed ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
             yield return Tap(Key.F11);
             for (int displayFrame=0; displayFrame<600 &&
-                (Controls.DisplayShortcutActive || Screen.fullScreenMode != FullScreenMode.Windowed); displayFrame++) yield return null;
-            CheckThat("window-restoration", Screen.fullScreenMode == FullScreenMode.Windowed && Controls.Looking,
-                Screen.fullScreenMode + "; initial=" + oldMode + "; resizable window restored");
+                (Controls.DisplayShortcutActive || Screen.fullScreenMode != secondMode); displayFrame++) yield return null;
+            CheckThat("window-restoration", Screen.fullScreenMode == secondMode && Controls.Looking,
+                Screen.fullScreenMode + "; initial=" + oldMode + "; both display modes observed");
             yield return Tap(Key.Tab); yield return Tap(Key.F);
             var spectator = Controls.View.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
