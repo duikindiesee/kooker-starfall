@@ -47,6 +47,10 @@ namespace CityLife.World
         }
         private void RenderWorldNow(string name)
         {
+            // Living-memory verification updates the HUD and captures within the
+            // same coroutine step. Flush the Canvas before the explicit camera
+            // render so the retained frame contains the accepted thought text.
+            Canvas.ForceUpdateCanvases();
             var camera = Controls.View.GetComponent<Camera>();
             var target = new RenderTexture(1600, 900, 24, RenderTextureFormat.ARGB32);
             var priorTarget = camera.targetTexture; var priorActive = RenderTexture.active;
@@ -269,7 +273,15 @@ namespace CityLife.World
             if (Array.IndexOf(args, "-npcLivingMemory") >= 0)
             {
                 var living = StarfallLivingMemoryAcceptance.Verify(Brain, Controls.Hud, CheckThat, CaptureNow, directory);
-                while (living.MoveNext()) yield return living.Current;
+                while (true)
+                {
+                    // Keep the evidence camera with the inhabitant after Verify
+                    // resets the actor for its fresh, real delivery journey.
+                    Controls.View.transform.position = Brain.transform.position + new Vector3(3, 2.5f, -4);
+                    Controls.View.transform.LookAt(Brain.transform.position + Vector3.up);
+                    if (!living.MoveNext()) break;
+                    yield return living.Current;
+                }
             }
             report.deliveries = Brain.Actions.Deliveries; report.errors.AddRange(errors);
             CheckThat("no-runtime-errors", errors.Count == 0, errors.Count + " recorded errors");
