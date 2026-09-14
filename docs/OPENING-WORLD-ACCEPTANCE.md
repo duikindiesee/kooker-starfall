@@ -90,3 +90,19 @@ Do not add serialization attributes to runtime services merely to silence these
 warnings. The event-memory ledger and a complete world save are different
 contracts; this build report proves neither. Keep warnings visible in the final
 manifest and rerun this audit against the exact release candidate.
+
+### Round 134 normal-play evidence — independently inspected
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Real model output displayed after delivery | Bounded pass | `evidence/local/normal-memory/run-11-runtime/normal-living-memory.json` and PNG: Delivered amber, 534 ms, normalPlay/persisted/admitted true | A two-word grounded reflection, not conversational planning or a general learning brain |
+| Provider completed its answer | Receipt retained | `run-11-runtime/normal-model-provenance.json`: finish_reason stop and request/response/inventory hashes | Player does not assert the physical inference device; hashes alone are not raw payload inspection |
+| Prior event recalled after restart | Bounded pass | `run-13-runtime/normal-prior-journey.png` shows prior hidden-green pickup at tick 804 while new player is at tick 9; `run-13-ledger-audit.json` reports exact prior-chain prefix | Event memory persistence, not restoration of the entire physical world |
+| World/actor boundaries checked | Bounded pass | `run-13-ledger-audit.json`: foreign world/actor 400, invalid capability 401 | Repeat against final release candidate |
+
+These receipts refer to build `KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207`.
+The restart audit deliberately reports model provenance unavailable because it
+proves recall, not a new inference. Do not merge those two claims into one pass.
+Visual quality, club validation, final regression, packaging, narrated walkthrough,
+protected review and human acceptance remain open. Further builds require more
+disk space; the successful checkpoint must not be overwritten to hide prior failures.
