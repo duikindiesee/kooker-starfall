@@ -67,7 +67,8 @@ namespace CityLife.World
                     "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
                     "\n\nActions use deterministic checks. No learning.";
                 if (!string.IsNullOrEmpty(LivingMemoryText)) thoughts.text = LivingMemoryText;
-                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts " + (planner.EnabledByUser ? "on" : "off");
+                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Planner " + (planner.EnabledByUser ? "on" : "off") +
+                    (!string.IsNullOrEmpty(LivingMemoryText) ? " · memory reflection active" : "");
             }
             Perceptions.gameObject.SetActive(Detailed); History.gameObject.SetActive(Detailed);
             backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 310);

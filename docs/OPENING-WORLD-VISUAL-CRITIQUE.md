@@ -35,6 +35,21 @@ primitive activity props, flat cyan water/hard shore edges and rounded noisy
 cliffs. The playable scale is useful progress but not visual resemblance. A
 matched camera set remains required before comparing improvement between builds.
 
+### First visual implementation pass: round 124
+
+Inspected `evidence/milestones/coastal/round-124/2026-09-14-01-coastal-side-composition.png`
+against the round-122 composition. Stepped cliff silhouette is more legible,
+but the increased surface noise reads as scribbles, not convincing rock strata.
+Water remains visually opaque cyan in this shot, with no recognizable submerged
+bed or plants. Foothill decoration remains tiny/sparse, and the foreground rock
+ring still reads as stacked slabs. This is a limited improvement, not a 7.3 pass;
+no new aggregate score is assigned from this one editor-rendered view.
+
+Before another broad polish pass, establish one clearly readable shallow-bed
+view with submerged rock/plant detail and correctly masked caustics. Then refine
+rock form and clustered dressing at visible gameplay scale. Preserve this failed
+comparison and repeat the representative compiled-player set after rebuilding.
+
 ## Improvement order and stopping rule
 
 ### Clear shallow-water requirement

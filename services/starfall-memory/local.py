@@ -25,7 +25,12 @@ def initialize(folder, world, builds, actors):
         info = subprocess.check_output(['whoami', '/user', '/fo', 'csv', '/nh'], text=True)
         sid = next(csv.reader(info.strip().splitlines()))[1]
         require(re.fullmatch(r'S-1-\d+(?:-\d+)+', sid), 'invalid-user-sid')
-        subprocess.run(['icacls', str(folder), '/inheritance:r', '/grant:r', f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F'], check=True, stdout=subprocess.DEVNULL)
+        # Python's 0700 directory creation can leave explicit OWNER RIGHTS and
+        # Administrators entries after inheritance is removed. Remove those
+        # well-known grants before installing the exact user + SYSTEM boundary.
+        subprocess.run(['icacls', str(folder), '/inheritance:r'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['icacls', str(folder), '/remove:g', '*S-1-3-4', '*S-1-5-32-544'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['icacls', str(folder), '/grant:r', f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F'], check=True, stdout=subprocess.DEVNULL)
     cfg = {'schema': 'starfall.memory.config.v1', 'world_id': world, 'publisher_id': 'unity-local',
         'publisher_token': secrets.token_urlsafe(32), 'build_ids': builds,
         'inhabitants': [{'inhabitant_id': actor, 'token': secrets.token_urlsafe(32)} for actor in actors]}

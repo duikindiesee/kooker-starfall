@@ -22,7 +22,7 @@ namespace CityLife.World
         private CancellationTokenSource lifetime;
         private string endpoint, model, build;
         private string evidenceDirectory;
-        private bool enabledForSession;
+        private bool enabledForSession, thoughtAttempted;
         [Serializable] private sealed class RuntimeEvidence
         {
             public string status, world, inhabitant, build, item, destination, thought, model;
@@ -123,7 +123,8 @@ namespace CityLife.World
                 if (memory == null)
                 { SetStatus("LIVING MEMORY\nDelivery persisted; verified recall is unavailable.\nDeterministic autonomy continues."); continue; }
                 SetStatus("LIVING MEMORY\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nMemory persisted; model reflection is optional.");
-                if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(model)) continue;
+                if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(model) || thoughtAttempted) continue;
+                thoughtAttempted = true;
                 int requestedTick = Brain.Tick; var identity = Brain.gameObject.GetEntityId();
                 using (var thoughtCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
                 {
@@ -140,7 +141,7 @@ namespace CityLife.World
                     SetStatus(current ? "REMEMBERED INSIGHT\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nThought: " + thought.reflection +
                         "\nMemory records facts; Unity controls actions." : "LIVING MEMORY\nVerified delivery: " + memory.Item + " -> " + memory.Target +
                         "\nDeterministic fallback / " + thought.status + ". Unity controls actions.");
-                    if (current) WriteEvidence(memory, thought);
+                    WriteEvidence(memory, thought, current);
                 }
             }
         }
@@ -165,12 +166,12 @@ namespace CityLife.World
                 string.Equals(words[0], "delivery", StringComparison.OrdinalIgnoreCase)) && string.Equals(words[1], memory.Item, StringComparison.OrdinalIgnoreCase);
         }
         private void SetStatus(string value) { if (Hud != null) Hud.LivingMemoryText = value; }
-        private void WriteEvidence(StarfallLivingMemoryClient.Evidence memory, StarfallMemoryThought.Result thought)
+        private void WriteEvidence(StarfallLivingMemoryClient.Evidence memory, StarfallMemoryThought.Result thought, bool admitted)
         {
             if (string.IsNullOrEmpty(evidenceDirectory)) return;
-            var report = new RuntimeEvidence { status = "PASS", world = Brain.InstanceWorldId, inhabitant = NpcAutonomy.AgentId, build = build,
+            var report = new RuntimeEvidence { status = admitted ? "PASS" : "SAFE_FALLBACK", world = Brain.InstanceWorldId, inhabitant = NpcAutonomy.AgentId, build = build,
                 item = memory.Item, destination = memory.Target, thought = thought.reflection, model = thought.model, milliseconds = thought.milliseconds,
-                deliveries = Brain.Actions.Deliveries, tick = Brain.Tick, normalPlay = true, persisted = true, admitted = true };
+                deliveries = Brain.Actions.Deliveries, tick = Brain.Tick, normalPlay = true, persisted = true, admitted = admitted };
             WriteEvidenceFiles("normal-living-memory", report);
         }
         private void WritePriorEvidence(StarfallLivingMemoryClient.Evidence memory)

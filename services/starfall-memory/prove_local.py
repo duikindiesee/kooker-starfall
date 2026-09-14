@@ -29,7 +29,9 @@ def private_directory(path):
         sid = next(csv.reader(identity.strip().splitlines()))[1]
         if not re.fullmatch(r'S-1-\d+(?:-\d+)+', sid):
             raise RuntimeError('Could not resolve current user SID')
-        subprocess.run(['icacls', str(path), '/inheritance:r', '/grant:r', f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['icacls', str(path), '/inheritance:r'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['icacls', str(path), '/remove:g', '*S-1-3-4', '*S-1-5-32-544'], check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['icacls', str(path), '/grant:r', f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F'], check=True, stdout=subprocess.DEVNULL)
 
 
 def main():
