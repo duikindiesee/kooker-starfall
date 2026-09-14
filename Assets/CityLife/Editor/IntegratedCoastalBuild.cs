@@ -115,6 +115,11 @@ namespace CityLife.World.Editor
             refugeRuntime.Hearth += refugeDelta; refugeRuntime.Bed += refugeDelta; refugeRuntime.Storage += refugeDelta;
             refugeRuntime.Body = actor.Capsule; refugeRuntime.IntegratedMode = true;
             Object.DestroyImmediate(fixtureBody);
+            // Refuge preflight conservatively classifies every existing collider as
+            // geometry. Restore the integrated actor and authority targets afterward.
+            actorObject.layer = 9;
+            foreach (var item in brain.Registry)
+                foreach (var collider in item.GetComponentsInChildren<Collider>(true)) collider.gameObject.layer = 11;
             actor.Place(brain.SpawnPosition); actor.View.Follow();
             var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = refugeRuntime.Hearth;
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
