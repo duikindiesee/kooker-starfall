@@ -22,6 +22,24 @@ This is the completion checklist for the active opening-world goal, not a releas
 
 ## Evidence sanity
 
+## Normal-play memory boundary
+
+The opt-in normal-play adapter is implemented in `0b56f70` and attached by
+`ede6add`. These commits are not runtime acceptance. Final review must launch
+without smoke flags, forced resets, test inputs or automatic quitting and prove:
+
+- A real autonomous delivery is durably recorded, recalled and visibly linked
+  to the optional model thought in the normal HUD.
+- A subsequent launch recalls the same scoped history; retaining database bytes
+  without demonstrating recall is insufficient.
+- A completed model response is rejected while paused, possessed or no longer
+  autonomous, including completion on the same frame as the control transition.
+- The service database, outbox and capability configuration all have appropriate
+  private storage protection. No credentials enter CLI arguments or evidence.
+
+Independent review raised final-state admission and normal-reload recall gaps;
+these remain pending correction and compiled-player proof.
+
 Run `python tools/check-visual-evidence.py <runtime-directory> --require 02-complete-autonomy-cycle.png --require 04-paused-options.png --require 07-refuge-entry.png` before using screenshots in a receipt. This detects missing or blank captures, not correct content. Inspect every claimed view manually and retain failed evidence instead of overwriting it.
 
 Future hunting, construction, complete ecology, planetary geometry and infrastructure expansion are outside this milestone. They must not displace these required opening-world gates.

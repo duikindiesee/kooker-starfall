@@ -141,6 +141,15 @@ namespace CityLife.World.Editor
             Need(!StarfallMemoryThought.Parse(thought, 2, out _, out _), "memory-thought-unknown-local-protocol-context");
             Need(StarfallMemoryThought.DeadlineMilliseconds == 1500, "memory-thought-gameplay-deadline-unchanged");
             Need(StarfallLivingMemoryClient.HashEvent("{\"z\":2,\"a\":1}") == StarfallLivingMemoryClient.HashEvent("{\"a\":1,\"z\":2}"), "memory-event-hash-order-independent");
+            var delivery = new StarfallLivingMemoryClient.Evidence { World = "starfall.integrated-coastal.v1", Actor = "inhabitant-01", Item = "amber", Target = "depot-west" };
+            StarfallMemoryThought.Result Result(string text) => new StarfallMemoryThought.Result { schemaValid = true, reflection = text, milliseconds = 500 };
+            Need(StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered amber"), delivery, true, true, true), "runtime-memory-admits-grounded-current-delivery");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered amber"), delivery, false, true, true), "runtime-memory-rejects-paused-possessed-or-stopped");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered amber"), delivery, true, false, true), "runtime-memory-rejects-stale-identity");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered amber"), delivery, true, true, false), "runtime-memory-rejects-stale-registry-delivery");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered blue"), delivery, true, true, true), "runtime-memory-rejects-wrong-item");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Collected amber"), delivery, true, true, true), "runtime-memory-rejects-wrong-action");
+            Need(!StarfallLivingMemoryRuntime.CanAdmitDeliveryThought(Result("Delivered amber today"), delivery, true, true, true), "runtime-memory-rejects-extra-tokens");
             Need(!NpcProposalValidator.TryParse(good.Replace("I will collect the blue crystal.", ""), 7, out var empty, out _) && empty == null,
                 "invalid-empty-proposal-cannot-escape-through-broker");
             File.WriteAllText("evidence/local/hybrid/validation.json", JsonUtility.ToJson(report, true));
