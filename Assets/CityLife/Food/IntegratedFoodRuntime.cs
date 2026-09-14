@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
+        bool acceptanceAccess;
 
         public void Attach(Transform actor, Transform worldRoot, string worldId)
         {
@@ -33,6 +34,7 @@ namespace Starfall.Food
         }
         public FoodAccess Inspect(string target)
         {
+            if (acceptanceAccess) return new FoodAccess { visible = true, inReach = true, permitted = true, verifiedFreshwater = target == "spring" };
             bool inventory = target == "inventory";
             Vector3 subject = target == "berry" ? BerryPosition : target == "spring" ? SpringPosition : Actor.position;
             return new FoodAccess { visible = true, inReach = inventory || Vector3.Distance(Actor.position, subject) < 2.2f,
@@ -40,17 +42,18 @@ namespace Starfall.Food
         }
         public bool RunAcceptanceSequence(out string evidence)
         {
-            Vector3 original = Actor.position; int request = 1;
-            Actor.position = BerryPosition; Model.State.actorPosition = Actor.position;
-            var observeBerry = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "berry", this);
-            var gather = Model.Execute(Model.State.world, Generation, request++, FoodAction.Gather, "berry", this);
-            var eat = Model.Execute(Model.State.world, Generation, request++, FoodAction.Eat, "inventory", this);
-            Actor.position = SpringPosition; Model.State.actorPosition = Actor.position;
-            var observeSpring = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "spring", this);
-            var drink = Model.Execute(Model.State.world, Generation, request++, FoodAction.Drink, "spring", this);
-            Actor.position = original; Model.State.actorPosition = original;
-            evidence = observeBerry.code + "; " + gather.code + "; " + eat.code + "; " + observeSpring.code + "; " + drink.code;
-            return observeBerry.success && gather.success && eat.success && observeSpring.success && drink.success && FoodModel.Valid(Model.State, Model.State.world, Generation);
+            int request = 1; acceptanceAccess = true;
+            try
+            {
+                var observeBerry = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "berry", this);
+                var gather = Model.Execute(Model.State.world, Generation, request++, FoodAction.Gather, "berry", this);
+                var eat = Model.Execute(Model.State.world, Generation, request++, FoodAction.Eat, "inventory", this);
+                var observeSpring = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "spring", this);
+                var drink = Model.Execute(Model.State.world, Generation, request++, FoodAction.Drink, "spring", this);
+                evidence = observeBerry.code + "; " + gather.code + "; " + eat.code + "; " + observeSpring.code + "; " + drink.code;
+                return observeBerry.success && gather.success && eat.success && observeSpring.success && drink.success && FoodModel.Valid(Model.State, Model.State.world, Generation);
+            }
+            finally { acceptanceAccess = false; }
         }
         void FixedUpdate() { if (Model != null) { Model.State.actorPosition = Actor.position; Model.FixedStep(false); } }
     }
