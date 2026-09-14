@@ -6,7 +6,7 @@ namespace CityLife.World
  [DefaultExecutionOrder(150)]
  public sealed class HunterClubCarry : MonoBehaviour
  {
-  public const float ClubLength=.58f;
+  public const float ClubLength=.56f;
   public Animator Animator; public Transform Actor,Club; public float Length=ClubLength;
   public Transform[] GripBones; public Quaternion[] GripRotations;
   public Transform[] GripLeaves; public Quaternion[] LeafRotations; public Vector3[] GripPositions,LeafPositions;

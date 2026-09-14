@@ -336,6 +336,7 @@ namespace CityLife.World
                         Brain.TerrainNavigation.Walkable(candidate, out _)) { clubSlope = candidate; clubSlopeDegrees = degrees; break; }
                 }
             float minimumClubClearance = float.MaxValue; int clubGroundHits = 0, clubExpectedHits = 0, clubMotionSamples = 0;
+            float clubTraversalMetres = 0; string minimumClubPose = "none";
             string missingClubState = "";
             if (hunterClub != null && clubSlope != Vector3.zero)
             {
@@ -354,7 +355,8 @@ namespace CityLife.World
                         {
                             Brain.Actor.Animator.Play(state, 0, phase * .2f); Brain.Actor.Animator.Update(0);
                             yield return new WaitForEndOfFrame();
-                            int hits; minimumClubClearance = Mathf.Min(minimumClubClearance, MeasureClubTerrainClearance(hunterClub, out hits));
+                            int hits; float clearance = MeasureClubTerrainClearance(hunterClub, out hits);
+                            if (clearance < minimumClubClearance) { minimumClubClearance = clearance; minimumClubPose = pose + "-" + (facing > 0 ? "uphill" : "downhill") + "-phase" + phase; }
                             clubGroundHits += hits; clubExpectedHits += hunterClub.Club.GetComponent<MeshFilter>().sharedMesh.vertexCount; clubMotionSamples++;
                             if (phase == 2)
                             {
@@ -370,12 +372,25 @@ namespace CityLife.World
                         }
                     }
                 }
+                Brain.Actor.Animator.Play("Walk", 0, 0); Vector3 traversalPrior = Brain.transform.position;
+                foreach (float direction in new[] { 1f, -1f })
+                    for (int step = 0; step < 40; step++)
+                    {
+                        Vector3 motion = Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position, uphill * direction,
+                            Brain.Actor.WalkSpeed * NpcAutonomy.StepSeconds);
+                        Brain.Actor.Step(motion, NpcAutonomy.StepSeconds); yield return new WaitForFixedUpdate(); yield return new WaitForEndOfFrame();
+                        clubTraversalMetres += Vector3.Distance(traversalPrior, Brain.transform.position); traversalPrior = Brain.transform.position;
+                        int hits; float clearance = MeasureClubTerrainClearance(hunterClub, out hits);
+                        if (clearance < minimumClubClearance) { minimumClubClearance = clearance; minimumClubPose = "continuous-walk-" + (direction > 0 ? "uphill" : "downhill") + "-step" + step; }
+                        clubGroundHits += hits; clubExpectedHits += hunterClub.Club.GetComponent<MeshFilter>().sharedMesh.vertexCount; clubMotionSamples++;
+                    }
             }
             CheckThat("corrected-club-uneven-terrain-clearance", hunterClub != null && clubSlope != Vector3.zero &&
-                missingClubState.Length == 0 && clubMotionSamples == 80 && clubGroundHits == clubExpectedHits && minimumClubClearance >= .005f,
-                "80 uphill/downhill animation samples; actual/expected layer8/10 ray hits=" + clubGroundHits + "/" + clubExpectedHits +
+                missingClubState.Length == 0 && clubMotionSamples == 160 && clubGroundHits == clubExpectedHits && clubTraversalMetres >= 1 && minimumClubClearance >= .005f,
+                "80 uphill/downhill pose samples plus 80 continuous CharacterController traversal samples; actual/expected layer8/10 ray hits=" + clubGroundHits + "/" + clubExpectedHits +
                 "; missingStates=" + (missingClubState.Length == 0 ? "none" : missingClubState) + "; slope=" + clubSlopeDegrees.ToString("F1") +
-                "deg at " + clubSlope + "; minimum club-mesh clearance=" + minimumClubClearance.ToString("F3") + "m; visual hand fit remains separate review");
+                "deg at " + clubSlope + "; cumulative traversal=" + clubTraversalMetres.ToString("F2") + "m; minimum=" + minimumClubClearance.ToString("F3") +
+                "m at " + minimumClubPose + "; visual hand fit remains separate review");
             if (Array.IndexOf(args, "-npcLivingMemory") >= 0)
             {
                 var living = StarfallLivingMemoryAcceptance.Verify(Brain, Controls.Hud, CheckThat, CaptureNow, directory);
