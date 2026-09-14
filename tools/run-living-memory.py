@@ -26,6 +26,20 @@ def build_content(directory):
     entries.sort()
     digest = hashlib.sha256(('\n'.join(entries) + '\n').encode('utf-8')).hexdigest()
     return {'schema': 'starfall.build-content.v1', 'sha256': digest, 'files': len(entries)}
+
+def compiled_source(exe):
+    matches = []
+    for manifest in (ROOT / 'evidence' / 'milestones' / 'coastal').glob('round-*/preview-build.json'):
+        try:
+            data = json.loads(manifest.read_text(encoding='utf-8'))
+            output = (ROOT / data['output']).resolve()
+        except (KeyError, OSError, ValueError):
+            continue
+        if output == exe:
+            matches.append((manifest, data.get('sourceCommit', '')))
+    if len(matches) != 1 or len(matches[0][1]) != 40:
+        raise RuntimeError('Require one exact build manifest/source for compiled player')
+    return matches[0]
 sys.path.insert(0, str(ROOT / 'services' / 'starfall-memory'))
 from local import initialize
 from core import MemoryStore
@@ -47,7 +61,12 @@ def main():
     exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
     if not exe.is_file() or output.exists():
         raise RuntimeError('Require existing separate executable and new evidence directory')
-    source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    build_manifest = None
+    if args.editor:
+        source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    else:
+        build_manifest, source = compiled_source(exe)
+        subprocess.check_call(['git', 'cat-file', '-e', source + '^{commit}'], cwd=ROOT)
     if args.editor:
         if exe != Path(r'C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Unity.exe'):
             raise RuntimeError('Require pinned installed Unity Editor')
@@ -130,7 +149,8 @@ def main():
             memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500,
             execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,
             scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None,
-            buildContentSchema=content_before['schema'], buildContentSha256=content_before['sha256'], buildContentFiles=content_before['files'])
+            buildContentSchema=content_before['schema'], buildContentSha256=content_before['sha256'], buildContentFiles=content_before['files'],
+            buildManifest=None if build_manifest is None else str(build_manifest.relative_to(ROOT)).replace('\\','/'))
         save(output / 'launch.json', launch)
         print(json.dumps({'checkpoint': 'memory-ready', 'build': build}), flush=True)
         runtime_env = env
