@@ -61,3 +61,8 @@ The repository retains its history and review. Internal `CityLife.World` namespa
 - R06 and all earlier inspection captures retain their original filenames and labels. The historical R16 PH02 inspection remains rejected under the critic rubric. [R19](VISUAL-MILESTONES.md#round-19-frozen-family-review) preserves 21 final experimental offscreen images, independently scored 7.375/10 and frozen with defects deferred; neither is a newly branded runtime or an automatic replacement for R06.
 
 The previous README is retained in full below its historical notice in [LEGACY-ISLAND.md](LEGACY-ISLAND.md), with relative links adjusted for its new directory. Its island size, functionality and verification claims remain historical; they do not describe the small Starfall study.
+
+
+## Knowledge progression and persistent death/return: design contract
+
+The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.md) define naive starting knowledge, provenance/confidence/corrections, persistent-world death and return, recoverable inventory, at-most-one grounded lesson, privacy, and staged ecology/survival milestones. These are planned, not runtime-proven. Death lessons and post-return reflection remain after the current one-living-thought proof. Existing memory event schema v1 and old saves are unchanged.

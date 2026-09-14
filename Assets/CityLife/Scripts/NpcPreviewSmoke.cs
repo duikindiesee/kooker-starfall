@@ -13,6 +13,18 @@ namespace CityLife.World
     public sealed class NpcPreviewSmoke : MonoBehaviour
     {
         public static readonly bool Requested = Array.IndexOf(Environment.GetCommandLineArgs(), "-npcSmoke") >= 0;
+        public static string RuntimeBuildId
+        {
+            get
+            {
+                if (!Application.isEditor) return Path.GetFileName(Path.GetDirectoryName(Application.dataPath));
+                var args = Environment.GetCommandLineArgs(); int index = Array.IndexOf(args, "-npcEditorRuntime");
+                if (index < 0 || index + 1 >= args.Length || args[index + 1].Length != 47 ||
+                    !args[index + 1].StartsWith("editor-", StringComparison.Ordinal) || !args[index + 1].Substring(7).All(Uri.IsHexDigit))
+                    throw new InvalidOperationException("Editor acceptance requires explicit source identity.");
+                return args[index + 1];
+            }
+        }
         public NpcAutonomy Brain;
         public NpcDecisionHud Hud;
         public CharacterPreviewCamera View;
@@ -52,11 +64,13 @@ namespace CityLife.World
         private void Awake()
         {
             if (!Requested) { enabled = false; return; }
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0 && Array.IndexOf(Environment.GetCommandLineArgs(), "-npcRealProbe") >= 0)
+                throw new InvalidOperationException("Choose one real inference acceptance path per player run.");
             started = Time.realtimeSinceStartup;
             report = new Report { utc = DateTime.UtcNow.ToString("O"), version = Application.version,
-                buildId = Path.GetFileName(Path.GetDirectoryName(Application.dataPath)),
+                buildId = RuntimeBuildId,
                 unityVersion = Application.unityVersion, gpu = SystemInfo.graphicsDeviceName,
-                limit = "Actual offscreen standalone player. Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim." };
+                limit = (Application.isEditor ? "Unity Editor Play Mode runtime; NOT standalone-player acceptance. " : "Actual offscreen standalone player. ") + "Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim." };
             try
             {
                 string[] args = Environment.GetCommandLineArgs(); int i = Array.IndexOf(args, "-npcEvidence");
@@ -106,6 +120,13 @@ namespace CityLife.World
             Need("urp-request", RenderPipeline.SupportsRenderRequest(cameraComponent, request), "Actual URP initialized.");
             ready = true;
             Need("valid-human-avatar", Brain.Actor.Animator.avatar.isHuman && Brain.Actor.Animator.avatar.isValid, "Verified adult body and existing mapped animation rig.");
+            if (Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0)
+            {
+                report.limit += " Focused living-memory gate only; standalone injected keyboard/control suite is not evaluated here.";
+                var editorMemory = StarfallLivingMemoryAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
+                while (editorMemory.MoveNext()) yield return editorMemory.Current;
+                yield break;
+            }
             Brain.StepTick(); yield return null; Capture("01-perception-and-goal");
             Need("perception-visible-item", Brain.Perception.Current.Any(x => x.id == "amber"), "Nearby amber detected through actual overlap and ray queries.");
             Need("perception-hidden-item-excluded", !Brain.Perception.Current.Any(x => x.id == "hidden-green"), "Solid route obstacle blocks initial sight.");
@@ -204,6 +225,11 @@ namespace CityLife.World
                     var real = NpcRealProposalAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
                     while (real.MoveNext()) yield return real.Current;
                 }
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0)
+                {
+                    var memory = StarfallLivingMemoryAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
+                    while (memory.MoveNext()) yield return memory.Current;
+                }
             }
             Need("no-runtime-errors", Errors.Count == 0, "No player error/assert/exception.");
         }
@@ -244,6 +270,9 @@ namespace CityLife.World
             if (directory != null) File.WriteAllText(Path.Combine(directory, "npc-runtime.json"), JsonUtility.ToJson(report, true));
             Time.captureDeltaTime = 0;
             if (target != null) target.Release();
+#if UNITY_EDITOR
+            if (Application.isEditor) { UnityEditor.EditorApplication.Exit(error == null ? 0 : 3); return; }
+#endif
             Application.Quit(error == null ? 0 : 3);
         }
     }

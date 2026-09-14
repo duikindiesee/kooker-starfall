@@ -133,6 +133,16 @@ namespace CityLife.World.Editor
             }
             finally { UnityEngine.Object.DestroyImmediate(plannerObject); }
             report.status = "PASS"; Directory.CreateDirectory("evidence/local/hybrid");
+            const string thought = "\"Amber delivered.\"";
+            Need(StarfallMemoryThought.Parse(thought, 1, out _, out _), "memory-thought-strict-valid-text");
+            foreach (string bad in new[] { thought + "{}", "null", "1", "{}", "[]", "\"\"", "\"   \"", "\"hello\\nworld\"",
+                "{\"execute\":\"move\"}", thought.Replace("Amber delivered.", new string('x', 65)), "Amber delivered.", "\"unterminated" })
+                Need(!StarfallMemoryThought.Parse(bad, 1, out _, out _), "memory-thought-reject-" + report.checks.Count);
+            Need(!StarfallMemoryThought.Parse(thought, 2, out _, out _), "memory-thought-unknown-local-protocol-context");
+            Need(StarfallMemoryThought.DeadlineMilliseconds == 1500, "memory-thought-gameplay-deadline-unchanged");
+            Need(StarfallLivingMemoryClient.HashEvent("{\"z\":2,\"a\":1}") == StarfallLivingMemoryClient.HashEvent("{\"a\":1,\"z\":2}"), "memory-event-hash-order-independent");
+            Need(!NpcProposalValidator.TryParse(good.Replace("I will collect the blue crystal.", ""), 7, out var empty, out _) && empty == null,
+                "invalid-empty-proposal-cannot-escape-through-broker");
             File.WriteAllText("evidence/local/hybrid/validation.json", JsonUtility.ToJson(report, true));
             Debug.Log("NPC_HYBRID_VALIDATION_PASSED " + report.checks.Count);
         }
