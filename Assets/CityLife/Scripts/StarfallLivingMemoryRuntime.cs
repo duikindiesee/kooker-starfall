@@ -89,7 +89,11 @@ namespace CityLife.World
                 if (!prior.IsFaulted && !prior.IsCanceled)
                 {
                     var memory = prior.GetAwaiter().GetResult();
-                    if (memory != null) SetStatus("LIVING MEMORY / PRIOR JOURNEY\n" + memory.Summary + "\nVerified scoped recall; waiting for the next real action.");
+                    if (memory != null)
+                    {
+                        SetStatus("LIVING MEMORY / PRIOR JOURNEY\n" + memory.Summary + "\nVerified scoped recall; waiting for the next real action.");
+                        WritePriorEvidence(memory);
+                    }
                 }
                 else { var observed = prior.Exception; SetStatus("LIVING MEMORY\nPrior recall unavailable; new receipts still record locally.\nDeterministic autonomy continues."); }
             }
@@ -167,7 +171,18 @@ namespace CityLife.World
             var report = new RuntimeEvidence { status = "PASS", world = Brain.InstanceWorldId, inhabitant = NpcAutonomy.AgentId, build = build,
                 item = memory.Item, destination = memory.Target, thought = thought.reflection, model = thought.model, milliseconds = thought.milliseconds,
                 deliveries = Brain.Actions.Deliveries, tick = Brain.Tick, normalPlay = true, persisted = true, admitted = true };
-            File.WriteAllText(Path.Combine(evidenceDirectory, "normal-living-memory.json"), JsonUtility.ToJson(report, true));
+            WriteEvidenceFiles("normal-living-memory", report);
+        }
+        private void WritePriorEvidence(StarfallLivingMemoryClient.Evidence memory)
+        {
+            if (string.IsNullOrEmpty(evidenceDirectory)) return;
+            var report = new RuntimeEvidence { status = "PRIOR_JOURNEY_RECALLED", world = Brain.InstanceWorldId, inhabitant = NpcAutonomy.AgentId, build = build,
+                item = memory.Item, destination = memory.Target, deliveries = Brain.Actions.Deliveries, tick = Brain.Tick, normalPlay = true, persisted = true };
+            WriteEvidenceFiles("normal-prior-journey", report);
+        }
+        private void WriteEvidenceFiles(string name, RuntimeEvidence report)
+        {
+            File.WriteAllText(Path.Combine(evidenceDirectory, name + ".json"), JsonUtility.ToJson(report, true));
             Hud.Refresh(); UnityEngine.Canvas.ForceUpdateCanvases();
             var camera = Hud.View; var target = new RenderTexture(1600, 900, 24, RenderTextureFormat.ARGB32);
             var priorTarget = camera.targetTexture; var priorActive = RenderTexture.active;
@@ -175,7 +190,7 @@ namespace CityLife.World
             var texture = new Texture2D(1600, 900, TextureFormat.RGB24, false);
             texture.ReadPixels(new Rect(0, 0, 1600, 900), 0, 0); texture.Apply();
             camera.targetTexture = priorTarget; RenderTexture.active = priorActive;
-            File.WriteAllBytes(Path.Combine(evidenceDirectory, "normal-living-memory.png"), texture.EncodeToPNG());
+            File.WriteAllBytes(Path.Combine(evidenceDirectory, name + ".png"), texture.EncodeToPNG());
             Destroy(texture); target.Release(); Destroy(target);
         }
         private static string Safe(string value) => string.IsNullOrEmpty(value) ? "unknown error" : value.Length > 120 ? value.Substring(0, 120) : value;
