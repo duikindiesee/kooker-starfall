@@ -1,0 +1,10 @@
+{
+    "status": "PROBE_RENDER_UNPROVEN",
+    "renderId": -1,
+    "textureWidth": 0,
+    "textureHeight": 0,
+    "finished": false,
+    "textureAssigned": false,
+    "textureName": "",
+    "scope": "Realtime reflection probe render completion/texture assignment plus exact probe-off/on screen comparison. Does not claim physically accurate planar reflection or dynamic weather refresh."
+}
