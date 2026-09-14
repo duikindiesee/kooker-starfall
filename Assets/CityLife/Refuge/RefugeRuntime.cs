@@ -15,7 +15,7 @@ namespace Starfall.Refuge
   public const int GeometryMask=(1<<8)|(1<<10);
   public const string WorldId="starfall.refuge-regional.v1", Revision="terrain-r2-weathered-banks.refuge2";
   public Camera View;public CharacterController Body;public Vector3 Hearth,Bed,Storage;public Collider Roof;public GameObject Flame;public Light FireLight;
-  public bool IntegratedMode;
+  public bool IntegratedMode; public Vector3 OriginOffset;
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
   readonly CaveZonePolicy policy=new CaveZonePolicy(WorldId,Revision,"first-refuge",3,.1f,.01f);
   public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY;public string Notice="Explore the first refuge";
@@ -38,11 +38,12 @@ namespace Starfall.Refuge
   public ZoneWeather Sample(Vector3 p)
   {
    var s=Clock.Sample;var outside=new OutdoorWeather{WindX=s.wind.x,WindY=s.wind.y,WindZ=s.wind.z,AirC=s.temperature,Rain01=s.precipitation};
-   bool inside=p.x<=-6&&p.x>=-12.6f&&Mathf.Abs(p.z)<=2&&p.y>=1.75f&&p.y<5;
+   Vector3 local=p-OriginOffset;
+   bool inside=local.x<=-6&&local.x>=-12.6f&&Mathf.Abs(local.z)<=2&&local.y>=1.75f&&local.y<5;
    bool roof=inside&&Roof!=null&&Roof.enabled&&Physics.Raycast(p+Vector3.up*.1f,Vector3.up,8,GeometryMask,QueryTriggerInteraction.Ignore);
    float wind=0;if(inside&&s.wind.sqrMagnitude>.001f&&Physics.Raycast(p,-s.wind.normalized,10,GeometryMask,QueryTriggerInteraction.Ignore))wind=1;
    float heat=Fire.HeatAt(Vector3.Distance(p,Hearth+Vector3.up*.8f));
-   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-p.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(s.temperature+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
+   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-local.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(s.temperature+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
    return CaveZoneEvaluator.Evaluate(policy,outside,probe);
   }
   bool SafeFire()=>GeometryVerified&&WaterVerified&&Roof!=null&&Roof.enabled&&Vector3.Distance(Bed,Hearth)>2.5f;

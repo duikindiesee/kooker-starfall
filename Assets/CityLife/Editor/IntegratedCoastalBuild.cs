@@ -133,6 +133,7 @@ namespace CityLife.World.Editor
                 CoastalTerrain.Height(refugeAnchor.x, refugeAnchor.z), refugeAnchor.z);
             authoredRefuge.transform.position += refugeDelta;
             refugeRuntime.Hearth += refugeDelta; refugeRuntime.Bed += refugeDelta; refugeRuntime.Storage += refugeDelta;
+            refugeRuntime.OriginOffset = refugeDelta;
             refugeRuntime.Body = actor.Capsule; refugeRuntime.IntegratedMode = true;
             Object.DestroyImmediate(fixtureBody);
             // Refuge preflight conservatively classifies every existing collider as

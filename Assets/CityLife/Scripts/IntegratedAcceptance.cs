@@ -35,9 +35,7 @@ namespace CityLife.World
         }
         private IEnumerator Capture(string name)
         {
-            yield return new WaitForEndOfFrame();
-            var texture = ScreenCapture.CaptureScreenshotAsTexture();
-            File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
+            yield return CaptureWorld(name);
         }
         private IEnumerator CaptureWorld(string name)
         {
@@ -214,6 +212,31 @@ namespace CityLife.World
             CheckThat("refuge-approach-route", refugeRoute != null,
                 "Navigation route from east-bank shelf to the authored entrance ramp; route=" +
                 (refugeRoute == null ? "blocked" : refugeRoute.Count + " points"));
+            var refugeRuntime = Controls.View.GetComponent<Starfall.Refuge.RefugeRuntime>();
+            var refugeInterior = refugeObject == null ? Vector3.zero : refugeObject.transform.position + new Vector3(-11, 1.8f, 0);
+            var interiorRoute = Brain.TerrainNavigation == null ? null : Brain.TerrainNavigation.Plan(refugeOutside, refugeInterior);
+            Brain.Actor.Place(refugeOutside + Vector3.up * .02f); Physics.SyncTransforms();
+            int refugeSteps = 0;
+            if (interiorRoute != null)
+                while (interiorRoute.Count > 0 && refugeSteps++ < 2400)
+                {
+                    var target = interiorRoute.Peek(); var delta = target - Brain.transform.position; delta.y = 0;
+                    if (delta.magnitude < .13f) { interiorRoute.Dequeue(); continue; }
+                    Brain.Actor.Step(delta.normalized, NpcAutonomy.StepSeconds); yield return new WaitForFixedUpdate();
+                }
+            bool reachedInterior = interiorRoute != null && interiorRoute.Count == 0 &&
+                Vector2.Distance(new Vector2(Brain.transform.position.x, Brain.transform.position.z),
+                    new Vector2(refugeInterior.x, refugeInterior.z)) < .5f;
+            if (refugeRuntime != null) refugeRuntime.Clock.Tick = 4900;
+            var sheltered = refugeRuntime == null ? default(Starfall.EnvironmentZones.ZoneWeather) :
+                refugeRuntime.Sample(Brain.transform.position + Vector3.up);
+            CheckThat("refuge-continuous-actor-entry-and-shelter", reachedInterior && refugeRuntime != null &&
+                sheltered.Valid && sheltered.RainMultiplier < .02f,
+                "same CharacterController; steps=" + refugeSteps + "; final=" + Brain.transform.position +
+                "; interior=" + refugeInterior + "; rainMultiplier=" + sheltered.RainMultiplier.ToString("F3"));
+            Controls.View.transform.position = Brain.transform.position + new Vector3(3, 2.5f, -2);
+            Controls.View.transform.LookAt(Brain.transform.position + Vector3.up);
+            yield return CaptureWorld("07b-refuge-actor-inside");
             CheckThat("refuge-discoverable", refugeObject != null && Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place) &&
                 refugeCentre.y > CoastalTerrain.Height(refugeCentre.x,refugeCentre.z),
                 "Authored geometry is above sampled terrain and registered as a non-pickup place; live memory is not connected.");
