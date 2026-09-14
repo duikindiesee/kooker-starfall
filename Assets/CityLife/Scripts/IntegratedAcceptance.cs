@@ -378,9 +378,9 @@ namespace CityLife.World
                 foreach (float direction in new[] { 1f, -1f })
                     for (int step = 0; step < 40; step++)
                     {
-                        Vector3 motion = Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position, uphill * direction,
+                        Vector3 travelDirection = Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position, uphill * direction,
                             Brain.Actor.WalkSpeed * NpcAutonomy.StepSeconds);
-                        Brain.Actor.Step(motion, NpcAutonomy.StepSeconds); yield return new WaitForFixedUpdate(); yield return new WaitForEndOfFrame();
+                        Brain.Actor.Step(travelDirection, NpcAutonomy.StepSeconds); yield return new WaitForFixedUpdate(); yield return new WaitForEndOfFrame();
                         clubTraversalMetres += Vector3.Distance(traversalPrior, Brain.transform.position); traversalPrior = Brain.transform.position;
                         int hits; float clearance = MeasureClubTerrainClearance(hunterClub, out hits);
                         if (clearance < minimumClubClearance) { minimumClubClearance = clearance; minimumClubPose = "continuous-walk-" + (direction > 0 ? "uphill" : "downhill") + "-step" + step; }
