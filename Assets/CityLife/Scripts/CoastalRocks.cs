@@ -96,9 +96,30 @@ namespace CityLife.World
                 var bedRock=MeshObject("Submerged dark reef shelf "+i,RockMesh(4.2f+i*.55f,1.15f+i*.12f,3.2f+i*.42f,360+i),rock,root.transform,false);
                 bedRock.transform.localPosition=bed-Vector3.up*.10f;
                 bedRock.transform.localRotation=Quaternion.Euler(0,Lerp(-180,180,i,123),0);
-                AddColumnSucculent(aquatic,bed,Lerp(1.25f,2.15f,i,121),300+i);
-                AddRosette(aquatic,bed+new Vector3(1.8f,0,.9f),Lerp(1.1f,1.65f,i,122),330+i);
-                AddRosette(aquatic,bed+new Vector3(-1.5f,.05f,-.7f),Lerp(.9f,1.4f,i,124),350+i);
+                // Broken shelf rubble gives the clear-water view real silhouettes and
+                // scale variation instead of one isolated slab on a featureless bed.
+                // These are visual ecology only: no collider is authored here.
+                for(int fragment=0;fragment<12;fragment++)
+                {
+                    int id=600+i*31+fragment;
+                    float angle=Lerp(-Mathf.PI,Mathf.PI,id,201);
+                    float radius=Lerp(2.2f,8.4f,id,202);
+                    Vector2 q=p+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
+                    float width=Lerp(.38f,1.35f,id,203),height=Lerp(.22f,.72f,id,204),depth=width*Lerp(.55f,1.25f,id,205);
+                    var rubble=MeshObject("Submerged fractured reef fragment "+i+"-"+fragment,RockMesh(width,height,depth,id),rock,root.transform,false);
+                    rubble.transform.localPosition=new Vector3(q.x,CoastalTerrain.Height(q.x,q.y)-height*.10f,q.y);
+                    rubble.transform.localRotation=Quaternion.Euler(Lerp(-8,8,id,206),Lerp(-180,180,id,207),Lerp(-6,6,id,208));
+                }
+                // Low irregular rosettes sit between rubble; tall flower spikes are
+                // intentionally excluded from the primary shallow-bed silhouette.
+                for(int clump=0;clump<7;clump++)
+                {
+                    int id=700+i*23+clump;
+                    float angle=Lerp(-Mathf.PI,Mathf.PI,id,211),radius=Lerp(1.4f,7.1f,id,212);
+                    Vector2 q=p+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
+                    Vector3 rooted=new Vector3(q.x,CoastalTerrain.Height(q.x,q.y)+.035f,q.y);
+                    AddRosette(aquatic,rooted,Lerp(.62f,1.30f,id,213),id);
+                }
             }
             MeshObject("Submerged blue green river plants - render only",aquatic.ToMesh("Coastal aquatic plant pockets"),plants,root.transform,false);
 

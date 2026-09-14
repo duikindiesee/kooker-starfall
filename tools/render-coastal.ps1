@@ -18,5 +18,5 @@ if(-not $child.WaitForExit($TimeoutSeconds*1000)){Stop-Process -Id $child.Id -Fo
 $child.Refresh()
 if($child.ExitCode -ne 0){throw "Coastal render failed; preserve evidence and inspect $log"}
 $metrics=Get-Content -LiteralPath (Join-Path $output 'metrics.json') -Raw | ConvertFrom-Json
-if(-not $metrics.technicalChecksPassed -or $metrics.mode -ne 'starfall-coastal-slice-first-composition' -or @($metrics.captures).Count -ne 4){throw 'Four technically valid coastal frames were not produced.'}
-[pscustomobject]@{status='Four actual Unity coastal comparison views; visual review pending';evidence=$output;log=$log;reference='Provisional user concepts; no exact match claim'} | ConvertTo-Json
+if(-not $metrics.technicalChecksPassed -or $metrics.mode -ne 'starfall-coastal-slice-first-composition' -or @($metrics.captures).Count -ne 6){throw 'Six technically valid coastal frames, including the matched shallow-bed diagnostic pair, were not produced.'}
+[pscustomobject]@{status='Six actual Unity coastal views, including a matched bed-only/water-on diagnostic pair; visual review pending';evidence=$output;log=$log;reference='Provisional user concepts; no exact match claim'} | ConvertTo-Json

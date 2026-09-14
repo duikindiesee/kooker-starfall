@@ -106,7 +106,7 @@ namespace CityLife.World.Editor
         private static AmbientRecord initialAmbient;
         private static Material[] diagnosticOriginalMaterials;
         private static Renderer diagnosticRenderer;
-        private static int ExpectedCaptures => coastalMode ? 4 : playablePreviewMode ? 2 : ph02FamilyMode ? ph02SelectedShotIds.Length : woodDiagnosticMode ? 3 : ph02FittedMode ? 12 : ph01TangentMode ? (ph01OriginalSubsetsReady ? 12 : 8) : ph02CrownMode ? 8 : importedCandidateMode ? 12 : hybridMode ? 21 : 15;
+        private static int ExpectedCaptures => coastalMode ? 6 : playablePreviewMode ? 2 : ph02FamilyMode ? ph02SelectedShotIds.Length : woodDiagnosticMode ? 3 : ph02FittedMode ? 12 : ph01TangentMode ? (ph01OriginalSubsetsReady ? 12 : 8) : ph02CrownMode ? 8 : importedCandidateMode ? 12 : hybridMode ? 21 : 15;
 
         public static void RenderBatch() => Run(false);
         public static void RenderImportedCandidates() => Run(true);
