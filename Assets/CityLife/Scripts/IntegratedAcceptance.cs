@@ -45,7 +45,7 @@ namespace CityLife.World
             yield return new WaitForEndOfFrame();
             RenderWorldNow(name);
         }
-        private void RenderWorldNow(string name)
+        private Color32[] RenderWorldNow(string name)
         {
             // Living-memory verification updates the HUD and captures within the
             // same coroutine step. Flush the Canvas before the explicit camera
@@ -59,8 +59,10 @@ namespace CityLife.World
             var texture = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
             texture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0); texture.Apply();
             camera.targetTexture = priorTarget; RenderTexture.active = priorActive;
+            var pixels=texture.GetPixels32();
             File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG());
             Destroy(texture); target.Release(); Destroy(target); report.captures.Add(name + ".png");
+            return pixels;
         }
         private void CaptureNow(string name)
         {
@@ -139,6 +141,20 @@ namespace CityLife.World
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
             }
+            var shallowCamera=new Vector3(-11,3.2f,20); var shallowTarget=new Vector3(-2,-2.25f,34);
+            Controls.View.transform.SetPositionAndRotation(shallowCamera,Quaternion.LookRotation(shallowTarget-shallowCamera));
+            yield return new WaitForEndOfFrame(); var causticA=RenderWorldNow("01d-shallow-bed-caustics-a");
+            yield return new WaitForSeconds(.65f); yield return new WaitForEndOfFrame();
+            var causticB=RenderWorldNow("01e-shallow-bed-caustics-b");
+            double motion=0; int samples=0;
+            for(int y=0;y<450;y+=4) for(int x=0;x<1600;x+=4)
+            {
+                int p=y*1600+x; motion+=Mathf.Abs(causticA[p].r-causticB[p].r)+Mathf.Abs(causticA[p].g-causticB[p].g)+Mathf.Abs(causticA[p].b-causticB[p].b); samples+=3;
+            }
+            motion/=Math.Max(1,samples);
+            CheckThat("moving-shallow-bed-caustics",motion>.12,"same-camera lower-frame mean channel delta="+motion.ToString("F3")+" over 650ms; visual acceptance separate");
+            Controls.View.transform.SetPositionAndRotation(new Vector3(0,17,29),Quaternion.LookRotation(shallowTarget-new Vector3(0,17,29)));
+            yield return CaptureWorld("01f-shallow-bed-overhead");
             Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))

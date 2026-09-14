@@ -133,11 +133,12 @@ Shader "CityLife/CoastalWater"
                 if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
                 {
                     half3 bed = SampleSceneColor(GetNormalizedScreenSpaceUV(input.positionCS));
-                    half3 filteredBed = min(bed,half3(1.5,1.5,1.5))*half3(.12,.86,1.0);
-                    // Clear turquoise shallows reveal the real bed and submerged props;
-                    // depth attenuation naturally closes that window toward the sea.
-                    float transmission = .90*exp(-depth*.18);
-                    water = lerp(water,filteredBed,transmission);
+                    // Preserve actual submerged rock/plant colour while water absorbs
+                    // red fastest and blue slowest. One transmission path avoids both
+                    // muddy double blending and monochrome cyan silhouettes.
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.34,.105,.045));
+                    float transmission = .96*exp(-depth*.105);
+                    water = lerp(water,transmittedBed,transmission);
                 }
 
                 float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
@@ -163,12 +164,9 @@ Shader "CityLife/CoastalWater"
                 float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
                 water += half3(.55,.85,.95)*sunStrength*glint*.24;
                 float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
-                // Crossing narrow wavelets read as moving reflected threads, not the
-                // oversized turquoise polka-dots produced by a thresholded single sine.
-                float crestField=abs(sin(ripple)+.72*sin(phase.x*2.35-phase.z*1.71));
-                float fineCrest=smoothstep(1.46,1.68,crestField)*rippleFilter;
-                fineCrest*=.35+.65*smoothstep(-.25,.75,cos(phase.y*1.63+phase.z));
-                water += half3(.42,.91,.94)*(glimmer*.012+fineCrest*.038)*(1-deep*.65);
+                // Surface light is restrained to broad microvariation and specular glint.
+                // The visible connected caustic network belongs on the real bed below.
+                water += half3(.34,.72,.76)*glimmer*.006*(1-deep*.65);
 
                 // Thin intermittent contact edge only when depth is measured, never a false
                 // white line generated from the fallback colour gradient.

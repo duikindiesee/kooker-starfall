@@ -36,6 +36,15 @@ Shader "CityLife/CoastalRocks"
                 return lerp(lerp(lerp(Hash(i),Hash(i+float3(1,0,0)),f.x),lerp(Hash(i+float3(0,1,0)),Hash(i+float3(1,1,0)),f.x),f.y),
                     lerp(lerp(Hash(i+float3(0,0,1)),Hash(i+float3(1,0,1)),f.x),lerp(Hash(i+float3(0,1,1)),Hash(i+1),f.x),f.y),f.z);
             }
+            float CausticNetwork(float2 p,float t)
+            {
+                float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
+                float a=sin((p.x+warp.x)*1.73+t*1.13),b=sin((p.y+warp.y)*2.07-t*.91);
+                float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
+                float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
+                float aa=max(.035,fwidth(field)*1.35);
+                return 1-smoothstep(aa,aa*3.2,field);
+            }
             float Surface(float3 p)
             {
                 float warp=Noise(p*.61)*.17;
@@ -59,8 +68,7 @@ Shader "CityLife/CoastalRocks"
                 {
                     albedo=i.color.rgb*(.96+.08*Noise(p*36));smoothness=.30;
                     float submerged=1-smoothstep(-2.16,-2.03,p.y);
-                    float plantCaustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)))*(.5+.5*sin(p.z*2.13-_Time.y*1.07));
-                    albedo+=float3(.04,.22,.23)*smoothstep(.72,.94,plantCaustic)*submerged;
+                    albedo+=float3(.08,.25,.24)*CausticNetwork(p.xz,_Time.y)*submerged;
                 }
                 else
                 {
@@ -79,9 +87,7 @@ Shader "CityLife/CoastalRocks"
                     albedo*=lerp(float3(1,1,1),float3(.48,.64,.67),wet*.85);
                     // Coherent animated underwater caustics affect submerged stone only.
                     float causticSubmerged=1-smoothstep(-2.16,-2.03,p.y);
-                    float caustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)));
-                    caustic*=.5+.5*sin(p.z*2.13-_Time.y*1.07);
-                    albedo+=float3(.05,.24,.26)*smoothstep(.72,.94,caustic)*causticSubmerged;
+                    albedo+=float3(.10,.29,.28)*CausticNetwork(p.xz,_Time.y)*causticSubmerged;
                     smoothness=lerp(.12,.31,wet);
                     float h=Surface(p);
                     float3 dx=ddx(p),dy=ddy(p),r1=cross(dy,n),r2=cross(n,dx);

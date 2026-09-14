@@ -42,6 +42,16 @@ Shader "CityLife/CoastalTerrain"
                 return lerp(lerp(lerp(Hash(i),Hash(i+float3(1,0,0)),f.x),lerp(Hash(i+float3(0,1,0)),Hash(i+float3(1,1,0)),f.x),f.y),
                     lerp(lerp(Hash(i+float3(0,0,1)),Hash(i+float3(1,0,1)),f.x),lerp(Hash(i+float3(0,1,1)),Hash(i+1),f.x),f.y),f.z);
             }
+            float CausticNetwork(float2 p,float t)
+            {
+                float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
+                float a=sin((p.x+warp.x)*1.73+t*1.13);
+                float b=sin((p.y+warp.y)*2.07-t*.91);
+                float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
+                float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
+                float aa=max(.035,fwidth(field)*1.35);
+                return 1-smoothstep(aa,aa*3.2,field);
+            }
             Varyings Vert(Attributes input)
             {
                 Varyings o;o.positionWS=TransformObjectToWorld(input.positionOS.xyz);o.positionCS=TransformWorldToHClip(o.positionWS);
@@ -82,9 +92,8 @@ Shader "CityLife/CoastalTerrain"
                 // Moving refracted light belongs only to the submerged bed. The
                 // cutoff stays below the authored wave trough, so dry sand cannot glow.
                 float submerged=1-smoothstep(_SeaLevel-.16,_SeaLevel-.03,p.y);
-                float caustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)))*(.5+.5*sin(p.z*2.13-_Time.y*1.07));
-                float causticLines=smoothstep(.72,.94,caustic);
-                albedo+=float3(.055,.24,.25)*causticLines*submerged;
+                float causticLines=CausticNetwork(p.xz,_Time.y);
+                albedo+=float3(.11,.28,.27)*causticLines*submerged;
                 // Centimetre-scale weathering relief affects light, not the collider.
                 float relief=((weather-.5)*.028+(grain-.5)*.004-cracks*.017)*cliff;
                 float3 dpdx=ddx(p),dpdy=ddy(p),r1=cross(dpdy,n),r2=cross(n,dpdx);
