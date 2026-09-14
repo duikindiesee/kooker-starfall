@@ -50,7 +50,7 @@ Shader "CityLife/CoastalTerrain"
             half4 Frag(Varyings i):SV_Target
             {
                 float3 p=i.positionWS,n=normalize(i.normalWS);
-                float broad=Noise(p*.085),weather=Noise(p*.38+17),grain=Noise(p*2.7);
+                float broad=Noise(p*.045),weather=Noise(p*.095+17),grain=Noise(p*.72);
                 // Metre-scale, laterally interrupted layers replace the evenly repeated
                 // bright rings. Broad mineral variation does most of the colour work.
                 float strata=p.y*.18+(broad-.5)*.85;
@@ -68,7 +68,7 @@ Shader "CityLife/CoastalTerrain"
                 float ledgeTop=saturate(n.y)*ledgeBand;
                 rock*=1-seam*cliff*.24;
                 rock=lerp(rock,_Pale.rgb,ledgeTop*.20);
-                float crackField=Noise(p*float3(.62,.13,.62)+59);
+                float crackField=Noise(p*float3(.16,.045,.16)+59);
                 float crackWidth=max(.018,fwidth(crackField)*1.1);
                 float cracks=(1-smoothstep(crackWidth,crackWidth+.045,abs(crackField-.50)))*smoothstep(.30,.65,weather)*cliff;
                 rock*=1-cracks*.24;
@@ -76,7 +76,7 @@ Shader "CityLife/CoastalTerrain"
                 float3 albedo=lerp(sand,rock,saturate(cliff*.88+high*.40));
                 // Grain is filtered toward its mean at distance; no sparkling screen-space noise.
                 float fineVisibility=1-saturate(length(fwidth(p))*2);
-                albedo*=1+(grain-.5)*.11*fineVisibility;
+                albedo*=1+(grain-.5)*.035*fineVisibility;
                 float damp=1-smoothstep(_SeaLevel-.2,_SeaLevel+1.0,p.y);
                 albedo*=lerp(1,.73,damp);
                 // Moving refracted light belongs only to the submerged bed. The

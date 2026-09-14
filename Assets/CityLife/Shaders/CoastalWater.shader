@@ -133,10 +133,10 @@ Shader "CityLife/CoastalWater"
                 if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
                 {
                     half3 bed = SampleSceneColor(GetNormalizedScreenSpaceUV(input.positionCS));
-                    half3 filteredBed = min(bed,half3(1.5,1.5,1.5))*half3(.025,.74,.91);
+                    half3 filteredBed = min(bed,half3(1.5,1.5,1.5))*half3(.12,.86,1.0);
                     // Clear turquoise shallows reveal the real bed and submerged props;
                     // depth attenuation naturally closes that window toward the sea.
-                    float transmission = .70*exp(-depth*.42);
+                    float transmission = .90*exp(-depth*.18);
                     water = lerp(water,filteredBed,transmission);
                 }
 
@@ -174,7 +174,8 @@ Shader "CityLife/CoastalWater"
                 water = lerp(water,_FoamColor.rgb,shore*pulse*.68);
                 // The opaque scene was already transmitted above. Do not add the warm bed a
                 // second time through ordinary alpha; retain only a narrow actual contact fade.
-                float alpha = lerp(1,smoothstep(0,.045,depth),measured);
+                float shallowAlpha=lerp(.62,1,smoothstep(.35,9,depth));
+                float alpha=lerp(1,smoothstep(0,.045,depth)*shallowAlpha,measured);
                 water = MixFog(water,input.fog);
                 return half4(water,alpha);
             }

@@ -38,14 +38,15 @@ namespace CityLife.World
             for (int i = 0; i < banks.Length; i++)
             {
                 Vector4 b = banks[i];
-                AddRock(root.transform, rock, b.x, b.y, b.z, b.w, b.z * Lerp(.49f,.83f,i,2), i);
+                AddRock(root.transform, rock, b.x, b.y, b.z*.72f, b.w*.72f, b.z * Lerp(.38f,.61f,i,2), i);
             }
             // Smaller fractures collect at the foot of the large blocks, including below the waterline.
             for (int i = 0; i < 48; i++)
             {
-                float angle = Lerp(-2.8f, 2.8f, i, 10), radius = Lerp(6.2f, 13.2f, i, 11);
+                int pocket=i/8;
+                float angle = -2.85f+pocket*1.12f+Lerp(-.16f,.16f,i,10), radius = Lerp(7.4f, 12.5f, i, 11);
                 float x = Mathf.Cos(angle) * radius, z = Mathf.Sin(angle) * radius;
-                float width = Lerp(.25f, .95f, i, 12);
+                float width = Lerp(.20f, .68f, i, 12);
                 AddRock(root.transform, rock, x, z, width, width * Lerp(.35f,.85f,i,13),
                     width * Lerp(.45f,.95f,i,14), 100+i);
             }
@@ -78,7 +79,7 @@ namespace CityLife.World
             {
                 Vector2 p = plantSites[i];
                 var position = new Vector3(p.x, CoastalTerrain.Height(p.x,p.y) - .025f, p.y);
-                float scale = Lerp(.62f,1.12f,i,33);
+                float scale = i < 12 ? Lerp(.62f,1.12f,i,33) : Lerp(1.20f,2.20f,i,33);
                 if (i == 1 || i == 7 || i == 10) AddColumnSucculent(flora,position,scale,i);
                 else AddRosette(flora,position,scale,i);
             }
@@ -92,11 +93,12 @@ namespace CityLife.World
             for(int i=0;i<aquaticSites.Length;i++)
             {
                 Vector2 p=aquaticSites[i]; Vector3 bed=new Vector3(p.x,CoastalTerrain.Height(p.x,p.y)+.05f,p.y);
-                var bedRock=MeshObject("Submerged dark bed rock "+i,RockMesh(2.1f+i*.22f,.7f,1.5f+i*.16f,360+i),rock,root.transform,false);
+                var bedRock=MeshObject("Submerged dark reef shelf "+i,RockMesh(4.2f+i*.55f,1.15f+i*.12f,3.2f+i*.42f,360+i),rock,root.transform,false);
                 bedRock.transform.localPosition=bed-Vector3.up*.10f;
                 bedRock.transform.localRotation=Quaternion.Euler(0,Lerp(-180,180,i,123),0);
-                AddColumnSucculent(aquatic,bed,Lerp(.72f,1.35f,i,121),300+i);
-                AddRosette(aquatic,bed+new Vector3(1.1f,0,.6f),Lerp(.55f,.9f,i,122),330+i);
+                AddColumnSucculent(aquatic,bed,Lerp(1.25f,2.15f,i,121),300+i);
+                AddRosette(aquatic,bed+new Vector3(1.8f,0,.9f),Lerp(1.1f,1.65f,i,122),330+i);
+                AddRosette(aquatic,bed+new Vector3(-1.5f,.05f,-.7f),Lerp(.9f,1.4f,i,124),350+i);
             }
             MeshObject("Submerged blue green river plants - render only",aquatic.ToMesh("Coastal aquatic plant pockets"),plants,root.transform,false);
 
@@ -104,7 +106,7 @@ namespace CityLife.World
             // collider-free secondary Kookerbooms; the accepted hero tree remains unchanged.
             var terraceTrees=new MeshData();
             var treeSites=new[] { new Vector2(-245,-150),new Vector2(-225,-132),new Vector2(258,120),new Vector2(282,137),new Vector2(-275,330),new Vector2(302,365) };
-            for(int i=0;i<treeSites.Length;i++) AddTerraceKookerboom(terraceTrees,treeSites[i],4.8f+Lerp(0,2.2f,i,140),400+i);
+            for(int i=0;i<treeSites.Length;i++) AddTerraceKookerboom(terraceTrees,treeSites[i],9f+Lerp(0,4f,i,140),400+i);
             MeshObject("Sparse terrace Kookerboom groups - decorative",terraceTrees.ToMesh("Terrace Kookerboom silhouettes"),plants,root.transform,false);
             return root;
         }
