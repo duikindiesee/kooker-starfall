@@ -10,6 +10,15 @@ namespace Starfall.Food.Editor
     public static class FoodBuild
     {
         [Serializable]sealed class Report{public string status,folder,version;public int errors,checks;public double seconds;}
+        // Editor-only entry point: same prepared render settings and saved food scene,
+        // with Play and gameplay input left to the native Editor UI.
+        public static void OpenForPlayMode()
+        {
+            CityLifeBuild.Prepare();
+            EditorSceneManager.OpenScene("Assets/CityLife/Food/Scenes/FoodFixture.unity",OpenSceneMode.Single);
+            EditorApplication.ExecuteMenuItem("Window/General/Game");
+            Debug.Log("FOOD_EDITOR_FIXTURE_READY: native Play Mode visual/input gate; not standalone acceptance.");
+        }
         public static void Run()
         {
             Directory.CreateDirectory("evidence/local");string checkFolder="evidence/local/editor-food-checks-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");var checks=FoodChecks.Run(checkFolder);File.WriteAllLines(checkFolder+"/passed.txt",checks);
