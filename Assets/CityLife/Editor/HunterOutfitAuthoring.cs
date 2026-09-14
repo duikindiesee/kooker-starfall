@@ -117,9 +117,9 @@ namespace CityLife.World.Editor
    var clubMesh=new Mesh{name="Original primitive wooden club"};var cv=new List<Vector3>();var ct=new List<int>();var cu=new List<Vector2>();
    const int clubRings=12,clubSides=10;for(int row=0;row<=clubRings;row++)for(int col=0;col<clubSides;col++){
     float f=row/(float)clubRings,ang=col*Mathf.PI*2/clubSides;float radius=HunterClubCarry.ClubRadius(f);
-    cv.Add(new Vector3(Mathf.Cos(ang)*radius+HunterClubCarry.ClubCurve(f),.055f-f*.62f,Mathf.Sin(ang)*radius));cu.Add(new Vector2(col/(float)clubSides,f));
+    cv.Add(new Vector3(Mathf.Cos(ang)*radius+HunterClubCarry.ClubCurve(f),.055f-f*HunterClubCarry.ClubLength,Mathf.Sin(ang)*radius));cu.Add(new Vector2(col/(float)clubSides,f));
     if(row<clubRings){int a=row*clubSides+col,b=row*clubSides+(col+1)%clubSides;ct.AddRange(new[]{a,b,b+clubSides,a,b+clubSides,a+clubSides});}}
-   int cap=cv.Count;cv.Add(new Vector3(0,.055f,0));cu.Add(Vector2.zero);cv.Add(new Vector3(HunterClubCarry.ClubCurve(1),-.565f,0));cu.Add(Vector2.one);
+   int cap=cv.Count;cv.Add(new Vector3(0,.055f,0));cu.Add(Vector2.zero);cv.Add(new Vector3(HunterClubCarry.ClubCurve(1),.055f-HunterClubCarry.ClubLength,0));cu.Add(Vector2.one);
    for(int col=0;col<clubSides;col++){ct.AddRange(new[]{cap,(col+1)%clubSides,col,cap+1,clubRings*clubSides+col,clubRings*clubSides+(col+1)%clubSides});}
    clubMesh.SetVertices(cv);clubMesh.SetUVs(0,cu);clubMesh.SetTriangles(ct,0);clubMesh.RecalculateNormals();clubMesh.RecalculateBounds();return clubMesh;
   }

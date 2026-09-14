@@ -335,24 +335,46 @@ namespace CityLife.World
                     if (h > CoastalWater.Level + .3f && degrees >= 6 && degrees <= 24 &&
                         Brain.TerrainNavigation.Walkable(candidate, out _)) { clubSlope = candidate; clubSlopeDegrees = degrees; break; }
                 }
-            float minimumClubClearance = float.MaxValue; int clubGroundHits = 0;
+            float minimumClubClearance = float.MaxValue; int clubGroundHits = 0, clubExpectedHits = 0, clubMotionSamples = 0;
+            string missingClubState = "";
             if (hunterClub != null && clubSlope != Vector3.zero)
             {
                 Brain.Actor.Place(clubSlope); Physics.SyncTransforms();
-                foreach (string pose in new[] { "Idle", "Crouch", "Sit" })
+                float dx = CoastalTerrain.Height(clubSlope.x + 1, clubSlope.z) - CoastalTerrain.Height(clubSlope.x - 1, clubSlope.z);
+                float dz = CoastalTerrain.Height(clubSlope.x, clubSlope.z + 1) - CoastalTerrain.Height(clubSlope.x, clubSlope.z - 1);
+                Vector3 uphill = new Vector3(dx, 0, dz).normalized;
+                foreach (float facing in new[] { 1f, -1f })
                 {
-                    Brain.Actor.Animator.Play(pose, 0, 0); Brain.Actor.Animator.Update(.5f);
-                    yield return new WaitForEndOfFrame();
-                    int hits; minimumClubClearance = Mathf.Min(minimumClubClearance, MeasureClubTerrainClearance(hunterClub, out hits));
-                    clubGroundHits += hits;
-                    var grip = hunterClub.GripCenter;
-                    Controls.View.transform.position = grip + Quaternion.Euler(8, 145, 0) * Vector3.back * .72f;
-                    Controls.View.transform.LookAt(grip); yield return CaptureWorld("09-club-" + pose + "-uneven-terrain");
+                    Brain.transform.rotation = Quaternion.LookRotation(uphill * facing);
+                    foreach (string pose in new[] { "Idle", "Walk", "Crouch", "CrouchWalk", "Pickup", "SitEnter", "Sit", "SitExit" })
+                    {
+                        int state = Animator.StringToHash(pose);
+                        if (!Brain.Actor.Animator.HasState(0, state)) { missingClubState += pose + ";"; continue; }
+                        for (int phase = 0; phase < 5; phase++)
+                        {
+                            Brain.Actor.Animator.Play(state, 0, phase * .2f); Brain.Actor.Animator.Update(0);
+                            yield return new WaitForEndOfFrame();
+                            int hits; minimumClubClearance = Mathf.Min(minimumClubClearance, MeasureClubTerrainClearance(hunterClub, out hits));
+                            clubGroundHits += hits; clubExpectedHits += hunterClub.Club.GetComponent<MeshFilter>().sharedMesh.vertexCount; clubMotionSamples++;
+                            if (phase == 2)
+                            {
+                                var grip = hunterClub.GripCenter;
+                                Controls.View.transform.position = grip + Quaternion.Euler(8, facing > 0 ? 145 : -35, 0) * Vector3.back * .72f;
+                                Controls.View.transform.LookAt(grip);
+                                yield return CaptureWorld("09-club-" + pose + "-" + (facing > 0 ? "uphill" : "downhill"));
+                                var bodyPivot = Brain.transform.position + Vector3.up * .9f;
+                                Controls.View.transform.position = bodyPivot + Quaternion.Euler(10, facing > 0 ? 145 : -35, 0) * Vector3.back * 3.4f;
+                                Controls.View.transform.LookAt(bodyPivot);
+                                yield return CaptureWorld("09b-club-full-" + pose + "-" + (facing > 0 ? "uphill" : "downhill"));
+                            }
+                        }
+                    }
                 }
             }
             CheckThat("corrected-club-uneven-terrain-clearance", hunterClub != null && clubSlope != Vector3.zero &&
-                clubGroundHits > 0 && minimumClubClearance >= .005f,
-                "actual layer8/10 ray hits=" + clubGroundHits + "; slope=" + clubSlopeDegrees.ToString("F1") +
+                missingClubState.Length == 0 && clubMotionSamples == 80 && clubGroundHits == clubExpectedHits && minimumClubClearance >= .005f,
+                "80 uphill/downhill animation samples; actual/expected layer8/10 ray hits=" + clubGroundHits + "/" + clubExpectedHits +
+                "; missingStates=" + (missingClubState.Length == 0 ? "none" : missingClubState) + "; slope=" + clubSlopeDegrees.ToString("F1") +
                 "deg at " + clubSlope + "; minimum club-mesh clearance=" + minimumClubClearance.ToString("F3") + "m; visual hand fit remains separate review");
             if (Array.IndexOf(args, "-npcLivingMemory") >= 0)
             {

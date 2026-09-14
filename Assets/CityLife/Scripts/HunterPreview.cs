@@ -69,7 +69,7 @@ namespace CityLife.World
      if(label=="Idle-30"&&Array.IndexOf(Environment.GetCommandLineArgs(),"-hunterSkinDebug")>=0&&(i==5898||i==3872)){SkinMarker(world,Color.red);SkinMarker(body.transform.TransformPoint(vertices[i]),Color.green);}
      Vector3 point=club.Club.InverseTransformPoint(world);
      geometry.points.Add(point);geometry.bones.Add(bone);
-     float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
+     float fraction=(.055f-point.y)/HunterClubCarry.ClubLength;if(fraction<0||fraction>1)continue;
      float radius=HunterClubCarry.ClubRadius(fraction);
      float depth=radius-new Vector2(point.x-HunterClubCarry.ClubCurve(fraction),point.z).magnitude;
      if(bone.Contains("thumb"))sample.maxThumbPenetration=Mathf.Max(sample.maxThumbPenetration,depth);
