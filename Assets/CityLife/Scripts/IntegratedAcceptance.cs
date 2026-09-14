@@ -68,6 +68,20 @@ namespace CityLife.World
         {
             RenderWorldNow(name);
         }
+        private static float MeasureClubTerrainClearance(HunterClubCarry carry, out int groundHits)
+        {
+            groundHits = 0; float minimum = float.MaxValue;
+            var filter = carry == null || carry.Club == null ? null : carry.Club.GetComponent<MeshFilter>();
+            if (filter == null || filter.sharedMesh == null) return float.MinValue;
+            foreach (var local in filter.sharedMesh.vertices)
+            {
+                Vector3 point = carry.Club.TransformPoint(local);
+                if (!Physics.Raycast(point + Vector3.up * 60, Vector3.down, out RaycastHit hit, 120,
+                    (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore)) continue;
+                groundHits++; minimum = Mathf.Min(minimum, point.y - hit.point.y);
+            }
+            return groundHits == 0 ? float.MinValue : minimum;
+        }
         private IEnumerator ClickMenuButton(int index)
         {
             // Let deferred destruction/layout from the page transition settle;
@@ -107,6 +121,10 @@ namespace CityLife.World
                 CoastalTerrain.MaxX - CoastalTerrain.MinX >= 1200 && CoastalTerrain.MaxZ - CoastalTerrain.MinZ >= 1600 && sampledCliff >= 80,
                 "bounds=" + (CoastalTerrain.MaxX-CoastalTerrain.MinX) + "x" + (CoastalTerrain.MaxZ-CoastalTerrain.MinZ) + "; sampledCliff=" + sampledCliff.ToString("F1") + "m");
             CheckThat("clothing-attached", Brain.GetComponentsInChildren<SkinnedMeshRenderer>().Length > 2 && Brain.transform.GetComponentsInChildren<Transform>().Length > 20, "Visual coverage inspected separately in retained frames.");
+            var hunterClub = Brain.GetComponentInChildren<HunterClubCarry>();
+            CheckThat("corrected-club-source-bound", hunterClub != null && hunterClub.Club != null &&
+                Mathf.Abs(HunterClubCarry.ClubRadius(0) - .010f) < .0001f,
+                hunterClub == null ? "missing" : "baseRadius=" + HunterClubCarry.ClubRadius(0).ToString("F3") + "m; combined player must still prove terrain/motion clearance");
             string foodEvidence = "Integrated food adapter missing.";
             bool foodPassed = false;
             try { foodPassed = Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence); }
@@ -305,6 +323,37 @@ namespace CityLife.World
                     yield return Capture("08-clothing-" + pose + "-" + i);
                 }
             }
+            Vector3 clubSlope = Vector3.zero; float clubSlopeDegrees = 0;
+            for (float z = -40; z <= 180 && clubSlope == Vector3.zero; z += 8)
+                for (float x = -220; x <= -70; x += 8)
+                {
+                    float h = CoastalTerrain.Height(x, z);
+                    float dx = CoastalTerrain.Height(x + 1, z) - CoastalTerrain.Height(x - 1, z);
+                    float dz = CoastalTerrain.Height(x, z + 1) - CoastalTerrain.Height(x, z - 1);
+                    float degrees = Mathf.Atan(Mathf.Sqrt(dx * dx + dz * dz) * .5f) * Mathf.Rad2Deg;
+                    Vector3 candidate = new Vector3(x, h + .02f, z);
+                    if (h > CoastalWater.Level + .3f && degrees >= 6 && degrees <= 24 &&
+                        Brain.TerrainNavigation.Walkable(candidate)) { clubSlope = candidate; clubSlopeDegrees = degrees; break; }
+                }
+            float minimumClubClearance = float.MaxValue; int clubGroundHits = 0;
+            if (hunterClub != null && clubSlope != Vector3.zero)
+            {
+                Brain.Actor.Place(clubSlope); Physics.SyncTransforms();
+                foreach (string pose in new[] { "Idle", "Crouch", "Sit" })
+                {
+                    Brain.Actor.Animator.Play(pose, 0, 0); Brain.Actor.Animator.Update(.5f);
+                    yield return new WaitForEndOfFrame();
+                    int hits; minimumClubClearance = Mathf.Min(minimumClubClearance, MeasureClubTerrainClearance(hunterClub, out hits));
+                    clubGroundHits += hits;
+                    var grip = hunterClub.GripCenter;
+                    Controls.View.transform.position = grip + Quaternion.Euler(8, 145, 0) * Vector3.back * .72f;
+                    Controls.View.transform.LookAt(grip); yield return CaptureWorld("09-club-" + pose + "-uneven-terrain");
+                }
+            }
+            CheckThat("corrected-club-uneven-terrain-clearance", hunterClub != null && clubSlope != Vector3.zero &&
+                clubGroundHits > 0 && minimumClubClearance >= .005f,
+                "actual layer8/10 ray hits=" + clubGroundHits + "; slope=" + clubSlopeDegrees.ToString("F1") +
+                "deg at " + clubSlope + "; minimum club-mesh clearance=" + minimumClubClearance.ToString("F3") + "m; visual hand fit remains separate review");
             if (Array.IndexOf(args, "-npcLivingMemory") >= 0)
             {
                 var living = StarfallLivingMemoryAcceptance.Verify(Brain, Controls.Hud, CheckThat, CaptureNow, directory);

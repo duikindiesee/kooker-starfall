@@ -22,7 +22,11 @@ A roughly two-to-three-minute narrated MP4 showing the earlier component scene a
 
 - Explain what changed and why it matters to play. Use one narrator by default.
 - Never describe deterministic scripted actions as learning or model-generated choices.
-- A real thought should be described as model-generated interpretation grounded in a verified event; Unity remains responsible for actions.
+- Describe the demonstrated `Delivered amber` response as a model-generated,
+  constrained event acknowledgement. The prompt explicitly requires those two
+  words with the verified item substituted; it does not demonstrate an open-ended
+  interpretation, planning, learning or conversational mind. Unity remains
+  responsible for actions. Only narrate broader capability after separate proof.
 - Do not describe service restart proof as a complete game-save implementation unless the combined game save/load flow also passed.
 - Do not call the club accepted while its full validation fails. If deferred by the user, record that decision in the release limitations.
 - Before/after comparisons must use clearly identified builds and equivalent viewpoints where possible.
