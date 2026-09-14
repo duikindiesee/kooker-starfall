@@ -39,7 +39,7 @@ namespace CityLife.World
   private void Audit(){report.frames++;var club=Model.GetComponent<HunterClubCarry>();if(club)report.minClubGroundClearance=Mathf.Min(report.minClubGroundClearance,club.GroundClearance);foreach(var r in Model.GetComponentsInChildren<SkinnedMeshRenderer>()){if(!r.name.StartsWith("Hunter "))continue;var m=new Mesh();r.BakeMesh(m);var bounds=m.bounds;float e=bounds.extents.magnitude;report.maxClothingExtent=Mathf.Max(report.maxClothingExtent,e);if(float.IsNaN(e)||e>3)throw new InvalidOperationException("Invalid deformation on "+r.name);Destroy(m);}}
   private bool gripVerify;
   [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.6f,wristDeviation=30f;}
-  [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration;public string deepestBone;}
+  [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration,maxBakeWorldDelta;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
   [Serializable]class GripGeometry {public Vector3 handScale,clubScale,anchorLongAxis,anchorPalmAxis;public List<Vector3> points=new List<Vector3>();public List<string> bones=new List<string>();}
   private void MeasureGrip(string label) {
@@ -51,11 +51,15 @@ namespace CityLife.World
    foreach(var body in Model.GetComponentsInChildren<SkinnedMeshRenderer>()) {
     if(body.name.StartsWith("Hunter "))continue;
     var mesh=new Mesh();body.BakeMesh(mesh);var vertices=mesh.vertices;var weights=body.sharedMesh.boneWeights;
+    var source=body.sharedMesh.vertices;var bind=body.sharedMesh.bindposes;var matrices=new Matrix4x4[bind.Length];
+    for(int b=0;b<bind.Length;b++)matrices[b]=body.bones[b].localToWorldMatrix*bind[b];
     for(int i=0;i<vertices.Length;i++) {
      var weight=weights[i];int boneIndex=weight.boneIndex0;string bone=body.bones[boneIndex].name;
      if(!(bone.EndsWith("_l")&&(bone.Contains("hand")||bone.Contains("thumb")||bone.Contains("index")||bone.Contains("middle")||bone.Contains("ring")||bone.Contains("pinky")||bone.Contains("lowerarm"))))continue;
-     Vector3 point=club.Club.InverseTransformPoint(body.transform.TransformPoint(vertices[i]));
-     if(label=="Idle-30"){geometry.points.Add(point);geometry.bones.Add(bone);}
+     Vector3 world=matrices[weight.boneIndex0].MultiplyPoint3x4(source[i])*weight.weight0+matrices[weight.boneIndex1].MultiplyPoint3x4(source[i])*weight.weight1+matrices[weight.boneIndex2].MultiplyPoint3x4(source[i])*weight.weight2+matrices[weight.boneIndex3].MultiplyPoint3x4(source[i])*weight.weight3;
+     sample.maxBakeWorldDelta=Mathf.Max(sample.maxBakeWorldDelta,Vector3.Distance(world,body.transform.TransformPoint(vertices[i])));
+     Vector3 point=club.Club.InverseTransformPoint(world);
+     geometry.points.Add(point);geometry.bones.Add(bone);
      float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
      float radius=Mathf.Lerp(.016f,.038f,fraction)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));
      float depth=radius-new Vector2(point.x-.012f*Mathf.Sin(fraction*5),point.z).magnitude;
@@ -66,9 +70,9 @@ namespace CityLife.World
     }Destroy(mesh);
    }
    gripSamples.Add(sample);
-   if(label=="Idle-30")File.WriteAllText(Path.Combine(directory,"grip-geometry.json"),JsonUtility.ToJson(geometry,true));
+   File.WriteAllText(Path.Combine(directory,"grip-geometry-"+label+".json"),JsonUtility.ToJson(geometry,true));
   }
-  [Serializable]class GripMeasurements {public string scope="Conservative cylinder-envelope vertex penetration in club local metres; polygon surfaces and edge-only intersections still require visual review.";public List<GripSample> samples;}
+  [Serializable]class GripMeasurements {public string scope="Four-weight skinning from current bone world matrices and source bindposes; conservative cylinder-envelope vertex penetration in club local metres. BakeMesh world delta is retained to audit the earlier measurement path. Polygon surfaces and edge-only intersections still require visual review.";public List<GripSample> samples;}
   private IEnumerator GripViews(string label) {
    float speed=Actor.Animator.speed;Actor.Animator.speed=0;Time.timeScale=0;
    yield return new WaitForEndOfFrame();MeasureGrip(label);
