@@ -45,6 +45,7 @@ namespace CityLife.World
   private IEnumerator Capture(string name){yield return new WaitForEndOfFrame();string file=name+".png";ScreenCapture.CaptureScreenshot(Path.Combine(directory,file));report.captures.Add(file);yield return null;}
   private void Audit(){report.frames++;var club=Model.GetComponent<HunterClubCarry>();if(club)report.minClubGroundClearance=Mathf.Min(report.minClubGroundClearance,club.GroundClearance);foreach(var r in Model.GetComponentsInChildren<SkinnedMeshRenderer>()){if(!r.name.StartsWith("Hunter "))continue;var m=new Mesh();r.BakeMesh(m);var bounds=m.bounds;float e=bounds.extents.magnitude;report.maxClothingExtent=Mathf.Max(report.maxClothingExtent,e);if(float.IsNaN(e)||e>3)throw new InvalidOperationException("Invalid deformation on "+r.name);Destroy(m);}}
   private bool gripVerify;
+  private static void SkinMarker(Vector3 position,Color color) {var go=GameObject.CreatePrimitive(PrimitiveType.Sphere);go.name="Diagnostic skin point";Destroy(go.GetComponent<Collider>());go.transform.position=position;go.transform.localScale=Vector3.one*.008f;var material=new Material(Shader.Find("Universal Render Pipeline/Unlit"));material.SetColor("_BaseColor",color);go.GetComponent<Renderer>().sharedMaterial=material;}
   [Serializable]class GripTuning {public Vector3 curlAdjustment,thumbAdjustment;public Vector2 anchorAdjustment;public float forearmSlope=-1.5f,elbowOut=.6f,wristDeviation=30f;}
   [Serializable]class GripSample {public string pose;public float maximumHandPenetration,maxFingerPenetration,maxThumbPenetration,maxPalmForearmPenetration,maxBakeWorldDelta;public string deepestBone;}
   private List<GripSample> gripSamples=new List<GripSample>();
@@ -65,6 +66,7 @@ namespace CityLife.World
      if(!(bone.EndsWith("_l")&&(bone.Contains("hand")||bone.Contains("thumb")||bone.Contains("index")||bone.Contains("middle")||bone.Contains("ring")||bone.Contains("pinky")||bone.Contains("lowerarm"))))continue;
      Vector3 world=matrices[weight.boneIndex0].MultiplyPoint3x4(source[i])*weight.weight0+matrices[weight.boneIndex1].MultiplyPoint3x4(source[i])*weight.weight1+matrices[weight.boneIndex2].MultiplyPoint3x4(source[i])*weight.weight2+matrices[weight.boneIndex3].MultiplyPoint3x4(source[i])*weight.weight3;
      sample.maxBakeWorldDelta=Mathf.Max(sample.maxBakeWorldDelta,Vector3.Distance(world,body.transform.TransformPoint(vertices[i])));
+     if(label=="Idle-30"&&Array.IndexOf(Environment.GetCommandLineArgs(),"-hunterSkinDebug")>=0&&(i==5898||i==3872)){SkinMarker(world,Color.red);SkinMarker(body.transform.TransformPoint(vertices[i]),Color.green);}
      Vector3 point=club.Club.InverseTransformPoint(world);
      geometry.points.Add(point);geometry.bones.Add(bone);
      float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
