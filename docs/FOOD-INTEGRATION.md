@@ -1,6 +1,6 @@
 # Isolated Eden food fixture and integration contract
 
-Status: v0.1.2 passed 79 compiled loop/model checks, separate-process reload, six natural lifecycle/isolation checks and six synthetic mortality/return checks. v0.1.5 opaque HUD correction built from `8f79083` on 14 September, but Windows Application Control blocked launch before visual/input verification. See [precise blocker](FOOD-VISUAL-BLOCKER.md) and [retained evidence](FOOD-ACCEPTANCE.md). No clean integration handoff is claimed. No combined-world integration performed. Base checkout: `75fc4cb`; isolated branch `codex/starfall-food`. No model service, asset downloads, external publisher, hunting or weapon system is involved.
+Status: v0.1.5 opaque HUD passed native visual/input checks in the trusted Unity Editor using unchanged runtime source from `8f79083`. See [Editor evidence and isolated handoff](FOOD-EDITOR-ACCEPTANCE.md). Standalone launch remains [policy-blocked](FOOD-VISUAL-BLOCKER.md). Prior v0.1.2 results—79 loop/model checks, separate reload, six Eden/isolation and six synthetic mortality/return checks—were retained, not repeated. No combined-world integration performed. Base checkout: `75fc4cb`; isolated branch `codex/starfall-food`. No model service, asset downloads, external publisher, hunting or weapon system is involved.
 
 ## Bounded world
 

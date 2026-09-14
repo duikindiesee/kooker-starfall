@@ -513,3 +513,8 @@ Food v0.1.2 (source 34fa82a) passed 79 compiled loop/model checks, exact separat
 ## 14 September: food v0.1.5 baked; OS policy blocks visual gate
 
 Preserved source 8f79083 built Food-0.1.5-20260914-060628 with zero errors. Standalone behavior/reload suites were not repeated. Windows Application Control rejected StarfallFood.exe before process start; Code Integrity events 3077 and 3033 at 08:08:06 SAST confirm signing-policy requirements. No visual/input acceptance or review-ready integration handoff is claimed. All 929 pre-existing build files compare unchanged by SHA-256. No policy bypass attempted. Candidate, exact reports and resume gate: docs/FOOD-VISUAL-BLOCKER.md.
+
+
+## 14 September: food opaque HUD passes trusted Editor native gate
+
+Unity6000.6.0f1 Play Mode on source4ab8523 passed actual world rendering, clear changing HUD, native lesson/gather/eat/pause/save input and visible receipts. Runtime source is unchanged from blocked v0.1.5 candidate8f79083. Retained frames show Editor chrome and are labelled Editor runtime, not standalone acceptance; a desktop voice overlay partly covers the world but not the food controls/HUD. Own Editor34332 exited, eight preparation files restored, slot and native surface released. SAC registry state remains1; no policy changes. Earlier behavior/reload suites were not repeated. Exact reviewed evidence and isolated handoff: docs/FOOD-EDITOR-ACCEPTANCE.md and evidence/milestones/food/editor-v015/. Standalone signing and combined-world review/integration remain open; no publication or merge performed.

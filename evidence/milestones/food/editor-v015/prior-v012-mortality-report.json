@@ -1,0 +1,17 @@
+{
+    "status": "PASS",
+    "scope": "compiled isolated food fixture",
+    "limitations": "Scripted runtime; human input acceptance and combined-world integration separate",
+    "checks": [
+        "synthetic prolonged-starvation boundary caused verified death",
+        "death saved/reloaded",
+        "same-world same-inhabitant return without ecology/time rewind",
+        "owned inventory recovered once",
+        "one grounded existing-mechanic lesson",
+        "remembered death lesson followed by verified energy-restoring meal"
+    ],
+    "p95": 26.369197845458984,
+    "frames": 277,
+    "width": 1280,
+    "height": 720
+}

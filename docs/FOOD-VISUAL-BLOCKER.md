@@ -2,6 +2,8 @@
 
 Recorded 14 September 2026. This is a blocker report, not a review-ready integration handoff.
 
+Later development result: [the trusted Editor visual/input gate passed](FOOD-EDITOR-ACCEPTANCE.md). The standalone block described here remains unresolved and its evidence remains intact.
+
 | Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
 | Opaque-HUD correction baked | PASS | `evidence/local/build-20260914-060559/food-build.json`; source `8f790831f21717533018f638c0bd0df0976c462c`; zero build errors | Actual rendering/input not observed |
