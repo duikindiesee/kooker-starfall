@@ -179,10 +179,13 @@ namespace CityLife.World
                 float x=m.x+Mathf.Cos(angle)*m.z*radius;
                 float z=m.y+Mathf.Sin(angle)*m.w*radius;
                 if(Vector2.Distance(new Vector2(x,z),CoastalTerrain.ActivityCentre)<55 || Vector2.Distance(new Vector2(x,z),CoastalTerrain.RefugeCentre)<55) continue;
+                float centreHeight=CoastalTerrain.Height(x,z);
+                float grade=Mathf.Max(Mathf.Abs(CoastalTerrain.Height(x+2,z)-CoastalTerrain.Height(x-2,z)),Mathf.Abs(CoastalTerrain.Height(x,z+2)-CoastalTerrain.Height(x,z-2)))/4f;
+                if(grade>.24f) continue; // a rigid visual boulder cannot convincingly contact a steep heightfield face
                 float width=Lerp(4.5f,12.5f,id,303),depth=width*Lerp(.55f,1.18f,id,304),height=Lerp(1.8f,5.8f,id,305);
                 var talus=MeshObject("Distant fractured mesa-foot talus "+mesa+"-"+fragment,
                     RockMesh(width,height,depth,id),material,parent,false);
-                talus.transform.localPosition=new Vector3(x,CoastalTerrain.Height(x,z)-height*.40f,z);
+                talus.transform.localPosition=new Vector3(x,centreHeight-height*.40f,z);
                 talus.transform.localRotation=Quaternion.Euler(Lerp(-5,5,id,306),Lerp(-180,180,id,307),Lerp(-4,4,id,308));
             }
         }
