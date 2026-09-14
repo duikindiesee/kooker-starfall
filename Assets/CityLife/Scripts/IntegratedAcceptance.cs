@@ -333,7 +333,7 @@ namespace CityLife.World
                     float degrees = Mathf.Atan(Mathf.Sqrt(dx * dx + dz * dz) * .5f) * Mathf.Rad2Deg;
                     Vector3 candidate = new Vector3(x, h + .02f, z);
                     if (h > CoastalWater.Level + .3f && degrees >= 6 && degrees <= 24 &&
-                        Brain.TerrainNavigation.Walkable(candidate)) { clubSlope = candidate; clubSlopeDegrees = degrees; break; }
+                        Brain.TerrainNavigation.Walkable(candidate, out _)) { clubSlope = candidate; clubSlopeDegrees = degrees; break; }
                 }
             float minimumClubClearance = float.MaxValue; int clubGroundHits = 0;
             if (hunterClub != null && clubSlope != Vector3.zero)
