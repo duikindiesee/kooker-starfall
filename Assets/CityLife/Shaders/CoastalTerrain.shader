@@ -62,10 +62,16 @@ Shader "CityLife/CoastalTerrain"
                 float high=smoothstep(3,16,p.y);
                 float3 rock=lerp(_Ochre.rgb,_Pale.rgb,saturate(.20+layer*.48+seam*.06));
                 rock=lerp(rock,_Rust.rgb,smoothstep(.47,.81,broad)*.23);
+                // Dark recessed seams and warm ledge caps make metre-scale strata
+                // readable at player distance without displacing collision geometry.
+                float ledgeBand=1-smoothstep(.035,.12,abs(frac(p.y*.115+weather*.08)-.5));
+                float ledgeTop=saturate(n.y)*ledgeBand;
+                rock*=1-seam*cliff*.24;
+                rock=lerp(rock,_Pale.rgb,ledgeTop*.20);
                 float crackField=Noise(p*float3(.62,.13,.62)+59);
                 float crackWidth=max(.018,fwidth(crackField)*1.1);
                 float cracks=(1-smoothstep(crackWidth,crackWidth+.045,abs(crackField-.50)))*smoothstep(.30,.65,weather)*cliff;
-                rock*=1-cracks*.13;
+                rock*=1-cracks*.24;
                 float3 sand=_Sand.rgb*lerp(.91,1.07,broad);
                 float3 albedo=lerp(sand,rock,saturate(cliff*.88+high*.40));
                 // Grain is filtered toward its mean at distance; no sparkling screen-space noise.

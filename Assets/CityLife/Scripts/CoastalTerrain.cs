@@ -130,6 +130,13 @@ namespace CityLife.World
             float shoulder = 1f-radial + buttress*.085f + Noise(x*.12f+salt,z*.12f)*.025f;
             float rise = Smooth(-.20f,.30f,shoulder);
             float body = rise*.84f + Smooth(.37f,.60f,rise)*.10f + Smooth(.77f,.96f,rise)*.06f;
+            // Broad, irregular sediment benches give the canyon a stepped silhouette.
+            // Keep enough of the continuous profile for CharacterController traversal;
+            // the later activity/refuge flats still override this field exactly.
+            float benchCount = 6f + Mathf.Floor(Noise(nx*5.1f+salt,nz*5.1f-salt)*1.5f+1.5f);
+            float bench = Mathf.Floor(body*benchCount+.16f)/benchCount;
+            float benchBlend = .42f + Smooth(.18f,.72f,erosion)*.20f;
+            body = Mathf.Lerp(body,bench,benchBlend);
             float talus = Smooth(-.41f,-.16f,shoulder)*(1f-Smooth(-.02f,.27f,shoulder))*height*.095f;
             float gully = Smooth(.10f,.65f,erosion)*Smooth(-.19f,.04f,shoulder)*(1f-Smooth(.27f,.48f,shoulder))*2.4f;
             float top = height + Noise(x*.078f+salt,z*.078f)*2.2f + Noise(x*.24f,z*.24f+salt)*.22f;

@@ -66,7 +66,13 @@ namespace CityLife.World
                 new Vector2(3.9f,-5.2f), new Vector2(5.7f,-3.5f), new Vector2(1.9f,-6.2f),
                 new Vector2(-2.1f,-5.8f), new Vector2(-5.6f,-2.6f), new Vector2(6.5f,.9f),
                 new Vector2(3.8f,5.6f), new Vector2(-3.5f,6.1f), new Vector2(-5.4f,3.5f),
-                new Vector2(14,18), new Vector2(-22,33), new Vector2(18,43)
+                new Vector2(14,18), new Vector2(-22,33), new Vector2(18,43),
+                // Deterministic foothill pockets: clustered around existing outcrops,
+                // leaving broad sand lanes and all gameplay flats unobstructed.
+                new Vector2(22,19), new Vector2(17,22), new Vector2(-27,35), new Vector2(-20,39),
+                new Vector2(25,45), new Vector2(15,48), new Vector2(-44,82), new Vector2(-39,86),
+                new Vector2(48,118), new Vector2(54,121), new Vector2(-74,176), new Vector2(-68,181),
+                new Vector2(94,238), new Vector2(101,242), new Vector2(-112,305), new Vector2(-105,310)
             };
             for (int i = 0; i < plantSites.Length; i++)
             {
@@ -77,7 +83,47 @@ namespace CityLife.World
                 else AddRosette(flora,position,scale,i);
             }
             MeshObject("Sparse fleshy succulents and pink purple flowers",flora.ToMesh("Coastal succulent group"),plants,root.transform,false);
+
+            // Render-only submerged life uses the same deterministic succulent geometry,
+            // rooted at actual river-bed samples. It conveys a living shallow bed without
+            // claiming swimming, harvesting or navigation authority.
+            var aquatic = new MeshData();
+            var aquaticSites = new[] { new Vector2(-2,34), new Vector2(17,118), new Vector2(-18,270), new Vector2(63,408), new Vector2(4,585) };
+            for(int i=0;i<aquaticSites.Length;i++)
+            {
+                Vector2 p=aquaticSites[i]; Vector3 bed=new Vector3(p.x,CoastalTerrain.Height(p.x,p.y)+.05f,p.y);
+                var bedRock=MeshObject("Submerged dark bed rock "+i,RockMesh(2.1f+i*.22f,.7f,1.5f+i*.16f,360+i),rock,root.transform,false);
+                bedRock.transform.localPosition=bed-Vector3.up*.10f;
+                bedRock.transform.localRotation=Quaternion.Euler(0,Lerp(-180,180,i,123),0);
+                AddColumnSucculent(aquatic,bed,Lerp(.72f,1.35f,i,121),300+i);
+                AddRosette(aquatic,bed+new Vector3(1.1f,0,.6f),Lerp(.55f,.9f,i,122),330+i);
+            }
+            MeshObject("Submerged blue green river plants - render only",aquatic.ToMesh("Coastal aquatic plant pockets"),plants,root.transform,false);
+
+            // Sparse small silhouettes step across distant terraces. They are decorative,
+            // collider-free secondary Kookerbooms; the accepted hero tree remains unchanged.
+            var terraceTrees=new MeshData();
+            var treeSites=new[] { new Vector2(-245,-150),new Vector2(-225,-132),new Vector2(258,120),new Vector2(282,137),new Vector2(-275,330),new Vector2(302,365) };
+            for(int i=0;i<treeSites.Length;i++) AddTerraceKookerboom(terraceTrees,treeSites[i],4.8f+Lerp(0,2.2f,i,140),400+i);
+            MeshObject("Sparse terrace Kookerboom groups - decorative",terraceTrees.ToMesh("Terrace Kookerboom silhouettes"),plants,root.transform,false);
             return root;
+        }
+
+        static void AddTerraceKookerboom(MeshData mesh,Vector2 site,float height,int id)
+        {
+            // Exclude the authored gameplay terraces even if sites are later revised.
+            if(Vector2.Distance(site,CoastalTerrain.ActivityCentre)<55 || Vector2.Distance(site,CoastalTerrain.RefugeCentre)<55) return;
+            Vector3 root=new Vector3(site.x,CoastalTerrain.Height(site.x,site.y),site.y);
+            Color bark=new Color(.47f,.30f,.16f),pale=new Color(.70f,.49f,.27f);
+            Vector3 fork=root+Vector3.up*height*.58f;
+            Stem(mesh,root,fork,height*.075f,bark);
+            for(int branch=0;branch<3;branch++)
+            {
+                float angle=branch*2.094f+id*.31f;
+                Vector3 tip=fork+new Vector3(Mathf.Cos(angle)*height*.24f,height*(.28f+(branch%2)*.05f),Mathf.Sin(angle)*height*.24f);
+                Stem(mesh,fork,tip,height*.047f,pale);
+                AddRosette(mesh,tip,height*.30f,id*7+branch);
+            }
         }
 
         static void AddRock(Transform parent, Material material, float x, float z, float width, float height, float depth, int id)

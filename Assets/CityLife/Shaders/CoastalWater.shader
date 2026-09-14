@@ -154,22 +154,22 @@ Shader "CityLife/CoastalWater"
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
                 // Keep turquoise readable in the intended navy lighting. This is a deliberately
                 // luminous art surface, not a physical ocean/sky reflection simulation.
-                water = lerp(water,_SkyReflection.rgb,fresnel*.15);
+                water = lerp(water,_SkyReflection.rgb,fresnel*.28);
                 Light sun = GetMainLight();
                 float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);
                 // A small neutral/cool glint keeps the warm key from bleaching the whole colour.
                 float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
-                water += half3(.55,.85,.95)*sunStrength*glint*.15;
+                water += half3(.55,.85,.95)*sunStrength*glint*.24;
                 float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
                 float fineCrest = smoothstep(.72,.98,sin(ripple+sin(phase.y)*.8))*rippleFilter;
                 fineCrest *= .5+.5*cos(phase.x-phase.z);
-                water += _ShallowColor.rgb*(glimmer*.040+fineCrest*.050)*(1-deep*.65);
+                water += _ShallowColor.rgb*(glimmer*.055+fineCrest*.085)*(1-deep*.65);
 
                 // Thin intermittent contact edge only when depth is measured, never a false
                 // white line generated from the fallback colour gradient.
                 float shore = (1-smoothstep(.04,.36,depth))*measured;
                 float pulse = .45+.55*smoothstep(-.5,.65,sin(phase.x*2.1-phase.y*.4));
-                water = lerp(water,_FoamColor.rgb,shore*pulse*.42);
+                water = lerp(water,_FoamColor.rgb,shore*pulse*.68);
                 // The opaque scene was already transmitted above. Do not add the warm bed a
                 // second time through ordinary alpha; retain only a narrow actual contact fade.
                 float alpha = lerp(1,smoothstep(0,.045,depth),measured);
