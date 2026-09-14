@@ -134,7 +134,9 @@ Shader "CityLife/CoastalWater"
                 {
                     half3 bed = SampleSceneColor(GetNormalizedScreenSpaceUV(input.positionCS));
                     half3 filteredBed = min(bed,half3(1.5,1.5,1.5))*half3(.025,.74,.91);
-                    float transmission = .34*exp(-depth*.55);
+                    // Clear turquoise shallows reveal the real bed and submerged props;
+                    // depth attenuation naturally closes that window toward the sea.
+                    float transmission = .70*exp(-depth*.42);
                     water = lerp(water,filteredBed,transmission);
                 }
 
