@@ -18,6 +18,11 @@ namespace CityLife.World.Editor
    var args=Environment.GetCommandLineArgs();int i=Array.IndexOf(args,"-hunterEditorScene");
    if(i<0||i+1>=args.Length)throw new ArgumentException("An exact generated hunter scene is required.");
    string scene=args[i+1];EditorSceneManager.OpenScene(scene);
+   var grip=UnityEngine.Object.FindFirstObjectByType<HunterClubCarry>();
+   if(!grip)throw new InvalidOperationException("Scene has no hunter grip.");
+   var modelScale=grip.transform.localScale;grip.transform.localScale=Vector3.one;
+   try{grip.AuthorGrip();}finally{grip.transform.localScale=modelScale;}
+   grip.Club.GetComponent<MeshFilter>().sharedMesh=HunterOutfitAuthoring.CreateClubMesh();
    var pipeline=AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(Path.GetDirectoryName(scene).Replace('\\','/')+"/Pipeline.asset");
    if(!pipeline)throw new InvalidOperationException("Missing matching preview pipeline.");
    GraphicsSettings.defaultRenderPipeline=pipeline;

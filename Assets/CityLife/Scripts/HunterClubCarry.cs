@@ -15,14 +15,16 @@ namespace CityLife.World
   public float ForearmSlope=-1.5f,ElbowOut=.6f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
+  public static float ClubRadius(float fraction){float t=Mathf.Clamp01((fraction-.22f)/.78f);return .012f+.026f*t*t*(3-2*t)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));}
+  public static float ClubCurve(float fraction){return fraction<=.22f?0:.012f*Mathf.Sin((fraction-.22f)/.78f*5);}
   // Author once in the imported bind pose, before the Animator evaluates.
   public void AuthorGrip() {
    var hand=Animator.GetBoneTransform(HumanBodyBones.LeftHand);
    var index=Animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
    var little=Animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
    var middle=Animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
-   Vector3 across=(little.position-index.position).normalized;
    Vector3 along=(middle.position-hand.position).normalized;
+   Vector3 across=Vector3.ProjectOnPlane(little.position-index.position,along).normalized;
    Vector3 palm=Vector3.Cross(along,across).normalized;
    PalmAnchor=hand.InverseTransformPoint(middle.position-along*.005f+palm*.028f);
    ShaftAxis=hand.InverseTransformDirection(across);

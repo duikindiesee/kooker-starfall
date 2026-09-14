@@ -68,8 +68,8 @@ namespace CityLife.World
      Vector3 point=club.Club.InverseTransformPoint(world);
      geometry.points.Add(point);geometry.bones.Add(bone);
      float fraction=(.055f-point.y)/.62f;if(fraction<0||fraction>1)continue;
-     float radius=Mathf.Lerp(.016f,.038f,fraction)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));
-     float depth=radius-new Vector2(point.x-.012f*Mathf.Sin(fraction*5),point.z).magnitude;
+     float radius=HunterClubCarry.ClubRadius(fraction);
+     float depth=radius-new Vector2(point.x-HunterClubCarry.ClubCurve(fraction),point.z).magnitude;
      if(bone.Contains("thumb"))sample.maxThumbPenetration=Mathf.Max(sample.maxThumbPenetration,depth);
      else if(bone.Contains("hand")||bone.Contains("lowerarm"))sample.maxPalmForearmPenetration=Mathf.Max(sample.maxPalmForearmPenetration,depth);
      else sample.maxFingerPenetration=Mathf.Max(sample.maxFingerPenetration,depth);

@@ -105,14 +105,7 @@ namespace CityLife.World.Editor
    var hoodMat=Mat("Hunter sand hood",new Color(.64f,.55f,.38f),true);var mantleMat=Mat("Hunter smoke hide",new Color(.24f,.15f,.075f),true);
    Save(hood,"Hunter cold hood",hoodMat).SetActive(false);Save(mantle,"Hunter cold mantle",mantleMat).SetActive(false);
    // Locally authored tapered wooden club. Grip is the origin; heavy end points down.
-   var clubMesh=new Mesh{name="Original primitive wooden club"};var cv=new List<Vector3>();var ct=new List<int>();var cu=new List<Vector2>();
-   const int clubRings=12,clubSides=10;for(int row=0;row<=clubRings;row++)for(int col=0;col<clubSides;col++){
-    float f=row/(float)clubRings,ang=col*Mathf.PI*2/clubSides;float radius=Mathf.Lerp(.016f,.038f,f)+.043f*Mathf.Exp(-Mathf.Pow((f-.87f)/.17f,2));
-    cv.Add(new Vector3(Mathf.Cos(ang)*radius+.012f*Mathf.Sin(f*5),.055f-f*.62f,Mathf.Sin(ang)*radius));cu.Add(new Vector2(col/(float)clubSides,f));
-    if(row<clubRings){int a=row*clubSides+col,b=row*clubSides+(col+1)%clubSides;ct.AddRange(new[]{a,b,b+clubSides,a,b+clubSides,a+clubSides});}}
-   int cap=cv.Count;cv.Add(new Vector3(0,.055f,0));cu.Add(Vector2.zero);cv.Add(new Vector3(.012f*Mathf.Sin(5),-.565f,0));cu.Add(Vector2.one);
-   for(int col=0;col<clubSides;col++){ct.AddRange(new[]{cap,(col+1)%clubSides,col,cap+1,clubRings*clubSides+col,clubRings*clubSides+(col+1)%clubSides});}
-   clubMesh.SetVertices(cv);clubMesh.SetUVs(0,cu);clubMesh.SetTriangles(ct,0);clubMesh.RecalculateNormals();clubMesh.RecalculateBounds();AssetDatabase.CreateAsset(clubMesh,folder+"/Hunter wooden club.asset");
+   var clubMesh=CreateClubMesh();AssetDatabase.CreateAsset(clubMesh,folder+"/Hunter wooden club.asset");
    var club=new GameObject("Hunter wooden club");club.transform.SetParent(root.transform,false);club.AddComponent<MeshFilter>().sharedMesh=clubMesh;club.AddComponent<MeshRenderer>().sharedMaterial=mantleMat;
    var carry=model.AddComponent<HunterClubCarry>();carry.Animator=animator;carry.Actor=model.transform.parent;carry.Club=club.transform;carry.AuthorGrip();
    // Mask only fully covered body triangles, on a clone; original FBX and mesh stay intact.
@@ -120,5 +113,16 @@ namespace CityLife.World.Editor
    var kept=new List<int>();for(int i=0;i<old.Length;i+=3){bool cover=true;for(int j=0;j<3;j++){var q=p[old[i+j]];if(!(q.y<waist||q.y>hip+.025f&&q.y<top-.065f&&Mathf.Abs(q.x)<armX-.035f))cover=false;}if(!cover)kept.AddRange(new[]{old[i],old[i+1],old[i+2]});}masked.triangles=kept.ToArray();AssetDatabase.CreateAsset(masked,folder+"/Hunter masked body.asset");body.sharedMesh=masked;
    Directory.CreateDirectory("evidence/local/hunter");File.WriteAllText("evidence/local/hunter/outfit-inventory.json","{\"baseVertices\":"+baseVertices+",\"baseTriangles\":"+baseTriangles+",\"allLayerVertices\":"+vertices+",\"allLayerTriangles\":"+triangles+",\"clubTriangles\":"+ct.Count/3+",\"baseGarmentRenderers\":5,\"allGarmentRenderers\":7,\"materials\":5,\"hipY\":"+hip.ToString(System.Globalization.CultureInfo.InvariantCulture)+",\"hemY\":"+hem.ToString(System.Globalization.CultureInfo.InvariantCulture)+",\"bodyTrianglesRemoved\":"+((old.Length-kept.Count)/3)+"}");
   }
+  public static Mesh CreateClubMesh() {
+   var clubMesh=new Mesh{name="Original primitive wooden club"};var cv=new List<Vector3>();var ct=new List<int>();var cu=new List<Vector2>();
+   const int clubRings=12,clubSides=10;for(int row=0;row<=clubRings;row++)for(int col=0;col<clubSides;col++){
+    float f=row/(float)clubRings,ang=col*Mathf.PI*2/clubSides;float radius=HunterClubCarry.ClubRadius(f);
+    cv.Add(new Vector3(Mathf.Cos(ang)*radius+HunterClubCarry.ClubCurve(f),.055f-f*.62f,Mathf.Sin(ang)*radius));cu.Add(new Vector2(col/(float)clubSides,f));
+    if(row<clubRings){int a=row*clubSides+col,b=row*clubSides+(col+1)%clubSides;ct.AddRange(new[]{a,b,b+clubSides,a,b+clubSides,a+clubSides});}}
+   int cap=cv.Count;cv.Add(new Vector3(0,.055f,0));cu.Add(Vector2.zero);cv.Add(new Vector3(HunterClubCarry.ClubCurve(1),-.565f,0));cu.Add(Vector2.one);
+   for(int col=0;col<clubSides;col++){ct.AddRange(new[]{cap,(col+1)%clubSides,col,cap+1,clubRings*clubSides+col,clubRings*clubSides+(col+1)%clubSides});}
+   clubMesh.SetVertices(cv);clubMesh.SetUVs(0,cu);clubMesh.SetTriangles(ct,0);clubMesh.RecalculateNormals();clubMesh.RecalculateBounds();return clubMesh;
+  }
+
  }
 }
