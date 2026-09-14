@@ -66,7 +66,10 @@ namespace CityLife.World
             CheckThat("world-binding", Brain.Ready && Brain.Perception.WorldId == Brain.InstanceWorldId && Brain.InstanceWorldId == NpcTerrainNavigation.RegionId, Brain.InstanceWorldId);
             CheckThat("clothing-attached", Brain.GetComponentsInChildren<SkinnedMeshRenderer>().Length > 2 && Brain.transform.GetComponentsInChildren<Transform>().Length > 20, "Visual coverage inspected separately in retained frames.");
             string foodEvidence = "Integrated food adapter missing.";
-            CheckThat("food-model-and-world-targets", Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence), foodEvidence);
+            bool foodPassed = false;
+            try { foodPassed = Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence); }
+            catch (Exception exception) { foodEvidence = exception.GetType().Name + ": " + exception.Message; }
+            CheckThat("food-model-and-world-targets", foodPassed, foodEvidence);
             yield return Capture("01-default-coastal-inhabitant");
             float until = Time.realtimeSinceStartup + 55;
             while (Brain.Actions.Deliveries < 1 && Time.realtimeSinceStartup < until) yield return null;
