@@ -1,5 +1,7 @@
 # Starfall combined playable candidate
 
+> Historical receipt for 0.0.9 only, superseded by the opening-world acceptance work. Its one-delivery and refuge-registry checks did not prove the full delivery cycle, cave accessibility, or spacious world. User play review rejected those broader claims. Do not use this page as current release acceptance. See [opening-world gates](OPENING-WORLD-ACCEPTANCE.md).
+
 14 September 2026. Branch `codex/starfall-combined-today`; protected main, remote branches and prior build folders were not changed. Candidate version `0.0.9-combined.1`.
 
 ## Dependency receipt
