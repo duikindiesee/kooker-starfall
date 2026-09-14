@@ -44,9 +44,9 @@ Shader "CityLife/CoastalRocks"
                 float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
                 float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
                 float pixelAA=max(.008,fwidth(field)*.55);
-                float line=1-smoothstep(.026-pixelAA,.026+pixelAA,field);
+                float networkLine=1-smoothstep(.026-pixelAA,.026+pixelAA,field);
                 float patch=smoothstep(.46,.73,Noise(float3(p.x*.16,t*.045,p.y*.16)+83));
-                return line*lerp(.12,1,patch);
+                return networkLine*lerp(.12,1,patch);
             }
             float Surface(float3 p)
             {
