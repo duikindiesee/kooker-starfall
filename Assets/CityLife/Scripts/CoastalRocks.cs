@@ -60,6 +60,7 @@ namespace CityLife.World
                 float width = Lerp(1.2f,3.2f,id,3);
                 AddRock(root.transform,rock,p.x,p.y,width,Lerp(.8f,2.6f,id,4),width*.65f,id);
             }
+            AddMesaTalus(root.transform,rock);
 
             var flora = new MeshData();
             var plantSites = new[]
@@ -152,6 +153,36 @@ namespace CityLife.World
             MeshObject("Sparse terrace Kookerboom groups - decorative",terraceTrees.ToMesh("Terrace Kookerboom silhouettes"),plants,root.transform,false);
             CoastalDistantIslands.Create(root.transform);
             return root;
+        }
+
+        static void AddMesaTalus(Transform parent,Material material)
+        {
+            // Broad fractured aprons anchor the authored mesa masses at environmental scale.
+            // They are distant visual geology only: navigation and collision continue to use
+            // the single verified terrain mesh, so this dressing cannot recreate the hidden
+            // default-layer obstruction that caused the former blue-delivery stall.
+            var mesas=new[]
+            {
+                new Vector4(-390,-490,250,300), new Vector4(365,-430,235,325),
+                new Vector4(-405,-80,245,270), new Vector4(410,20,250,310),
+                new Vector4(-390,350,250,310), new Vector4(410,430,260,300)
+            };
+            for(int mesa=0;mesa<mesas.Length;mesa++)
+            for(int fragment=0;fragment<12;fragment++)
+            {
+                int id=1100+mesa*53+fragment;
+                Vector4 m=mesas[mesa];
+                float angle=fragment*(Mathf.PI*2/12)+Lerp(-.16f,.16f,id,301);
+                float radius=Lerp(.76f,1.02f,id,302);
+                float x=m.x+Mathf.Cos(angle)*m.z*radius;
+                float z=m.y+Mathf.Sin(angle)*m.w*radius;
+                if(Vector2.Distance(new Vector2(x,z),CoastalTerrain.ActivityCentre)<55 || Vector2.Distance(new Vector2(x,z),CoastalTerrain.RefugeCentre)<55) continue;
+                float width=Lerp(5.5f,15.5f,id,303),depth=width*Lerp(.55f,1.18f,id,304),height=Lerp(2.4f,8.5f,id,305);
+                var talus=MeshObject("Distant fractured mesa-foot talus "+mesa+"-"+fragment,
+                    RockMesh(width,height,depth,id),material,parent,false);
+                talus.transform.localPosition=new Vector3(x,CoastalTerrain.Height(x,z)-height*.28f,z);
+                talus.transform.localRotation=Quaternion.Euler(Lerp(-5,5,id,306),Lerp(-180,180,id,307),Lerp(-4,4,id,308));
+            }
         }
 
         static void AddTerraceKookerboom(MeshData mesh,Vector2 site,float height,int id)
