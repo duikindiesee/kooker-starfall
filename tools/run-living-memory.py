@@ -108,7 +108,14 @@ def main():
             execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,
             scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None))
         print(json.dumps({'checkpoint': 'memory-ready', 'build': build}), flush=True)
-        player = subprocess.Popen(command, creationflags=flags, env=env, cwd=ROOT)
+        runtime_env = env
+        if args.editor:
+            # Installed Editor licensing/UPM needs Windows profile paths; memory service remains restricted.
+            runtime_env = {k: v for k, v in os.environ.items() if k.upper() in (
+                'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP', 'PATH', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA',
+                'PROGRAMDATA', 'ALLUSERSPROFILE', 'PROGRAMFILES', 'PROGRAMFILES(X86)', 'PROGRAMW6432',
+                'HOMEDRIVE', 'HOMEPATH', 'USERNAME', 'USERDOMAIN', 'COMPUTERNAME', 'COMSPEC', 'PATHEXT')}
+        player = subprocess.Popen(command, creationflags=flags, env=runtime_env, cwd=ROOT)
         try:
             exit_code = player.wait(timeout=600 if args.editor else 240)
         except subprocess.TimeoutExpired:
