@@ -365,7 +365,9 @@ namespace CityLife.World
                                 Controls.View.transform.LookAt(grip);
                                 yield return CaptureWorld("09-club-" + pose + "-" + (facing > 0 ? "uphill" : "downhill"));
                                 var bodyPivot = Brain.transform.position + Vector3.up * .9f;
-                                Controls.View.transform.position = bodyPivot + Quaternion.Euler(10, facing > 0 ? 145 : -35, 0) * Vector3.back * 3.4f;
+                                // View from the club-bearing left side so the whole shaft and
+                                // terrain contact remain visible instead of hiding behind a leg.
+                                Controls.View.transform.position = bodyPivot - Brain.transform.right * 2.5f - Brain.transform.forward * 1.6f + Vector3.up * .25f;
                                 Controls.View.transform.LookAt(bodyPivot);
                                 yield return CaptureWorld("09b-club-full-" + pose + "-" + (facing > 0 ? "uphill" : "downhill"));
                             }
