@@ -176,9 +176,13 @@ namespace CityLife.World
             var spectator = Controls.View.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+            var spectatorActual = Controls.View.transform.position;
             CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed &&
-                Vector3.Distance(spectator, Controls.SpectatorPosition) > 1f,
-                "Same world and NPC; from " + spectator + " to " + Controls.SpectatorPosition + "; mode=" + Controls.Mode);
+                Vector3.Distance(spectator, Controls.SpectatorPosition) > 1f &&
+                Vector3.Distance(spectator, spectatorActual) > 1f &&
+                Vector3.Distance(Controls.SpectatorPosition, spectatorActual) < .05f,
+                "Same world and NPC; from " + spectator + " to internal=" + Controls.SpectatorPosition +
+                "; actualCamera=" + spectatorActual + "; mode=" + Controls.Mode);
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
             lookBefore = Controls.View.transform.rotation;
             InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(-35, 10) }.WithButton(MouseButton.Right)); yield return null;

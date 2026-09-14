@@ -10,7 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
-        public float MinimumRockClearance { get; private set; }
+        [field: SerializeField] public float MinimumRockClearance { get; private set; }
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
         void EnsureModel()
@@ -23,7 +23,9 @@ namespace Starfall.Food
             Actor = actor; Model = new FoodModel(worldId, Generation, 4242);
             Physics.SyncTransforms();
             // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
-            BerryPosition = FindClearBerryPosition();
+            // The readable berry site shares the broad activity shelf but stays
+            // outside the delivery fixture, rather than hiding in a mesa wall.
+            BerryPosition = new Vector3(138, CoastalTerrain.Height(138, -80), -80);
             SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));
@@ -61,21 +63,6 @@ namespace Starfall.Food
                     if (collider.name.StartsWith("Stratified shore rock")) return radius - .25f;
             }
             return 10f;
-        }
-        static Vector3 FindClearBerryPosition()
-        {
-            // Prefer the broad east activity bank, then search deterministic dry
-            // sites until the whole bush is visibly clear of authored rocks.
-            for (int ring = 0; ring < 8; ring++)
-                for (int side = -1; side <= 1; side += 2)
-                {
-                    float x = 205 + ring * 14;
-                    float z = -80 + side * (12 + ring * 7);
-                    var candidate = new Vector3(x, CoastalTerrain.Height(x, z), z);
-                    if (candidate.y > CoastalWater.Level + .5f && MeasureRockClearance(candidate) >= 4f)
-                        return candidate;
-                }
-            throw new System.InvalidOperationException("No dry, rock-clear integrated berry site was found.");
         }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
         {
