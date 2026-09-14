@@ -220,6 +220,18 @@ namespace CityLife.World
                 "; planarTextureReady="+(planarReflection!=null&&planarReflection.TextureReady)+"; lastRenderedFrame="+(planarReflection==null?-1:planarReflection.LastRenderedFrame)+
                 "; shader time frozen; same-camera reflection strength 0/1 lower-frame mean channel delta="+reflectionDelta.ToString("F3")+
                 "; ordinary-play planar camera samples the current canyon/sky view; dynamic weather refresh follows rendered frames");
+            if(waterMaterial!=null&&waterMaterial.HasProperty("_WaterDebugMode"))
+            {
+                float priorDebug=waterMaterial.GetFloat("_WaterDebugMode");
+                try
+                {
+                    string[] labels={"01j-main-opaque-source","01k-physical-depth","01l-measured-depth-mask","01m-transmission-weight","01n-final-water-matched"};
+                    for(int debugMode=1;debugMode<=4;debugMode++) { waterMaterial.SetFloat("_WaterDebugMode",debugMode); yield return CaptureWorld(labels[debugMode-1]); }
+                    waterMaterial.SetFloat("_WaterDebugMode",0); yield return CaptureWorld(labels[4]);
+                    CheckThat("water-main-camera-input-diagnostics-retained",true,"matched main-camera opaque/depth/measured/transmission/final captures retained; interpretation is visual and does not lower the water acceptance bar");
+                }
+                finally { waterMaterial.SetFloat("_WaterDebugMode",priorDebug); }
+            }
             var islands=GameObject.Find("Distant islands - visual only - outside playable boundary");
             CheckThat("inaccessible-offshore-landforms-present",islands!=null&&islands.GetComponentsInChildren<MeshRenderer>().Length==3&&islands.GetComponentsInChildren<Collider>().Length==0,
                 islands==null?"missing":"renderers="+islands.GetComponentsInChildren<MeshRenderer>().Length+"; colliders="+islands.GetComponentsInChildren<Collider>().Length+"; centres beyond active terrain z=900");

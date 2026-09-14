@@ -11,6 +11,7 @@ Shader "CityLife/CoastalWater"
         _UseSceneDepth ("Use available camera depth", Range(0,1)) = 1
         _WaveStrength ("Wave strength", Range(0,1)) = 1
         _ReflectionStrength ("Bounded scene reflection strength", Range(0,1)) = 1
+        [HideInInspector] _WaterDebugMode ("Acceptance diagnostic mode", Float) = 0
     }
     SubShader
     {
@@ -38,7 +39,7 @@ Shader "CityLife/CoastalWater"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _ShallowColor, _RiverColor, _DeepColor, _SkyReflection, _FoamColor;
-                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength, _PlanarReflectionAvailable;
+                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength, _PlanarReflectionAvailable, _WaterDebugMode;
                 float4x4 _PlanarReflectionVP;
             CBUFFER_END
             TEXTURE2D(_PlanarReflectionTexture); SAMPLER(sampler_PlanarReflectionTexture);
@@ -135,6 +136,8 @@ Shader "CityLife/CoastalWater"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float measured;
                 float depth = WaterDepth(input,measured);
+                float2 mainCameraUV=GetNormalizedScreenSpaceUV(input.positionCS);
+                half3 mainCameraOpaque=SampleSceneColor(mainCameraUV);
                 float river = 1-exp(-depth*.30);
                 float deep = smoothstep(4,24,depth);
                 half3 water = lerp(_ShallowColor.rgb,_RiverColor.rgb,river);
@@ -142,18 +145,24 @@ Shader "CityLife/CoastalWater"
                 // R01's unfiltered alpha blend transmitted the strongly lit orange bed, turning
                 // turquoise gray/green. Preserve shallow detail through colour-filtered scene
                 // transmission instead. Increasing depth absorbs the bed; sky never acts as bed.
+                float transmission = measured*.90*exp(-depth*.10)*(1-smoothstep(520,880,input.positionWS.z));
                 if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
                 {
-                    half3 bed = SampleSceneColor(GetNormalizedScreenSpaceUV(input.positionCS));
+                    half3 bed = mainCameraOpaque;
                     // Preserve actual submerged rock/plant colour while water absorbs
                     // red fastest and blue slowest. One transmission path avoids both
                     // muddy double blending and monochrome cyan silhouettes.
                     half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.62,.15,.045));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
-                    float transmission = .90*exp(-depth*.10)*(1-smoothstep(520,880,input.positionWS.z));
                     water = lerp(water,transmittedBed,transmission);
                 }
+                // Retained acceptance diagnostics from the same main-camera render. These modes
+                // isolate input provenance; they are never enabled during ordinary play.
+                if (_WaterDebugMode>.5 && _WaterDebugMode<1.5) return half4(mainCameraOpaque,1);
+                if (_WaterDebugMode>1.5 && _WaterDebugMode<2.5) return half4(saturate(depth/8).xxx,1);
+                if (_WaterDebugMode>2.5 && _WaterDebugMode<3.5) return half4(measured.xxx,1);
+                if (_WaterDebugMode>3.5 && _WaterDebugMode<4.5) return half4(transmission.xxx,1);
 
                 float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
                 float3 phase = WavePhase(input.positionWS.xz);
