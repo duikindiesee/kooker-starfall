@@ -53,7 +53,10 @@ namespace Starfall.Food
             foreach(var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
             {
                 if (!collider.name.StartsWith("Stratified shore rock")) continue;
-                Vector3 nearest=collider.ClosestPoint(position); nearest.y=position.y;
+                // Coastal rocks use static non-convex mesh colliders, for which
+                // Collider.ClosestPoint is unsupported. Their world-space bounds
+                // provide a conservative horizontal exclusion distance.
+                Vector3 nearest=collider.bounds.ClosestPoint(position); nearest.y=position.y;
                 best=Mathf.Min(best,Vector3.Distance(position,nearest));
             }
             return best==float.MaxValue ? 999f : best;
