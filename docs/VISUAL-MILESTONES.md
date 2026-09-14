@@ -508,3 +508,8 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 ## 13 September: isolated food behavior proven; visual gate remains open
 
 Food v0.1.2 (source 34fa82a) passed 79 compiled loop/model checks, exact separate-process reload, six Eden natural-growth/new-world-isolation checks and six synthetic death/return/recovery/lesson-use checks. Actual close-up is retained at evidence/local/v012-loop-20260913-192342/07-bush-closeup.png. Longer rapid HUD changes retained stale glyphs; v0.1.3 and v0.1.4 visual captures also failed and are not accepted. Native capture of food HWND265136 returned desktop wallpaper and activation failed; no mismatched-surface click was sent. Pending v0.1.5 uses opaque white texture tinted black for HUD panels and compiles, but is not baked. All players are versioned and prior snapshots remain. See docs/FOOD-ACCEPTANCE.md for exact evidence and remaining native/visual/integration gates. No Discord post, merge or deployment performed.
+
+
+## 14 September: food v0.1.5 baked; OS policy blocks visual gate
+
+Preserved source 8f79083 built Food-0.1.5-20260914-060628 with zero errors. Standalone behavior/reload suites were not repeated. Windows Application Control rejected StarfallFood.exe before process start; Code Integrity events 3077 and 3033 at 08:08:06 SAST confirm signing-policy requirements. No visual/input acceptance or review-ready integration handoff is claimed. All 929 pre-existing build files compare unchanged by SHA-256. No policy bypass attempted. Candidate, exact reports and resume gate: docs/FOOD-VISUAL-BLOCKER.md.

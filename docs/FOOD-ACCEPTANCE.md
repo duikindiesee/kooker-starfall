@@ -2,7 +2,7 @@
 
 This is a separate primitive Unity component fixture. It does not replace the combined Starfall island. The concept storyboard is illustrated intent, not captured gameplay. No Discord message has been posted.
 
-**Current handoff: implementation and scripted behavior proven, final visual/input acceptance unfinished.** The latest complete behavior checkpoint is `Builds/Food-0.1.2-20260913-192238/StarfallFood.exe` (source `34fa82a`). Later v0.1.3 and v0.1.4 players are retained failed visual checkpoints. Pending v0.1.5 changes are source only; no v0.1.5 player exists yet. No food editor or player remains active.
+**Current handoff: implementation and scripted behavior proven, final visual/input acceptance blocked.** The latest complete behavior checkpoint is `Builds/Food-0.1.2-20260913-192238/StarfallFood.exe` (source `34fa82a`). Later v0.1.3 and v0.1.4 players are retained failed visual checkpoints. v0.1.5 built from `8f79083`, but Windows Application Control rejected its native launch on 14 September. See [precise blocker and candidate](FOOD-VISUAL-BLOCKER.md). No food editor or player remains active.
 
 ## Preserved checkpoints
 
@@ -16,7 +16,7 @@ This is a separate primitive Unity component fixture. It does not replace the co
 | v0.1.2 world-switch isolation | Passed 79 loop/model checks, separate reload, six mortality and six Eden checks | `evidence/local/v012-loop-20260913-192342/`, `v012-mortality-20260913-192553/`, `v012-eden-20260913-192606/` | Rapid HUD state changes revealed framebuffer ghosting; these images fail final visual acceptance |
 | v0.1.3 background camera | Six mortality checks passed; visual checkpoint rejected because world viewport became black | `evidence/local/v013-mortality-20260913-193524/` | Replaced in source by opaque GUI panel fills; needs v0.1.4 executable evidence |
 | v0.1.4 HUD attempt | Six mortality checks passed; visual capture still rejected | `evidence/local/v014-mortality-20260913-194213/`, `evidence/local/v014-native/native-input-unverified.json` | Native activation failed and the selected window returned wallpaper; no click sent to that surface |
-| v0.1.5 opaque fill | Source compilation passed; not baked | `FoodWorld.OnGUI` uses white texture tinted opaque black | Bake in explicit shared editor slot, then inspect world and rapid HUD changes, loop/reload/Eden and native input |
+| v0.1.5 opaque fill | Build passed; native launch blocked by Windows Application Control | [Build, OS events and preservation evidence](FOOD-VISUAL-BLOCKER.md) | Approved execution path, actual viewport/changing-HUD/native input check; retain prior behavior/reload results |
 | Combined-world integration | Not performed | [Adapter contract](FOOD-INTEGRATION.md) | Integrator must connect terrain sites, weather/water, actor identity, navigation and atomic save authority |
 
 The mortality run preserves death hash, world tick and ecology through return, recovers the owned inventory once, and follows the remembered lesson with a verified energy-restoring meal. Model checks separately cover delayed dehydration/starvation, fat use, rest, activity, overeating, protein effects, repeated deaths with no fabricated lesson, immutable snapshot retention and world/inhabitant isolation.

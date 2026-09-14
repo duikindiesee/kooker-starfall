@@ -20,7 +20,7 @@ flowchart LR
 |---|---|---|
 | Food v0.1.0 player | Local build; 45 model and 14 actual-player-script checks; separate-process reload passed | Visual label/water revision; human acceptance separate |
 | Food v0.1.2 behavior | 79 loop/model checks, exact separate-process reload, six Eden/isolation and six mortality/return checks | Final visual/input acceptance open; later captures failed |
-| Food v0.1.5 HUD source | Opaque panel correction compiles; not baked | Desktop/native surface access, versioned bake and inspected runtime required |
+| Food v0.1.5 candidate | Opaque panel correction baked from `8f79083`; Windows Application Control blocked launch | [Approved execution path and native visual/input gate](FOOD-VISUAL-BLOCKER.md) |
 | Combined adapter | [Exact boundary](FOOD-INTEGRATION.md) documented | Not wired; combined checkout untouched |
 | External memory | No food/death publisher/service connection | Schema/capability review |
 
