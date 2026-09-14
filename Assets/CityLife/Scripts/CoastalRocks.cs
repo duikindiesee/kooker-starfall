@@ -135,7 +135,10 @@ namespace CityLife.World
                     Vector2 q=p+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
                     float floor=CoastalTerrain.Height(q.x,q.y);
                     if(floor>-2.72f) continue; // keep the complete low rosette beneath the surface
-                    Vector3 rooted=new Vector3(q.x,floor+.035f,q.y);
+                    // Plants close to the primary shelf root on its visible crown rather
+                    // than disappearing through overlapping render-only ledges.
+                    float rootY=radius<4.8f?Mathf.Max(floor+.035f,bed.y+.74f):floor+.035f;
+                    Vector3 rooted=new Vector3(q.x,rootY,q.y);
                     AddRosette(aquatic,rooted,Lerp(.62f,1.30f,id,213),id,false);
                 }
             }

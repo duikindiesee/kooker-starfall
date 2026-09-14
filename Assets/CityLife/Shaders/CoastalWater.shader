@@ -163,7 +163,10 @@ Shader "CityLife/CoastalWater"
                 // navy baseline remains only when a platform returns an empty probe.
                 half3 environment=GlossyEnvironmentReflection(reflect(-view,normalWS),input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
                 environment=max(environment,_SkyReflection.rgb*.18);
-                water = lerp(water,environment,fresnel*.44);
+                // Water reflects a small amount even head-on and grows strongly toward
+                // grazing angles; this avoids hiding a valid probe behind a zero-Fresnel floor.
+                float reflectionWeight=.08+fresnel*.54;
+                water = lerp(water,environment,reflectionWeight);
                 Light sun = GetMainLight();
                 float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);
                 // A small neutral/cool glint keeps the warm key from bleaching the whole colour.
