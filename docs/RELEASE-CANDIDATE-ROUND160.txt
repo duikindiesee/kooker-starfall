@@ -1,0 +1,50 @@
+STARFALL - LOCAL TEST CANDIDATE, NOT AN ACCEPTED RELEASE
+
+Build: KookerStarfallIntegrated-0.0.10-canyon.1-20260914-204508
+Source: dff467c971da5a289f3aab1e7ce2ed0b80c0687d
+Version: 0.0.10-canyon.1
+Runtime evidence: evidence/local/combined/runtime-27 in the source repository.
+
+RUN
+Extract the entire ZIP into a new directory. Open KookerStarfallIntegrated.exe
+inside the versioned build directory. Keep all accompanying directories and
+DLLs together. No administrator access or security-policy changes are required
+by this package. If Windows blocks it, use an approved signing/review route;
+do not disable protection. Earlier builds and saves must remain separate.
+
+CONTROLS
+P: options/pause. Tab: possess/release inhabitant. F: spectator.
+Right mouse button: camera look. WASD: movement when controlling the view/body.
+L: decisions. R: autonomy toggle. F11: fullscreen/windowed display toggle.
+Consult the on-screen controls for the active mode. Physical user acceptance
+is still pending; automated synthetic-device checks are not a substitute.
+
+WHAT THIS CHECKPOINT PROVES
+The compiled automated run completed three deliveries and recorded identity
+plus six pickup/delivery receipts. It exercised food, water, cave entry,
+controls, clothing/club checks and a planar scene reflection. The isolated
+memory/model run admitted the constrained model-generated acknowledgement
+"Delivered amber" and retrieved its scoped event after service restart.
+This does not establish open-ended intelligence or full physical world saving.
+
+SERVICES AND INSTALLATION
+This ZIP contains the Windows player and art notices only. It does not bundle
+Python services, model weights, credentials, private configuration or saves.
+The verified memory/model demonstration used a separately configured local
+memory service and a connected MLX E4B provider. It is not a one-launcher
+installation and this ZIP alone does not reproduce those service proofs.
+Use docs/SYSTEM-ARCHITECTURE.md and services/starfall-memory/README.md in the
+matching source repository for service architecture and setup. Do not reuse
+private evidence-store credentials or connect a personal archive.
+
+KNOWN GAPS / NOT RELEASE ACCEPTANCE
+The 7.3/10 reference visual target and user play review have NOT passed.
+Water still has an abrupt shallow/deep transition and oversized caustics;
+terrain and offshore islands remain visually primitive. Reflection is now
+visible, but overall panorama fidelity remains unfinished. Protected review,
+final release acceptance and the narrated before/after recording remain open.
+Future hunting, building, boats, full ecology and spherical terrain are not
+included. Do not present this candidate as the final integrated release.
+
+The adjacent package manifest identifies the full player-content fingerprint
+and ZIP checksum. Packaging verifies bytes, not these remaining acceptance gates.
