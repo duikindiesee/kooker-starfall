@@ -27,6 +27,14 @@ Weighted initial score: **4.45/10 — below target**. Do not reuse the earlier t
 score as a score for this world. Positive user feedback on the cave/environment
 remains valid but does not imply this visual gate passed.
 
+Independent second review of compiled `runtime-12` representative evidence:
+composition 5.5, geology 3.8, water 3.8, lighting 3.8, vegetation 2.5, sky 5.2.
+With the same weights, **4.10/10 — below target**. This is a different view set,
+not a measured regression from 4.45. The reviewer identified largely bare slopes,
+primitive activity props, flat cyan water/hard shore edges and rounded noisy
+cliffs. The playable scale is useful progress but not visual resemblance. A
+matched camera set remains required before comparing improvement between builds.
+
 ## Improvement order and stopping rule
 
 ### Clear shallow-water requirement
