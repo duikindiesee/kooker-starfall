@@ -1,5 +1,24 @@
 # Opening-world acceptance contract
 
+## Immediate integration queue after round 139
+
+1. Repair and rerun the reproduced blue-delivery movement stall. Round 20
+   stopped beside the relocated forage plant with blue cargo after two deliveries;
+   this failure must remain visible until a full three-item cycle passes again.
+2. Finish the bounded water/plant correction and retain matched compiled views;
+   round 139 is not visually accepted.
+3. Transfer the corrected hunter grip deliberately from its isolated branch,
+   preserving garments and right-hand delivery. Combined authoring still uses
+   a 0.022 m shaft base radius, unlike the corrected candidate's documented
+   0.010 m radius. These are not the same grip candidate.
+4. Validate the corrected club in the combined standalone player across movement
+   poses, hand close-ups and uneven terrain. The isolated `8c6fbe8` retry retained
+   FAIL with Search initialization and FMOD errors; flat courtyard clearance
+   cannot certify canyon traversal. Preserve those failures.
+5. Repeat final integrated regressions and user visual/play review before
+   protected review routing, packaging and narration. No club deferral or release
+   approval has been obtained.
+
 This is the completion checklist for the active opening-world goal, not a release certificate. Each final receipt must identify the exact executable, source commit, test run and inspectable evidence. An older or isolated component pass cannot certify the new combined player.
 
 | Requirement | Required final evidence | Current acceptance boundary |

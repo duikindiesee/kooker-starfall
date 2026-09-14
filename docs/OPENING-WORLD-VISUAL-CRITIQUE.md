@@ -8,6 +8,24 @@ Reference: `evidence/references/opening-world-approved-panorama-20260914.png`.
 Preserve the spacious canyon-to-sea gameplay layout; match the reference's visual
 language rather than flattening the world into a non-playable backdrop.
 
+## Independent round-139 water checkpoint
+
+Inspected `evidence/milestones/coastal/round-139/2026-09-14-02-water-to-sea.png`
+and its `preview-build.json`: build succeeded at source `7da09ca`, with zero
+errors and eighteen warnings. Compilation is not visual acceptance.
+
+The excessive bright caustic carpet is reduced, but water remains a nearly
+uniform opaque-looking teal plane. Faint large loops do not reproduce the
+reference's fine light on a readable bed. Submerged shelves are monochrome,
+with little substrate texture or depth variation. Sparse land-like flowering
+plants underwater and synthetic cliff bands also remain.
+
+**Visual gate remains unaccepted; this single view does not justify a new overall
+score.** Next establish a readable bed, depth-dependent color and convincing
+surface reflection/refraction, rather than another brightness-only correction.
+Obtain a well-lit food-plant close-up and matched multi-view compiled-player
+evidence before rerating the world.
+
 ## Initial review
 
 Evidence inspected: `evidence/milestones/coastal/round-122/2026-09-14-01-coastal-side-composition.png`.

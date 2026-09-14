@@ -53,7 +53,16 @@ namespace Starfall.Food
             {
                 var part=GameObject.CreatePrimitive(type); part.name=name; part.transform.SetParent(root.transform,false);
                 part.transform.localPosition=localPosition; part.transform.localScale=scale; part.transform.localRotation=rotation;
-                part.GetComponent<Renderer>().sharedMaterial=material; var collider=part.GetComponent<Collider>(); if(collider!=null) Destroy(collider);
+                part.GetComponent<Renderer>().sharedMaterial=material; var collider=part.GetComponent<Collider>();
+                // This plant is authored while the Editor is saving the generated
+                // player scene. Deferred Destroy can serialize hidden primitive
+                // colliders and block the depot-east route beside the bush.
+                if(collider!=null)
+                {
+                    collider.enabled=false;
+                    if(Application.isPlaying) Destroy(collider);
+                    else DestroyImmediate(collider);
+                }
             }
             void Runner(string name, Vector3 from, Vector3 to)
             {
@@ -135,6 +144,14 @@ namespace Starfall.Food
             foreach (var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
                 if (collider.gameObject.layer == 8 && collider.name.StartsWith("Stratified shore rock")) RockColliderCount++;
             return MeasureRockClearance(BerryPosition);
+        }
+        public int CountDecorativePlantColliders()
+        {
+            if (Berry == null) return -1;
+            int count = 0;
+            foreach (var collider in Berry.GetComponentsInChildren<Collider>(true))
+                if (collider.gameObject != Berry.gameObject) count++;
+            return count;
         }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
         {

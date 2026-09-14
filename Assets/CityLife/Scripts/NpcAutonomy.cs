@@ -28,6 +28,7 @@ namespace CityLife.World
         public int FailureCount { get; private set; }
         public bool Ready { get; private set; }
         public string LastResult { get; private set; } = "Waiting for perception";
+        public string LastFailureDiagnostic { get; private set; } = "none";
         public List<string> ChosenGoals = new List<string>();
         public StarfallMemoryExport MemoryExport;
         public string MemoryExportFailure { get; private set; } = "";
@@ -49,7 +50,7 @@ namespace CityLife.World
             foreach (var item in Registry) item.RestoreInitial();
             Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
             goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
-            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception";
+            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
             Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
             Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
             Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), Registry);
@@ -168,8 +169,14 @@ namespace CityLife.World
         private void Fail(string code, bool record = true)
         {
             FailureCount++; LastResult = code;
+            Vector3 next = route != null && route.Count > 0 ? route.Peek() : transform.position;
+            string contacts = string.Join(",", Physics.OverlapSphere(transform.position + Vector3.up * .65f, .55f,
+                (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore)
+                .Select(collider => collider.name).Distinct().OrderBy(name => name));
+            LastFailureDiagnostic = "code=" + code + "; actor=" + transform.position + "; next=" + next +
+                "; goal=" + GoalId + "; contacts=" + (contacts.Length == 0 ? "none" : contacts);
             if (record) Log.Record(Tick, "failure", DescribePerception(), GoalId, "stop-current-action", code,
-                "keep cargo; exclude goal for 250 ticks; choose again");
+                "keep cargo; exclude goal for 250 ticks; choose again; " + LastFailureDiagnostic);
             if (goal != null) retryAfter[goal.id] = Tick + 250;
             goal = null; route = null; gestureTicks = 0; stalledTicks = 0; Phase = "Fallback";
         }

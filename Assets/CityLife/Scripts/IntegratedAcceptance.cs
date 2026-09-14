@@ -124,6 +124,10 @@ namespace CityLife.World
                 "; bakedClearance=" + Food.MinimumRockClearance.ToString("F2") + "m; runtimeClearance=" +
                 runtimeRockClearance.ToString("F2") + "m; meshGrounded=" + berryGrounded +
                 "; layer8RockColliders=" + Food.RockColliderCount);
+            int decorativePlantColliders = Food == null ? -1 : Food.CountDecorativePlantColliders();
+            CheckThat("forage-decoration-does-not-block-navigation", decorativePlantColliders == 0,
+                "enabled or disabled primitive colliders below the forage root=" + decorativePlantColliders +
+                "; root trigger remains the intended interaction sensor");
             yield return Capture("01-default-coastal-inhabitant");
             Controls.View.ExternalView = true; Controls.SuppressView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
@@ -175,7 +179,7 @@ namespace CityLife.World
             CheckThat("complete-three-object-autonomy-cycle", completeCycle,
                 "deliveries=" + Brain.Actions.Deliveries + "; occupied=" + occupied + "; deliveredItems=" + deliveredItems +
                 "; held=" + (Brain.Actions.Held == null ? "none" : Brain.Actions.Held.StableId) + "; phase=" + Brain.Phase +
-                "; result=" + Brain.LastResult + "; failures=" + Brain.FailureCount);
+                "; result=" + Brain.LastResult + "; failures=" + Brain.FailureCount + "; lastFailure=" + Brain.LastFailureDiagnostic);
             CheckThat("remembered-action-receipts", report.memoryEvents == 7 && Brain.MemoryExportFailure.Length == 0,
                 "identity plus six successful pickup/delivery receipts; events=" + report.memoryEvents + "; export=" + Brain.MemoryExportFailure);
             report.decisionEvents.AddRange(Brain.Log.Entries);
