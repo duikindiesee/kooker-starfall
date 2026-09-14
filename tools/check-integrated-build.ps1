@@ -26,7 +26,24 @@ if ($launch.buildContentSha256AfterRun -ne $launch.buildContentSha256) {
     throw 'Missing or mismatched post-run content fingerprint; tested build stability is unproven.'
 }
 if ($runtime.status -ne 'PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING') { throw 'Expected passing automated candidate receipt.' }
-foreach ($name in @('complete-three-object-autonomy-cycle','remembered-action-receipts','forage-decoration-does-not-block-navigation')) {
+$requiredChecks = @(
+    'world-binding', 'spacious-finite-canyon-world', 'clothing-attached',
+    'corrected-club-source-bound', 'corrected-club-uneven-terrain-clearance',
+    'food-model-and-world-targets', 'berry-bush-terrain-and-rock-clearance',
+    'berry-bush-camera-line-of-sight', 'forage-decoration-does-not-block-navigation',
+    'moving-shallow-bed-caustics', 'actual-coastal-reflection-probe-contribution',
+    'complete-three-object-autonomy-cycle', 'remembered-action-receipts',
+    'possessed-body-traversal', 'possessed-captured-look',
+    'pause-releases-and-stops-simulation', 'pointer-opens-controls-menu',
+    'pointer-returns-to-options', 'resume-restores-capture',
+    'fullscreen-transition', 'window-restoration', 'free-spectator-traversal',
+    'spectator-captured-look', 'spectator-escape-release',
+    'refuge-approach-route', 'refuge-continuous-actor-entry-and-shelter',
+    'refuge-discoverable', 'living-memory-real-receipts',
+    'living-memory-persist-retrieve', 'living-memory-one-model-request',
+    'living-memory-genuine-thought-required', 'no-runtime-errors'
+)
+foreach ($name in $requiredChecks) {
     $matches = @($runtime.checks | Where-Object { $_.name -eq $name })
     if ($matches.Count -ne 1 -or $matches[0].passed -ne $true) { throw "Missing or failed check: $name" }
 }
