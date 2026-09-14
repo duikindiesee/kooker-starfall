@@ -29,7 +29,16 @@ namespace CityLife.World.Editor
             QualitySettings.SetQualityLevel(quality);
             EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
             Debug.Log("STARFALL_EDITOR_PLAY_MODE " + identity + " scene=" + scene + "; not standalone acceptance");
-            EditorApplication.isPlaying = true;
+            // Let queued Editor startup/indexing and scene imports finish before runtime error capture starts.
+            double settledAt = EditorApplication.timeSinceStartup + 5;
+            void EnterWhenSettled()
+            {
+                if (EditorApplication.isCompiling || EditorApplication.isUpdating) settledAt = EditorApplication.timeSinceStartup + 5;
+                if (EditorApplication.timeSinceStartup < settledAt) return;
+                EditorApplication.update -= EnterWhenSettled;
+                EditorApplication.isPlaying = true;
+            }
+            EditorApplication.update += EnterWhenSettled;
         }
     }
 }
