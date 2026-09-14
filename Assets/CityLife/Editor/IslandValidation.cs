@@ -141,6 +141,20 @@ namespace CityLife.World.Editor
             var edits = WorldEdits.Empty(d); edits.revision = 1; edits.terrain = new[] { new HeightEdit { x = 512, z = 512, deltaMetres = 2.5f } };
             edits.Apply(full); Near(full.Height(512, 512), restored.Height(512, 512) + 2.5, 0.00001, "separate edit overlay applied");
             Check(full.BaseHash() == baseHash, "edit leaves procedural base immutable");
+            int landingX = Mathf.RoundToInt(full.Landing.x / (float)d.cellMetres + d.cells / 2f);
+            int landingZ = Mathf.RoundToInt(full.Landing.z / (float)d.cellMetres + d.cells / 2f);
+            var unsafeLandingEdits = new List<HeightEdit>();
+            for (int z = landingZ - 3; z <= landingZ + 3; z++)
+            for (int x = landingX - 3; x <= landingX + 3; x++)
+                unsafeLandingEdits.Add(new HeightEdit { x = x, z = z, deltaMetres = -100f });
+            var landingField = new IslandField(Clone(d)); landingField.Generate();
+            var changedLanding = WorldEdits.Empty(d); changedLanding.revision = 1; changedLanding.terrain = unsafeLandingEdits.ToArray(); changedLanding.Apply(landingField);
+            Check(!IslandExplorer.IsSafeWalkPoint(landingField, landingField.Landing), "saved terrain edits can invalidate the procedural landing");
+            Check(IslandExplorer.TryFindSafeWalkLanding(landingField, landingField.Landing, out Vector3 safeLanding) && IslandExplorer.IsSafeWalkPoint(landingField, safeLanding),
+                "walking searches the edited terrain for a safe landing instead of trusting the procedural landing");
+            bool controlsRestored = false;
+            bool evidenceSaved = IslandExplorer.TryWriteEvidence(() => throw new IOException("synthetic failed write"), () => controlsRestored = true, out string evidenceError);
+            Check(!evidenceSaved && controlsRestored && evidenceError.Contains("synthetic failed write"), "failed evidence write restores tour controls and reports the failure");
             string scratch = Path.Combine(Path.GetTempPath(), "CityLifeValidation", Guid.NewGuid().ToString("N"), "edits.json");
             edits.Save(scratch); edits.Save(scratch);
             var readBack = JsonUtility.FromJson<WorldEdits>(File.ReadAllText(scratch)); readBack.Apply(restored);
@@ -167,7 +181,7 @@ namespace CityLife.World.Editor
                 sourceRngValues = rngCount, sourceNoiseVectors = oracle.noiseVectors.Length, maxSourceHeightError = maxError,
                 baseHash = baseHash, fingerprint = d.Fingerprint(), widthMetres = d.Width, landKm2 = full.LandAreaKm2,
                 gentleLandKm2 = full.FlatAreaKm2, maxHeightMetres = full.MaxHeight, generationMs = full.GenerationMilliseconds,
-                checks = new[] { "source JavaScript arithmetic oracle", "full-grid regeneration", "different seed", "reverse chunk traversal", "closed coastline", "ground mesh mapping", "immutable base and atomic edit save/reload", "mismatch/invalid data rejection" }
+                checks = new[] { "source JavaScript arithmetic oracle", "full-grid regeneration", "different seed", "reverse chunk traversal", "closed coastline", "ground mesh mapping", "edited-terrain safe walking landing", "failed evidence write restores tour controls", "immutable base and atomic edit save/reload", "mismatch/invalid data rejection" }
             };
             Directory.CreateDirectory("evidence/local"); File.WriteAllText("evidence/local/validation.json", JsonUtility.ToJson(result, true));
             Debug.Log("CITYLIFE_VALIDATION_PASSED " + JsonUtility.ToJson(result));

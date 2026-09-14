@@ -318,17 +318,21 @@ namespace CityLife.World
                 Notice("Flight mode. Q / E change height; scroll adjusts speed.");
                 return;
             }
-            mode = TravelMode.Walk;
             Vector3 position = ClampHorizontal(worldCamera.transform.position);
-            float ground = field.Ground(position.x, position.z);
-            if (ground < ShoreLimit || SlopeAt(position) > MaximumWalkGradient)
+            bool movedToFallback = false;
+            if (!IsSafeWalkPoint(field, position))
             {
-                position = field.Landing;
-                ground = field.Ground(position.x, position.z);
-                Notice("Walking from the landing coast; the previous position was water or steep ground.", 6f);
+                if (!TryFindSafeWalkLanding(field, field.Landing, out position))
+                {
+                    mode = TravelMode.Fly;
+                    Notice("No safe walking ground is available after the saved terrain edits; remaining in flight mode.", 7f);
+                    return;
+                }
+                movedToFallback = true;
             }
-            else Notice("Walking. WASD to move; Shift to run; F returns to flight.");
-            position.y = ground + EyeHeight;
+            mode = TravelMode.Walk;
+            Notice(movedToFallback ? "Walking from nearby safe ground; the previous position or saved landing was unsafe." : "Walking. WASD to move; Shift to run; F returns to flight.", movedToFallback ? 6f : 4f);
+            position.y = field.Ground(position.x, position.z) + EyeHeight;
             worldCamera.transform.position = position;
             pitch = Mathf.Clamp(pitch, -40f, 35f);
             worldCamera.transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
@@ -392,8 +396,50 @@ namespace CityLife.World
 
         private float SlopeAt(Vector3 point)
         {
-            float dx = (field.Ground(point.x + 2f, point.z) - field.Ground(point.x - 2f, point.z)) * 0.25f;
-            float dz = (field.Ground(point.x, point.z + 2f) - field.Ground(point.x, point.z - 2f)) * 0.25f;
+            return SlopeAt(field, point);
+        }
+
+        public static bool IsSafeWalkPoint(IslandField island, Vector3 point)
+        {
+            if (island == null) return false;
+            return island.Ground(point.x, point.z) >= ShoreLimit && SlopeAt(island, point) <= MaximumWalkGradient;
+        }
+
+        public static bool TryFindSafeWalkLanding(IslandField island, Vector3 preferred, out Vector3 landing)
+        {
+            landing = preferred;
+            if (island == null) return false;
+            float extent = island.Definition.Width * 0.5f - 2f;
+            preferred.x = Mathf.Clamp(preferred.x, -extent, extent);
+            preferred.z = Mathf.Clamp(preferred.z, -extent, extent);
+            if (IsSafeWalkPoint(island, preferred))
+            {
+                preferred.y = island.Ground(preferred.x, preferred.z);
+                landing = preferred;
+                return true;
+            }
+            float step = (float)island.Definition.cellMetres;
+            int rings = Math.Min(128, island.Definition.cells / 2);
+            for (int ring = 1; ring <= rings; ring++)
+            {
+                for (int z = -ring; z <= ring; z++)
+                for (int x = -ring; x <= ring; x++)
+                {
+                    if (Math.Abs(x) != ring && Math.Abs(z) != ring) continue;
+                    var candidate = new Vector3(Mathf.Clamp(preferred.x + x * step, -extent, extent), 0f, Mathf.Clamp(preferred.z + z * step, -extent, extent));
+                    if (!IsSafeWalkPoint(island, candidate)) continue;
+                    candidate.y = island.Ground(candidate.x, candidate.z);
+                    landing = candidate;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static float SlopeAt(IslandField island, Vector3 point)
+        {
+            float dx = (island.Ground(point.x + 2f, point.z) - island.Ground(point.x - 2f, point.z)) * 0.25f;
+            float dz = (island.Ground(point.x, point.z + 2f) - island.Ground(point.x, point.z - 2f)) * 0.25f;
             return new Vector2(dx, dz).magnitude;
         }
 
@@ -667,18 +713,47 @@ namespace CityLife.World
                 screenshotChecks = captureChecks.ToArray(),
                 frameMilliseconds = benchmarkFrames.ToArray()
             };
-            Directory.CreateDirectory(evidenceDirectory);
             string reportPath = Path.Combine(evidenceDirectory, runPrefix + ".json");
-            File.WriteAllText(reportPath, JsonUtility.ToJson(report, true));
-            Debug.Log("CITYLIFE_BENCHMARK " + reportPath + " passed=" + valid + " meanMs=" + summary.meanMs.ToString("F2", CultureInfo.InvariantCulture) + " p95Ms=" + summary.p95Ms.ToString("F2", CultureInfo.InvariantCulture));
-            benchmarkRunning = false;
-            automatedRoute = false;
-            benchmarkPhase = "";
-            Notice((valid ? "Evidence checks passed. " : "Evidence checks failed; inspect the saved report. ") + "Mean " + summary.meanMs.ToString("F1") + " ms; p95 " + summary.p95Ms.ToString("F1") + " ms.", 10f);
+            bool reportSaved = TryWriteEvidence(
+                () => { Directory.CreateDirectory(evidenceDirectory); File.WriteAllText(reportPath, JsonUtility.ToJson(report, true)); },
+                RestoreBenchmarkControls,
+                out string writeError);
+            if (reportSaved)
+                Debug.Log("CITYLIFE_BENCHMARK " + reportPath + " passed=" + valid + " meanMs=" + summary.meanMs.ToString("F2", CultureInfo.InvariantCulture) + " p95Ms=" + summary.p95Ms.ToString("F2", CultureInfo.InvariantCulture));
+            else
+                Debug.LogError("CITYLIFE_BENCHMARK_WRITE_FAILED " + writeError);
+            Notice(reportSaved ? ((valid ? "Evidence checks passed. " : "Evidence checks failed; inspect the saved report. ") + "Mean " + summary.meanMs.ToString("F1") + " ms; p95 " + summary.p95Ms.ToString("F1") + " ms.") : "Evidence report could not be saved; controls were restored. " + writeError, 10f);
             if (quitWhenFinished && !Application.isEditor)
             {
                 yield return null;
-                Application.Quit(valid ? 0 : 3);
+                Application.Quit(valid && reportSaved ? 0 : 3);
+            }
+        }
+
+        private void RestoreBenchmarkControls()
+        {
+            benchmarkSampling = false;
+            benchmarkRunning = false;
+            automatedRoute = false;
+            benchmarkPhase = "";
+        }
+
+        public static bool TryWriteEvidence(Action write, Action restoreControls, out string error)
+        {
+            error = "";
+            try
+            {
+                write();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                error = exception.Message;
+                return false;
+            }
+            finally
+            {
+                restoreControls();
             }
         }
 

@@ -8,23 +8,14 @@ import re
 import tempfile
 import zipfile
 
-def player_files(player_executable='CityLife.exe'):
-    # A leaf name only: no paths, Windows device aliases or alternate data streams.
-    if not isinstance(player_executable, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*\.exe', player_executable, re.IGNORECASE):
-        raise ValueError('Player executable must be a simple .exe filename')
-    stem = player_executable[:-4]
-    if stem.upper() in {'CON', 'PRN', 'AUX', 'NUL', *(f'COM{i}' for i in range(1, 10)), *(f'LPT{i}' for i in range(1, 10))}:
-        raise ValueError('Windows device aliases are not player filenames')
-    return {player_executable, 'UnityPlayer.dll', stem + '_Data/globalgamemanagers', 'README.txt', 'THIRD-PARTY-NOTICES.txt'}
-
-REQUIRED = player_files()
+REQUIRED = {'CityLife.exe', 'UnityPlayer.dll', 'CityLife_Data/globalgamemanagers', 'README.txt', 'THIRD-PARTY-NOTICES.txt'}
+PRIVATE_SUFFIXES = {'.ulf', '.alf', '.pem', '.key', '.p12', '.pfx', '.jks', '.keystore', '.sqlite', '.sqlite3', '.db', '.log'}
 
 def digest_file(path):
     with path.open('rb') as stream:
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
-def check(archive_path, manifest, player_executable='CityLife.exe'):
-    required = player_files(player_executable)
+def check(archive_path, manifest):
     if manifest.get('schema') != 'citylife.unity.package-evidence.v1':
         raise ValueError('Unsupported package manifest schema')
     if manifest.get('archive') != archive_path.name or manifest.get('archiveBytes') != archive_path.stat().st_size or manifest.get('sha256') != digest_file(archive_path):
@@ -45,7 +36,7 @@ def check(archive_path, manifest, player_executable='CityLife.exe'):
                 raise ValueError('Unsafe package path')
             if 'BackUpThisFolder_ButDontShipItWithYourGame' in name or any(part.lower() in {'.git', 'library', 'usersettings', 'worlds', 'sessions'} for part in p.parts):
                 raise ValueError('Private runtime/editor state or Unity backup cannot ship')
-            if p.suffix.lower() in {'.ulf', '.alf', '.pem', '.key', '.p12', '.pfx', '.jks', '.keystore', '.sqlite', '.db', '.log'} or p.name.startswith('.env'):
+            if p.suffix.lower() in PRIVATE_SUFFIXES or p.name.lower().startswith('.env'):
                 raise ValueError('Private configuration or runtime data cannot ship')
             if entry.is_dir():
                 continue
@@ -59,12 +50,12 @@ def check(archive_path, manifest, player_executable='CityLife.exe'):
             with archive.open(entry) as stream:
                 if hashlib.file_digest(stream, 'sha256').hexdigest() != row['sha256']:
                     raise ValueError('Package file bytes differ from the manifest')
-    if names != set(expected) or not required.issubset(names):
+    if names != set(expected) or not REQUIRED.issubset(names):
         raise ValueError('Package omits expected player files or portable controls/licence notices')
     return len(names)
 
-def fixture(path, extras=None, player_executable='CityLife.exe', omit=()):
-    files = {name: b'Synthetic archive-guard fixture; not a player build.' for name in player_files(player_executable) if name not in omit}
+def fixture(path, extras=None):
+    files = {name: b'Synthetic archive-guard fixture; not a player build.' for name in REQUIRED}
     files.update(extras or {})
     with zipfile.ZipFile(path, 'w') as archive:
         for name, data in files.items():
@@ -83,48 +74,27 @@ def self_test():
             pass
         else:
             raise AssertionError('Changed archive checksum was accepted')
-        for name in ('../escape.txt', 'CityLife_Data/Worlds/save.json', 'x/BackUpThisFolder_ButDontShipItWithYourGame/source.cs', 'identity.ulf', 'citylife.exe'):
+        for name in ('../escape.txt', 'CityLife_Data/Worlds/save.json', 'x/BackUpThisFolder_ButDontShipItWithYourGame/source.cs', 'identity.ulf', 'cache.sqlite3', '.ENV.production', 'citylife.exe'):
             manifest = fixture(path, {name: b'fixture'})
             try:
                 check(path, manifest)
             except ValueError:
                 continue
             raise AssertionError('Unsafe archive fixture was accepted')
-        renamed = 'KookerStarfallR19.exe'
-        check(path, fixture(path, player_executable=renamed), renamed)
-        for missing in (renamed, 'KookerStarfallR19_Data/globalgamemanagers'):
-            manifest = fixture(path, player_executable=renamed, omit={missing})
-            try:
-                check(path, manifest, renamed)
-            except ValueError:
-                pass
-            else:
-                raise AssertionError('Missing renamed-player file was accepted')
-        for invalid in ('../player.exe', r'x\player.exe', 'player.exe:stream', 'CON.exe', 'player..exe'):
-            try:
-                player_files(invalid)
-            except ValueError:
-                continue
-            raise AssertionError('Invalid player executable option was accepted')
-    print('Package guard canaries passed: legacy checksum/path/private/backup/licence/duplicate checks; renamed player and matching data directory; missing executable/data and invalid executable names rejected. Fixtures were temporary and are not builds.')
+    print('Package guard canaries passed: checksum tampering, path escape, private state (including sqlite3 and case-insensitive env files), Unity backup, licence file and case-insensitive duplicate rejected. Fixtures were temporary and are not builds.')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--manifest', type=Path)
     parser.add_argument('--self-test', action='store_true')
-    parser.add_argument('--player-executable', default='CityLife.exe', help='Simple player filename; defaults to CityLife.exe, with matching *_Data/globalgamemanagers required')
     args = parser.parse_args()
-    try:
-        player_files(args.player_executable)
-    except ValueError as error:
-        parser.error(str(error))
     if args.self_test:
         self_test()
     if args.archive:
         manifest_path = args.manifest or Path(str(args.archive) + '.manifest.json')
         manifest = json.loads(manifest_path.read_text(encoding='utf-8-sig'))
-        count = check(args.archive, manifest, args.player_executable)
+        count = check(args.archive, manifest)
         print(f'Package integrity passed: {count} files, complete archive and per-entry hashes, player controls and licence notices present. The player was not launched.')
     elif not args.self_test:
         parser.error('Supply --archive or --self-test')
