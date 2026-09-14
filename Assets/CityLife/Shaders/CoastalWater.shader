@@ -82,7 +82,10 @@ Shader "CityLife/CoastalWater"
                 UNITY_TRANSFER_INSTANCE_ID(input,o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 float3 p = TransformObjectToWorld(input.positionOS.xyz);
-                float strength = lerp(.42,1,SeaBlend(p.z)) * saturate(_WaveStrength);
+                // The open-sea mesh becomes coarse beyond the playable bathymetry. Keep its
+                // vertex displacement below a pixel at distance; detailed motion remains in
+                // the fragment normal instead of aliasing into broad radial bands.
+                float strength = lerp(.42,.18,SeaBlend(p.z)) * saturate(_WaveStrength);
                 p.y += dot(sin(WavePhase(p.xz)),float3(.045,.034,.032)) * strength;
                 o.positionWS = p;
                 o.positionCS = TransformWorldToHClip(p);
@@ -122,7 +125,7 @@ Shader "CityLife/CoastalWater"
                 // The authored bathymetry ends at z=900 while the visual ocean continues.
                 // Fade measured estuary depth into the open-sea fallback before that boundary,
                 // avoiding a hard horizontal colour/transmission seam at the mesh join.
-                depth = lerp(depth,25,smoothstep(520,1040,input.positionWS.z));
+                depth = lerp(depth,25,smoothstep(520,880,input.positionWS.z));
                 return depth;
             }
 
@@ -148,7 +151,7 @@ Shader "CityLife/CoastalWater"
                     half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.62,.15,.045));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
-                    float transmission = .90*exp(-depth*.10);
+                    float transmission = .90*exp(-depth*.10)*(1-smoothstep(520,880,input.positionWS.z));
                     water = lerp(water,transmittedBed,transmission);
                 }
 
