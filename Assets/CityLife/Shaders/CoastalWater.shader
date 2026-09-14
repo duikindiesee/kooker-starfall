@@ -161,11 +161,20 @@ Shader "CityLife/CoastalWater"
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
                 // Sample the real probe captured from the canyon/sky/celestial scene. A small
                 // navy baseline remains only when a platform returns an empty probe.
-                half3 environment=GlossyEnvironmentReflection(reflect(-view,normalWS),input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
+                half3 reflectionDirection=reflect(-view,normalWS);
+                half3 environment=GlossyEnvironmentReflection(reflectionDirection,input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
+                // The probe supplies off-screen context. A bounded screen-space ray endpoint
+                // adds the actual visible canyon/sky/giant colour without reflecting the
+                // transparent water itself (the URP opaque texture is sampled here).
+                float4 reflectionCS=TransformWorldToHClip(input.positionWS+reflectionDirection*85);
+                float2 reflectionUV=GetNormalizedScreenSpaceUV(reflectionCS);
+                float reflectionOnScreen=step(.001,reflectionCS.w)*step(0,reflectionUV.x)*step(reflectionUV.x,1)*step(0,reflectionUV.y)*step(reflectionUV.y,1);
+                half3 screenEnvironment=SampleSceneColor(saturate(reflectionUV));
+                environment=lerp(environment,screenEnvironment,reflectionOnScreen*.68);
                 environment=max(environment,_SkyReflection.rgb*.18);
                 // Water reflects a small amount even head-on and grows strongly toward
                 // grazing angles; this avoids hiding a valid probe behind a zero-Fresnel floor.
-                float reflectionWeight=.08+fresnel*.54;
+                float reflectionWeight=.03+fresnel*.62;
                 water = lerp(water,environment,reflectionWeight);
                 Light sun = GetMainLight();
                 float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);

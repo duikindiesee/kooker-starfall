@@ -13,6 +13,8 @@ namespace CityLife.World.Editor
         private static GameObject coast;
         private static GameObject coastalTerrain;
         private static GameObject coastalWater;
+        private static ReflectionProbe coastalReflectionProbe;
+        private static int coastalReflectionRenderId=-1;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
@@ -31,13 +33,15 @@ namespace CityLife.World.Editor
                 subjects.Add(new Subject{Root=rocks,Kind="coastal-rocks-and-succulents"});
                 subjects.Add(new Subject{Root=water,Kind="coastal-water-surface"});
                 BuildCoastalGalaxy();
-                foreach(ReflectionProbe probe in coast.GetComponentsInChildren<ReflectionProbe>()) probe.RenderProbe();
+                coastalReflectionProbe=coast.GetComponentInChildren<ReflectionProbe>();
+                if(coastalReflectionProbe!=null) coastalReflectionRenderId=coastalReflectionProbe.RenderProbe();
                 File.WriteAllText(Path.Combine(outputDirectory,"coastal-definition.json"),JsonUtility.ToJson(new CoastalDefinition(),true));
                 VerifyCoastalCollision(terrain,rocks);
             }
             coast.SetActive(true);
             if(coastalTerrain==null)coastalTerrain=GameObject.Find("Coastal terrain "+CoastalTerrain.DefinitionId+" seed "+CoastalTerrain.Seed);
             if(coastalWater==null)coastalWater=GameObject.Find("Coastal water - luminous river and sea");
+            if(coastalReflectionProbe==null)coastalReflectionProbe=coast.GetComponentInChildren<ReflectionProbe>();
             camera.GetComponent<UniversalAdditionalCameraData>().requiresDepthTexture=true;
             camera.GetComponent<UniversalAdditionalCameraData>().requiresColorTexture=true;
             camera.farClipPlane=1500;
@@ -50,12 +54,12 @@ namespace CityLife.World.Editor
             public string terrainSourceSha256=IslandDefinition.Hash(File.ReadAllBytes("Assets/CityLife/Scripts/CoastalTerrain.cs"));
             public string rockSourceSha256=IslandDefinition.Hash(File.ReadAllBytes("Assets/CityLife/Scripts/CoastalRocks.cs"));
             public string waterSourceSha256=IslandDefinition.Hash(File.ReadAllBytes("Assets/CityLife/Scripts/CoastalWater.cs"));
-            public string reference="User attachments 02/03/06 provisional; exact requested frame pending";
-            public Vector3 minimum=new Vector3(-90,-18,-55),maximum=new Vector3(90,30,145);
+            public string reference="evidence/references/opening-world-approved-panorama-20260914.png; approved-water-shelves-20260914.png; approved-underwater-light-20260914.png; approved-tree-bank-detail-20260914.png; approved-rocky-foothill-planting-20260914.png";
+            public Vector3 minimum=new Vector3(CoastalTerrain.MinX,-18,CoastalTerrain.MinZ),maximum=new Vector3(CoastalTerrain.MaxX,170,CoastalTerrain.MaxZ);
             public float waterLevelMetres=-2;
             public Vector3 sideCameraPosition=new Vector3(21,4.6f,-25),sideCameraTarget=new Vector3(0,3.4f,14);
             public float fieldOfView=52;
-            public string visualOcean="Additional surface x[-960,960],z[145,1015], visual only; outside active terrain/collision slice";
+            public string visualOcean="Additional surface x[-1800,1800],z[900,2200], visual only; outside active terrain/collision slice";
             public string acceptance="Actual Unity composition and scene collider probes; no exact reference match, swimming or native coastal player acceptance";
         }
 
@@ -103,8 +107,34 @@ namespace CityLife.World.Editor
             new Shot{Id="03-rocky-tree-bank",Purpose="Fixed gameplay-distance rock bank, grounding and secondary succulent surface view; collision geometry exists but native input not yet verified.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(13,1.9f,-12),new Vector3(2,-.4f,-3))},
             new Shot{Id="04-canyon-opening",Purpose="Fixed overview of layered canyon banks, river continuity and opening to sea. Element critique separate from combined scene.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(-17,10,5),new Vector3(11,6,46))},
             new Shot{Id="05-shallow-bed-only-diagnostic",Purpose="Diagnostic actual opaque bed, shelves and planted geometry with only the water renderer disabled. Not a playable-water appearance or acceptance image.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(false);}},
-            new Shot{Id="06-shallow-water-matched-diagnostic",Purpose="Exact camera matched to 05 with the authored water restored; establishes what the surface hides or transmits before further visual work.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(true);}}
+            new Shot{Id="06-shallow-water-matched-diagnostic",Purpose="Exact camera matched to 05 with the authored water restored; establishes what the surface hides or transmits before further visual work.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(true);}},
+            new Shot{Id="07-reflection-probe-off-diagnostic",Purpose="Matched grazing-angle water view with the authored reflection probe disabled. Diagnostic only.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(10,-.1f,13),new Vector3(-2,-1,64));coastalReflectionProbe.enabled=false;}},
+            new Shot{Id="08-reflection-probe-on-diagnostic",Purpose="Exact camera matched to 07 with the actual realtime canyon/sky probe enabled and explicitly rendered. Diagnostic only.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(10,-.1f,13),new Vector3(-2,-1,64));coastalReflectionProbe.enabled=true;coastalReflectionRenderId=coastalReflectionProbe.RenderProbe();}}
         };
+
+        private static void WriteCoastalReflectionRecord()
+        {
+            Texture texture=coastalReflectionProbe==null?null:coastalReflectionProbe.texture;
+            var record=new CoastalReflectionRecord{
+                renderId=coastalReflectionRenderId,
+                finished=coastalReflectionRenderId>=0&&ReflectionProbe.IsFinishedRendering(coastalReflectionRenderId),
+                textureAssigned=texture!=null,
+                textureName=texture==null?"":texture.name,
+                textureWidth=texture==null?0:texture.width,
+                textureHeight=texture==null?0:texture.height
+            };
+            record.status=record.finished&&record.textureAssigned?"PROBE_RENDER_COMPLETED":"PROBE_RENDER_UNPROVEN";
+            File.WriteAllText(Path.Combine(outputDirectory,"coastal-reflection-probe.json"),JsonUtility.ToJson(record,true));
+        }
+
+        [Serializable]private sealed class CoastalReflectionRecord
+        {
+            public string status;
+            public int renderId,textureWidth,textureHeight;
+            public bool finished,textureAssigned;
+            public string textureName;
+            public string scope="Realtime reflection probe render completion/texture assignment plus exact probe-off/on screen comparison. Does not claim physically accurate planar reflection or dynamic weather refresh.";
+        }
 
         private static void BuildCoastalGalaxy()
         {

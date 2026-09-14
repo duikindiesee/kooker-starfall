@@ -18,5 +18,7 @@ if(-not $child.WaitForExit($TimeoutSeconds*1000)){Stop-Process -Id $child.Id -Fo
 $child.Refresh()
 if($child.ExitCode -ne 0){throw "Coastal render failed; preserve evidence and inspect $log"}
 $metrics=Get-Content -LiteralPath (Join-Path $output 'metrics.json') -Raw | ConvertFrom-Json
-if(-not $metrics.technicalChecksPassed -or $metrics.mode -ne 'starfall-coastal-slice-first-composition' -or @($metrics.captures).Count -ne 6){throw 'Six technically valid coastal frames, including the matched shallow-bed diagnostic pair, were not produced.'}
-[pscustomobject]@{status='Six actual Unity coastal views, including a matched bed-only/water-on diagnostic pair; visual review pending';evidence=$output;log=$log;reference='Provisional user concepts; no exact match claim'} | ConvertTo-Json
+if(-not $metrics.technicalChecksPassed -or $metrics.mode -ne 'starfall-coastal-slice-first-composition' -or @($metrics.captures).Count -ne 8){throw 'Eight technically valid coastal frames, including matched shallow-bed and probe diagnostics, were not produced.'}
+$probe=Get-Content -LiteralPath (Join-Path $output 'coastal-reflection-probe.json') -Raw | ConvertFrom-Json
+if($probe.status -ne 'PROBE_RENDER_COMPLETED'){throw 'The actual reflection probe did not complete and assign a texture during the evidence run.'}
+[pscustomobject]@{status='Eight actual Unity coastal views, including matched bed-only/water-on and probe-off/on diagnostics; visual review pending';evidence=$output;log=$log;reflectionProbe=$probe.status;reference='User-approved references; no exact match claim'} | ConvertTo-Json
