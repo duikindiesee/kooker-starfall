@@ -11,6 +11,11 @@ namespace Starfall.Food
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
         bool acceptanceAccess;
+        void Awake() { EnsureModel(); }
+        void EnsureModel()
+        {
+            if (Model == null) Model = new FoodModel(NpcTerrainNavigation.RegionId, Generation, 4242);
+        }
 
         public void Attach(Transform actor, Transform worldRoot, string worldId)
         {
@@ -42,6 +47,7 @@ namespace Starfall.Food
         }
         public bool RunAcceptanceSequence(out string evidence)
         {
+            EnsureModel();
             int request = 1; acceptanceAccess = true;
             try
             {
@@ -55,6 +61,6 @@ namespace Starfall.Food
             }
             finally { acceptanceAccess = false; }
         }
-        void FixedUpdate() { if (Model != null) { Model.State.actorPosition = Actor.position; Model.FixedStep(false); } }
+        void FixedUpdate() { EnsureModel(); if (Actor != null) { Model.State.actorPosition = Actor.position; Model.FixedStep(false); } }
     }
 }

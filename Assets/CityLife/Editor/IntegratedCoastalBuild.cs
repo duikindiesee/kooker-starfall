@@ -108,11 +108,15 @@ namespace CityLife.World.Editor
             RefugeBuild.Attach(camera, ground);
             var refugeRuntime = camera.GetComponent<Starfall.Refuge.RefugeRuntime>();
             var fixtureBody = GameObject.Find("Refuge player capsule");
-            if (refugeRuntime == null || fixtureBody == null) throw new InvalidOperationException("Verified First Refuge attachment failed.");
+            var authoredRefuge = GameObject.Find("First refuge / authored v1");
+            if (refugeRuntime == null || fixtureBody == null || authoredRefuge == null) throw new InvalidOperationException("Verified First Refuge attachment failed.");
+            var refugeDelta = new Vector3(-28, 0, 24);
+            authoredRefuge.transform.position += refugeDelta;
+            refugeRuntime.Hearth += refugeDelta; refugeRuntime.Bed += refugeDelta; refugeRuntime.Storage += refugeDelta;
             refugeRuntime.Body = actor.Capsule; refugeRuntime.IntegratedMode = true;
             Object.DestroyImmediate(fixtureBody);
             actor.Place(brain.SpawnPosition); actor.View.Follow();
-            var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = new Vector3(-7, .65f, 0);
+            var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = refugeRuntime.Hearth;
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
             place.Kind = NpcObjectKind.Place; place.Approach = refuge.transform;
