@@ -39,6 +39,22 @@ namespace CityLife.World
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
             File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
         }
+        private IEnumerator CaptureWorld(string name)
+        {
+            // ScreenCapture is black for deliberately hidden acceptance players.
+            // Render the actual world camera explicitly so visual evidence remains
+            // inspectable without foregrounding over the user's running game.
+            yield return new WaitForEndOfFrame();
+            var camera = Controls.View.GetComponent<Camera>();
+            var target = new RenderTexture(1600, 900, 24, RenderTextureFormat.ARGB32);
+            var priorTarget = camera.targetTexture; var priorActive = RenderTexture.active;
+            camera.targetTexture = target; RenderTexture.active = target; camera.Render();
+            var texture = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
+            texture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0); texture.Apply();
+            camera.targetTexture = priorTarget; RenderTexture.active = priorActive;
+            File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG());
+            Destroy(texture); target.Release(); Destroy(target); report.captures.Add(name + ".png");
+        }
         private void CaptureNow(string name)
         {
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
@@ -90,13 +106,13 @@ namespace CityLife.World
             Controls.View.ExternalView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
                 Quaternion.LookRotation(new Vector3(0, 42, 500) - new Vector3(-250, 170, -360)));
-            yield return Capture("01b-spacious-canyon-vista");
+            yield return CaptureWorld("01b-spacious-canyon-vista");
             if (Food != null)
             {
                 var berryView = Food.BerryPosition + new Vector3(5, 2.6f, -6);
                 Controls.View.transform.SetPositionAndRotation(berryView,
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
-                yield return Capture("01c-readable-berry-bush");
+                yield return CaptureWorld("01c-readable-berry-bush");
             }
             Controls.View.ExternalView = false; Brain.Actor.View.Follow();
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
@@ -177,7 +193,7 @@ namespace CityLife.World
             var refugeObject = GameObject.Find("First refuge / authored v1");
             var refugeCentre = refugeObject == null ? Vector3.zero : refugeObject.transform.position + new Vector3(-10,2.2f,0);
             Controls.View.transform.position = refugeCentre + new Vector3(14,3,-9); Controls.View.transform.LookAt(refugeCentre);
-            yield return Capture("07-refuge-entry");
+            yield return CaptureWorld("07-refuge-entry");
             var refugeOutside = refugeCentre + new Vector3(18, 0, 0);
             var refugeRamp = refugeCentre + new Vector3(8, 0, 0);
             var refugeRoute = Brain.TerrainNavigation == null ? null : Brain.TerrainNavigation.Plan(refugeOutside, refugeRamp);
