@@ -8,6 +8,22 @@ Reference: `evidence/references/opening-world-approved-panorama-20260914.png`.
 Preserve the spacious canyon-to-sea gameplay layout; match the reference's visual
 language rather than flattening the world into a non-playable backdrop.
 
+## Independent round-148 matched diagnostic
+
+The retained `05-shallow-bed-only-diagnostic` and
+`06-shallow-water-matched-diagnostic` PNGs expose two separate deficiencies.
+With the surface hidden, the bed is mostly a sand sheet with isolated low-poly
+slabs and flowering spikes; it lacks the reference's fractured shelves, pebble
+variation and low aquatic clusters. With water restored, rock colour and shading
+flatten further into cyan, and a luminous shoreline outlines the flat surface.
+The large loop pattern already exists on the bed, so it is not solely a water
+surface artifact. These are diagnostic Unity renders, not runtime acceptance.
+
+Next change should add meaningful substrate geometry and clustered underwater
+dressing, then re-evaluate transmission using the same camera. Keep decorative
+colliders absent and verify the full delivery cycle after scene changes. This
+comparison does not raise the world to the 7.3/10 visual threshold.
+
 ## Independent round-142 follow-up
 
 Completed manifest at `ed3045a` and the matching water-to-sea PNG were inspected.
