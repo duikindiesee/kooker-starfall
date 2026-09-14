@@ -152,7 +152,11 @@ Shader "CityLife/CoastalWater"
                     // Preserve actual submerged rock/plant colour while water absorbs
                     // red fastest and blue slowest. One transmission path avoids both
                     // muddy double blending and monochrome cyan silhouettes.
-                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.62,.15,.045));
+                    // The retained main-camera diagnostic proves this source is the correctly
+                    // lit warm sandy bed. Estuary water is optically clear at these 2-5m depths;
+                    // use restrained wavelength absorption so red is reduced first without
+                    // converting the real bed into an opaque green silhouette.
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.16,.07,.025));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
                     water = lerp(water,transmittedBed,transmission);
