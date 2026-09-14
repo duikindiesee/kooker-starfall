@@ -38,12 +38,15 @@ Shader "CityLife/CoastalRocks"
             }
             float CausticNetwork(float2 p,float t)
             {
+                p*=.62;
                 float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
                 float a=sin((p.x+warp.x)*1.73+t*1.13),b=sin((p.y+warp.y)*2.07-t*.91);
                 float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
                 float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
-                float aa=max(.035,fwidth(field)*1.35);
-                return 1-smoothstep(aa,aa*3.2,field);
+                float pixelAA=max(.008,fwidth(field)*.55);
+                float line=1-smoothstep(.026-pixelAA,.026+pixelAA,field);
+                float patch=smoothstep(.46,.73,Noise(float3(p.x*.16,t*.045,p.y*.16)+83));
+                return line*lerp(.12,1,patch);
             }
             float Surface(float3 p)
             {
@@ -68,7 +71,7 @@ Shader "CityLife/CoastalRocks"
                 {
                     albedo=i.color.rgb*(.96+.08*Noise(p*36));smoothness=.30;
                     float submerged=1-smoothstep(-2.16,-2.03,p.y);
-                    albedo+=float3(.08,.25,.24)*CausticNetwork(p.xz,_Time.y)*submerged;
+                    albedo+=float3(.03,.11,.105)*CausticNetwork(p.xz,_Time.y)*submerged*exp(-max(0,-2-p.y)*.30);
                 }
                 else
                 {
@@ -87,7 +90,7 @@ Shader "CityLife/CoastalRocks"
                     albedo*=lerp(float3(1,1,1),float3(.48,.64,.67),wet*.85);
                     // Coherent animated underwater caustics affect submerged stone only.
                     float causticSubmerged=1-smoothstep(-2.16,-2.03,p.y);
-                    albedo+=float3(.10,.29,.28)*CausticNetwork(p.xz,_Time.y)*causticSubmerged;
+                    albedo+=float3(.04,.13,.12)*CausticNetwork(p.xz,_Time.y)*causticSubmerged*exp(-max(0,-2-p.y)*.30);
                     smoothness=lerp(.12,.31,wet);
                     float h=Surface(p);
                     float3 dx=ddx(p),dy=ddy(p),r1=cross(dy,n),r2=cross(n,dx);

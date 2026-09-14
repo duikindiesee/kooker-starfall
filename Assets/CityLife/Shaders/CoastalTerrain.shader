@@ -44,13 +44,16 @@ Shader "CityLife/CoastalTerrain"
             }
             float CausticNetwork(float2 p,float t)
             {
+                p*=.62;
                 float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
                 float a=sin((p.x+warp.x)*1.73+t*1.13);
                 float b=sin((p.y+warp.y)*2.07-t*.91);
                 float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
                 float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
-                float aa=max(.035,fwidth(field)*1.35);
-                return 1-smoothstep(aa,aa*3.2,field);
+                float pixelAA=max(.008,fwidth(field)*.55);
+                float line=1-smoothstep(.026-pixelAA,.026+pixelAA,field);
+                float patch=smoothstep(.46,.73,Noise(float3(p.x*.16,t*.045,p.y*.16)+83));
+                return line*lerp(.12,1,patch);
             }
             Varyings Vert(Attributes input)
             {
@@ -93,7 +96,8 @@ Shader "CityLife/CoastalTerrain"
                 // cutoff stays below the authored wave trough, so dry sand cannot glow.
                 float submerged=1-smoothstep(_SeaLevel-.16,_SeaLevel-.03,p.y);
                 float causticLines=CausticNetwork(p.xz,_Time.y);
-                albedo+=float3(.11,.28,.27)*causticLines*submerged;
+                float opticalDepth=max(0,_SeaLevel-p.y);
+                albedo+=float3(.035,.12,.115)*causticLines*submerged*exp(-opticalDepth*.30);
                 // Centimetre-scale weathering relief affects light, not the collider.
                 float relief=((weather-.5)*.028+(grain-.5)*.004-cracks*.017)*cliff;
                 float3 dpdx=ddx(p),dpdy=ddy(p),r1=cross(dpdy,n),r2=cross(n,dpdx);

@@ -137,7 +137,7 @@ Shader "CityLife/CoastalWater"
                     // red fastest and blue slowest. One transmission path avoids both
                     // muddy double blending and monochrome cyan silhouettes.
                     half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.34,.105,.045));
-                    float transmission = .96*exp(-depth*.105);
+                    float transmission = .84*exp(-depth*.14);
                     water = lerp(water,transmittedBed,transmission);
                 }
 

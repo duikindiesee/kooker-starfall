@@ -131,14 +131,14 @@ namespace CityLife.World
             yield return CaptureWorld("01b-spacious-canyon-vista");
             if (Food != null)
             {
-                var berryView = Food.BerryPosition + new Vector3(-7, 2.6f, -6);
-                berryView.y = Mathf.Max(berryView.y, CoastalTerrain.Height(berryView.x, berryView.z) + 1.85f);
+                var berryView = Food.BerryPosition + new Vector3(-3.2f, 1.45f, -2.8f);
+                berryView.y = Mathf.Max(berryView.y, CoastalTerrain.Height(berryView.x, berryView.z) + 1.25f);
                 bool berryVisible = !Physics.Linecast(berryView, Food.BerryPosition + Vector3.up * 1.1f,
                     (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
                 CheckThat("berry-bush-camera-line-of-sight", berryVisible,
                     "camera=" + berryView + "; bush=" + Food.BerryPosition + "; authored terrain/rocks do not occlude the evidence view");
                 Controls.View.transform.SetPositionAndRotation(berryView,
-                    Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
+                    Quaternion.LookRotation(Food.BerryPosition + Vector3.up*.42f - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
             }
             var shallowCamera=new Vector3(-11,3.2f,20); var shallowTarget=new Vector3(-2,-2.25f,34);
