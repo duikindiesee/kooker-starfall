@@ -1,0 +1,85 @@
+{
+  "foreign_scope": {
+    "foreign_actor_query_status": 400,
+    "foreign_world_query_status": 400,
+    "unknown_capability_status": 401
+  },
+  "ledger": {
+    "checkpoint": {
+      "events": 4,
+      "head": "c6936234053ff0c4fd40228c770789fc8778cebf2fea8b6d08909d41bc572a61"
+    },
+    "database_sha256": "058beb0eff4d2c4cd85f6c5172615b3dfdfa12da55cfe9e9f78ac60c7526d269",
+    "events": [
+      {
+        "actor": "inhabitant-01",
+        "chain_hash": "21127ae89eb4abc52e94248d886109e600f371e9e6d08a7e4eb3fa14547eee22",
+        "event_id": "aa74621452877c0a2f439d8530b297b0682afc93a81647f783663e46b35e4131",
+        "id": 1,
+        "kind": "identity_registered",
+        "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "session_pseudonym": "adc51652047f4892",
+        "tick": 2
+      },
+      {
+        "actor": "inhabitant-01",
+        "chain_hash": "1e23cc5c3ce071c64228bcd24305bbe270c7992ada105cdd49b222bda53de814",
+        "event_id": "8bcb33b2f6a6a443927fa0cb6b826798a17590a6a296c1fec36f4d1be4629f8d",
+        "id": 2,
+        "kind": "action_completed",
+        "previous_hash": "21127ae89eb4abc52e94248d886109e600f371e9e6d08a7e4eb3fa14547eee22",
+        "sequence": 2,
+        "session_pseudonym": "adc51652047f4892",
+        "tick": 218
+      },
+      {
+        "actor": "inhabitant-01",
+        "chain_hash": "a4cfa229be1155173228ce65ec72cffc9fbf95a5e69f3380d56fda1c8cb817be",
+        "event_id": "d829a6a276cbb89385b50e9688f6ea7daaf7510df88ce38b52b063b02c0a17b5",
+        "id": 3,
+        "kind": "action_completed",
+        "previous_hash": "1e23cc5c3ce071c64228bcd24305bbe270c7992ada105cdd49b222bda53de814",
+        "sequence": 3,
+        "session_pseudonym": "adc51652047f4892",
+        "tick": 525
+      },
+      {
+        "actor": "inhabitant-01",
+        "chain_hash": "c6936234053ff0c4fd40228c770789fc8778cebf2fea8b6d08909d41bc572a61",
+        "event_id": "0f67f9a0b3c02e461815c5f8e65d4ba89c40dbe94993c9789f109890834243a9",
+        "id": 4,
+        "kind": "action_completed",
+        "previous_hash": "a4cfa229be1155173228ce65ec72cffc9fbf95a5e69f3380d56fda1c8cb817be",
+        "sequence": 4,
+        "session_pseudonym": "adc51652047f4892",
+        "tick": 804
+      }
+    ]
+  },
+  "ledger_scope_status": "PASS",
+  "model_provenance": {
+    "reason": "normal runtime retained no raw request/response, finish_reason, or inventory receipt",
+    "status": "unavailable"
+  },
+  "model_provenance_status": "UNAVAILABLE",
+  "provenance": {
+    "build_id": "KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207",
+    "build_manifest_sha256": "a75ac71aaa7f07aeaa819b4fb39d7544b5e32224122660f546277b0ea473884a",
+    "executable_sha256": "A4C71B1BFC3E42D02F2F129FE04ADEF3EBF2343A662884E4B99598E9DFC90E7D",
+    "process_receipt_sha256": "7d71f513a233fe2d515fd11c5de0de19aeb348c5cd91d70c0e19b88d7d41972c",
+    "run_evidence_sha256": "7b4381cfe6e6084c39e69d38bafec0c30e7766b26c18b1c7b7c54df09ec08bf7",
+    "source_commit": "ccceeaf20fd1508fb25e0cb2211d353b2aa3838d"
+  },
+  "restart": {
+    "previous_snapshot": true,
+    "prior_chain_is_exact_prefix": true
+  },
+  "schema": "starfall.normal-memory.audit.v1",
+  "scope": {
+    "inhabitant_id": "inhabitant-01",
+    "store_pseudonym": "3deae0009e2e9c6b",
+    "world_id": "starfall.integrated-coastal.v1"
+  },
+  "secrets_retained": false
+}

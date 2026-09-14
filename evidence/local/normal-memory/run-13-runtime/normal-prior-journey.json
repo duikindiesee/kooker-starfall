@@ -1,0 +1,16 @@
+{
+    "status": "PRIOR_JOURNEY_RECALLED",
+    "world": "starfall.integrated-coastal.v1",
+    "inhabitant": "inhabitant-01",
+    "build": "KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207",
+    "item": "",
+    "destination": "",
+    "thought": "",
+    "model": "",
+    "milliseconds": 0,
+    "deliveries": 0,
+    "tick": 9,
+    "normalPlay": true,
+    "persisted": true,
+    "admitted": false
+}

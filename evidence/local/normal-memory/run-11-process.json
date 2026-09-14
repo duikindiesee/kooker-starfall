@@ -1,0 +1,17 @@
+{
+  "schema": "starfall.normal-process-observation.v1",
+  "observedUtc": "2026-09-14T18:53:54.7611905Z",
+  "processId": 12964,
+  "createdUtc": "2026-09-14T18:53:40.4289150Z",
+  "build": "KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207",
+  "executableSha256": "A4C71B1BFC3E42D02F2F129FE04ADEF3EBF2343A662884E4B99598E9DFC90E7D",
+  "flags": {
+    "npcLivingMemoryRuntime": true,
+    "integratedSmoke": false,
+    "npcSmoke": false,
+    "npcRealProbe": false,
+    "npcLivingMemoryEvidence": true
+  },
+  "normalFlagsVerified": true,
+  "boundary": "Live OS process observation only; does not prove gameplay, model origin or persistence. Raw arguments, capabilities and private paths are excluded."
+}

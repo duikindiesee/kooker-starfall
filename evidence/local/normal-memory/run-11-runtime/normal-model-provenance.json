@@ -1,0 +1,9 @@
+{
+    "model": "google/gemma-4-e4b",
+    "finish_reason": "stop",
+    "request_sha256": "36d9f8008e625419a5e9440eef4817c1460657668e35bd771746f61b0cce79a4",
+    "response_sha256": "d9120dd7bf68a091506d95d5d88bfeb9abb1eb2cd6d5b36ddfd45c2bec02d00f",
+    "inventory_sha256": "0754ca4829177b118482e166e644ed9f0302dae658c9afe6571400abd795ff95",
+    "device": "not asserted by player",
+    "provider": "LM Studio loopback"
+}

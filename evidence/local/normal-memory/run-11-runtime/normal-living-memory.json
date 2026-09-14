@@ -1,0 +1,16 @@
+{
+    "status": "PASS",
+    "world": "starfall.integrated-coastal.v1",
+    "inhabitant": "inhabitant-01",
+    "build": "KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207",
+    "item": "amber",
+    "destination": "depot-west",
+    "thought": "Delivered amber",
+    "model": "google/gemma-4-e4b",
+    "milliseconds": 534,
+    "deliveries": 1,
+    "tick": 554,
+    "normalPlay": true,
+    "persisted": true,
+    "admitted": true
+}
