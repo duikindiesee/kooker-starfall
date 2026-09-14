@@ -117,7 +117,7 @@ namespace CityLife.World.Editor
             Texture texture=coastalReflectionProbe==null?null:coastalReflectionProbe.texture;
             var record=new CoastalReflectionRecord{
                 renderId=coastalReflectionRenderId,
-                finished=coastalReflectionRenderId>=0&&ReflectionProbe.IsFinishedRendering(coastalReflectionRenderId),
+                finished=coastalReflectionProbe!=null&&coastalReflectionRenderId>=0&&coastalReflectionProbe.IsFinishedRendering(coastalReflectionRenderId),
                 textureAssigned=texture!=null,
                 textureName=texture==null?"":texture.name,
                 textureWidth=texture==null?0:texture.width,
