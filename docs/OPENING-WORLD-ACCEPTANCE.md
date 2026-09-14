@@ -40,6 +40,29 @@ without smoke flags, forced resets, test inputs or automatic quitting and prove:
 Independent review raised final-state admission and normal-reload recall gaps;
 these remain pending correction and compiled-player proof.
 
+### Normal-play evidence observed after hardening
+
+The above source gaps were addressed by `a76f9d2` and subsequent integration.
+Root independently inspected these actual-player artifacts on 2026-09-14:
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Normal delivery produces visible model response | Observed in candidate ending `165313` | `evidence/local/normal-memory/run-03/normal-living-memory.json` and matching PNG: normalPlay, persisted and admitted true; Delivered Amber; 1041 ms | Retain launcher/raw response provenance and repeat on final release |
+| Subsequent normal launch recalls prior journey | Visible scoped recall observed | `evidence/local/normal-memory/run-04/normal-prior-journey.json` and PNG: prior hidden-green delivery at tick 1082 displayed at new tick 15 | Independent foreign-scope/reload receipt audit; not full world save/load |
+| HUD clearly distinguishes planner and memory reflection | Not yet accepted | Both screenshots still show Local thoughts off while memory is displayed | Clarify labels and retest final UI |
+
+These observations replace the earlier assertion that no normal-play evidence
+exists, but do not certify all release gates or the final visual requirement.
+
+Independent read-only audit found normal run-03/04 **visually persuasive, not
+audit-complete**. Their reports omit independently retained launch flags,
+executable hash, raw model response/finish reason, event-ID and restart checkpoint
+correlation, and foreign-world/actor rejection receipts. The recorded build also
+predates the one-thought-per-session/fallback-evidence refinement. The next normal
+run must retain these sanitized records with a hash catalogue, demonstrate reuse
+of the same private store, and exercise unavailable-model fallback. Never publish
+the private database or capability configuration to supply this evidence.
+
 Run `python tools/check-visual-evidence.py <runtime-directory> --require 02-complete-autonomy-cycle.png --require 04-paused-options.png --require 07-refuge-entry.png` before using screenshots in a receipt. This detects missing or blank captures, not correct content. Inspect every claimed view manually and retain failed evidence instead of overwriting it.
 
 Future hunting, construction, complete ecology, planetary geometry and infrastructure expansion are outside this milestone. They must not displace these required opening-world gates.
