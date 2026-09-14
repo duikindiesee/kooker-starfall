@@ -51,17 +51,16 @@ namespace Starfall.Food
         }
         static float MeasureRockClearance(Vector3 position)
         {
-            float best=float.MaxValue;
-            foreach(var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            // Static non-convex mesh colliders support overlap queries but not
+            // Collider.ClosestPoint. Expand a real physics sphere in 25 cm steps
+            // and retain a conservative clearance immediately before first contact.
+            for (float radius = .25f; radius <= 10f; radius += .25f)
             {
-                if (!collider.name.StartsWith("Stratified shore rock")) continue;
-                // Coastal rocks use static non-convex mesh colliders, for which
-                // Collider.ClosestPoint is unsupported. Their world-space bounds
-                // provide a conservative horizontal exclusion distance.
-                Vector3 nearest=collider.bounds.ClosestPoint(position); nearest.y=position.y;
-                best=Mathf.Min(best,Vector3.Distance(position,nearest));
+                foreach (var collider in Physics.OverlapSphere(position + Vector3.up, radius,
+                    1 << 8, QueryTriggerInteraction.Ignore))
+                    if (collider.name.StartsWith("Stratified shore rock")) return radius - .25f;
             }
-            return best==float.MaxValue ? 999f : best;
+            return 10f;
         }
         static Vector3 FindClearBerryPosition()
         {

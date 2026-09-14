@@ -114,7 +114,7 @@ namespace CityLife.World
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
             }
-            Controls.SuppressView = false; Controls.View.ExternalView = false; Brain.Actor.View.Follow();
+            Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
             {
@@ -176,8 +176,9 @@ namespace CityLife.World
             var spectator = Controls.View.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
-            CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed && Vector3.Distance(spectator, Controls.View.transform.position) > 1f,
-                "Same world and NPC; from " + spectator + " to " + Controls.View.transform.position + "; mode=" + Controls.Mode);
+            CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed &&
+                Vector3.Distance(spectator, Controls.SpectatorPosition) > 1f,
+                "Same world and NPC; from " + spectator + " to " + Controls.SpectatorPosition + "; mode=" + Controls.Mode);
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
             lookBefore = Controls.View.transform.rotation;
             InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(-35, 10) }.WithButton(MouseButton.Right)); yield return null;
@@ -197,7 +198,9 @@ namespace CityLife.World
             Controls.View.transform.position = refugeCentre + new Vector3(14,3,-9); Controls.View.transform.LookAt(refugeCentre);
             yield return CaptureWorld("07-refuge-entry");
             var refugeOutside = refugeCentre + new Vector3(18, 0, 0);
+            refugeOutside.y = CoastalTerrain.Height(refugeOutside.x, refugeOutside.z);
             var refugeRamp = refugeCentre + new Vector3(8, 0, 0);
+            refugeRamp.y = CoastalTerrain.Height(refugeRamp.x, refugeRamp.z);
             var refugeRoute = Brain.TerrainNavigation == null ? null : Brain.TerrainNavigation.Plan(refugeOutside, refugeRamp);
             CheckThat("refuge-approach-route", refugeRoute != null,
                 "Navigation route from east-bank shelf to the authored entrance ramp; route=" +
