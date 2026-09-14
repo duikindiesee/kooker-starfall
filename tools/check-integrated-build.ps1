@@ -22,6 +22,9 @@ $content = & (Join-Path $PSScriptRoot 'get-integrated-content-hash.ps1') -BuildD
 if ($launch.buildContentSchema -ne $content.schema -or $launch.buildContentSha256 -ne $content.sha256) {
     throw 'Missing or mismatched full build content fingerprint; executable-only identity is insufficient.'
 }
+if ($launch.buildContentSha256AfterRun -ne $launch.buildContentSha256) {
+    throw 'Missing or mismatched post-run content fingerprint; tested build stability is unproven.'
+}
 if ($runtime.status -ne 'PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING') { throw 'Expected passing automated candidate receipt.' }
 foreach ($name in @('complete-three-object-autonomy-cycle','remembered-action-receipts','forage-decoration-does-not-block-navigation')) {
     $matches = @($runtime.checks | Where-Object { $_.name -eq $name })
