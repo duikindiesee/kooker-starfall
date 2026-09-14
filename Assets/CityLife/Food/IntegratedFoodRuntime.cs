@@ -26,7 +26,7 @@ namespace Starfall.Food
             // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
             // The readable berry site shares the broad activity shelf but stays
             // outside the delivery fixture, rather than hiding in a mesa wall.
-            BerryPosition = new Vector3(138, CoastalTerrain.Height(138, -80), -80);
+            BerryPosition = new Vector3(132, CoastalTerrain.Height(132, -80), -80);
             SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));

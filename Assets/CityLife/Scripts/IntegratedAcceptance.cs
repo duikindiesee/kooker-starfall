@@ -98,13 +98,17 @@ namespace CityLife.World
             catch (Exception exception) { foodEvidence = exception.GetType().Name + ": " + exception.Message; }
             CheckThat("food-model-and-world-targets", foodPassed, foodEvidence);
             float runtimeRockClearance = Food == null ? 0 : Food.MeasureRuntimeRockClearance();
+            bool berryGrounded = Food != null && Physics.Raycast(Food.BerryPosition + Vector3.up * 170,
+                Vector3.down, out RaycastHit berryGroundHit, 300, 1 << 10, QueryTriggerInteraction.Ignore) &&
+                Mathf.Abs(berryGroundHit.point.y - Food.BerryPosition.y) < .08f;
             CheckThat("berry-bush-terrain-and-rock-clearance", Food != null && Food.Berry != null &&
                 Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f &&
-                Food.MinimumRockClearance >= 3f && runtimeRockClearance >= 3f && Food.RockColliderCount == 84,
+                berryGrounded && Food.MinimumRockClearance >= 3f && runtimeRockClearance >= 3f && Food.RockColliderCount == 84,
                 Food == null ? "food adapter missing" : "position=" + Food.BerryPosition + "; terrainDelta=" +
                 Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") +
                 "; bakedClearance=" + Food.MinimumRockClearance.ToString("F2") + "m; runtimeClearance=" +
-                runtimeRockClearance.ToString("F2") + "m; layer8RockColliders=" + Food.RockColliderCount);
+                runtimeRockClearance.ToString("F2") + "m; meshGrounded=" + berryGrounded +
+                "; layer8RockColliders=" + Food.RockColliderCount);
             yield return Capture("01-default-coastal-inhabitant");
             Controls.View.ExternalView = true; Controls.SuppressView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
@@ -112,7 +116,12 @@ namespace CityLife.World
             yield return CaptureWorld("01b-spacious-canyon-vista");
             if (Food != null)
             {
-                var berryView = Food.BerryPosition + new Vector3(5, 2.6f, -6);
+                var berryView = Food.BerryPosition + new Vector3(-7, 2.6f, -6);
+                berryView.y = Mathf.Max(berryView.y, CoastalTerrain.Height(berryView.x, berryView.z) + 1.85f);
+                bool berryVisible = !Physics.Linecast(berryView, Food.BerryPosition + Vector3.up * 1.1f,
+                    (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+                CheckThat("berry-bush-camera-line-of-sight", berryVisible,
+                    "camera=" + berryView + "; bush=" + Food.BerryPosition + "; authored terrain/rocks do not occlude the evidence view");
                 Controls.View.transform.SetPositionAndRotation(berryView,
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
@@ -149,7 +158,7 @@ namespace CityLife.World
             Controls.View.Yaw = 0; yield return null;
             var before = Brain.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return new WaitForEndOfFrame();
             CheckThat("possessed-body-traversal", Brain.Possessed && Vector3.Distance(before, Brain.transform.position) > .3f,
                 "Starting corridor; same CharacterController. From " + before + " to " + Brain.transform.position);
             var lookBefore = Controls.View.transform.rotation;
