@@ -16,6 +16,7 @@ namespace CityLife.World
         private static bool rendering;
         public bool TextureReady => completedRender && reflectionTexture != null && reflectionTexture.IsCreated();
         public int LastRenderedFrame => renderedFrame;
+        public RenderTexture CapturedTexture => TextureReady ? reflectionTexture : null;
 
         private void Awake()
         {

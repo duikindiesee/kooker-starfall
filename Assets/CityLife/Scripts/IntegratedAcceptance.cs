@@ -195,6 +195,14 @@ namespace CityLife.World
                     waterMaterial.SetFloat("_ReflectionStrength",1);
                     yield return new WaitForEndOfFrame();
                     reflectionOn=RenderWorldNow("01h-scene-reflection-on");
+                    if(planarReflection.CapturedTexture!=null)
+                    {
+                        var priorActive=RenderTexture.active; RenderTexture.active=planarReflection.CapturedTexture;
+                        var reflectedPixels=new Texture2D(planarReflection.CapturedTexture.width,planarReflection.CapturedTexture.height,TextureFormat.RGB24,false);
+                        reflectedPixels.ReadPixels(new Rect(0,0,reflectedPixels.width,reflectedPixels.height),0,0); reflectedPixels.Apply();
+                        File.WriteAllBytes(Path.Combine(directory,"01h-planar-reflection-source.png"),reflectedPixels.EncodeToPNG());
+                        Destroy(reflectedPixels); RenderTexture.active=priorActive; report.captures.Add("01h-planar-reflection-source.png");
+                    }
                 }
                 finally { waterMaterial.SetFloat("_ReflectionStrength",priorReflection); Time.timeScale=priorTimeScale; }
             }

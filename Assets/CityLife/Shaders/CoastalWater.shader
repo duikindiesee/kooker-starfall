@@ -122,7 +122,7 @@ Shader "CityLife/CoastalWater"
                 // The authored bathymetry ends at z=900 while the visual ocean continues.
                 // Fade measured estuary depth into the open-sea fallback before that boundary,
                 // avoiding a hard horizontal colour/transmission seam at the mesh join.
-                depth = lerp(depth,25,smoothstep(760,900,input.positionWS.z));
+                depth = lerp(depth,25,smoothstep(520,1040,input.positionWS.z));
                 return depth;
             }
 
@@ -145,10 +145,10 @@ Shader "CityLife/CoastalWater"
                     // Preserve actual submerged rock/plant colour while water absorbs
                     // red fastest and blue slowest. One transmission path avoids both
                     // muddy double blending and monochrome cyan silhouettes.
-                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.34,.105,.045));
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.62,.15,.045));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
-                    float transmission = .96*exp(-depth*.10);
+                    float transmission = .90*exp(-depth*.10);
                     water = lerp(water,transmittedBed,transmission);
                 }
 
