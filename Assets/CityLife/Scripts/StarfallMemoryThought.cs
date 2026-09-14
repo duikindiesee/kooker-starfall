@@ -16,7 +16,8 @@ namespace CityLife.World
         public const int DeadlineMilliseconds = NpcOptionalPlanner.DefaultGameplayTimeoutMilliseconds;
         [Serializable] public sealed class Result
         {
-            public string status = "fallback", rawAnswer, dialogue, reflection, requestJson, eventId, world, actor, model;
+            public string status = "fallback", rawAnswer, dialogue, reflection, requestJson, responseJson, inventoryJson,
+                finishReason, eventId, world, actor, model;
             public long milliseconds, inventoryMilliseconds, completionMilliseconds;
             public bool schemaValid, rawReceived;
             public int completionAttempts;
@@ -42,7 +43,10 @@ namespace CityLife.World
                 ["model"] = model, ["stream"] = false, ["temperature"] = 0, ["max_tokens"] = 8, ["reasoning_effort"] = "none",
                 ["messages"] = new object[] {
                     new Dictionary<string, object> { ["role"] = "system", ["content"] = "Output exactly two plain words and nothing else. First word Delivered. Second word is the delivered item named in verified memory. No quotes, braces, punctuation, explanation, goals, or commands." },
-                    new Dictionary<string, object> { ["role"] = "user", ["content"] = memory.Summary } } });
+                    // Only the item from the already verified delivery enters the
+                    // tiny reflection prompt. World/actor/event bindings remain in
+                    // the trusted closure and are rechecked before display.
+                    new Dictionary<string, object> { ["role"] = "user", ["content"] = "Verified delivery item: " + memory.Item + "." } } });
         }
         public static async Task<Result> Request(StarfallLivingMemoryClient.Evidence memory, string endpoint, string model, CancellationToken cancellation)
         {
@@ -54,18 +58,21 @@ namespace CityLife.World
                 var timer = Stopwatch.StartNew();
                 async Task<string> Work()
                 {
-                    var inventory = StarfallLivingMemoryClient.Map(await StarfallLivingMemoryClient.Send(http, new HttpRequestMessage(HttpMethod.Get, new Uri(origin, "api/v0/models")), local.Token).ConfigureAwait(false));
+                    result.inventoryJson = await StarfallLivingMemoryClient.Send(http, new HttpRequestMessage(HttpMethod.Get, new Uri(origin, "api/v0/models")), local.Token).ConfigureAwait(false);
+                    var inventory = StarfallLivingMemoryClient.Map(result.inventoryJson);
                     result.inventoryMilliseconds = timer.ElapsedMilliseconds;
                     if (!((List<object>)inventory["data"]).Cast<Dictionary<string, object>>().Any(x => (string)x["id"] == model && (string)x["state"] == "loaded")) throw new FormatException("model-not-loaded");
                     local.Token.ThrowIfCancellationRequested();
                     var message = new HttpRequestMessage(HttpMethod.Post, new Uri(origin, "v1/chat/completions")) { Content = new StringContent(result.requestJson, Encoding.UTF8, "application/json") };
                     result.completionAttempts++;
-                    var body = StarfallLivingMemoryClient.Map(await StarfallLivingMemoryClient.Send(http, message, local.Token).ConfigureAwait(false));
+                    result.responseJson = await StarfallLivingMemoryClient.Send(http, message, local.Token).ConfigureAwait(false);
+                    var body = StarfallLivingMemoryClient.Map(result.responseJson);
                     result.completionMilliseconds = timer.ElapsedMilliseconds - result.inventoryMilliseconds;
                     var choices = (List<object>)body["choices"];
                     if (choices.Count != 1) throw new FormatException("single-choice-required");
                     var choice = (Dictionary<string, object>)choices[0];
-                    if ((string)choice["finish_reason"] != "stop") throw new FormatException("incomplete-answer");
+                    result.finishReason = (string)choice["finish_reason"];
+                    if (result.finishReason != "stop") throw new FormatException("incomplete-answer");
                     return (string)((Dictionary<string, object>)choice["message"])["content"];
                 }
                 Task<string> work = null;

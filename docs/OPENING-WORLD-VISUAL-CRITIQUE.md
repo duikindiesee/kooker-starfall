@@ -138,3 +138,18 @@ prove a readable reef bed or fine moving caustics. Broad slab-like rocks, pale
 trunk lighting and noisy cliff lines remain unlike the approved panorama.
 Next evidence must include an eye-level shallow-bed view and moving light on
 submerged surfaces, plus a matched wide composition. The 7.3/10 gate remains open.
+# Runtime 17 direct image review
+
+Independent inspection of `evidence/local/combined/runtime-17/01c-readable-berry-bush.png`
+finds recognizable red fruit, but the leaves still read as glossy repeated
+capsules rather than an organic sourfig-inspired succulent. The plant is small
+in the frame and partly under an oversized flat rock's shadow. This is not a
+visual pass: require tapered fleshy leaf forms, varied grounded growth and a
+clear close-up plus ordinary walking-distance view. Preserve the food identity
+and gathering behavior while changing the mesh/material.
+
+`08-clothing-Sit-1.png` shows covered trousers from the front. This one view does
+not clear the full movement/orbit gate or club grip. The cave furnishings and
+walls still have conspicuously primitive geometry; automated refuge traversal
+is separate from the panorama-quality requirement. No revised numeric score
+is assigned from these two images alone.

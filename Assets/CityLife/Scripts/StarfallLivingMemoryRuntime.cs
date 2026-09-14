@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -29,6 +31,10 @@ namespace CityLife.World
             public long milliseconds;
             public int deliveries, tick;
             public bool normalPlay, persisted, admitted;
+        }
+        [Serializable] private sealed class ModelProvenance
+        {
+            public string model, finish_reason, request_sha256, response_sha256, inventory_sha256, device, provider;
         }
 
         private IEnumerator Start()
@@ -173,6 +179,14 @@ namespace CityLife.World
                 item = memory.Item, destination = memory.Target, thought = thought.reflection, model = thought.model, milliseconds = thought.milliseconds,
                 deliveries = Brain.Actions.Deliveries, tick = Brain.Tick, normalPlay = true, persisted = true, admitted = admitted };
             WriteEvidenceFiles("normal-living-memory", report);
+            if (thought.rawReceived && !string.IsNullOrEmpty(thought.requestJson) && !string.IsNullOrEmpty(thought.responseJson))
+            {
+                var provenance = new ModelProvenance { model = thought.model, finish_reason = thought.finishReason,
+                    request_sha256 = Sha256(thought.requestJson), response_sha256 = Sha256(thought.responseJson),
+                    inventory_sha256 = Sha256(thought.inventoryJson ?? ""), device = "not asserted by player",
+                    provider = "LM Studio loopback" };
+                File.WriteAllText(Path.Combine(evidenceDirectory, "normal-model-provenance.json"), JsonUtility.ToJson(provenance, true));
+            }
         }
         private void WritePriorEvidence(StarfallLivingMemoryClient.Evidence memory)
         {
@@ -195,6 +209,10 @@ namespace CityLife.World
             Destroy(texture); target.Release(); Destroy(target);
         }
         private static string Safe(string value) => string.IsNullOrEmpty(value) ? "unknown error" : value.Length > 120 ? value.Substring(0, 120) : value;
+        private static string Sha256(string value)
+        {
+            using (var sha = SHA256.Create()) return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(value))).Replace("-", "").ToLowerInvariant();
+        }
         private void OnDestroy() { Shutdown(); }
         private void Shutdown()
         {
