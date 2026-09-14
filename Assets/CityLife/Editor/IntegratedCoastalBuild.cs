@@ -10,7 +10,7 @@ namespace CityLife.World.Editor
 {
     public static class IntegratedCoastalBuild
     {
-        public const string Version = "0.0.9-combined.1";
+        public const string Version = "0.0.10-canyon.1";
         public static bool Requested => System.Environment.GetCommandLineArgs().Contains("-starfallIntegrated");
         public static void Run()
         {
@@ -81,8 +81,22 @@ namespace CityLife.World.Editor
             brain.TerrainNavigation = actorObject.AddComponent<NpcTerrainNavigation>();
             brain.Perception.WorldId = brain.InstanceWorldId;
             foreach (var item in brain.Registry) item.WorldId = brain.InstanceWorldId;
+            var activityOffset = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
+            foreach (var item in brain.Registry)
+            {
+                Vector3 original = item.transform.position;
+                float floor = CoastalTerrain.Height(original.x + activityOffset.x, original.z + activityOffset.z);
+                item.transform.position = new Vector3(original.x + activityOffset.x, floor + original.y, original.z + activityOffset.z);
+                if (item.Approach != null)
+                    item.Approach.position = new Vector3(item.Approach.position.x + activityOffset.x, floor, item.Approach.position.z + activityOffset.z);
+                if (item.Socket != null)
+                    item.Socket.position = new Vector3(item.Socket.position.x + activityOffset.x, floor + 1.06f, item.Socket.position.z + activityOffset.z);
+                var plinth = GameObject.Find(item.Kind == NpcObjectKind.Item ? item.StableId + " plinth" : item.StableId);
+                if (plinth != null)
+                    plinth.transform.position = new Vector3(plinth.transform.position.x + activityOffset.x, floor + .43f, plinth.transform.position.z + activityOffset.z);
+            }
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
-            brain.SpawnPosition = new Vector3(-4, .02f, -5); actor.Place(brain.SpawnPosition);
+            brain.SpawnPosition = new Vector3(activityOffset.x - 4, 4.02f, activityOffset.z - 5); actor.Place(brain.SpawnPosition);
             var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);

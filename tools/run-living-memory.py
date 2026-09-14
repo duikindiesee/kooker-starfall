@@ -124,7 +124,7 @@ def main():
                 'HOMEDRIVE', 'HOMEPATH', 'USERNAME', 'USERDOMAIN', 'COMPUTERNAME', 'COMSPEC', 'PATHEXT')}
         player = subprocess.Popen(command, creationflags=flags, env=runtime_env, cwd=ROOT)
         try:
-            exit_code = player.wait(timeout=600 if args.editor else 240)
+            exit_code = player.wait(timeout=600 if args.editor else 420 if args.integrated else 240)
         except subprocess.TimeoutExpired:
             player.kill(); player.wait(); raise RuntimeError('Player watchdog expired')
         health_status, health = call('/v1/health')

@@ -87,6 +87,18 @@ namespace CityLife.World
                 Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f && Food.MinimumRockClearance >= 3f,
                 Food == null ? "food adapter missing" : "terrainDelta=" + Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") + "; rockClearance=" + Food.MinimumRockClearance.ToString("F2") + "m");
             yield return Capture("01-default-coastal-inhabitant");
+            Controls.View.ExternalView = true;
+            Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
+                Quaternion.LookRotation(new Vector3(0, 42, 500) - new Vector3(-250, 170, -360)));
+            yield return Capture("01b-spacious-canyon-vista");
+            if (Food != null)
+            {
+                var berryView = Food.BerryPosition + new Vector3(5, 2.6f, -6);
+                Controls.View.transform.SetPositionAndRotation(berryView,
+                    Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
+                yield return Capture("01c-readable-berry-bush");
+            }
+            Controls.View.ExternalView = false; Brain.Actor.View.Follow();
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
             {
@@ -166,6 +178,12 @@ namespace CityLife.World
             var refugeCentre = refugeObject == null ? Vector3.zero : refugeObject.transform.position + new Vector3(-10,2.2f,0);
             Controls.View.transform.position = refugeCentre + new Vector3(14,3,-9); Controls.View.transform.LookAt(refugeCentre);
             yield return Capture("07-refuge-entry");
+            var refugeOutside = refugeCentre + new Vector3(18, 0, 0);
+            var refugeRamp = refugeCentre + new Vector3(8, 0, 0);
+            var refugeRoute = Brain.TerrainNavigation == null ? null : Brain.TerrainNavigation.Plan(refugeOutside, refugeRamp);
+            CheckThat("refuge-approach-route", refugeRoute != null,
+                "Navigation route from east-bank shelf to the authored entrance ramp; route=" +
+                (refugeRoute == null ? "blocked" : refugeRoute.Count + " points"));
             CheckThat("refuge-discoverable", refugeObject != null && Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place) &&
                 refugeCentre.y > CoastalTerrain.Height(refugeCentre.x,refugeCentre.z),
                 "Authored geometry is above sampled terrain and registered as a non-pickup place; live memory is not connected.");

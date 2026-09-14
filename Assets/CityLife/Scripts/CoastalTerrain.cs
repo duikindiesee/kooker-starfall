@@ -14,6 +14,7 @@ namespace CityLife.World
         public const float SeaLevel = CoastalWater.Level;
         public const int CellsX = 300, CellsZ = 400;
         public const float HeroPadRadius = 8.5f;
+        public static readonly Vector2 ActivityCentre = new Vector2(120, -80);
 
         private static readonly Vector2[] Feed = Curve(new[] {
             new Vector2(-90,-700), new Vector2(-145,-540), new Vector2(-85,-390),
@@ -70,6 +71,10 @@ namespace CityLife.World
             // The shoulder transitions to the carved shore between 8.5 and 13 metres.
             float pad = 1f - Smooth(HeroPadRadius, 13f, radius);
             ground = Mathf.Lerp(ground, 0f, pad);
+            // A second modest, dry terrace separates inhabitant activities from
+            // the hero tree's dense rock bank while remaining part of the terrain.
+            float activityRadius = Vector2.Distance(new Vector2(x, z), ActivityCentre);
+            ground = Mathf.Lerp(ground, 4f, 1f - Smooth(18f, 24f, activityRadius));
             return ground;
         }
 
