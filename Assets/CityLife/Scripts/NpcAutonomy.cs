@@ -171,8 +171,10 @@ namespace CityLife.World
             FailureCount++; LastResult = code;
             Vector3 next = route != null && route.Count > 0 ? route.Peek() : transform.position;
             string contacts = string.Join(",", Physics.OverlapSphere(transform.position + Vector3.up * .65f, .55f,
-                (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore)
-                .Select(collider => collider.name).Distinct().OrderBy(name => name));
+                ~0, QueryTriggerInteraction.Ignore)
+                .Where(collider => !collider.transform.IsChildOf(transform))
+                .Select(collider => collider.name + "[layer=" + collider.gameObject.layer + "]")
+                .Distinct().OrderBy(name => name));
             LastFailureDiagnostic = "code=" + code + "; actor=" + transform.position + "; next=" + next +
                 "; goal=" + GoalId + "; contacts=" + (contacts.Length == 0 ? "none" : contacts);
             if (record) Log.Record(Tick, "failure", DescribePerception(), GoalId, "stop-current-action", code,
