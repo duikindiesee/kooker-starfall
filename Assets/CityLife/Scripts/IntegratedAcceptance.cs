@@ -43,6 +43,10 @@ namespace CityLife.World
             // Render the actual world camera explicitly so visual evidence remains
             // inspectable without foregrounding over the user's running game.
             yield return new WaitForEndOfFrame();
+            RenderWorldNow(name);
+        }
+        private void RenderWorldNow(string name)
+        {
             var camera = Controls.View.GetComponent<Camera>();
             var target = new RenderTexture(1600, 900, 24, RenderTextureFormat.ARGB32);
             var priorTarget = camera.targetTexture; var priorActive = RenderTexture.active;
@@ -55,8 +59,7 @@ namespace CityLife.World
         }
         private void CaptureNow(string name)
         {
-            var texture = ScreenCapture.CaptureScreenshotAsTexture();
-            File.WriteAllBytes(Path.Combine(directory, name + ".png"), texture.EncodeToPNG()); Destroy(texture); report.captures.Add(name + ".png");
+            RenderWorldNow(name);
         }
         private IEnumerator ClickMenuButton(int index)
         {
