@@ -163,9 +163,12 @@ Shader "CityLife/CoastalWater"
                 float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
                 water += half3(.55,.85,.95)*sunStrength*glint*.24;
                 float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
-                float fineCrest = smoothstep(.78,.98,sin(ripple+sin(phase.y)*.65))*rippleFilter;
-                fineCrest *= .5+.5*cos(phase.x-phase.z);
-                water += half3(.40,.92,.94)*(glimmer*.026+fineCrest*.070)*(1-deep*.65);
+                // Crossing narrow wavelets read as moving reflected threads, not the
+                // oversized turquoise polka-dots produced by a thresholded single sine.
+                float crestField=abs(sin(ripple)+.72*sin(phase.x*2.35-phase.z*1.71));
+                float fineCrest=smoothstep(1.46,1.68,crestField)*rippleFilter;
+                fineCrest*=.35+.65*smoothstep(-.25,.75,cos(phase.y*1.63+phase.z));
+                water += half3(.42,.91,.94)*(glimmer*.012+fineCrest*.038)*(1-deep*.65);
 
                 // Thin intermittent contact edge only when depth is measured, never a false
                 // white line generated from the fallback colour gradient.
