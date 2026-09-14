@@ -8,6 +8,17 @@ Reference: `evidence/references/opening-world-approved-panorama-20260914.png`.
 Preserve the spacious canyon-to-sea gameplay layout; match the reference's visual
 language rather than flattening the world into a non-playable backdrop.
 
+## Independent round-142 follow-up
+
+Completed manifest at `ed3045a` and the matching water-to-sea PNG were inspected.
+Sandy modulation is more apparent, but the fundamentals remain unaccepted:
+a broad flat teal plane, oversized faint caustic loops, monochrome polygonal
+shelves and weak bottom ecology/reflection. No evidence supports a 7.3 score.
+Next compare matched bed-only and water-enabled views to separate missing
+substrate geometry/material from transmission failure. Further amplitude-only
+tweaks are insufficient. Retain runtime reliability and advance club validation
+rather than indefinitely polishing one shader.
+
 ## Independent round-139 water checkpoint
 
 Inspected `evidence/milestones/coastal/round-139/2026-09-14-02-water-to-sea.png`
