@@ -173,14 +173,16 @@ namespace CityLife.World
                 int id=1100+mesa*53+fragment;
                 Vector4 m=mesas[mesa];
                 float angle=fragment*(Mathf.PI*2/12)+Lerp(-.16f,.16f,id,301);
-                float radius=Lerp(.76f,1.02f,id,302);
+                // Stay outside the steep mesa body. The first trial used .76-1.02 and
+                // correctly exposed visually floating mid-face boulders in round 165.
+                float radius=Lerp(1.03f,1.16f,id,302);
                 float x=m.x+Mathf.Cos(angle)*m.z*radius;
                 float z=m.y+Mathf.Sin(angle)*m.w*radius;
                 if(Vector2.Distance(new Vector2(x,z),CoastalTerrain.ActivityCentre)<55 || Vector2.Distance(new Vector2(x,z),CoastalTerrain.RefugeCentre)<55) continue;
-                float width=Lerp(5.5f,15.5f,id,303),depth=width*Lerp(.55f,1.18f,id,304),height=Lerp(2.4f,8.5f,id,305);
+                float width=Lerp(4.5f,12.5f,id,303),depth=width*Lerp(.55f,1.18f,id,304),height=Lerp(1.8f,5.8f,id,305);
                 var talus=MeshObject("Distant fractured mesa-foot talus "+mesa+"-"+fragment,
                     RockMesh(width,height,depth,id),material,parent,false);
-                talus.transform.localPosition=new Vector3(x,CoastalTerrain.Height(x,z)-height*.28f,z);
+                talus.transform.localPosition=new Vector3(x,CoastalTerrain.Height(x,z)-height*.40f,z);
                 talus.transform.localRotation=Quaternion.Euler(Lerp(-5,5,id,306),Lerp(-180,180,id,307),Lerp(-4,4,id,308));
             }
         }
