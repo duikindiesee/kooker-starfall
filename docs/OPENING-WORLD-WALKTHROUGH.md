@@ -13,7 +13,7 @@ A roughly two-to-three-minute narrated MP4 showing the earlier component scene a
 | Before, 10–15 seconds | Preserved small one-tree coastal scene | Identify the historical build; explain its limited size and the user-reported blue-object stall |
 | Arrival, 20–30 seconds | Eye-level canyon opening, river flowing toward sea, Kookerboom, blue giant and moons | Capture from the final player; visibly show the intended composition and movement scale |
 | Exploration, 20–30 seconds | Walk from accessible terrain into the cave; show shelter interior | Real continuous traversal, collisions, visible entrance, no buried geometry or camera teleport presented as walking |
-| Food, 20–25 seconds | Recognizable berry bush, gathering/eating, freshwater interaction | Show actual interaction and changed state; distinguish player/scripted interaction from autonomous food choice |
+| Food, 20–25 seconds | Recognizable sourfig-inspired fruit plant, gathering/eating, freshwater interaction | Show actual interaction and changed state; distinguish player/scripted interaction from autonomous food choice; do not imply real-world edibility |
 | Inhabitant, 20–30 seconds | Clothed inhabitant completes all three deliveries | Uninterrupted runtime evidence exists; edited highlights may shorten footage but must disclose that they are highlights |
 | Memory and thought, 20–30 seconds | Remembered event identity and a real model response in the same world | Persisted event recovered after reload, correct world/actor scope, model admission within configured deadline |
 | Controls and close, 15–20 seconds | Pause, possession/spectator, display settings; final vista | Tested controls and clear version label; state remaining limitations explicitly |

@@ -20,8 +20,10 @@ Here we walk from the bank into the refuge. This is an entrance the inhabitant
 can actually reach, not just a cave placed in the scenery. The shelter test
 checks exposure as well as arrival.
 
-Food has its own identity: berry bushes, fruit and seeds, separate from the
-objects used for delivery. Gathering, eating and drinking are first interactions;
+Food has its own identity: a sourfig-inspired succulent with recognizable fruit
+and seeds, separate from the objects used for delivery. This is an original
+game plant, not advice about which real plants are edible. Gathering, eating
+and drinking are first interactions;
 they are not yet a complete farming or survival simulation.
 
 The inhabitant's movement and delivery choices are still controlled by Unity.
