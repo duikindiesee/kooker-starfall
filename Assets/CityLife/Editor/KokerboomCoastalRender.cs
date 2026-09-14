@@ -12,6 +12,7 @@ namespace CityLife.World.Editor
         private static bool coastalMode;
         private static GameObject coast;
         private static GameObject coastalTerrain;
+        private static GameObject coastalWater;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
@@ -25,7 +26,7 @@ namespace CityLife.World.Editor
                 GameObject terrain=CoastalTerrain.Create(coast.transform);
                 coastalTerrain=terrain;
                 GameObject rocks=CoastalRocks.Create(coast.transform);
-                GameObject water=CoastalWater.Create(coast.transform);
+                GameObject water=CoastalWater.Create(coast.transform); coastalWater=water;
                 subjects.Add(new Subject{Root=terrain,Kind="coastal-terrain"});
                 subjects.Add(new Subject{Root=rocks,Kind="coastal-rocks-and-succulents"});
                 subjects.Add(new Subject{Root=water,Kind="coastal-water-surface"});
@@ -35,6 +36,7 @@ namespace CityLife.World.Editor
             }
             coast.SetActive(true);
             if(coastalTerrain==null)coastalTerrain=GameObject.Find("Coastal terrain "+CoastalTerrain.DefinitionId+" seed "+CoastalTerrain.Seed);
+            if(coastalWater==null)coastalWater=GameObject.Find("Coastal water - luminous river and sea");
             camera.GetComponent<UniversalAdditionalCameraData>().requiresDepthTexture=true;
             camera.GetComponent<UniversalAdditionalCameraData>().requiresColorTexture=true;
             camera.farClipPlane=1500;
@@ -98,7 +100,9 @@ namespace CityLife.World.Editor
             new Shot{Id="01-coastal-side-composition",Purpose="Fixed provisional side-view: frozen R19 tree on rocky bank, wrapping turquoise river toward deep sea, canyon mountains, blue gas giant and distant procedural galaxy. Actual Unity geometry; no artwork billboard.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(21,4.6f,-25),new Vector3(0,3.4f,14))},
             new Shot{Id="02-water-to-sea",Purpose="Fixed surface material/depth comparison from the river toward open sea; no underwater-life or swimming claim.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(10,-.1f,13),new Vector3(-2,-1,64))},
             new Shot{Id="03-rocky-tree-bank",Purpose="Fixed gameplay-distance rock bank, grounding and secondary succulent surface view; collision geometry exists but native input not yet verified.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(13,1.9f,-12),new Vector3(2,-.4f,-3))},
-            new Shot{Id="04-canyon-opening",Purpose="Fixed overview of layered canyon banks, river continuity and opening to sea. Element critique separate from combined scene.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(-17,10,5),new Vector3(11,6,46))}
+            new Shot{Id="04-canyon-opening",Purpose="Fixed overview of layered canyon banks, river continuity and opening to sea. Element critique separate from combined scene.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(-17,10,5),new Vector3(11,6,46))},
+            new Shot{Id="05-shallow-bed-only-diagnostic",Purpose="Diagnostic actual opaque bed, shelves and planted geometry with only the water renderer disabled. Not a playable-water appearance or acceptance image.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(false);}},
+            new Shot{Id="06-shallow-water-matched-diagnostic",Purpose="Exact camera matched to 05 with the authored water restored; establishes what the surface hides or transmits before further visual work.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(true);}}
         };
 
         private static void BuildCoastalGalaxy()
