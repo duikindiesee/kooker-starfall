@@ -10,7 +10,7 @@ namespace CityLife.World.Editor
 {
     public static class IntegratedCoastalBuild
     {
-        public const string Version = "0.0.7-integrated.1";
+        public const string Version = "0.0.9-combined.1";
         public static bool Requested => System.Environment.GetCommandLineArgs().Contains("-starfallIntegrated");
         public static void Run()
         {
@@ -103,27 +103,23 @@ namespace CityLife.World.Editor
             var environment = actorObject.AddComponent<IntegratedEnvironment>(); environment.Brain = brain;
             environment.Surface = brain.TerrainNavigation; environment.View = camera;
             environment.Sun = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).First(l => l.type == LightType.Directional && l.enabled);
-            var stone = Material("Refuge sandstone", new Color(.48f, .32f, .21f));
-            GameObject Rock(string name, Vector3 position, Vector3 scale)
-            {
-                var rock = GameObject.CreatePrimitive(PrimitiveType.Sphere); rock.name = name; rock.layer = 8;
-                rock.transform.position = position; rock.transform.localScale = scale;
-                Object.DestroyImmediate(rock.GetComponent<Collider>());
-                rock.AddComponent<MeshCollider>().sharedMesh = rock.GetComponent<MeshFilter>().sharedMesh;
-                rock.GetComponent<Renderer>().sharedMaterial = stone; return rock;
-            }
-            Rock("First refuge / natural roof", new Vector3(-10, 4.2f, 0), new Vector3(10, 2, 8));
-            Rock("First refuge / back rock", new Vector3(-14, 1.7f, 0), new Vector3(3, 5, 7));
-            Rock("First refuge / south rock", new Vector3(-11, 1.4f, -3), new Vector3(6, 4, 3));
-            Rock("First refuge / north rock", new Vector3(-11, 1.4f, 3), new Vector3(6, 4, 3));
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube); floor.name = "First refuge / dry rock floor"; floor.layer = 10;
-            floor.transform.position = new Vector3(-10, -.1f, 0); floor.transform.localScale = new Vector3(8, .8f, 5);
-            floor.GetComponent<Renderer>().sharedMaterial = stone;
+            // Use the verified authored refuge geometry and environmental state, but
+            // replace its standalone fixture body with the sole integrated inhabitant.
+            RefugeBuild.Attach(camera, ground);
+            var refugeRuntime = camera.GetComponent<Starfall.Refuge.RefugeRuntime>();
+            var fixtureBody = GameObject.Find("Refuge player capsule");
+            if (refugeRuntime == null || fixtureBody == null) throw new InvalidOperationException("Verified First Refuge attachment failed.");
+            refugeRuntime.Body = actor.Capsule; refugeRuntime.IntegratedMode = true;
+            Object.DestroyImmediate(fixtureBody);
+            actor.Place(brain.SpawnPosition); actor.View.Follow();
             var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = new Vector3(-7, .65f, 0);
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
             place.Kind = NpcObjectKind.Place; place.Approach = refuge.transform;
             brain.Registry = brain.Registry.Concat(new[] { place }).ToArray();
+            var foodObject = new GameObject("Food and ecology / integrated adapter"); foodObject.transform.SetParent(terrainRoot);
+            var food = foodObject.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+            food.Attach(brain.transform, terrainRoot, brain.InstanceWorldId);
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
@@ -160,14 +156,14 @@ namespace CityLife.World.Editor
             rainRenderer.velocityScale = .007f;
             rainRenderer.maxParticleSize = .008f;
             rain.Play(); environment.Rain = rain;
-            var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment;
+            var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment; acceptance.Food = food;
             Time.fixedDeltaTime = .02f; Physics.gravity = Vector3.down * 9.81f;
             File.WriteAllText(folder + "/component-binding.json", JsonUtility.ToJson(new Binding(), true));
         }
         [Serializable] private sealed class Binding
         {
             public string worldId = NpcTerrainNavigation.RegionId, terrain = CoastalTerrain.ContentRevision,
-                scope = "Finite current-component regional candidate; full main world, boats, ecology and save/load remain unimplemented.";
+                scope = "Finite combined regional candidate with verified component sources for coast, environment, inhabitant, authored First Refuge, food model and local thought protocol. Full main world, boats and unified save/load remain unimplemented.";
         }
     }
 }

@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using Starfall.Food;
 
 namespace CityLife.World
 {
@@ -13,6 +14,7 @@ namespace CityLife.World
         public NpcAutonomy Brain;
         public NpcPlayerControls Controls;
         public IntegratedEnvironment Environment;
+        public IntegratedFoodRuntime Food;
         private string directory;
         private readonly List<string> errors = new List<string>();
         private readonly Report report = new Report();
@@ -63,6 +65,8 @@ namespace CityLife.World
             yield return null; yield return null;
             CheckThat("world-binding", Brain.Ready && Brain.Perception.WorldId == Brain.InstanceWorldId && Brain.InstanceWorldId == NpcTerrainNavigation.RegionId, Brain.InstanceWorldId);
             CheckThat("clothing-attached", Brain.GetComponentsInChildren<SkinnedMeshRenderer>().Length > 2 && Brain.transform.GetComponentsInChildren<Transform>().Length > 20, "Visual coverage inspected separately in retained frames.");
+            string foodEvidence = "Integrated food adapter missing.";
+            CheckThat("food-model-and-world-targets", Food != null && Food.Berry != null && Food.Spring != null && Food.RunAcceptanceSequence(out foodEvidence), foodEvidence);
             yield return Capture("01-default-coastal-inhabitant");
             float until = Time.realtimeSinceStartup + 55;
             while (Brain.Actions.Deliveries < 1 && Time.realtimeSinceStartup < until) yield return null;
