@@ -133,10 +133,10 @@ namespace CityLife.World.Editor
             }
             finally { UnityEngine.Object.DestroyImmediate(plannerObject); }
             report.status = "PASS"; Directory.CreateDirectory("evidence/local/hybrid");
-            const string thought = "\"Amber delivered.\"";
+            const string thought = "Delivered amber";
             Need(StarfallMemoryThought.Parse(thought, 1, out _, out _), "memory-thought-strict-valid-text");
-            foreach (string bad in new[] { thought + "{}", "null", "1", "{}", "[]", "\"\"", "\"   \"", "\"hello\\nworld\"",
-                "{\"execute\":\"move\"}", thought.Replace("Amber delivered.", new string('x', 65)), "Amber delivered.", "\"unterminated" })
+            foreach (string bad in new[] { thought + " {}", "null", "1", "{}", "[]", "\"\"", "   ", "hello\nworld",
+                "{\"execute\":\"move\"}", "Delivered " + new string('x', 65), "Amber delivered", "Delivered amber today", "Delivered amber." })
                 Need(!StarfallMemoryThought.Parse(bad, 1, out _, out _), "memory-thought-reject-" + report.checks.Count);
             Need(!StarfallMemoryThought.Parse(thought, 2, out _, out _), "memory-thought-unknown-local-protocol-context");
             Need(StarfallMemoryThought.DeadlineMilliseconds == 1500, "memory-thought-gameplay-deadline-unchanged");

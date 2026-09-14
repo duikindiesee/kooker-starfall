@@ -88,7 +88,7 @@ namespace CityLife.World
                 File.WriteAllText(Path.Combine(directory, "living-memory.json"), JsonUtility.ToJson(report, true));
                 need("living-memory-one-model-request", thought.completionAttempts == 1, "Exactly one inference attempt, no retries, unchanged gameplay deadline.");
                 need("living-memory-genuine-thought-required", report.liveAdmitted,
-                    "Requires nonempty strict text, relevant verified delivery, unchanged identity/current delivery state, and <=1500 ms; fallback never passes.");
+                    "Requires strict two-word text, relevant verified delivery, unchanged identity/current delivery state, and <=1500 ms; fallback never passes.");
             }
         }
     }

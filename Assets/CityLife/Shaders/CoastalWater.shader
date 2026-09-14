@@ -174,8 +174,7 @@ Shader "CityLife/CoastalWater"
                 water = lerp(water,_FoamColor.rgb,shore*pulse*.68);
                 // The opaque scene was already transmitted above. Do not add the warm bed a
                 // second time through ordinary alpha; retain only a narrow actual contact fade.
-                float shallowAlpha=lerp(.62,1,smoothstep(.35,9,depth));
-                float alpha=lerp(1,smoothstep(0,.045,depth)*shallowAlpha,measured);
+                float alpha=lerp(1,smoothstep(0,.045,depth),measured);
                 water = MixFog(water,input.fog);
                 return half4(water,alpha);
             }

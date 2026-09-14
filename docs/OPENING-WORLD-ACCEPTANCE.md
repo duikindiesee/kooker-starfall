@@ -66,3 +66,14 @@ the private database or capability configuration to supply this evidence.
 Run `python tools/check-visual-evidence.py <runtime-directory> --require 02-complete-autonomy-cycle.png --require 04-paused-options.png --require 07-refuge-entry.png` before using screenshots in a receipt. This detects missing or blank captures, not correct content. Inspect every claimed view manually and retain failed evidence instead of overwriting it.
 
 Future hunting, construction, complete ecology, planetary geometry and infrastructure expansion are outside this milestone. They must not displace these required opening-world gates.
+
+### Post-reboot normal-play audit — 14 September
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Ordinary play retains a scoped event ledger | Collector evidence inspected | `evidence/local/normal-memory/run-07-process/ledger-audit.json`: seven chained events; foreign-world and foreign-actor queries rejected with 400, unknown capability with 401 | Complete same-store restart prefix proof and repeat on final build |
+| Unavailable provider does not fabricate a thought | Safe fallback recorded | `run-07-runtime/normal-living-memory.json`: one delivery persisted, admitted false, empty thought | Model success is a separate gate |
+| Loaded smaller model meets gameplay deadline | Failed in run 09 | `run-09-runtime/normal-living-memory.json`: SAFE_FALLBACK at 1507 ms, persisted true, admitted false | Diagnose exact-request latency; do not count a direct endpoint answer as in-game success |
+
+Earlier successful thought captures remain historical evidence, not proof that
+the post-reboot configuration meets the same deadline. Preserve both outcomes.

@@ -36,20 +36,43 @@ namespace Starfall.Food
         }
         static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
         {
-            var root = new GameObject("Food / recognizable ripe berry bush"); root.transform.SetParent(parent); root.transform.position = position;
+            var root = new GameObject("Food / Starfall sourfig forage succulent"); root.transform.SetParent(parent); root.transform.position = position;
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             Material Make(string name, Color colour) { var m = new Material(shader) { name = name, color = colour }; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", colour); return m; }
-            var wood = Make("Berry bush warm stem", new Color(.24f,.11f,.05f));
-            var leaf = Make("Berry bush blue green leaves", new Color(.08f,.32f,.25f));
-            var fruit = Make("Berry bush purple red fruit", new Color(.55f,.025f,.18f));
-            for (int i=0;i<5;i++)
+            var wood = Make("Sourfig warm woody base", new Color(.25f,.12f,.055f));
+            var leaf = Make("Sourfig blue green fleshy leaves", new Color(.105f,.39f,.32f));
+            var leafLight = Make("Sourfig sunlit fleshy leaves", new Color(.18f,.48f,.38f));
+            var fruit = Make("Sourfig purple red fruit", new Color(.62f,.035f,.19f));
+            var flower = Make("Sourfig restrained pink flower", new Color(.92f,.20f,.48f));
+            void Primitive(PrimitiveType type, string name, Vector3 localPosition, Vector3 scale, Quaternion rotation, Material material)
             {
-                float angle=i*1.2566f; var branch=GameObject.CreatePrimitive(PrimitiveType.Cylinder); branch.name="Berry branch "+i; branch.transform.SetParent(root.transform,false);
-                branch.transform.localPosition=new Vector3(Mathf.Cos(angle)*.28f,.62f,Mathf.Sin(angle)*.28f); branch.transform.localScale=new Vector3(.08f,.65f,.08f); branch.transform.localRotation=Quaternion.Euler(Mathf.Sin(angle)*22,0,Mathf.Cos(angle)*-22); branch.GetComponent<Renderer>().sharedMaterial=wood;
-                var crown=GameObject.CreatePrimitive(PrimitiveType.Sphere); crown.name="Berry leaf crown "+i; crown.transform.SetParent(root.transform,false); crown.transform.localPosition=new Vector3(Mathf.Cos(angle)*.62f,1.35f,Mathf.Sin(angle)*.62f); crown.transform.localScale=new Vector3(1.15f,.55f,.9f); crown.GetComponent<Renderer>().sharedMaterial=leaf;
-                for(int j=0;j<3;j++){var berry=GameObject.CreatePrimitive(PrimitiveType.Sphere);berry.name="Visible ripe berry "+i+"-"+j;berry.transform.SetParent(root.transform,false);float a=angle+j*2.09f;berry.transform.localPosition=crown.transform.localPosition+new Vector3(Mathf.Cos(a)*.36f,-.22f,Mathf.Sin(a)*.32f);berry.transform.localScale=Vector3.one*.18f;berry.GetComponent<Renderer>().sharedMaterial=fruit;}
+                var part=GameObject.CreatePrimitive(type); part.name=name; part.transform.SetParent(root.transform,false);
+                part.transform.localPosition=localPosition; part.transform.localScale=scale; part.transform.localRotation=rotation;
+                part.GetComponent<Renderer>().sharedMaterial=material; var collider=part.GetComponent<Collider>(); if(collider!=null) Destroy(collider);
             }
-            var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.35f; sensor.center=new Vector3(0,.9f,0); sensor.isTrigger=true;
+            for (int i=0;i<7;i++)
+            {
+                float angle=i*2.399963f+.22f, radius=.18f+(i%3)*.12f;
+                Vector3 basePoint=new Vector3(Mathf.Cos(angle)*radius,.08f,Mathf.Sin(angle)*radius);
+                Primitive(PrimitiveType.Cylinder,"Partly concealed woody runner "+i,basePoint+new Vector3(0,.18f,0),new Vector3(.045f,.22f,.045f),Quaternion.Euler(14*Mathf.Sin(angle),angle*Mathf.Rad2Deg,-14*Mathf.Cos(angle)),wood);
+                int leafCount=5+(i%2);
+                for(int j=0;j<leafCount;j++)
+                {
+                    float spread=(j-(leafCount-1)*.5f)*.34f, leafAngle=angle+spread;
+                    float reach=.36f+.07f*((i+j)%3), height=.31f+.10f*((i*2+j)%3);
+                    Vector3 leafPosition=basePoint+new Vector3(Mathf.Cos(leafAngle)*reach,height,Mathf.Sin(leafAngle)*reach);
+                    Quaternion leafRotation=Quaternion.Euler(0,-leafAngle*Mathf.Rad2Deg,18f+7f*((i+j)%3));
+                    Primitive(PrimitiveType.Capsule,"Fleshy sourfig leaf "+i+"-"+j,leafPosition,new Vector3(.13f,.30f,.13f),leafRotation,(i+j)%4==0?leafLight:leaf);
+                }
+                if(i%2==0)
+                {
+                    Vector3 fruitPosition=basePoint+new Vector3(Mathf.Cos(angle)*.50f,.48f,Mathf.Sin(angle)*.50f);
+                    Primitive(PrimitiveType.Sphere,"Visible ripe sourfig fruit "+i,fruitPosition,new Vector3(.20f,.24f,.20f),Quaternion.identity,fruit);
+                    Primitive(PrimitiveType.Sphere,"Sourfig fruit crown "+i,fruitPosition+Vector3.up*.13f,new Vector3(.13f,.055f,.13f),Quaternion.identity,leafLight);
+                }
+            }
+            Primitive(PrimitiveType.Sphere,"Single restrained sourfig flower",new Vector3(-.38f,.58f,.26f),new Vector3(.20f,.055f,.20f),Quaternion.identity,flower);
+            var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
             var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place; item.Approach=root.transform; return item;
         }
         static float MeasureRockClearance(Vector3 position)

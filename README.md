@@ -20,6 +20,12 @@ Beneath a blue giant and a river of stars, warm desert gives way to luminous sea
 
 ## 🌌 The world ahead
 
+Current opening-world acceptance is tracked in [the integrated acceptance record](docs/OPENING-WORLD-ACCEPTANCE.md).
+The approved sourfig-inspired forage plant and retained Cape/Namaqualand plant
+ideas are documented in [plant direction and ideas](docs/PLANT-DIRECTION-AND-IDEAS.md).
+These design notes are not a claim of a new accepted player build; historical
+milestone descriptions below retain their original scope.
+
 | Element | Direction | Current state |
 |---|---|---|
 | Trees | Gold and ochre kokerboom trunks, rounded crowns and cool blue-green rosettes | R06 approved reference; R19 experiment frozen |
@@ -107,6 +113,7 @@ The authoritative [save and world lifecycle contract](docs/SAVE-GAME-CONTRACT.md
 | Determinism and saved edits | [World foundation](docs/WORLD-FOUNDATION.md) · [Legacy island](docs/LEGACY-ISLAND.md) |
 | Next save/new-game architectural gate | [Versioned slots, world-scoped identities, atomic checkpoints and recovery](docs/SAVE-GAME-CONTRACT.md) · Requirements only, after the living-thought priority |
 | Native memory service | [Starfall memory: local ledger, episodes, wiki and sleep-gated dreams](docs/STARFALL-MEMORY.md) |
+| Food and plant direction | [Food integration](docs/FOOD-INTEGRATION.md) · [Approved sourfig direction and retained alternatives](docs/PLANT-DIRECTION-AND-IDEAS.md) |
 | Verification and contribution | [Evidence record](docs/VERIFICATION.md) · [CI and safeguards](docs/CI.md) |
 
 The repository is [duikindiesee/kooker-starfall](https://github.com/duikindiesee/kooker-starfall). Its history and draft review continue under the new name. Internal `CityLife.World` namespaces, `Assets/CityLife` paths, legacy product settings, world IDs and save contracts remain intact; branding does not migrate an existing world.
