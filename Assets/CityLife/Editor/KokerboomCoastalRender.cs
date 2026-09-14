@@ -31,6 +31,7 @@ namespace CityLife.World.Editor
                 subjects.Add(new Subject{Root=rocks,Kind="coastal-rocks-and-succulents"});
                 subjects.Add(new Subject{Root=water,Kind="coastal-water-surface"});
                 BuildCoastalGalaxy();
+                foreach(ReflectionProbe probe in coast.GetComponentsInChildren<ReflectionProbe>()) probe.RenderProbe();
                 File.WriteAllText(Path.Combine(outputDirectory,"coastal-definition.json"),JsonUtility.ToJson(new CoastalDefinition(),true));
                 VerifyCoastalCollision(terrain,rocks);
             }

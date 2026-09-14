@@ -101,12 +101,12 @@ namespace CityLife.World
                 for(int ledge=0;ledge<2;ledge++)
                 {
                     int id=470+i*11+ledge;
-                    Vector2 offset=ledge==0?new Vector2(3.4f,1.1f):new Vector2(-3.0f,-1.4f);
+                    Vector2 offset=ledge==0?new Vector2(2.7f,1.0f):new Vector2(-2.4f,-1.2f);
                     Vector2 q=p+offset;
                     float floor=CoastalTerrain.Height(q.x,q.y);
                     if(floor>-2.28f) continue;
                     var connected=MeshObject("Submerged connected reef ledge "+i+"-"+ledge,
-                        RockMesh(3.8f+ledge*.7f,.75f+ledge*.15f,2.6f+ledge*.8f,id),rock,root.transform,false);
+                        RockMesh(2.8f+ledge*.55f,1.02f+ledge*.12f,2.15f+ledge*.55f,id),rock,root.transform,false);
                     connected.transform.localPosition=new Vector3(q.x,floor-.12f,q.y);
                     connected.transform.localRotation=Quaternion.Euler(0,Lerp(-35,35,id,124),0);
                 }

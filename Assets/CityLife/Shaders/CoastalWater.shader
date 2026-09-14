@@ -28,6 +28,8 @@ Shader "CityLife/CoastalWater"
             #pragma fragment Frag
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
@@ -159,7 +161,7 @@ Shader "CityLife/CoastalWater"
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
                 // Sample the real probe captured from the canyon/sky/celestial scene. A small
                 // navy baseline remains only when a platform returns an empty probe.
-                half3 environment=GlossyEnvironmentReflection(reflect(-view,normalWS),.24,1);
+                half3 environment=GlossyEnvironmentReflection(reflect(-view,normalWS),input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
                 environment=max(environment,_SkyReflection.rgb*.18);
                 water = lerp(water,environment,fresnel*.44);
                 Light sun = GetMainLight();
