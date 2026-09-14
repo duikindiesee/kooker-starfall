@@ -56,3 +56,5 @@ Write the candidate's public-facing draft only from its verified results; a fail
 Club acceptance reopened: the previously attached club is excluded from this candidate because the clothing owner reported knuckle intersection. Accepted clothing is retained; a corrected grip requires a separate clean handoff and compiled pose review.
 
 Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.
+
+14 September recheck: preserved candidate recovered; native Controls click entered possession. Native P injection again gave no visible response; hardware check pending. See [dependency queue](INTEGRATION-QUEUE.md). No new runtime build or mainline integration is implied.
