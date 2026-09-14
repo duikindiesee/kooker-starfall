@@ -1,0 +1,35 @@
+{
+    "worldId": "starfall.coastal-slice.v1",
+    "terrainContentRevision": "terrain-r2-weathered-banks",
+    "terrainSeed": 1904242,
+    "treeSeed": 4242,
+    "rockSeed": 4242,
+    "terrainSourceSha256": "c88055322238dbf0d87bd8ccfb659a889a0f98e87ab3edef379d6066622b237b",
+    "rockSourceSha256": "4613740747dc64af9236aafe5ecb9c730251123925aff168312bd132a742ff43",
+    "waterSourceSha256": "03da2d620d9e2270d492bcf8493fd17005f29596dea685cd8ad021bb76be63a7",
+    "reference": "User attachments 02/03/06 provisional; exact requested frame pending",
+    "minimum": {
+        "x": -90.0,
+        "y": -18.0,
+        "z": -55.0
+    },
+    "maximum": {
+        "x": 90.0,
+        "y": 30.0,
+        "z": 145.0
+    },
+    "waterLevelMetres": -2.0,
+    "sideCameraPosition": {
+        "x": 21.0,
+        "y": 4.599999904632568,
+        "z": -25.0
+    },
+    "sideCameraTarget": {
+        "x": 0.0,
+        "y": 3.4000000953674316,
+        "z": 14.0
+    },
+    "fieldOfView": 52.0,
+    "visualOcean": "Additional surface x[-960,960],z[145,1015], visual only; outside active terrain/collision slice",
+    "acceptance": "Actual Unity composition and scene collider probes; no exact reference match, swimming or native coastal player acceptance"
+}
