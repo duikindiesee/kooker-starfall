@@ -175,6 +175,38 @@ namespace CityLife.World
             }
             motion/=Math.Max(1,samples);
             CheckThat("moving-shallow-bed-caustics",motion>.12,"same-camera lower-frame mean channel delta="+motion.ToString("F3")+" over 650ms; visual acceptance separate");
+            var reflectionProbe=FindFirstObjectByType<ReflectionProbe>();
+            int reflectionRenderId=-1;
+            bool reflectionFinished=false;
+            Texture reflectionTexture=null;
+            Color32[] reflectionOff=null,reflectionOn=null;
+            if(reflectionProbe!=null)
+            {
+                reflectionProbe.enabled=false;
+                yield return new WaitForEndOfFrame();
+                reflectionOff=RenderWorldNow("01g-reflection-probe-off");
+                reflectionProbe.enabled=true;
+                reflectionRenderId=reflectionProbe.RenderProbe();
+                float reflectionDeadline=Time.realtimeSinceStartup+8;
+                while(reflectionRenderId>=0&&!reflectionProbe.IsFinishedRendering(reflectionRenderId)&&Time.realtimeSinceStartup<reflectionDeadline) yield return null;
+                reflectionFinished=reflectionRenderId>=0&&reflectionProbe.IsFinishedRendering(reflectionRenderId);
+                reflectionTexture=reflectionProbe.texture;
+                yield return new WaitForEndOfFrame();
+                reflectionOn=RenderWorldNow("01h-reflection-probe-on");
+            }
+            double reflectionDelta=0; int reflectionSamples=0;
+            if(reflectionOff!=null&&reflectionOn!=null&&reflectionOff.Length==reflectionOn.Length)
+                for(int y=0;y<450;y+=4) for(int x=0;x<1600;x+=4)
+                {
+                    int p=y*1600+x;
+                    reflectionDelta+=Mathf.Abs(reflectionOff[p].r-reflectionOn[p].r)+Mathf.Abs(reflectionOff[p].g-reflectionOn[p].g)+Mathf.Abs(reflectionOff[p].b-reflectionOn[p].b);
+                    reflectionSamples+=3;
+                }
+            reflectionDelta/=Math.Max(1,reflectionSamples);
+            CheckThat("actual-coastal-reflection-probe-contribution",reflectionProbe!=null&&reflectionFinished&&reflectionTexture!=null&&reflectionDelta>.02,
+                "probe="+(reflectionProbe==null?"missing":reflectionProbe.name)+"; renderId="+reflectionRenderId+"; finished="+reflectionFinished+
+                "; texture="+(reflectionTexture==null?"none":reflectionTexture.name+" "+reflectionTexture.width+"x"+reflectionTexture.height)+
+                "; matched lower-frame mean channel delta="+reflectionDelta.ToString("F3")+"; dynamic weather refresh not claimed");
             Controls.View.transform.SetPositionAndRotation(new Vector3(0,17,29),Quaternion.LookRotation(shallowTarget-new Vector3(0,17,29)));
             yield return CaptureWorld("01f-shallow-bed-overhead");
             Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();
