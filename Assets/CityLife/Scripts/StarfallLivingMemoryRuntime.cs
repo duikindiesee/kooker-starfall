@@ -1,0 +1,138 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Text.RegularExpressions;
+using UnityEngine;
+
+namespace CityLife.World
+{
+    // Opt-in normal-play adapter. It records facts and displays bounded reflection;
+    // it never resets the world, drives an action, adds test input, or quits.
+    public sealed class StarfallLivingMemoryRuntime : MonoBehaviour
+    {
+        public const int MaximumPendingEvents = 32;
+        public NpcAutonomy Brain;
+        public NpcDecisionHud Hud;
+        private readonly Queue<string> pending = new Queue<string>();
+        private readonly HashSet<string> queued = new HashSet<string>(StringComparer.Ordinal);
+        private StarfallMemoryExport export;
+        private StarfallLivingMemoryClient client;
+        private CancellationTokenSource lifetime;
+        private string endpoint, model, build;
+        private bool enabledForSession;
+
+        private IEnumerator Start()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (Array.IndexOf(args, "-npcLivingMemoryRuntime") < 0) yield break;
+            string Arg(string name) { int index = Array.IndexOf(args, name); return index >= 0 && index + 1 < args.Length ? args[index + 1] : null; }
+            string config = Arg("-npcMemoryClient"), outbox = Arg("-npcMemoryOutbox"); build = Arg("-npcMemoryBuild"); endpoint = Arg("-npcLocalEndpoint"); model = Arg("-npcLocalModel");
+            while (Brain != null && !Brain.Ready) yield return null;
+            if (Brain == null || Hud == null || string.IsNullOrEmpty(config) || string.IsNullOrEmpty(build) || string.IsNullOrEmpty(outbox) || !Path.IsPathFullyQualified(outbox))
+            { SetStatus("LIVING MEMORY\nUnavailable: scoped runtime configuration is incomplete.\nDeterministic autonomy continues."); yield break; }
+            try
+            {
+                if (!Regex.IsMatch(Brain.InstanceWorldId ?? "", @"\A[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\z")) throw new FormatException("invalid-world-scope");
+                string root = Path.Combine(outbox, Brain.InstanceWorldId, NpcAutonomy.AgentId, "sessions");
+                Directory.CreateDirectory(root);
+                string session = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N");
+                export = new StarfallMemoryExport(Path.Combine(root, session + ".jsonl"), Brain.InstanceWorldId, "unity-local", session, build);
+                export.Appended += QueueEvent;
+                client = new StarfallLivingMemoryClient(config, Brain.InstanceWorldId, NpcAutonomy.AgentId, build);
+                lifetime = new CancellationTokenSource(); enabledForSession = true;
+                export.RegisterIdentity(NpcAutonomy.AgentId, "Inhabitant 01", Brain.Tick);
+                Brain.MemoryExport = export; Hud.Detailed = true;
+                SetStatus("LIVING MEMORY\nRecording real actions locally.\nWaiting for a verified delivery.");
+                StartCoroutine(ProcessEvents());
+            }
+            catch (Exception error)
+            {
+                Shutdown(); SetStatus("LIVING MEMORY\nUnavailable: " + Safe(error.Message) + "\nDeterministic autonomy continues.");
+            }
+        }
+
+        private void QueueEvent(string row)
+        {
+            string id;
+            try { id = StarfallLivingMemoryClient.HashEvent(row); }
+            catch (Exception) { SetStatus("LIVING MEMORY\nLocal receipt could not be queued.\nDeterministic autonomy continues."); return; }
+            if (queued.Contains(id)) return;
+            if (pending.Count >= MaximumPendingEvents)
+            { SetStatus("LIVING MEMORY\nService backlog reached its bounded limit; receipts remain in the local session log.\nDeterministic autonomy continues."); return; }
+            queued.Add(id); pending.Enqueue(row);
+        }
+
+        private IEnumerator ProcessEvents()
+        {
+            while (enabledForSession)
+            {
+                if (pending.Count == 0) { yield return null; continue; }
+                string row = pending.Dequeue(); string eventId = StarfallLivingMemoryClient.HashEvent(row); queued.Remove(eventId);
+                using (var request = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
+                {
+                    request.CancelAfter(5000);
+                    var publish = client.PublishEvent(row, request.Token);
+                    while (!publish.IsCompleted) yield return null;
+                    if (publish.IsFaulted || publish.IsCanceled)
+                    { var observed = publish.Exception; SetStatus("LIVING MEMORY\nPersistence unavailable; receipt remains in the local session log.\nDeterministic autonomy continues."); continue; }
+                    eventId = publish.GetAwaiter().GetResult();
+                }
+                if (!IsDelivery(row)) continue;
+                StarfallLivingMemoryClient.Evidence memory = null;
+                using (var request = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
+                {
+                    request.CancelAfter(5000);
+                    var recall = client.RetrieveConfirmedDelivery(row, eventId, request.Token);
+                    while (!recall.IsCompleted) yield return null;
+                    if (!recall.IsFaulted && !recall.IsCanceled) memory = recall.GetAwaiter().GetResult();
+                    else { var observed = recall.Exception; }
+                }
+                if (memory == null)
+                { SetStatus("LIVING MEMORY\nDelivery persisted; verified recall is unavailable.\nDeterministic autonomy continues."); continue; }
+                SetStatus("LIVING MEMORY\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nMemory persisted; model reflection is optional.");
+                if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(model)) continue;
+                int requestedTick = Brain.Tick; var identity = Brain.gameObject.GetEntityId();
+                using (var thoughtCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
+                {
+                    var thoughtTask = StarfallMemoryThought.Request(memory, endpoint, model, thoughtCancellation.Token);
+                    while (!thoughtTask.IsCompleted)
+                    {
+                        if (Brain.MenuPaused || Brain.Possessed || !Brain.Running || Brain.gameObject.GetEntityId() != identity) thoughtCancellation.Cancel();
+                        yield return null;
+                    }
+                    var thought = thoughtTask.GetAwaiter().GetResult();
+                    bool current = thought.schemaValid && thought.milliseconds <= StarfallMemoryThought.DeadlineMilliseconds &&
+                        Brain.gameObject.GetEntityId() == identity && Brain.InstanceWorldId == memory.World && Brain.Tick >= requestedTick &&
+                        Brain.Registry != null && Array.Exists(Brain.Registry, x => x.StableId == memory.Target && x.Occupant == memory.Item);
+                    SetStatus(current ? "REMEMBERED INSIGHT\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nThought: " + thought.reflection +
+                        "\nMemory records facts; Unity controls actions." : "LIVING MEMORY\nVerified delivery: " + memory.Item + " -> " + memory.Target +
+                        "\nDeterministic fallback / " + thought.status + ". Unity controls actions.");
+                }
+            }
+        }
+
+        private static bool IsDelivery(string row)
+        {
+            try
+            {
+                var value = StarfallLivingMemoryClient.Map(row, 8192); if ((string)value["kind"] != "action_completed") return false;
+                var data = (Dictionary<string, object>)value["data"];
+                return (string)data["action"] == "deliver" && (string)data["outcome"] == "delivered";
+            }
+            catch (Exception) { return false; }
+        }
+        private void SetStatus(string value) { if (Hud != null) Hud.LivingMemoryText = value; }
+        private static string Safe(string value) => string.IsNullOrEmpty(value) ? "unknown error" : value.Length > 120 ? value.Substring(0, 120) : value;
+        private void OnDestroy() { Shutdown(); }
+        private void Shutdown()
+        {
+            enabledForSession = false;
+            if (Brain != null && Brain.MemoryExport == export) Brain.MemoryExport = null;
+            if (export != null) export.Appended -= QueueEvent;
+            lifetime?.Cancel(); client?.Dispose(); export?.Dispose();
+            client = null; export = null; lifetime?.Dispose(); lifetime = null;
+        }
+    }
+}

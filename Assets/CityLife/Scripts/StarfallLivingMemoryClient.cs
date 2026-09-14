@@ -69,33 +69,47 @@ namespace CityLife.World
             if (body != null) request.Content = new StringContent(body, Encoding.UTF8, "application/json");
             return Send(http, request, token);
         }
-        public async Task<Evidence> PublishAndRetrieve(string[] events, CancellationToken token)
+        private Dictionary<string, object> ValidateEvent(string row)
         {
-            if (events.Length != 3 || events.Any(x => Encoding.UTF8.GetByteCount(x) > 8192)) throw new FormatException("three-receipts-required");
-            string eventId = null; Dictionary<string, object> last = null;
-            foreach (string row in events)
-            {
-                last = Map(row); var source = (Dictionary<string, object>)last["source"];
-                if ((string)last["world_id"] != (string)config["world_id"] || (string)last["inhabitant_id"] != (string)config["inhabitant_id"] ||
-                    (string)source["build_id"] != (string)config["build_id"] || (string)source["producer_id"] != "unity-local") throw new FormatException("event-scope");
-                var receipt = Map(await Memory("v1/events", row, "publisher_token", token).ConfigureAwait(false));
-                eventId = HashEvent(row);
-                if ((string)receipt["event_id"] != eventId) throw new FormatException("event-hash-mismatch");
-            }
-            var data = (Dictionary<string, object>)last["data"];
+            if (Encoding.UTF8.GetByteCount(row) > 8192) throw new FormatException("event-bound");
+            var parsed = Map(row); var source = (Dictionary<string, object>)parsed["source"];
+            if ((string)parsed["world_id"] != (string)config["world_id"] || (string)parsed["inhabitant_id"] != (string)config["inhabitant_id"] ||
+                (string)source["build_id"] != (string)config["build_id"] || (string)source["producer_id"] != "unity-local") throw new FormatException("event-scope");
+            return parsed;
+        }
+        public async Task<string> PublishEvent(string row, CancellationToken token)
+        {
+            ValidateEvent(row);
+            var receipt = Map(await Memory("v1/events", row, "publisher_token", token).ConfigureAwait(false));
+            string eventId = HashEvent(row);
+            if ((string)receipt["event_id"] != eventId) throw new FormatException("event-hash-mismatch");
+            return eventId;
+        }
+        public async Task<Evidence> RetrieveConfirmedDelivery(string row, string eventId, CancellationToken token)
+        {
+            var last = ValidateEvent(row); var data = (Dictionary<string, object>)last["data"];
             if ((string)last["kind"] != "action_completed" || (string)data["action"] != "deliver" || (string)data["outcome"] != "delivered") throw new FormatException("delivery-required");
+            if (eventId != HashEvent(row)) throw new FormatException("event-id-mismatch");
             var result = new Evidence { World = (string)last["world_id"], Actor = (string)last["inhabitant_id"], EventId = eventId,
                 Tick = checked((int)(long)last["tick"]), Item = (string)data["item_id"], Target = (string)data["target_id"] };
             result.Summary = result.Actor + " delivered " + result.Item + " to " + result.Target + " at tick " + result.Tick + ".";
             var page = Map(await Memory("v1/memories?after=0&limit=4", null, "reader_token", token).ConfigureAwait(false));
             var items = (List<object>)page["items"];
             if ((bool)page["has_more"] || items.Count > 4) throw new FormatException("retrieval-bound");
-            foreach (var row in items.Cast<Dictionary<string, object>>())
-                if ((string)row["world_id"] != result.World || (string)row["inhabitant_id"] != result.Actor ||
-                    (string)row["schema"] != "starfall.memory.record.v1" || (string)row["kind"] != "episode" || (string)row["epistemic_status"] != "confirmed_event") throw new FormatException("retrieval-scope");
+            foreach (var item in items.Cast<Dictionary<string, object>>())
+                if ((string)item["world_id"] != result.World || (string)item["inhabitant_id"] != result.Actor ||
+                    (string)item["schema"] != "starfall.memory.record.v1" || (string)item["kind"] != "episode" || (string)item["epistemic_status"] != "confirmed_event") throw new FormatException("retrieval-scope");
             var matches = items.Cast<Dictionary<string, object>>().Where(x => ((List<object>)x["evidence_ids"]).Count == 1 && (string)((List<object>)x["evidence_ids"])[0] == eventId).ToArray();
             if (matches.Length != 1 || (string)matches[0]["summary"] != result.Summary || (long)matches[0]["tick"] != result.Tick) throw new FormatException("retrieved-delivery-mismatch");
             result.RecordJson = NpcBoundedJson.Encode(matches[0]); return result;
+        }
+        public async Task<Evidence> PublishAndRetrieve(string[] events, CancellationToken token)
+        {
+            if (events.Length != 3 || events.Any(x => Encoding.UTF8.GetByteCount(x) > 8192)) throw new FormatException("three-receipts-required");
+            string eventId = null;
+            foreach (string row in events)
+                eventId = await PublishEvent(row, token).ConfigureAwait(false);
+            return await RetrieveConfirmedDelivery(events[events.Length - 1], eventId, token).ConfigureAwait(false);
         }
         public void Dispose() => http.Dispose();
     }

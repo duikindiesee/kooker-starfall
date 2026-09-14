@@ -27,6 +27,7 @@ namespace CityLife.World
         private readonly string world, producer, session, build;
         private int sequence, lastTick;
         public int Count => sequence;
+        public event Action<string> Appended;
 
         public StarfallMemoryExport(string newPath, string worldId, string producerId, string sessionId, string buildId)
         {
@@ -50,9 +51,11 @@ namespace CityLife.World
             var envelope = new Envelope { world_id = world, inhabitant_id = actor, tick = tick, kind = kind,
                 source = new Source { producer_id = producer, session_id = session, build_id = build, sequence = sequence + 1 } };
             string json = JsonUtility.ToJson(envelope);
-            writer.WriteLine(json.Substring(0, json.Length - 1) + ",\"data\":" + data + "}");
+            string row = json.Substring(0, json.Length - 1) + ",\"data\":" + data + "}";
+            writer.WriteLine(row);
             writer.Flush(); file.Flush(true);
             sequence++; lastTick = tick;
+            Appended?.Invoke(row);
         }
 
         public void RegisterIdentity(string actor, string displayName, int tick)
