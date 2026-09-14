@@ -20,9 +20,9 @@ namespace CityLife.World
         {
             string[] args = Environment.GetCommandLineArgs();
             string Arg(string name) { int index = Array.IndexOf(args, name); return index >= 0 && index + 1 < args.Length ? args[index + 1] : null; }
-            string build = Path.GetFileName(Path.GetDirectoryName(Application.dataPath)), session = "living-" + Guid.NewGuid().ToString("N");
+            string build = NpcPreviewSmoke.RuntimeBuildId, session = "living-" + Guid.NewGuid().ToString("N");
             var report = new Report { status = "IN_PROGRESS", world = NpcAutonomy.WorldId, inhabitant = NpcAutonomy.AgentId, build = build, session = session,
-                source = "Actual compiled Unity courtyard; real action receipts; isolated SQLite HTTP persistence. Scripted traversal is not physical keyboard acceptance." };
+                source = (Application.isEditor ? "Unity Editor Play Mode runtime; NOT standalone-player acceptance. " : "Actual compiled Unity courtyard. ") + "Real action receipts; isolated SQLite HTTP persistence. Scripted traversal is not physical keyboard acceptance." };
             string exportPath = Path.Combine(directory, "living-events.jsonl");
             brain.ResetState(); brain.OptionalPlanner.Configure(null); hud.Detailed = true;
             using (var export = new StarfallMemoryExport(exportPath, report.world, "unity-local", session, build))
@@ -79,7 +79,7 @@ namespace CityLife.World
                     brain.Tick >= requestedTick && brain.Tick - requestedTick <= 75 && brain.Actions.Deliveries >= 1 &&
                     brain.Registry.Any(x => x.StableId == memory.Target && x.Occupant == memory.Item) && thought.milliseconds <= StarfallMemoryThought.DeadlineMilliseconds;
                 report.status = report.liveAdmitted ? "PASS" : "THOUGHT_NOT_ADMITTED";
-                hud.LivingMemoryText = "REMEMBERED INSIGHT\n" + report.inhabitant + " / " + report.world +
+                hud.LivingMemoryText = (Application.isEditor ? "EDITOR PLAY MODE\n" : "") + "REMEMBERED INSIGHT\n" + report.inhabitant + " / " + report.world +
                     "\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nEvent: " + memory.EventId.Substring(0, 16) +
                     (report.liveAdmitted ? "\nModel: " + thought.model + "\nThought: " + thought.reflection : "\nDeterministic fallback / " + thought.status + "\nNo model thought admitted.") +
                     "\n" + thought.milliseconds + " ms / 1500 ms deadline\nMemory records facts; model text is interpretation.\nUnity alone controls actions.";

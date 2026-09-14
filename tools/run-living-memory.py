@@ -22,12 +22,23 @@ def save(path, value):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exe', type=Path, required=True)
+    host = parser.add_mutually_exclusive_group(required=True)
+    host.add_argument('--exe', type=Path)
+    host.add_argument('--editor', type=Path)
+    parser.add_argument('--scene')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    exe, output = args.exe.resolve(), args.output.resolve()
+    exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
     if not exe.is_file() or output.exists():
         raise RuntimeError('Require existing separate executable and new evidence directory')
+    source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    if args.editor:
+        if exe != Path(r'C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Unity.exe'):
+            raise RuntimeError('Require pinned installed Unity Editor')
+        if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip():
+            raise RuntimeError('Commit exact Editor source before acceptance')
+        if not args.scene or not args.scene.startswith('Assets/CityLife/GeneratedPreview-Character-') or '..' in args.scene or not (ROOT / args.scene).is_file():
+            raise RuntimeError('Require preserved generated scene')
     output.mkdir(parents=True)
     inventory_client = http.client.HTTPConnection('127.0.0.1', 1234, timeout=3)
     try:
@@ -47,7 +58,7 @@ def main():
         raise RuntimeError('Loaded E4B device differs from reviewed linked Mac')
     save(output / 'model-inventory-before.json', inventory)
     (output / 'model-devices.txt').write_text(devices, encoding='utf-8')
-    build = exe.parent.name
+    build = 'editor-' + source if args.editor else exe.parent.name
     initialize(output / 'private', 'starfall.npc-courtyard.v1', [build], ['inhabitant-01', 'inhabitant-02'])
     config_path = output / 'private' / 'config.json'
     config = json.loads(config_path.read_text())
@@ -64,6 +75,8 @@ def main():
     service = subprocess.Popen([sys.executable, str(ROOT / 'services/starfall-memory/offline_guard.py'), '--config', str(config_path),
         '--data-dir', str(output / 'private/data'), '--port', str(port)], stdout=service_log, stderr=service_log, env=env, creationflags=flags)
     player = None
+    settings = {ROOT / 'ProjectSettings' / name: (ROOT / 'ProjectSettings' / name).read_bytes()
+                for name in ('GraphicsSettings.asset', 'QualitySettings.asset', 'ProjectSettings.asset')} if args.editor else {}
     def call(resource, actor=0):
         client = http.client.HTTPConnection('127.0.0.1', port, timeout=2)
         try:
@@ -83,15 +96,21 @@ def main():
                 time.sleep(.1)
         else:
             raise RuntimeError('Memory readiness timeout')
-        command = [str(exe), '-batchmode', '-force-d3d11', '-npcSmoke', '-npcLivingMemory', '-npcMemoryClient', str(client_path),
+        command = [str(exe), '-batchmode', '-force-d3d11']
+        if args.editor:
+            command += ['-projectPath', str(ROOT), '-executeMethod', 'CityLife.World.Editor.StarfallMemoryPlayMode.Run',
+                '-npcEditorRuntime', build, '-npcEditorScene', args.scene]
+        command += ['-npcSmoke', '-npcLivingMemory', '-npcMemoryClient', str(client_path),
             '-npcLocalEndpoint', 'http://127.0.0.1:1234', '-npcLocalModel', 'google/gemma-4-e4b',
             '-npcEvidence', str(output / 'runtime'), '-logFile', str(output / 'player.log')]
         save(output / 'launch.json', dict(build=build, sha256=hashlib.sha256(exe.read_bytes()).hexdigest(),
-            memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500))
+            memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500,
+            execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,
+            scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None))
         print(json.dumps({'checkpoint': 'memory-ready', 'build': build}), flush=True)
-        player = subprocess.Popen(command, creationflags=flags, env=env)
+        player = subprocess.Popen(command, creationflags=flags, env=env, cwd=ROOT)
         try:
-            exit_code = player.wait(timeout=240)
+            exit_code = player.wait(timeout=600 if args.editor else 240)
         except subprocess.TimeoutExpired:
             player.kill(); player.wait(); raise RuntimeError('Player watchdog expired')
         health_status, health = call('/v1/health')
@@ -106,6 +125,8 @@ def main():
         if player and player.poll() is None:
             player.kill(); player.wait()
         service.terminate(); service.wait(timeout=10); service_log.close()
+        for path, original in settings.items():
+            path.write_bytes(original)
     # Reopen the real database after process shutdown to verify persisted chain and namespace.
     store = MemoryStore(output / 'private/data/starfall-memory.sqlite3', config['world_id'], config['publisher_id'], config['build_ids'])
     checkpoint = store.verify()

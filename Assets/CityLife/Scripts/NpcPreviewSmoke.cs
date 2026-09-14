@@ -13,6 +13,18 @@ namespace CityLife.World
     public sealed class NpcPreviewSmoke : MonoBehaviour
     {
         public static readonly bool Requested = Array.IndexOf(Environment.GetCommandLineArgs(), "-npcSmoke") >= 0;
+        public static string RuntimeBuildId
+        {
+            get
+            {
+                if (!Application.isEditor) return Path.GetFileName(Path.GetDirectoryName(Application.dataPath));
+                var args = Environment.GetCommandLineArgs(); int index = Array.IndexOf(args, "-npcEditorRuntime");
+                if (index < 0 || index + 1 >= args.Length || args[index + 1].Length != 47 ||
+                    !args[index + 1].StartsWith("editor-", StringComparison.Ordinal) || !args[index + 1].Substring(7).All(Uri.IsHexDigit))
+                    throw new InvalidOperationException("Editor acceptance requires explicit source identity.");
+                return args[index + 1];
+            }
+        }
         public NpcAutonomy Brain;
         public NpcDecisionHud Hud;
         public CharacterPreviewCamera View;
@@ -56,9 +68,9 @@ namespace CityLife.World
                 throw new InvalidOperationException("Choose one real inference acceptance path per player run.");
             started = Time.realtimeSinceStartup;
             report = new Report { utc = DateTime.UtcNow.ToString("O"), version = Application.version,
-                buildId = Path.GetFileName(Path.GetDirectoryName(Application.dataPath)),
+                buildId = RuntimeBuildId,
                 unityVersion = Application.unityVersion, gpu = SystemInfo.graphicsDeviceName,
-                limit = "Actual offscreen standalone player. Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim." };
+                limit = (Application.isEditor ? "Unity Editor Play Mode runtime; NOT standalone-player acceptance. " : "Actual offscreen standalone player. ") + "Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim." };
             try
             {
                 string[] args = Environment.GetCommandLineArgs(); int i = Array.IndexOf(args, "-npcEvidence");
@@ -251,6 +263,9 @@ namespace CityLife.World
             if (directory != null) File.WriteAllText(Path.Combine(directory, "npc-runtime.json"), JsonUtility.ToJson(report, true));
             Time.captureDeltaTime = 0;
             if (target != null) target.Release();
+#if UNITY_EDITOR
+            if (Application.isEditor) { UnityEditor.EditorApplication.Exit(error == null ? 0 : 3); return; }
+#endif
             Application.Quit(error == null ? 0 : 3);
         }
     }

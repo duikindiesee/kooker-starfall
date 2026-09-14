@@ -41,3 +41,13 @@ The complete living-memory thought is **not proven**. The compiled player exited
 Source `cae0ada3419a6bb739df6cf3196a90260c7b6a88`, build `KookerStarfallHybrid-0.0.6-memory-preview.2-20260914-060428`. The scalar response path compiled with 2841 world assertions, 26 NPC checks and 71 hybrid/memory checks passing. All 558 files in the three earlier builds retained their hashes.
 
 Actual player launch was blocked before startup/inference by Windows Application Control (`WinError 4551`). Code Integrity events 3033/3077 identified this executable as failing Enterprise signing requirements or policy. No policy bypass or alternate launch was attempted. Local evidence: `evidence/local/living-memory/run-20260914-scalar/REPORT.md` and `application-control-events.json`. A policy-compliant signed/approved executable is required before this version can establish runtime acceptance. This does not improve the previous failed thought result.
+
+## Authorized Editor runtime path
+
+The dedicated `StarfallMemoryPlayMode.Run` harness opens the preserved preview.2 courtyard scene and its pipeline in the pinned installed Unity Editor, then enters Play Mode. It runs the same runtime thought and action code; it does not load or execute the blocked standalone binary. Evidence and the thought HUD explicitly say Editor Play Mode, and event producer build identity is `editor-` plus the clean source commit. The runner preserves/restores project settings, uses new private memory state, and retains the same deadline, cancellation, isolation and admission gates. This route proves Editor runtime only, never standalone acceptance or a release.
+
+```powershell
+python tools/run-living-memory.py --editor 'C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Unity.exe' --scene Assets/CityLife/GeneratedPreview-Character-KookerStarfallHybrid-0.0.6-memory-preview.2-20260914-060428/InhabitantDecisions.unity --output evidence/local/living-memory/NEW_EDITOR_RUN
+```
+
+Run only with an explicitly allocated exclusive Editor slot and no existing Editor/import worker. The blocked binary and Code Integrity evidence remain preserved. Smart App Control remains On. Future standalone acceptance requires a properly signed release artifact whose certificate and reputation satisfy the machine's trust policy, then a fresh policy-on launch and actual-player gate. A signature alone is not a launch receipt; renaming/copying the blocked executable or changing policy is not this workflow. Certificate acquisition or signing-service enrollment is separate authorized release work.
