@@ -402,7 +402,9 @@ namespace CityLife.World
         public static bool IsSafeWalkPoint(IslandField island, Vector3 point)
         {
             if (island == null) return false;
-            return island.Ground(point.x, point.z) >= ShoreLimit && SlopeAt(island, point) <= MaximumWalkGradient;
+            float ground = island.Ground(point.x, point.z);
+            float slope = SlopeAt(island, point);
+            return IslandDefinition.Finite(ground) && IslandDefinition.Finite(slope) && ground >= ShoreLimit && slope <= MaximumWalkGradient;
         }
 
         public static bool TryFindSafeWalkLanding(IslandField island, Vector3 preferred, out Vector3 landing)

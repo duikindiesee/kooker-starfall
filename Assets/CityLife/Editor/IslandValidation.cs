@@ -152,9 +152,25 @@ namespace CityLife.World.Editor
             Check(!IslandExplorer.IsSafeWalkPoint(landingField, landingField.Landing), "saved terrain edits can invalidate the procedural landing");
             Check(IslandExplorer.TryFindSafeWalkLanding(landingField, landingField.Landing, out Vector3 safeLanding) && IslandExplorer.IsSafeWalkPoint(landingField, safeLanding),
                 "walking searches the edited terrain for a safe landing instead of trusting the procedural landing");
-            bool controlsRestored = false;
-            bool evidenceSaved = IslandExplorer.TryWriteEvidence(() => throw new IOException("synthetic failed write"), () => controlsRestored = true, out string evidenceError);
-            Check(!evidenceSaved && controlsRestored && evidenceError.Contains("synthetic failed write"), "failed evidence write restores tour controls and reports the failure");
+            var noSafeDefinition = Clone(d); noSafeDefinition.worldId += "-no-safe"; noSafeDefinition.cells = 64; noSafeDefinition.heightScale = 1;
+            var noSafeField = new IslandField(noSafeDefinition); noSafeField.Generate();
+            var noSafeEdits = new List<HeightEdit>();
+            for (int z = 0; z <= noSafeDefinition.cells; z++)
+            for (int x = 0; x <= noSafeDefinition.cells; x++)
+                noSafeEdits.Add(new HeightEdit { x = x, z = z, deltaMetres = -100f });
+            var noSafeOverlay = WorldEdits.Empty(noSafeDefinition); noSafeOverlay.revision = 1; noSafeOverlay.terrain = noSafeEdits.ToArray(); noSafeOverlay.Apply(noSafeField);
+            Check(!IslandExplorer.TryFindSafeWalkLanding(noSafeField, noSafeField.Landing, out _), "walking reports no fallback when the edited world has no safe ground");
+            var nonFiniteField = new IslandField(Clone(noSafeDefinition)); nonFiniteField.Generate();
+            int nonFiniteX = Mathf.RoundToInt(nonFiniteField.Landing.x / (float)noSafeDefinition.cellMetres + noSafeDefinition.cells / 2f);
+            int nonFiniteZ = Mathf.RoundToInt(nonFiniteField.Landing.z / (float)noSafeDefinition.cellMetres + noSafeDefinition.cells / 2f);
+            nonFiniteField.Heights[nonFiniteZ * nonFiniteField.Stride + nonFiniteX] = float.NaN;
+            Check(!IslandExplorer.IsSafeWalkPoint(nonFiniteField, nonFiniteField.Landing), "non-finite terrain can never be accepted as safe walking ground");
+            bool successControlsRestored = false;
+            bool evidenceSaved = IslandExplorer.TryWriteEvidence(() => { }, () => successControlsRestored = true, out string successError);
+            Check(evidenceSaved && successControlsRestored && successError == "", "successful evidence write restores tour controls");
+            bool failedControlsRestored = false;
+            evidenceSaved = IslandExplorer.TryWriteEvidence(() => throw new IOException("synthetic failed write"), () => failedControlsRestored = true, out string evidenceError);
+            Check(!evidenceSaved && failedControlsRestored && evidenceError.Contains("synthetic failed write"), "failed evidence write restores tour controls and reports the failure");
             string scratch = Path.Combine(Path.GetTempPath(), "CityLifeValidation", Guid.NewGuid().ToString("N"), "edits.json");
             edits.Save(scratch); edits.Save(scratch);
             var readBack = JsonUtility.FromJson<WorldEdits>(File.ReadAllText(scratch)); readBack.Apply(restored);
@@ -181,7 +197,7 @@ namespace CityLife.World.Editor
                 sourceRngValues = rngCount, sourceNoiseVectors = oracle.noiseVectors.Length, maxSourceHeightError = maxError,
                 baseHash = baseHash, fingerprint = d.Fingerprint(), widthMetres = d.Width, landKm2 = full.LandAreaKm2,
                 gentleLandKm2 = full.FlatAreaKm2, maxHeightMetres = full.MaxHeight, generationMs = full.GenerationMilliseconds,
-                checks = new[] { "source JavaScript arithmetic oracle", "full-grid regeneration", "different seed", "reverse chunk traversal", "closed coastline", "ground mesh mapping", "edited-terrain safe walking landing", "failed evidence write restores tour controls", "immutable base and atomic edit save/reload", "mismatch/invalid data rejection" }
+                checks = new[] { "source JavaScript arithmetic oracle", "full-grid regeneration", "different seed", "reverse chunk traversal", "closed coastline", "ground mesh mapping", "edited-terrain safe walking landing and no-safe fallback", "non-finite ground rejection", "successful and failed evidence writes restore tour controls", "immutable base and atomic edit save/reload", "mismatch/invalid data rejection" }
             };
             Directory.CreateDirectory("evidence/local"); File.WriteAllText("evidence/local/validation.json", JsonUtility.ToJson(result, true));
             Debug.Log("CITYLIFE_VALIDATION_PASSED " + JsonUtility.ToJson(result));
