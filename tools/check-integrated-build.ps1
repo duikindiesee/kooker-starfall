@@ -18,6 +18,10 @@ if ($actual -ne [IO.Path]::GetFullPath($expected)) { throw 'Unexpected player lo
 if ((Get-Item -LiteralPath $actual).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Linked executable rejected.' }
 $hash = (Get-FileHash -LiteralPath $actual -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($hash -ne $launch.sha256) { throw 'Player bytes differ from runtime receipt.' }
+$content = & (Join-Path $PSScriptRoot 'get-integrated-content-hash.ps1') -BuildDirectory (Split-Path $actual -Parent)
+if ($launch.buildContentSchema -ne $content.schema -or $launch.buildContentSha256 -ne $content.sha256) {
+    throw 'Missing or mismatched full build content fingerprint; executable-only identity is insufficient.'
+}
 if ($runtime.status -ne 'PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING') { throw 'Expected passing automated candidate receipt.' }
 foreach ($name in @('complete-three-object-autonomy-cycle','remembered-action-receipts','forage-decoration-does-not-block-navigation')) {
     $matches = @($runtime.checks | Where-Object { $_.name -eq $name })
@@ -29,5 +33,6 @@ if (@($runtime.checks | Where-Object { $_.passed -ne $true }).Count -gt 0) { thr
     build=$manifest.buildId
     source=$manifest.sourceCommit
     executableSha256=$hash
+    buildContentSha256=$content.sha256
     remaining='Visual and native review, club validation, protected review, packaging and walkthrough remain separate.'
 } | ConvertTo-Json
