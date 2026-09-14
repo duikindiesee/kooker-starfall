@@ -10,6 +10,7 @@ Shader "CityLife/CoastalWater"
         _WaterLevel ("World water level", Float) = -2
         _UseSceneDepth ("Use available camera depth", Range(0,1)) = 1
         _WaveStrength ("Wave strength", Range(0,1)) = 1
+        _ReflectionStrength ("Bounded scene reflection strength", Range(0,1)) = 1
     }
     SubShader
     {
@@ -37,7 +38,7 @@ Shader "CityLife/CoastalWater"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _ShallowColor, _RiverColor, _DeepColor, _SkyReflection, _FoamColor;
-                float _WaterLevel, _UseSceneDepth, _WaveStrength;
+                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength;
             CBUFFER_END
 
             struct Attributes
@@ -174,7 +175,7 @@ Shader "CityLife/CoastalWater"
                 environment=max(environment,_SkyReflection.rgb*.18);
                 // Water reflects a small amount even head-on and grows strongly toward
                 // grazing angles; this avoids hiding a valid probe behind a zero-Fresnel floor.
-                float reflectionWeight=.03+fresnel*.62;
+                float reflectionWeight=(.03+fresnel*.62)*saturate(_ReflectionStrength);
                 water = lerp(water,environment,reflectionWeight);
                 Light sun = GetMainLight();
                 float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);

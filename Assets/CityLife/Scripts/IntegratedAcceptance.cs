@@ -112,6 +112,9 @@ namespace CityLife.World
             keyboard = InputSystem.AddDevice<Keyboard>("IntegratedAcceptanceKeyboard"); mouse = InputSystem.AddDevice<Mouse>("IntegratedAcceptanceMouse");
             Controls.TestKeyboard = keyboard; Controls.TestMouse = mouse; Controls.AllowUnfocusedTestInput = true;
             yield return null; yield return null;
+            // Freeze autonomy while visual/configuration gates run so the full memory export
+            // still begins before the first pickup rather than silently losing that receipt.
+            Brain.Pause();
             CheckThat("world-binding", Brain.Ready && Brain.Perception.WorldId == Brain.InstanceWorldId && Brain.InstanceWorldId == NpcTerrainNavigation.RegionId, Brain.InstanceWorldId);
             float sampledCliff = float.MinValue;
             for (float z = CoastalTerrain.MinZ + 100; z < 600; z += 100)
@@ -182,17 +185,23 @@ namespace CityLife.World
             Color32[] reflectionOff=null,reflectionOn=null;
             if(reflectionProbe!=null)
             {
-                reflectionProbe.enabled=false;
-                yield return new WaitForEndOfFrame();
-                reflectionOff=RenderWorldNow("01g-reflection-probe-off");
-                reflectionProbe.enabled=true;
-                reflectionRenderId=reflectionProbe.RenderProbe();
-                float reflectionDeadline=Time.realtimeSinceStartup+8;
-                while(reflectionRenderId>=0&&!reflectionProbe.IsFinishedRendering(reflectionRenderId)&&Time.realtimeSinceStartup<reflectionDeadline) yield return null;
-                reflectionFinished=reflectionRenderId>=0&&reflectionProbe.IsFinishedRendering(reflectionRenderId);
-                reflectionTexture=reflectionProbe.texture;
-                yield return new WaitForEndOfFrame();
-                reflectionOn=RenderWorldNow("01h-reflection-probe-on");
+                float priorTimeScale=Time.timeScale;
+                try
+                {
+                    Time.timeScale=0; // isolate probe contribution from animated waves/caustics
+                    reflectionProbe.enabled=false;
+                    yield return new WaitForEndOfFrame();
+                    reflectionOff=RenderWorldNow("01g-reflection-probe-off");
+                    reflectionProbe.enabled=true;
+                    reflectionRenderId=reflectionProbe.RenderProbe();
+                    float reflectionDeadline=Time.realtimeSinceStartup+8;
+                    while(reflectionRenderId>=0&&!reflectionProbe.IsFinishedRendering(reflectionRenderId)&&Time.realtimeSinceStartup<reflectionDeadline) yield return null;
+                    reflectionFinished=reflectionRenderId>=0&&reflectionProbe.IsFinishedRendering(reflectionRenderId);
+                    reflectionTexture=reflectionProbe.texture;
+                    yield return new WaitForEndOfFrame();
+                    reflectionOn=RenderWorldNow("01h-reflection-probe-on");
+                }
+                finally { Time.timeScale=priorTimeScale; }
             }
             double reflectionDelta=0; int reflectionSamples=0;
             if(reflectionOff!=null&&reflectionOn!=null&&reflectionOff.Length==reflectionOn.Length)
@@ -203,10 +212,17 @@ namespace CityLife.World
                     reflectionSamples+=3;
                 }
             reflectionDelta/=Math.Max(1,reflectionSamples);
-            CheckThat("actual-coastal-reflection-probe-contribution",reflectionProbe!=null&&reflectionFinished&&reflectionTexture!=null&&reflectionDelta>.02,
+            CheckThat("actual-coastal-reflection-probe-contribution",QualitySettings.realtimeReflectionProbes&&reflectionProbe!=null&&reflectionFinished&&reflectionTexture!=null&&reflectionDelta>.02,
                 "probe="+(reflectionProbe==null?"missing":reflectionProbe.name)+"; renderId="+reflectionRenderId+"; finished="+reflectionFinished+
                 "; texture="+(reflectionTexture==null?"none":reflectionTexture.name+" "+reflectionTexture.width+"x"+reflectionTexture.height)+
-                "; matched lower-frame mean channel delta="+reflectionDelta.ToString("F3")+"; dynamic weather refresh not claimed");
+                "; qualityRealtime="+QualitySettings.realtimeReflectionProbes+"; shader time frozen; matched lower-frame mean channel delta="+reflectionDelta.ToString("F3")+"; dynamic weather refresh not claimed");
+            var islands=GameObject.Find("Distant islands - visual only - outside playable boundary");
+            CheckThat("inaccessible-offshore-landforms-present",islands!=null&&islands.GetComponentsInChildren<MeshRenderer>().Length==3&&islands.GetComponentsInChildren<Collider>().Length==0,
+                islands==null?"missing":"renderers="+islands.GetComponentsInChildren<MeshRenderer>().Length+"; colliders="+islands.GetComponentsInChildren<Collider>().Length+"; centres beyond active terrain z=900");
+            Controls.View.GetComponent<Camera>().farClipPlane=2400;
+            Controls.View.transform.SetPositionAndRotation(new Vector3(0,32,520),Quaternion.LookRotation(new Vector3(-40,18,1250)-new Vector3(0,32,520)));
+            yield return CaptureWorld("01i-offshore-islands-sea-vista");
+            Controls.View.GetComponent<Camera>().farClipPlane=1500;
             Controls.View.transform.SetPositionAndRotation(new Vector3(0,17,29),Quaternion.LookRotation(shallowTarget-new Vector3(0,17,29)));
             yield return CaptureWorld("01f-shallow-bed-overhead");
             Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();
@@ -214,6 +230,7 @@ namespace CityLife.World
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
             {
                 memory.RegisterIdentity(NpcAutonomy.AgentId, "Inhabitant 01", Brain.Tick); Brain.MemoryExport = memory;
+                Brain.Running=true;
                 float until = Time.realtimeSinceStartup + 150;
                 while (Brain.Actions.Deliveries < 3 && Time.realtimeSinceStartup < until) yield return null;
                 Brain.MemoryExport = null; report.memoryEvents = memory.Count;

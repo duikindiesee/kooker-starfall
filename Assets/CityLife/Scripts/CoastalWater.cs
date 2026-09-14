@@ -90,12 +90,14 @@ namespace CityLife.World
 
         private static void AddEnvironmentProbe(Transform parent)
         {
-            // A bounded realtime probe captures the actual canyon, sky and celestial geometry
-            // once when the scene starts. The water layer is excluded to avoid self-reflection.
+            // This candidate intentionally enables realtime probes for its scoped graphics
+            // tier; the project default is off and previously made RenderProbe a no-op.
+            QualitySettings.realtimeReflectionProbes=true;
             var go=new GameObject("Coastal water environment reflection probe");
             go.transform.SetParent(parent,false);
             go.transform.localPosition=new Vector3(0,18,105);
             var probe=go.AddComponent<ReflectionProbe>();
+            go.AddComponent<CoastalReflectionRuntime>();
             probe.mode=UnityEngine.Rendering.ReflectionProbeMode.Realtime;
             probe.refreshMode=UnityEngine.Rendering.ReflectionProbeRefreshMode.OnAwake;
             probe.timeSlicingMode=UnityEngine.Rendering.ReflectionProbeTimeSlicingMode.AllFacesAtOnce;

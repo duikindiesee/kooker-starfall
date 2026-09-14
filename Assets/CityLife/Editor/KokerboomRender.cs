@@ -106,7 +106,7 @@ namespace CityLife.World.Editor
         private static AmbientRecord initialAmbient;
         private static Material[] diagnosticOriginalMaterials;
         private static Renderer diagnosticRenderer;
-        private static int ExpectedCaptures => coastalMode ? 8 : playablePreviewMode ? 2 : ph02FamilyMode ? ph02SelectedShotIds.Length : woodDiagnosticMode ? 3 : ph02FittedMode ? 12 : ph01TangentMode ? (ph01OriginalSubsetsReady ? 12 : 8) : ph02CrownMode ? 8 : importedCandidateMode ? 12 : hybridMode ? 21 : 15;
+        private static int ExpectedCaptures => coastalMode ? 7 : playablePreviewMode ? 2 : ph02FamilyMode ? ph02SelectedShotIds.Length : woodDiagnosticMode ? 3 : ph02FittedMode ? 12 : ph01TangentMode ? (ph01OriginalSubsetsReady ? 12 : 8) : ph02CrownMode ? 8 : importedCandidateMode ? 12 : hybridMode ? 21 : 15;
 
         public static void RenderBatch() => Run(false);
         public static void RenderImportedCandidates() => Run(true);
@@ -1726,7 +1726,6 @@ ENDHLSL
                 report.status=passed?"Actual Unity coastal comparison views completed":"Technical coastal rendering failure";
                 report.scope="Separate coastal opening-world study, terrain seed1904242, tree/rock seed4242, finite 1200x1600m active terrain plus visual-only sea continuation. Fixed side-view, element and matched shallow-bed cameras. Frozen R19 tree, rocky bank, turquoise river opening toward sea, canyon terrain and procedural sky. No swimming, aquatic animals, saved world or native player acceptance.";
                 report.visualAcceptance="First combined scene for proportional element and composition review; exact reference match and user acceptance are not established.";
-                WriteCoastalReflectionRecord();
             }
             File.WriteAllText(Path.Combine(outputDirectory, "metrics.json"), JsonUtility.ToJson(report, true));
         }

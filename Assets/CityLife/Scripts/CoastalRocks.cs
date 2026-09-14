@@ -150,6 +150,7 @@ namespace CityLife.World
             var treeSites=new[] { new Vector2(-245,-150),new Vector2(-225,-132),new Vector2(258,120),new Vector2(282,137),new Vector2(-275,330),new Vector2(302,365) };
             for(int i=0;i<treeSites.Length;i++) AddTerraceKookerboom(terraceTrees,treeSites[i],9f+Lerp(0,4f,i,140),400+i);
             MeshObject("Sparse terrace Kookerboom groups - decorative",terraceTrees.ToMesh("Terrace Kookerboom silhouettes"),plants,root.transform,false);
+            CoastalDistantIslands.Create(root.transform);
             return root;
         }
 
