@@ -68,10 +68,15 @@ namespace CityLife.World
         }
         private IEnumerator ClickMenuButton(int index)
         {
-            var rect = GameObject.Find("Option " + index).GetComponent<RectTransform>();
+            // Let deferred destruction/layout from the page transition settle;
+            // otherwise a hidden acceptance player can target the previous frame's button.
+            yield return new WaitForEndOfFrame(); Canvas.ForceUpdateCanvases();
+            var button = GameObject.Find("Option " + index);
+            if (button == null || !button.activeInHierarchy) yield break;
+            var rect = button.GetComponent<RectTransform>();
             var point = RectTransformUtility.WorldToScreenPoint(Controls.View.GetComponent<Camera>(), rect.TransformPoint(rect.rect.center));
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }); yield return null;
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }.WithButton(MouseButton.Left)); yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }); yield return null; yield return null;
+            InputSystem.QueueStateEvent(mouse, new MouseState { position = point }.WithButton(MouseButton.Left)); yield return null; yield return null;
             InputSystem.QueueStateEvent(mouse, new MouseState { position = point }); yield return null; yield return null;
         }
         private IEnumerator Start()

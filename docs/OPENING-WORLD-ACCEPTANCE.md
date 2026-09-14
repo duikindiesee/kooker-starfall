@@ -77,3 +77,16 @@ Future hunting, construction, complete ecology, planetary geometry and infrastru
 
 Earlier successful thought captures remain historical evidence, not proof that
 the post-reboot configuration meets the same deadline. Preserve both outcomes.
+
+### Build-warning audit — round 130
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Candidate compiles | Build report succeeded with 18 warnings, zero errors | `evidence/milestones/coastal/round-130/preview-build.json`; source `d7f6ea359a70ecce1d2b534863330c873708eef0` | This is not runtime or visual acceptance |
+| Deprecated Unity discovery calls remain | Confirmed compiler warnings | `evidence/local/integrated/build-20260914-181557.log`: CS0618 in EnvironmentPresentation, IntegratedFoodRuntime and CoastalSmoke | Review ordering semantics before replacing discovery overloads |
+| Some public runtime fields are not Unity-serialized | Confirmed compiler warnings, not a demonstrated persistence defect | Same log: UAC1001 for MemoryExport, environment Clock/Exposure/LocalWeather/ShelterPolicy and refuge Local | Explicitly document runtime ownership; verify intended persistence through the scoped store rather than assuming scene serialization |
+
+Do not add serialization attributes to runtime services merely to silence these
+warnings. The event-memory ledger and a complete world save are different
+contracts; this build report proves neither. Keep warnings visible in the final
+manifest and rerun this audit against the exact release candidate.
