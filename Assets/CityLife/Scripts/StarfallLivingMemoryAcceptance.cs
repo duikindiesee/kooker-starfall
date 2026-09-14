@@ -81,7 +81,7 @@ namespace CityLife.World
                 report.status = report.liveAdmitted ? "PASS" : "THOUGHT_NOT_ADMITTED";
                 hud.LivingMemoryText = "REMEMBERED INSIGHT\n" + report.inhabitant + " / " + report.world +
                     "\nVerified delivery: " + memory.Item + " -> " + memory.Target + "\nEvent: " + memory.EventId.Substring(0, 16) +
-                    (report.liveAdmitted ? "\nModel: " + thought.model + "\nDialogue: " + thought.dialogue + "\nReflection: " + thought.reflection : "\nDeterministic fallback / " + thought.status + "\nNo model thought admitted.") +
+                    (report.liveAdmitted ? "\nModel: " + thought.model + "\nThought: " + thought.reflection : "\nDeterministic fallback / " + thought.status + "\nNo model thought admitted.") +
                     "\n" + thought.milliseconds + " ms / 1500 ms deadline\nMemory records facts; model text is interpretation.\nUnity alone controls actions.";
                 brain.Log.Record(brain.Tick, "memory", report.perception, memory.Target, "read verified own delivery; bounded reflection only", report.status);
                 capture("51-living-memory-thought-or-fallback");

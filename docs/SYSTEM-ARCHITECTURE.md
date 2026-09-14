@@ -146,9 +146,9 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 The user-directed [knowledge progression rules](STARFALL-KNOWLEDGE-PROGRESSION.md) define naive starting knowledge, provenance/confidence/corrections, persistent-world death and return, recoverable inventory, at-most-one grounded lesson, privacy, and staged ecology/survival milestones. These are planned, not runtime-proven. Death lessons and post-return reflection remain after the current one-living-thought proof. Existing memory event schema v1 and old saves are unchanged.
 
 
-## Isolated living-memory candidate: source prepared, runtime pending
+## Isolated living-memory candidate: persistence proven, thought deadline unmet
 
-[One living-memory thought](LIVING-MEMORY-THOUGHT.md) describes the separate 0.0.6-memory-preview.1 adapter and runner. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. A new reflection-only protocol cannot express actions and retains the 1500 ms deadline. This candidate has not yet passed actual-player acceptance and does not replace existing releases.
+[One living-memory thought](LIVING-MEMORY-THOUGHT.md) records the separate 0.0.6-memory-preview.1 player's actual receipt/persistence/retrieval/restart pass and thought deadline failure. Real player action receipts are the only event input; the reviewed scoped HTTP/SQLite interface is unchanged. Candidate preview.2 reduces reflection-only output to a strict JSON string, with event/world/actor correlation retained by Unity rather than generated. It cannot express actions and retains the 1500 ms deadline. Preview.2 runtime acceptance is pending and it does not replace existing releases.
 
 ```mermaid
 flowchart LR
