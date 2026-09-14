@@ -7,19 +7,21 @@ namespace CityLife.World
     /// <summary>A finite, new coastal study. Never reads or changes an IslandDefinition or saved edits.</summary>
     public static class CoastalTerrain
     {
-        public const string DefinitionId = "starfall.coastal-slice.v1";
-        public const string ContentRevision = "terrain-r2-weathered-banks";
+        public const string DefinitionId = "starfall.coastal-world.v1";
+        public const string ContentRevision = "fish-river-canyon-r1";
         public const int Seed = 1904242;
-        public const float MinX = -90f, MaxX = 90f, MinZ = -55f, MaxZ = 145f;
+        public const float MinX = -600f, MaxX = 600f, MinZ = -700f, MaxZ = 900f;
         public const float SeaLevel = CoastalWater.Level;
-        public const int CellsX = 240, CellsZ = 268;
+        public const int CellsX = 300, CellsZ = 400;
         public const float HeroPadRadius = 8.5f;
 
         private static readonly Vector2[] Feed = Curve(new[] {
-            new Vector2(-8,-65), new Vector2(-8,-48), new Vector2(-4,-33), new Vector2(0,-22)
+            new Vector2(-90,-700), new Vector2(-145,-540), new Vector2(-85,-390),
+            new Vector2(25,-245), new Vector2(-40,-95), new Vector2(0,-22)
         });
         private static readonly Vector2[] Outlet = Curve(new[] {
-            new Vector2(0,22), new Vector2(-8,39), new Vector2(-3,56), new Vector2(8,76), new Vector2(10,96)
+            new Vector2(0,22), new Vector2(70,145), new Vector2(-35,275),
+            new Vector2(90,410), new Vector2(25,555), new Vector2(0,690)
         });
 
         /// <summary>Metre-space surface height; outside this finite patch, returns the nearest edge height.</summary>
@@ -28,16 +30,17 @@ namespace CityLife.World
             if (float.IsNaN(x) || float.IsInfinity(x) || float.IsNaN(z) || float.IsInfinity(z))
                 throw new ArgumentOutOfRangeException("Coastal coordinates must be finite.");
             x = Mathf.Clamp(x, MinX, MaxX); z = Mathf.Clamp(z, MinZ, MaxZ);
-            float broad = Noise(x * .027f, z * .027f);
-            float ground = .8f + broad * 1.7f + Noise(x * .079f + 17, z * .079f) * .32f;
+            float broad = Noise(x * .0045f, z * .0045f);
+            float ground = 2.2f + broad * 4.8f + Noise(x * .018f + 17, z * .018f) * .8f;
 
             // Distinct asymmetric mesa masses frame the channel; their shoulders are
             // several metres deep, rather than noise displacing an otherwise flat plane.
-            float mesa = Mesa(x,z,-49,28,23,38,25,7);
-            mesa = Mathf.Max(mesa,Mesa(x,z,-69,-18,19,29,18,31));
-            mesa = Mathf.Max(mesa,Mesa(x,z,49,32,22,38,27,63));
-            mesa = Mathf.Max(mesa,Mesa(x,z,73,64,18,27,20,97));
-            mesa = Mathf.Max(mesa,Mesa(x,z,-70,70,18,25,24,151));
+            float mesa = Mesa(x,z,-390,-490,250,300,118,7);
+            mesa = Mathf.Max(mesa,Mesa(x,z,365,-430,235,325,142,31));
+            mesa = Mathf.Max(mesa,Mesa(x,z,-405,-80,245,270,156,63));
+            mesa = Mathf.Max(mesa,Mesa(x,z,410,20,250,310,132,97));
+            mesa = Mathf.Max(mesa,Mesa(x,z,-390,350,250,310,124,151));
+            mesa = Mathf.Max(mesa,Mesa(x,z,410,430,260,300,112,181));
             ground += mesa;
 
             // Near-ring meander: a west-facing land neck keeps this an outcrop connected
@@ -48,19 +51,19 @@ namespace CityLife.World
             float ringDistance = Mathf.Abs(ringRadius - ringOffset) - 5.6f;
             float westNeck = Smooth(.78f, .98f, -x / Mathf.Max(radius, .001f)) * (1f - Smooth(3f, 7f, Mathf.Abs(z)));
             float ringCut = (1f - Smooth(-.6f, 4.2f, ringDistance)) * (1f - westNeck);
-            float feedWidth = Mathf.Lerp(6.8f, 5.4f, Smooth(-55f, -22f, z));
-            float feedCut = 1f - Smooth(-.5f, 4.5f, DistanceToCurve(x,z,Feed) - feedWidth);
-            float outletWidth = Mathf.Lerp(5.4f, 19f, Smooth(30f, 79f, z));
-            float outletCut = 1f - Smooth(-.7f, 5f, DistanceToCurve(x,z,Outlet) - outletWidth);
+            float feedWidth = Mathf.Lerp(28f, 11f, Smooth(-700f, -22f, z));
+            float feedCut = 1f - Smooth(-2f, 12f, DistanceToCurve(x,z,Feed) - feedWidth);
+            float outletWidth = Mathf.Lerp(12f, 105f, Smooth(30f, 700f, z));
+            float outletCut = 1f - Smooth(-2f, 18f, DistanceToCurve(x,z,Outlet) - outletWidth);
             float channelCut = Mathf.Max(ringCut, Mathf.Max(feedCut, outletCut));
             float riverBed = -4.5f + Noise(x * .075f + 9, z * .075f) * .4f;
-            riverBed -= Smooth(38f, 86f, z) * 6.5f;
+            riverBed -= Smooth(120f, 700f, z) * 11.5f;
             ground = Mathf.Lerp(ground, Mathf.Min(ground, riverBed), channelCut);
 
             // One continuous underwater heightfield extends into the broad genuine sea.
-            float coast = 66f + Mathf.Sin(x * .041f) * 6f + Noise(x * .032f, 31) * 4f;
-            float seaCut = Smooth(coast - 12f, coast + 14f, z);
-            float seabed = Mathf.Lerp(-10f, -17.2f, Smooth(66f, 145f, z)) + Noise(x * .035f + 5,z * .035f) * .65f;
+            float coast = 680f + Mathf.Sin(x * .011f) * 34f + Noise(x * .009f, 31) * 22f;
+            float seaCut = Smooth(coast - 45f, coast + 55f, z);
+            float seabed = Mathf.Lerp(-10f, -28f, Smooth(650f, 900f, z)) + Noise(x * .009f + 5,z * .009f) * 1.3f;
             ground = Mathf.Lerp(ground, seabed, seaCut);
 
             // Exact, broad 0 m pad protects the frozen hero tree's existing root placement.

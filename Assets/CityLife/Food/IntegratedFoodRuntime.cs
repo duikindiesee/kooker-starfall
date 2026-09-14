@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
+        public float MinimumRockClearance { get; private set; }
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
         void EnsureModel()
@@ -20,10 +21,42 @@ namespace Starfall.Food
         public void Attach(Transform actor, Transform worldRoot, string worldId)
         {
             Actor = actor; Model = new FoodModel(worldId, Generation, 4242);
-            BerryPosition = new Vector3(8, CoastalTerrain.Height(8, -5) + .45f, -5);
-            SpringPosition = new Vector3(-4, CoastalTerrain.Height(-4, 7) + .45f, 7);
-            Berry = Target("Food / ripe berry bush", "berry-food", BerryPosition, worldRoot, new Color(.48f, .08f, .34f));
+            // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
+            BerryPosition = new Vector3(34, CoastalTerrain.Height(34, -18), -18);
+            SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
+            Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));
+            MinimumRockClearance = MeasureRockClearance(BerryPosition);
+            if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
+        }
+        static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
+        {
+            var root = new GameObject("Food / recognizable ripe berry bush"); root.transform.SetParent(parent); root.transform.position = position;
+            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            Material Make(string name, Color colour) { var m = new Material(shader) { name = name, color = colour }; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", colour); return m; }
+            var wood = Make("Berry bush warm stem", new Color(.24f,.11f,.05f));
+            var leaf = Make("Berry bush blue green leaves", new Color(.08f,.32f,.25f));
+            var fruit = Make("Berry bush purple red fruit", new Color(.55f,.025f,.18f));
+            for (int i=0;i<5;i++)
+            {
+                float angle=i*1.2566f; var branch=GameObject.CreatePrimitive(PrimitiveType.Cylinder); branch.name="Berry branch "+i; branch.transform.SetParent(root.transform,false);
+                branch.transform.localPosition=new Vector3(Mathf.Cos(angle)*.28f,.62f,Mathf.Sin(angle)*.28f); branch.transform.localScale=new Vector3(.08f,.65f,.08f); branch.transform.localRotation=Quaternion.Euler(Mathf.Sin(angle)*22,0,Mathf.Cos(angle)*-22); branch.GetComponent<Renderer>().sharedMaterial=wood;
+                var crown=GameObject.CreatePrimitive(PrimitiveType.Sphere); crown.name="Berry leaf crown "+i; crown.transform.SetParent(root.transform,false); crown.transform.localPosition=new Vector3(Mathf.Cos(angle)*.62f,1.35f,Mathf.Sin(angle)*.62f); crown.transform.localScale=new Vector3(1.15f,.55f,.9f); crown.GetComponent<Renderer>().sharedMaterial=leaf;
+                for(int j=0;j<3;j++){var berry=GameObject.CreatePrimitive(PrimitiveType.Sphere);berry.name="Visible ripe berry "+i+"-"+j;berry.transform.SetParent(root.transform,false);float a=angle+j*2.09f;berry.transform.localPosition=crown.transform.localPosition+new Vector3(Mathf.Cos(a)*.36f,-.22f,Mathf.Sin(a)*.32f);berry.transform.localScale=Vector3.one*.18f;berry.GetComponent<Renderer>().sharedMaterial=fruit;}
+            }
+            var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.35f; sensor.center=new Vector3(0,.9f,0); sensor.isTrigger=true;
+            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place; item.Approach=root.transform; return item;
+        }
+        static float MeasureRockClearance(Vector3 position)
+        {
+            float best=float.MaxValue;
+            foreach(var collider in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            {
+                if (!collider.name.StartsWith("Stratified shore rock")) continue;
+                Vector3 nearest=collider.ClosestPoint(position); nearest.y=position.y;
+                best=Mathf.Min(best,Vector3.Distance(position,nearest));
+            }
+            return best==float.MaxValue ? 999f : best;
         }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
         {

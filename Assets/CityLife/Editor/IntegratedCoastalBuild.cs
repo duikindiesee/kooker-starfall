@@ -84,7 +84,8 @@ namespace CityLife.World.Editor
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             brain.SpawnPosition = new Vector3(-4, .02f, -5); actor.Place(brain.SpawnPosition);
             var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
-            controls.CameraMinimum = new Vector3(-87, -1, -52); controls.CameraMaximum = new Vector3(87, 90, 142);
+            controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
+            controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
             camera.fieldOfView = 60; actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Follow();
             // Keep the composed galaxy view and add background coverage behind it.
@@ -110,7 +111,12 @@ namespace CityLife.World.Editor
             var fixtureBody = GameObject.Find("Refuge player capsule");
             var authoredRefuge = GameObject.Find("First refuge / authored v1");
             if (refugeRuntime == null || fixtureBody == null || authoredRefuge == null) throw new InvalidOperationException("Verified First Refuge attachment failed.");
-            var refugeDelta = new Vector3(-28, 0, 24);
+            // Put the authored refuge on a broad, reachable east-bank shelf. The original
+            // refuge floor is centred at (-10,0), so this translation moves its centre to
+            // (-165,118) and lifts its ramp/floor with the actual terrain height.
+            var refugeAnchor = new Vector3(-165, 0, 118);
+            var refugeDelta = new Vector3(refugeAnchor.x + 10,
+                CoastalTerrain.Height(refugeAnchor.x, refugeAnchor.z), refugeAnchor.z);
             authoredRefuge.transform.position += refugeDelta;
             refugeRuntime.Hearth += refugeDelta; refugeRuntime.Bed += refugeDelta; refugeRuntime.Storage += refugeDelta;
             refugeRuntime.Body = actor.Capsule; refugeRuntime.IntegratedMode = true;
@@ -172,7 +178,7 @@ namespace CityLife.World.Editor
         [Serializable] private sealed class Binding
         {
             public string worldId = NpcTerrainNavigation.RegionId, terrain = CoastalTerrain.ContentRevision,
-                scope = "Finite combined regional candidate with verified component sources for coast, environment, inhabitant, authored First Refuge, food model and local thought protocol. Full main world, boats and unified save/load remain unimplemented.";
+                scope = "Finite 1200x1600m Fish River Canyon inspired candidate with a traversable turquoise river-to-sea corridor, terrain-fitted authored First Refuge, visible berry bush, environment, inhabitant, food model and local thought protocol. Boats and unified save/load remain unimplemented.";
         }
     }
 }

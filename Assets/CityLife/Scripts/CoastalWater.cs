@@ -12,20 +12,20 @@ namespace CityLife.World
     public static class CoastalWater
     {
         public const float Level = -2f;
-        public const float VisualSeaHalfWidth = 960f;
-        public const float VisualSeaMinZ = 145f;
-        public const float VisualSeaMaxZ = 1015f;
+        public const float VisualSeaHalfWidth = 1800f;
+        public const float VisualSeaMinZ = CoastalTerrain.MaxZ;
+        public const float VisualSeaMaxZ = 2200f;
 
         /// <summary>
-        /// Creates the 180 x 200 metre surface at world y=-2. Enable the scene camera's URP depth
+        /// Creates the 1200 x 1600 metre surface at world y=-2. Enable the scene camera's URP depth
         /// texture for measured shallow colour and shore contact. A sea-direction colour fallback
-        /// remains usable without a depth texture. An additional 1920 x 870 m coarse distant sea
+        /// remains usable without a depth texture. An additional coarse distant sea
         /// is visual-only: no collider, navigation or bathymetry claim beyond the active slice.
         /// The caller owns both generated meshes and their shared material.
         /// </summary>
         public static GameObject Create(Transform parent)
         {
-            const int columns = 91, rows = 101;
+            const int columns = 121, rows = 161;
             var positions = new Vector3[columns * rows];
             var normals = new Vector3[positions.Length];
             var uv = new Vector2[positions.Length];
@@ -34,7 +34,7 @@ namespace CityLife.World
             for (int x = 0; x < columns; x++)
             {
                 int i = z * columns + x;
-                positions[i] = new Vector3(-90f + x * 2f, 0, -55f + z * 2f);
+                positions[i] = new Vector3(CoastalTerrain.MinX + x * 10f, 0, CoastalTerrain.MinZ + z * 10f);
                 normals[i] = Vector3.up;
                 uv[i] = new Vector2(x / (float)(columns - 1), z / (float)(rows - 1));
             }
@@ -46,10 +46,10 @@ namespace CityLife.World
                 indices[index++] = a; indices[index++] = c; indices[index++] = b;
                 indices[index++] = b; indices[index++] = c; indices[index++] = d;
             }
-            var mesh = new Mesh { name = "Coastal water 180x200m - 2m grid" };
+            var mesh = new Mesh { name = "Starfall river and sea 1200x1600m - 10m grid" };
             mesh.vertices = positions; mesh.normals = normals; mesh.uv = uv; mesh.triangles = indices;
             // Vertex waves stay inside this vertical envelope; no per-frame CPU mesh update.
-            mesh.bounds = new Bounds(new Vector3(0, 0, 45), new Vector3(180, .6f, 200));
+            mesh.bounds = new Bounds(new Vector3(0, 0, 100), new Vector3(1200, .6f, 1600));
 
             Shader shader = Shader.Find("CityLife/CoastalWater");
             bool fallback = shader == null || !shader.isSupported;
@@ -88,12 +88,12 @@ namespace CityLife.World
 
         private static void AddVisualSea(Transform parent, Material material)
         {
-            // Keep the active edge's exact 2 m vertex positions, avoiding a wave crack where the
-            // two meshes meet. Outer X spans and rows farther out are coarse, at 30 m / 20 m.
+            // Keep the active edge's exact 10 m vertex positions, avoiding a wave crack where the
+            // two meshes meet. Outer X spans and rows farther out are coarse.
             var xs = new List<float>();
-            for (float x = -VisualSeaHalfWidth; x < -90; x += 30) xs.Add(x);
-            for (float x = -90; x <= 90; x += 2) xs.Add(x);
-            for (float x = 120; x <= VisualSeaHalfWidth; x += 30) xs.Add(x);
+            for (float x = -VisualSeaHalfWidth; x < CoastalTerrain.MinX; x += 40) xs.Add(x);
+            for (float x = CoastalTerrain.MinX; x <= CoastalTerrain.MaxX; x += 10) xs.Add(x);
+            for (float x = CoastalTerrain.MaxX + 40; x <= VisualSeaHalfWidth; x += 40) xs.Add(x);
             var zs = new List<float> { VisualSeaMinZ, VisualSeaMinZ + 2 };
             for (float z = VisualSeaMinZ + 22; z < VisualSeaMaxZ; z += 20) zs.Add(z);
             zs.Add(VisualSeaMaxZ);
