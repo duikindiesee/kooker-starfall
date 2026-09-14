@@ -122,7 +122,7 @@ namespace CityLife.World
                     float floor=CoastalTerrain.Height(q.x,q.y);
                     if(floor>-2.72f) continue; // keep the complete low rosette beneath the surface
                     Vector3 rooted=new Vector3(q.x,floor+.035f,q.y);
-                    AddRosette(aquatic,rooted,Lerp(.62f,1.30f,id,213),id);
+                    AddRosette(aquatic,rooted,Lerp(.62f,1.30f,id,213),id,false);
                 }
             }
             MeshObject("Submerged blue green river plants - render only",aquatic.ToMesh("Coastal aquatic plant pockets"),plants,root.transform,false);
@@ -205,7 +205,7 @@ namespace CityLife.World
             return mesh.ToMesh("Fractured layered block " + id);
         }
 
-        static void AddRosette(MeshData mesh,Vector3 root,float scale,int id)
+        static void AddRosette(MeshData mesh,Vector3 root,float scale,int id,bool flowers=true)
         {
             int count=14+(int)(Hash(id,73)*5);
             for(int leaf=0;leaf<count;leaf++)
@@ -240,7 +240,7 @@ namespace CityLife.World
                     else mesh.Quad(sections[s,face],sections[s,next],sections[s+1,next],sections[s+1,face],color);
                 }
             }
-            if(id%3==0)
+            if(flowers&&id%3==0)
             {
                 var stemTop=root+new Vector3(.09f,scale*1.17f,.02f);
                 Stem(mesh,root,stemTop,.022f*scale,new Color(.27f,.40f,.27f));
