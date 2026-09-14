@@ -59,8 +59,8 @@ Shader "CityLife/CoastalRocks"
                 {
                     albedo=i.color.rgb*(.96+.08*Noise(p*36));smoothness=.30;
                     float submerged=1-smoothstep(-2.16,-2.03,p.y);
-                    float plantCaustic=(.5+.5*sin(p.x*.72+_Time.y*1.1+sin(p.z*.51-_Time.y*.73)))*(.5+.5*sin(p.z*.83-_Time.y*.91));
-                    albedo+=float3(.025,.17,.18)*smoothstep(.62,.92,plantCaustic)*submerged;
+                    float plantCaustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)))*(.5+.5*sin(p.z*2.13-_Time.y*1.07));
+                    albedo+=float3(.04,.22,.23)*smoothstep(.72,.94,plantCaustic)*submerged;
                 }
                 else
                 {
@@ -79,9 +79,9 @@ Shader "CityLife/CoastalRocks"
                     albedo*=lerp(float3(1,1,1),float3(.48,.64,.67),wet*.85);
                     // Coherent animated underwater caustics affect submerged stone only.
                     float causticSubmerged=1-smoothstep(-2.16,-2.03,p.y);
-                    float caustic=(.5+.5*sin(p.x*.72+_Time.y*1.1+sin(p.z*.51-_Time.y*.73)));
-                    caustic*=.5+.5*sin(p.z*.83-_Time.y*.91);
-                    albedo+=float3(.03,.20,.22)*smoothstep(.62,.92,caustic)*causticSubmerged;
+                    float caustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)));
+                    caustic*=.5+.5*sin(p.z*2.13-_Time.y*1.07);
+                    albedo+=float3(.05,.24,.26)*smoothstep(.72,.94,caustic)*causticSubmerged;
                     smoothness=lerp(.12,.31,wet);
                     float h=Surface(p);
                     float3 dx=ddx(p),dy=ddy(p),r1=cross(dy,n),r2=cross(n,dx);

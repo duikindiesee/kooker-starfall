@@ -82,8 +82,9 @@ Shader "CityLife/CoastalTerrain"
                 // Moving refracted light belongs only to the submerged bed. The
                 // cutoff stays below the authored wave trough, so dry sand cannot glow.
                 float submerged=1-smoothstep(_SeaLevel-.16,_SeaLevel-.03,p.y);
-                float caustic=(.5+.5*sin(p.x*.72+_Time.y*1.1+sin(p.z*.51-_Time.y*.73)))*(.5+.5*sin(p.z*.83-_Time.y*.91));
-                albedo+=float3(.035,.19,.20)*smoothstep(.62,.92,caustic)*submerged;
+                float caustic=(.5+.5*sin(p.x*1.72+_Time.y*1.24+sin(p.z*1.17-_Time.y*.81)))*(.5+.5*sin(p.z*2.13-_Time.y*1.07));
+                float causticLines=smoothstep(.72,.94,caustic);
+                albedo+=float3(.055,.24,.25)*causticLines*submerged;
                 // Centimetre-scale weathering relief affects light, not the collider.
                 float relief=((weather-.5)*.028+(grain-.5)*.004-cracks*.017)*cliff;
                 float3 dpdx=ddx(p),dpdy=ddy(p),r1=cross(dpdy,n),r2=cross(n,dpdx);

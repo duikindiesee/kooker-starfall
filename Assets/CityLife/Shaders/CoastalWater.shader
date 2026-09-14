@@ -147,10 +147,10 @@ Shader "CityLife/CoastalWater"
                 float3 c = cos(phase)*attenuation;
                 float nx = (c.x*.045*.31 + c.y*.034*-.16 + c.z*.032*.09)*strength;
                 float nz = (c.x*.045*.19 + c.y*.034*.37 + c.z*.032*.12)*strength;
-                float ripple = dot(input.positionWS.xz,float2(2.2,1.4)) + _Time.y*.85;
+                float ripple = dot(input.positionWS.xz,float2(4.4,3.1)) + _Time.y*1.18;
                 float rippleFilter = 1-smoothstep(.6,2.0,fwidth(ripple));
-                nx += sin(ripple)*.033*rippleFilter*_WaveStrength;
-                nz += cos(ripple*.83)*.024*rippleFilter*_WaveStrength;
+                nx += sin(ripple)*.018*rippleFilter*_WaveStrength;
+                nz += cos(ripple*.79)*.015*rippleFilter*_WaveStrength;
                 half3 normalWS = normalize(float3(-nx,1,-nz));
                 half3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
@@ -163,9 +163,9 @@ Shader "CityLife/CoastalWater"
                 float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
                 water += half3(.55,.85,.95)*sunStrength*glint*.24;
                 float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
-                float fineCrest = smoothstep(.72,.98,sin(ripple+sin(phase.y)*.8))*rippleFilter;
+                float fineCrest = smoothstep(.78,.98,sin(ripple+sin(phase.y)*.65))*rippleFilter;
                 fineCrest *= .5+.5*cos(phase.x-phase.z);
-                water += _ShallowColor.rgb*(glimmer*.055+fineCrest*.085)*(1-deep*.65);
+                water += half3(.40,.92,.94)*(glimmer*.026+fineCrest*.070)*(1-deep*.65);
 
                 // Thin intermittent contact edge only when depth is measured, never a false
                 // white line generated from the fallback colour gradient.

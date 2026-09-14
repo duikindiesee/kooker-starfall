@@ -40,8 +40,13 @@ namespace Starfall.Food
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             Material Make(string name, Color colour) { var m = new Material(shader) { name = name, color = colour }; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", colour); return m; }
             var wood = Make("Sourfig warm woody base", new Color(.25f,.12f,.055f));
-            var leaf = Make("Sourfig blue green fleshy leaves", new Color(.105f,.39f,.32f));
-            var leafLight = Make("Sourfig sunlit fleshy leaves", new Color(.18f,.48f,.38f));
+            var leaf = Make("Sourfig blue green matte fleshy leaves", new Color(.105f,.39f,.32f));
+            var leafLight = Make("Sourfig sunlit matte fleshy leaves", new Color(.18f,.48f,.38f));
+            foreach (var material in new[] { leaf, leafLight })
+            {
+                if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .16f);
+                if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", 0);
+            }
             var fruit = Make("Sourfig purple red fruit", new Color(.62f,.035f,.19f));
             var flower = Make("Sourfig restrained pink flower", new Color(.92f,.20f,.48f));
             void Primitive(PrimitiveType type, string name, Vector3 localPosition, Vector3 scale, Quaternion rotation, Material material)
@@ -55,6 +60,29 @@ namespace Starfall.Food
                 Vector3 delta=to-from; Primitive(PrimitiveType.Cylinder,name,(from+to)*.5f,
                     new Vector3(.028f,delta.magnitude*.5f,.028f),Quaternion.FromToRotation(Vector3.up,delta),wood);
             }
+            void FleshyLeaf(string name, Vector3 basePosition, float length, float width, float thickness,
+                Quaternion rotation, Material material)
+            {
+                // An eight-sided, pointed sourfig blade replaces the glossy capsule placeholder.
+                // It is rooted at the runner, broadens low, and tapers to a slightly lifted tip.
+                var mesh = new Mesh { name = "Original tapered Starfall sourfig leaf" };
+                var vertices = new[]
+                {
+                    new Vector3(0,0,-thickness*.30f),
+                    new Vector3(-width*.72f,length*.30f,0), new Vector3(0,length*.27f,thickness), new Vector3(width*.72f,length*.30f,0),
+                    new Vector3(-width,length*.62f,0), new Vector3(0,length*.58f,thickness*.82f), new Vector3(width,length*.62f,0),
+                    new Vector3(0,length,thickness*.10f)
+                };
+                var triangles = new[]
+                {
+                    0,2,1, 0,3,2, 1,2,5, 1,5,4, 2,3,6, 2,6,5,
+                    4,5,7, 5,6,7, 0,1,4, 0,4,7, 0,7,6, 0,6,3
+                };
+                mesh.vertices=vertices; mesh.triangles=triangles; mesh.RecalculateNormals(); mesh.RecalculateBounds();
+                var part=new GameObject(name); part.transform.SetParent(root.transform,false); part.transform.localPosition=basePosition;
+                part.transform.localRotation=rotation; part.AddComponent<MeshFilter>().sharedMesh=mesh;
+                part.AddComponent<MeshRenderer>().sharedMaterial=material;
+            }
             for (int i=0;i<7;i++)
             {
                 float angle=i*2.399963f+.22f, radius=.18f+(i%3)*.12f;
@@ -65,11 +93,11 @@ namespace Starfall.Food
                 {
                     float spread=(j-(leafCount-1)*.5f)*.34f, leafAngle=angle+spread;
                     float reach=.36f+.07f*((i+j)%3), height=.31f+.10f*((i*2+j)%3);
-                    Vector3 leafPosition=basePoint+new Vector3(Mathf.Cos(leafAngle)*reach,height,Mathf.Sin(leafAngle)*reach);
-                    Runner("Attached sourfig runner "+i+"-"+j,basePoint+Vector3.up*.20f,
-                        leafPosition-new Vector3(Mathf.Cos(leafAngle)*.11f,.04f,Mathf.Sin(leafAngle)*.11f));
-                    Quaternion leafRotation=Quaternion.Euler(0,-leafAngle*Mathf.Rad2Deg,18f+7f*((i+j)%3));
-                    Primitive(PrimitiveType.Capsule,"Fleshy sourfig leaf "+i+"-"+j,leafPosition,new Vector3(.13f,.30f,.13f),leafRotation,(i+j)%4==0?leafLight:leaf);
+                    Vector3 leafBase=basePoint+new Vector3(Mathf.Cos(leafAngle)*reach*.40f,height*.40f,Mathf.Sin(leafAngle)*reach*.40f);
+                    Runner("Attached sourfig runner "+i+"-"+j,basePoint+Vector3.up*.20f,leafBase);
+                    Quaternion leafRotation=Quaternion.LookRotation(new Vector3(Mathf.Cos(leafAngle),.22f,Mathf.Sin(leafAngle)),Vector3.up)*Quaternion.Euler(72,0,0);
+                    FleshyLeaf("Tapered fleshy sourfig leaf "+i+"-"+j,leafBase,.42f+.07f*((i+j)%3),.115f,.055f,
+                        leafRotation,(i+j)%4==0?leafLight:leaf);
                 }
                 if(i%2==0)
                 {

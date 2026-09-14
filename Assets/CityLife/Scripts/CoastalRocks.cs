@@ -143,8 +143,10 @@ namespace CityLife.World
         {
             int sides = 7 + (int)(Hash(id,50)*4), rings = 5;
             var p = new Vector3[rings,sides];
-            float[] y = { -.58f,-.13f,.17f,.57f,.65f };
-            float[] radius = { .67f,1,.92f,.83f,.62f };
+            float[] y = { -.58f,-.16f,.14f,.49f,.64f };
+            // Recessed upper shoulders and a smaller broken crown reduce the broad
+            // table-top silhouette while preserving the same collider/render mesh.
+            float[] radius = { .64f,1,.86f,.73f,.45f };
             float leanX = Lerp(-.19f,.19f,id,51), leanZ = Lerp(-.15f,.15f,id,52);
             for (int ring = 0; ring < rings; ring++)
             for (int side = 0; side < sides; side++)
