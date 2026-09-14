@@ -11,6 +11,21 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+
+def build_content(directory):
+    entries = []
+    for path in directory.rglob('*'):
+        if path.is_symlink():
+            raise RuntimeError('Linked build content rejected')
+        if not path.is_file():
+            continue
+        relative = path.relative_to(directory).as_posix()
+        if any(c in relative for c in '\r\n\t'):
+            raise RuntimeError('Unsupported filename in build fingerprint')
+        entries.append(f'{relative}\t{path.stat().st_size}\t{hashlib.sha256(path.read_bytes()).hexdigest()}')
+    entries.sort()
+    digest = hashlib.sha256(('\n'.join(entries) + '\n').encode('utf-8')).hexdigest()
+    return {'schema': 'starfall.build-content.v1', 'sha256': digest, 'files': len(entries)}
 sys.path.insert(0, str(ROOT / 'services' / 'starfall-memory'))
 from local import initialize
 from core import MemoryStore
@@ -110,10 +125,13 @@ def main():
         command += ['-npcLivingMemory', '-npcMemoryClient', str(client_path),
             '-npcLocalEndpoint', 'http://127.0.0.1:1234', '-npcLocalModel', 'google/gemma-4-e4b',
             '-logFile', str(output / 'player.log')]
-        save(output / 'launch.json', dict(build=build, sha256=hashlib.sha256(exe.read_bytes()).hexdigest(),
+        content_before = build_content(exe.parent)
+        launch = dict(build=build, sha256=hashlib.sha256(exe.read_bytes()).hexdigest(),
             memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500,
             execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,
-            scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None))
+            scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None,
+            buildContentSchema=content_before['schema'], buildContentSha256=content_before['sha256'], buildContentFiles=content_before['files'])
+        save(output / 'launch.json', launch)
         print(json.dumps({'checkpoint': 'memory-ready', 'build': build}), flush=True)
         runtime_env = env
         if args.editor:
@@ -127,6 +145,11 @@ def main():
             exit_code = player.wait(timeout=600 if args.editor else 420 if args.integrated else 240)
         except subprocess.TimeoutExpired:
             player.kill(); player.wait(); raise RuntimeError('Player watchdog expired')
+        content_after = build_content(exe.parent)
+        launch['buildContentSha256AfterRun'] = content_after['sha256']
+        launch['buildContentFilesAfterRun'] = content_after['files']
+        launch['buildContentUnchangedAfterRun'] = content_after == content_before
+        save(output / 'launch.json', launch)
         health_status, health = call('/v1/health')
         _, own = call('/v1/memories?limit=4')
         other_status, other = call('/v1/memories?limit=4', 1)
