@@ -15,8 +15,15 @@ namespace CityLife.World
   private void Awake(){var args=Environment.GetCommandLineArgs();verifying=Array.IndexOf(args,"-hunterVerify")>=0;
    gripVerify=Array.IndexOf(args,"-hunterGripVerify")>=0;verifying|=gripVerify;
    int index=Array.IndexOf(args,"-hunterEvidence");directory=index>=0&&index+1<args.Length?args[index+1]:Path.Combine(Application.persistentDataPath,"HunterCaptures",DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
-   report.utc=DateTime.UtcNow.ToString("O");Application.logMessageReceived+=OnLog;}
+   if(Application.isEditor)report.scope="Unity Editor Play Mode pose and skinning observations; NOT standalone-player acceptance";report.utc=DateTime.UtcNow.ToString("O");Application.logMessageReceived+=OnLog;}
   private void OnDestroy(){Application.logMessageReceived-=OnLog;}
+  private static void Finish(int code=0) {
+   #if UNITY_EDITOR
+   UnityEditor.SessionState.SetInt("HunterPlayMode.ExitCode",code);UnityEditor.EditorApplication.isPlaying=false;
+   #else
+   Application.Quit(code);
+   #endif
+  }
   private void OnLog(string condition,string stack,LogType type){if(type==LogType.Error||type==LogType.Exception||type==LogType.Assert)report.errors.Add(condition);}
   private IEnumerator Start(){yield return null;Roamer.Pause();seat=GameObject.CreatePrimitive(PrimitiveType.Cube);seat.name="Preview sitting stone";Destroy(seat.GetComponent<Collider>());seat.GetComponent<Renderer>().sharedMaterial=GameObject.Find("Test ground").GetComponent<Renderer>().sharedMaterial;seat.transform.localScale=new Vector3(.6f,.52f,.55f);seat.SetActive(false);if(verifying){Directory.CreateDirectory(directory);View.SuppressInput=true;yield return Verify();}}
   public void SetPose(string pose){Roamer.Pause();Actor.ExternalDrive=true;Pose=pose;Actor.Animator.CrossFadeInFixedTime(pose,.18f);}
@@ -91,7 +98,7 @@ namespace CityLife.World
    foreach(string pose in new[]{"Idle","Walk","Crouch","CrouchWalk","SitEnter","Sit","SitExit","Pickup"}) {
     Seat(pose.StartsWith("Sit"));SetPose(pose);Actor.Animator.Play(pose,0,0);
     for(int i=0;i<45;i++){yield return null;Audit();if(i==10||i==30)yield return GripViews(pose+"-"+i);}
-    if(Array.IndexOf(args,"-hunterGripQuick")>=0){File.WriteAllText(Path.Combine(directory,"grip-measurements.json"),JsonUtility.ToJson(new GripMeasurements{samples=gripSamples},true));Application.Quit();yield break;}
+    if(Array.IndexOf(args,"-hunterGripQuick")>=0){File.WriteAllText(Path.Combine(directory,"grip-measurements.json"),JsonUtility.ToJson(new GripMeasurements{samples=gripSamples},true));Finish();yield break;}
    }
    Seat(false);Actor.ExternalDrive=false;Actor.TestControl=false;Actor.RefreshAnimation();Actor.Place(new Vector3(0,.03f,-5));Roamer.Begin();
    for(int i=0;i<2100&&!Roamer.Complete;i++) {
@@ -104,7 +111,7 @@ namespace CityLife.World
    for(int i=0;i<45;i++){yield return null;Audit();if(i%15==0)yield return GripViews("delivery-settle-"+i);}
    File.WriteAllText(Path.Combine(directory,"grip-measurements.json"),JsonUtility.ToJson(new GripMeasurements{samples=gripSamples},true));
    report.status=report.errors.Count==0&&report.carrying&&report.delivered?"GRIP_CAPTURED_VISUAL_REVIEW_REQUIRED":"FAIL";
-   File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Application.Quit(report.status=="FAIL"?1:0);
+   File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Finish(report.status=="FAIL"?1:0);
   }
   private IEnumerator Verify(){Time.captureDeltaTime=1f/30;QualitySettings.vSyncCount=0;Application.targetFrameRate=30;Actor.Place(new Vector3(0,.03f,-5));
    if(gripVerify){yield return GripVerify();yield break;}
@@ -125,8 +132,8 @@ namespace CityLife.World
    Actor.ExternalDrive=false;Actor.TestControl=false;Actor.RefreshAnimation();Actor.Place(new Vector3(0,.03f,-5));View.Yaw=155;View.Distance=4.1f;Roamer.Begin();Pose="Pickup / carry verification";
    for(int i=0;i<2100&&!Roamer.Complete;i++){Audit();if(Roamer.Carrying&&!report.carrying){report.carrying=true;yield return Capture("06-carry-start");}if(Roamer.Carrying&&i%40==0)yield return Capture("07-carry-"+i);yield return null;}
    report.delivered=Roamer.Complete;yield return Capture("08-delivery");report.status=report.errors.Count==0&&report.carrying&&report.delivered?"MOTION_CAPTURED_VISUAL_REVIEW_REQUIRED":"FAIL";
-   File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Application.Quit(report.status=="FAIL"?1:0);
+   File.WriteAllText(Path.Combine(directory,"hunter-runtime.json"),JsonUtility.ToJson(report,true));Finish(report.status=="FAIL"?1:0);
   }
-  private void OnGUI(){GUI.Box(new Rect(Screen.width-460,18,442,166),"");GUI.Label(new Rect(Screen.width-445,30,420,142),"STARFALL / HUNTER CLOTHING PREVIEW\n"+Pose+" · "+(cold?"Cold layers":"Everyday")+"\nWASD walk · V resume · C/X crouch · T sit / stand\nP pickup · R delivery · H optional cold layers\n1/2/3 views · O orbit · RMB look · F8 capture\nNo hunting, combat or weather integration.");}
+  private void OnGUI(){GUI.Box(new Rect(Screen.width-460,18,442,166),"");GUI.Label(new Rect(Screen.width-445,30,420,142),(Application.isEditor?"EDITOR PLAY MODE / HUNTER GRIP\n":"STARFALL / HUNTER CLOTHING PREVIEW\n")+Pose+" · "+(cold?"Cold layers":"Everyday")+"\nWASD walk · V resume · C/X crouch · T sit / stand\nP pickup · R delivery · H optional cold layers\n1/2/3 views · O orbit · RMB look · F8 capture\nNo hunting, combat or weather integration.");}
  }
 }
