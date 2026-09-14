@@ -120,6 +120,13 @@ namespace CityLife.World
             Need("urp-request", RenderPipeline.SupportsRenderRequest(cameraComponent, request), "Actual URP initialized.");
             ready = true;
             Need("valid-human-avatar", Brain.Actor.Animator.avatar.isHuman && Brain.Actor.Animator.avatar.isValid, "Verified adult body and existing mapped animation rig.");
+            if (Application.isEditor && Array.IndexOf(Environment.GetCommandLineArgs(), "-npcLivingMemory") >= 0)
+            {
+                report.limit += " Focused living-memory gate only; standalone injected keyboard/control suite is not evaluated here.";
+                var editorMemory = StarfallLivingMemoryAcceptance.Verify(Brain, Hud, Need, name => Capture(name), directory);
+                while (editorMemory.MoveNext()) yield return editorMemory.Current;
+                yield break;
+            }
             Brain.StepTick(); yield return null; Capture("01-perception-and-goal");
             Need("perception-visible-item", Brain.Perception.Current.Any(x => x.id == "amber"), "Nearby amber detected through actual overlap and ray queries.");
             Need("perception-hidden-item-excluded", !Brain.Perception.Current.Any(x => x.id == "hidden-green"), "Solid route obstacle blocks initial sight.");
