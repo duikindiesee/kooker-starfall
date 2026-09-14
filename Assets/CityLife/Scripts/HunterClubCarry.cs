@@ -15,7 +15,7 @@ namespace CityLife.World
   public float ForearmSlope=-1.5f,ElbowOut=.6f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
-  public static float ClubRadius(float fraction){float t=Mathf.Clamp01((fraction-.22f)/.78f);return .012f+.026f*t*t*(3-2*t)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));}
+  public static float ClubRadius(float fraction){float t=Mathf.Clamp01((fraction-.22f)/.78f);return .010f+.026f*t*t*(3-2*t)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));}
   public static float ClubCurve(float fraction){return fraction<=.22f?0:.012f*Mathf.Sin((fraction-.22f)/.78f*5);}
   // Author once in the imported bind pose, before the Animator evaluates.
   public void AuthorGrip() {
@@ -26,7 +26,7 @@ namespace CityLife.World
    Vector3 along=(middle.position-hand.position).normalized;
    Vector3 across=Vector3.ProjectOnPlane(little.position-index.position,along).normalized;
    Vector3 palm=Vector3.Cross(along,across).normalized;
-   PalmAnchor=hand.InverseTransformPoint(middle.position-along*.005f+palm*.028f);
+   PalmAnchor=hand.InverseTransformPoint(middle.position+along*.003f+palm*.028f);
    ShaftAxis=hand.InverseTransformDirection(across);
    PalmAlong=hand.InverseTransformDirection(along);PalmNormal=hand.InverseTransformDirection(palm);
    HandBasis=Quaternion.LookRotation(ShaftAxis,hand.InverseTransformDirection(along));
@@ -40,13 +40,15 @@ namespace CityLife.World
     var localAxis=bone.InverseTransformDirection(across);
     FlexAxes[i]=localAxis;
     // Negative rotation about index-to-little bends toward the palm, not the back of the hand.
-    float flex=i%3==0?new[]{45f,45f,40f,35f}[i/3]:i%3==1?60f:45f;
+    // Shorter outer fingers need their own curl; sharing the middle-finger pose
+    // drives their first knuckles through the handle.
+    float flex=new[]{30f,80f,55f,30f,65f,85f,25f,60f,85f,5f,45f,65f}[i];
     GripRotations[i]=bone.localRotation*Quaternion.AngleAxis(-flex,localAxis);
    }
    var thumb=new[]{Animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal),Animator.GetBoneTransform(HumanBodyBones.LeftThumbIntermediate),Animator.GetBoneTransform(HumanBodyBones.LeftThumbDistal)};
    var original=new[]{thumb[0].localRotation,thumb[1].localRotation,thumb[2].localRotation};
    var tip=thumb[2].GetChild(0);
-   Vector3 target=middle.position+along*.002f+palm*.050f-across*.025f;
+   Vector3 target=middle.position+along*.002f+palm*.050f-across*.005f;
    for(int iteration=0;iteration<20;iteration++)for(int joint=2;joint>=0;joint--) {
     var bone=thumb[joint];var turn=Quaternion.FromToRotation(tip.position-bone.position,target-bone.position);
     bone.rotation=Quaternion.RotateTowards(Quaternion.identity,turn,12f)*bone.rotation;
