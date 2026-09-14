@@ -190,7 +190,11 @@ namespace CityLife.World
             yield return Tap(Key.Tab); yield return Tap(Key.F);
             var spectator = Controls.View.transform.position;
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+            // The camera copies SpectatorPosition in LateUpdate. Wait through the
+            // rendered frame so a slower model-enabled run cannot sample the view
+            // one LateUpdate behind the controller's authoritative position.
+            yield return new WaitForEndOfFrame();
             var spectatorActual = Controls.View.transform.position;
             CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed &&
                 Vector3.Distance(spectator, Controls.SpectatorPosition) > 1f &&
