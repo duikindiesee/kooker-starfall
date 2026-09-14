@@ -128,7 +128,7 @@ namespace CityLife.World.Editor
             // Put the authored refuge on a broad, reachable east-bank shelf. The original
             // refuge floor is centred at (-10,0), so this translation moves its centre to
             // (-165,118) and lifts its ramp/floor with the actual terrain height.
-            var refugeAnchor = new Vector3(-165, 0, 118);
+            var refugeAnchor = new Vector3(CoastalTerrain.RefugeCentre.x, 0, CoastalTerrain.RefugeCentre.y);
             var refugeDelta = new Vector3(refugeAnchor.x + 10,
                 CoastalTerrain.Height(refugeAnchor.x, refugeAnchor.z), refugeAnchor.z);
             authoredRefuge.transform.position += refugeDelta;

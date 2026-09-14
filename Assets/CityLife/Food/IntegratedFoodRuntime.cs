@@ -21,11 +21,13 @@ namespace Starfall.Food
         public void Attach(Transform actor, Transform worldRoot, string worldId)
         {
             Actor = actor; Model = new FoodModel(worldId, Generation, 4242);
+            Physics.SyncTransforms();
             // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
             BerryPosition = FindClearBerryPosition();
             SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));
+            Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
         }

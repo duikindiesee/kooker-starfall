@@ -146,6 +146,9 @@ def main():
     checkpoint = store.verify()
     own_restart = store.records('inhabitant-01', ('episode',), limit=4)
     assert store.records('inhabitant-02', ('episode',), limit=4)['items'] == []
+    live_evidence = {ref for item in own.get('items', []) for ref in item.get('evidence_ids', [])}
+    restarted_evidence = {ref for item in own_restart.get('items', []) for ref in item.get('evidence_ids', [])}
+    assert own_restart['items'] and live_evidence and live_evidence == restarted_evidence
     store.close()
     save(output / 'restart-persistence.json', dict(checkpoint=checkpoint, own=own_restart, real_sqlite=True, service_stopped=True))
     print(json.dumps({'checkpoint': 'player-finished', 'exit_code': exit_code, 'persisted_events': checkpoint['events']}), flush=True)

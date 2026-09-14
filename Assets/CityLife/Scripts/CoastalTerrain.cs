@@ -15,6 +15,7 @@ namespace CityLife.World
         public const int CellsX = 300, CellsZ = 400;
         public const float HeroPadRadius = 8.5f;
         public static readonly Vector2 ActivityCentre = new Vector2(120, -80);
+        public static readonly Vector2 RefugeCentre = new Vector2(-165, 118);
 
         private static readonly Vector2[] Feed = Curve(new[] {
             new Vector2(-90,-700), new Vector2(-145,-540), new Vector2(-85,-390),
@@ -75,6 +76,10 @@ namespace CityLife.World
             // the hero tree's dense rock bank while remaining part of the terrain.
             float activityRadius = Vector2.Distance(new Vector2(x, z), ActivityCentre);
             ground = Mathf.Lerp(ground, 4f, 1f - Smooth(18f, 24f, activityRadius));
+            // A broad, dry shelf makes the authored cave/refuge entrance truly
+            // reachable instead of merely translating it into a mesa face.
+            float refugeRadius = Vector2.Distance(new Vector2(x, z), RefugeCentre);
+            ground = Mathf.Lerp(ground, 6f, 1f - Smooth(28f, 36f, refugeRadius));
             return ground;
         }
 

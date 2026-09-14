@@ -24,7 +24,7 @@ namespace CityLife.World
         [Serializable] public sealed class Report
         {
             public string status = "RUNNING", version, worldId, inputScope = "Actual compiled-player Input System devices; separate native mouse/window acceptance required.";
-            public int deliveries, memoryEvents; public List<Check> checks = new List<Check>(); public List<string> captures = new List<string>(), errors = new List<string>();
+            public int deliveries, fullCycleDeliveries, memoryEvents; public List<Check> checks = new List<Check>(); public List<string> captures = new List<string>(), errors = new List<string>();
             public List<NpcDecisionEvent> decisionEvents = new List<NpcDecisionEvent>();
         }
         private void CheckThat(string name, bool pass, string evidence) => report.checks.Add(new Check { name = name, passed = pass, evidence = evidence });
@@ -103,7 +103,7 @@ namespace CityLife.World
                 Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)) < .05f && Food.MinimumRockClearance >= 3f,
                 Food == null ? "food adapter missing" : "terrainDelta=" + Mathf.Abs(Food.BerryPosition.y-CoastalTerrain.Height(Food.BerryPosition.x,Food.BerryPosition.z)).ToString("F3") + "; rockClearance=" + Food.MinimumRockClearance.ToString("F2") + "m");
             yield return Capture("01-default-coastal-inhabitant");
-            Controls.View.ExternalView = true;
+            Controls.View.ExternalView = true; Controls.SuppressView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
                 Quaternion.LookRotation(new Vector3(0, 42, 500) - new Vector3(-250, 170, -360)));
             yield return CaptureWorld("01b-spacious-canyon-vista");
@@ -114,7 +114,7 @@ namespace CityLife.World
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
             }
-            Controls.View.ExternalView = false; Brain.Actor.View.Follow();
+            Controls.SuppressView = false; Controls.View.ExternalView = false; Brain.Actor.View.Follow();
             string memoryPath = Path.Combine(directory, "combined-memory-events.jsonl");
             using (var memory = new StarfallMemoryExport(memoryPath, Brain.InstanceWorldId, "unity-combined", "combined-cycle", Application.version))
             {
@@ -130,6 +130,7 @@ namespace CityLife.World
                 if (item.Kind == NpcObjectKind.Item && item.DeliveredTo.Length > 0) deliveredItems++;
             }
             bool completeCycle = Brain.Actions.Deliveries == 3 && occupied == 3 && deliveredItems == 3 && Brain.Actions.Held == null;
+            report.fullCycleDeliveries = Brain.Actions.Deliveries;
             CheckThat("complete-three-object-autonomy-cycle", completeCycle,
                 "deliveries=" + Brain.Actions.Deliveries + "; occupied=" + occupied + "; deliveredItems=" + deliveredItems +
                 "; held=" + (Brain.Actions.Held == null ? "none" : Brain.Actions.Held.StableId) + "; phase=" + Brain.Phase +
@@ -173,9 +174,10 @@ namespace CityLife.World
             CheckThat("window-restoration", Screen.fullScreenMode == oldMode && Controls.Looking, Screen.fullScreenMode.ToString());
             yield return Tap(Key.Tab); yield return Tap(Key.F);
             var spectator = Controls.View.transform.position;
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(.5f);
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W)); yield return new WaitForSeconds(1);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState()); yield return null;
-            CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed && Vector3.Distance(spectator, Controls.View.transform.position) > .5f, "Same world and NPC; free camera input.");
+            CheckThat("free-spectator-traversal", Controls.FreeSpectator && !Brain.Possessed && Vector3.Distance(spectator, Controls.View.transform.position) > 1f,
+                "Same world and NPC; from " + spectator + " to " + Controls.View.transform.position + "; mode=" + Controls.Mode);
             InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Right)); yield return null; yield return null;
             lookBefore = Controls.View.transform.rotation;
             InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(-35, 10) }.WithButton(MouseButton.Right)); yield return null;
