@@ -50,6 +50,11 @@ namespace Starfall.Food
                 part.transform.localPosition=localPosition; part.transform.localScale=scale; part.transform.localRotation=rotation;
                 part.GetComponent<Renderer>().sharedMaterial=material; var collider=part.GetComponent<Collider>(); if(collider!=null) Destroy(collider);
             }
+            void Runner(string name, Vector3 from, Vector3 to)
+            {
+                Vector3 delta=to-from; Primitive(PrimitiveType.Cylinder,name,(from+to)*.5f,
+                    new Vector3(.028f,delta.magnitude*.5f,.028f),Quaternion.FromToRotation(Vector3.up,delta),wood);
+            }
             for (int i=0;i<7;i++)
             {
                 float angle=i*2.399963f+.22f, radius=.18f+(i%3)*.12f;
@@ -61,6 +66,8 @@ namespace Starfall.Food
                     float spread=(j-(leafCount-1)*.5f)*.34f, leafAngle=angle+spread;
                     float reach=.36f+.07f*((i+j)%3), height=.31f+.10f*((i*2+j)%3);
                     Vector3 leafPosition=basePoint+new Vector3(Mathf.Cos(leafAngle)*reach,height,Mathf.Sin(leafAngle)*reach);
+                    Runner("Attached sourfig runner "+i+"-"+j,basePoint+Vector3.up*.20f,
+                        leafPosition-new Vector3(Mathf.Cos(leafAngle)*.11f,.04f,Mathf.Sin(leafAngle)*.11f));
                     Quaternion leafRotation=Quaternion.Euler(0,-leafAngle*Mathf.Rad2Deg,18f+7f*((i+j)%3));
                     Primitive(PrimitiveType.Capsule,"Fleshy sourfig leaf "+i+"-"+j,leafPosition,new Vector3(.13f,.30f,.13f),leafRotation,(i+j)%4==0?leafLight:leaf);
                 }
@@ -71,7 +78,13 @@ namespace Starfall.Food
                     Primitive(PrimitiveType.Sphere,"Sourfig fruit crown "+i,fruitPosition+Vector3.up*.13f,new Vector3(.13f,.055f,.13f),Quaternion.identity,leafLight);
                 }
             }
-            Primitive(PrimitiveType.Sphere,"Single restrained sourfig flower",new Vector3(-.38f,.58f,.26f),new Vector3(.20f,.055f,.20f),Quaternion.identity,flower);
+            Vector3 flowerCenter=new Vector3(-.38f,.58f,.26f); Runner("Flower stem",new Vector3(-.20f,.20f,.12f),flowerCenter-Vector3.up*.04f);
+            for(int petal=0;petal<7;petal++)
+            {
+                float a=petal*Mathf.PI*2/7; Primitive(PrimitiveType.Sphere,"Sourfig flower petal "+petal,
+                    flowerCenter+new Vector3(Mathf.Cos(a)*.12f,0,Mathf.Sin(a)*.12f),new Vector3(.13f,.035f,.075f),Quaternion.Euler(0,-a*Mathf.Rad2Deg,0),flower);
+            }
+            Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
             var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place; item.Approach=root.transform; return item;
         }
