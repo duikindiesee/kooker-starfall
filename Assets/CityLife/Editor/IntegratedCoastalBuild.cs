@@ -117,9 +117,9 @@ namespace CityLife.World.Editor
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
             place.Kind = NpcObjectKind.Place; place.Approach = refuge.transform;
             brain.Registry = brain.Registry.Concat(new[] { place }).ToArray();
-            var foodObject = new GameObject("Food and ecology / integrated adapter"); foodObject.transform.SetParent(terrainRoot);
+            var foodObject = new GameObject("Food and ecology / integrated adapter"); foodObject.transform.SetParent(ground.transform);
             var food = foodObject.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
-            food.Attach(brain.transform, terrainRoot, brain.InstanceWorldId);
+            food.Attach(brain.transform, ground.transform, brain.InstanceWorldId);
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
