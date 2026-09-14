@@ -178,30 +178,25 @@ namespace CityLife.World
             }
             motion/=Math.Max(1,samples);
             CheckThat("moving-shallow-bed-caustics",motion>.12,"same-camera lower-frame mean channel delta="+motion.ToString("F3")+" over 650ms; visual acceptance separate");
-            var reflectionProbe=FindFirstObjectByType<ReflectionProbe>();
-            int reflectionRenderId=-1;
-            bool reflectionFinished=false;
-            Texture reflectionTexture=null;
+            var waterRenderer=GameObject.Find("Coastal water - luminous river and sea")?.GetComponent<MeshRenderer>();
+            var waterMaterial=waterRenderer==null?null:waterRenderer.sharedMaterial;
+            var planarReflection=waterRenderer==null?null:waterRenderer.GetComponent<CoastalPlanarReflection>();
             Color32[] reflectionOff=null,reflectionOn=null;
-            if(reflectionProbe!=null)
+            if(waterMaterial!=null&&waterMaterial.HasProperty("_ReflectionStrength"))
             {
                 float priorTimeScale=Time.timeScale;
+                float priorReflection=waterMaterial.GetFloat("_ReflectionStrength");
                 try
                 {
-                    Time.timeScale=0; // isolate probe contribution from animated waves/caustics
-                    reflectionProbe.enabled=false;
+                    Time.timeScale=0; // isolate scene-reflection contribution from animated waves/caustics
+                    waterMaterial.SetFloat("_ReflectionStrength",0);
                     yield return new WaitForEndOfFrame();
-                    reflectionOff=RenderWorldNow("01g-reflection-probe-off");
-                    reflectionProbe.enabled=true;
-                    reflectionRenderId=reflectionProbe.RenderProbe();
-                    float reflectionDeadline=Time.realtimeSinceStartup+8;
-                    while(reflectionRenderId>=0&&!reflectionProbe.IsFinishedRendering(reflectionRenderId)&&Time.realtimeSinceStartup<reflectionDeadline) yield return null;
-                    reflectionFinished=reflectionRenderId>=0&&reflectionProbe.IsFinishedRendering(reflectionRenderId);
-                    reflectionTexture=reflectionProbe.texture;
+                    reflectionOff=RenderWorldNow("01g-scene-reflection-off");
+                    waterMaterial.SetFloat("_ReflectionStrength",1);
                     yield return new WaitForEndOfFrame();
-                    reflectionOn=RenderWorldNow("01h-reflection-probe-on");
+                    reflectionOn=RenderWorldNow("01h-scene-reflection-on");
                 }
-                finally { Time.timeScale=priorTimeScale; }
+                finally { waterMaterial.SetFloat("_ReflectionStrength",priorReflection); Time.timeScale=priorTimeScale; }
             }
             double reflectionDelta=0; int reflectionSamples=0;
             if(reflectionOff!=null&&reflectionOn!=null&&reflectionOff.Length==reflectionOn.Length)
@@ -212,10 +207,11 @@ namespace CityLife.World
                     reflectionSamples+=3;
                 }
             reflectionDelta/=Math.Max(1,reflectionSamples);
-            CheckThat("actual-coastal-reflection-probe-contribution",QualitySettings.realtimeReflectionProbes&&reflectionProbe!=null&&reflectionFinished&&reflectionTexture!=null&&reflectionDelta>.02,
-                "probe="+(reflectionProbe==null?"missing":reflectionProbe.name)+"; renderId="+reflectionRenderId+"; finished="+reflectionFinished+
-                "; texture="+(reflectionTexture==null?"none":reflectionTexture.name+" "+reflectionTexture.width+"x"+reflectionTexture.height)+
-                "; qualityRealtime="+QualitySettings.realtimeReflectionProbes+"; shader time frozen; matched lower-frame mean channel delta="+reflectionDelta.ToString("F3")+"; dynamic weather refresh not claimed");
+            CheckThat("actual-coastal-scene-reflection-contribution",waterMaterial!=null&&planarReflection!=null&&planarReflection.TextureReady&&planarReflection.LastRenderedFrame>=0&&reflectionDelta>.02,
+                "waterMaterial="+(waterMaterial==null?"missing":waterMaterial.name)+
+                "; planarTextureReady="+(planarReflection!=null&&planarReflection.TextureReady)+"; lastRenderedFrame="+(planarReflection==null?-1:planarReflection.LastRenderedFrame)+
+                "; shader time frozen; same-camera reflection strength 0/1 lower-frame mean channel delta="+reflectionDelta.ToString("F3")+
+                "; ordinary-play planar camera samples the current canyon/sky view; dynamic weather refresh follows rendered frames");
             var islands=GameObject.Find("Distant islands - visual only - outside playable boundary");
             CheckThat("inaccessible-offshore-landforms-present",islands!=null&&islands.GetComponentsInChildren<MeshRenderer>().Length==3&&islands.GetComponentsInChildren<Collider>().Length==0,
                 islands==null?"missing":"renderers="+islands.GetComponentsInChildren<MeshRenderer>().Length+"; colliders="+islands.GetComponentsInChildren<Collider>().Length+"; centres beyond active terrain z=900");

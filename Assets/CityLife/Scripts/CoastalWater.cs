@@ -81,10 +81,10 @@ namespace CityLife.World
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             renderer.lightProbeUsage = LightProbeUsage.Off;
-            renderer.reflectionProbeUsage = ReflectionProbeUsage.BlendProbes;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            surface.AddComponent<CoastalPlanarReflection>();
             AddVisualSea(surface.transform, material);
             SetLayerRecursively(surface,4); // built-in Water layer; excluded from its own probe
-            AddEnvironmentProbe(parent);
             return surface;
         }
 

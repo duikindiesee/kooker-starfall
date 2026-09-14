@@ -38,8 +38,10 @@ Shader "CityLife/CoastalWater"
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _ShallowColor, _RiverColor, _DeepColor, _SkyReflection, _FoamColor;
-                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength;
+                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength, _PlanarReflectionAvailable;
+                float4x4 _PlanarReflectionVP;
             CBUFFER_END
+            TEXTURE2D(_PlanarReflectionTexture); SAMPLER(sampler_PlanarReflectionTexture);
 
             struct Attributes
             {
@@ -117,6 +119,10 @@ Shader "CityLife/CoastalWater"
                         }
                     }
                 }
+                // The authored bathymetry ends at z=900 while the visual ocean continues.
+                // Fade measured estuary depth into the open-sea fallback before that boundary,
+                // avoiding a hard horizontal colour/transmission seam at the mesh join.
+                depth = lerp(depth,25,smoothstep(760,900,input.positionWS.z));
                 return depth;
             }
 
@@ -160,18 +166,18 @@ Shader "CityLife/CoastalWater"
                 half3 normalWS = normalize(float3(-nx,1,-nz));
                 half3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 float fresnel = pow(1-saturate(dot(normalWS,view)),4);
-                // Sample the real probe captured from the canyon/sky/celestial scene. A small
-                // navy baseline remains only when a platform returns an empty probe.
+                // The ordinary-play planar camera supplies the actual canyon, sky and celestial
+                // scene. URP's environment lookup remains a bounded fallback.
                 half3 reflectionDirection=reflect(-view,normalWS);
                 half3 environment=GlossyEnvironmentReflection(reflectionDirection,input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
-                // The probe supplies off-screen context. A bounded screen-space ray endpoint
-                // adds the actual visible canyon/sky/giant colour without reflecting the
-                // transparent water itself (the URP opaque texture is sampled here).
-                float4 reflectionCS=TransformWorldToHClip(input.positionWS+reflectionDirection*85);
-                float2 reflectionUV=GetNormalizedScreenSpaceUV(reflectionCS);
-                float reflectionOnScreen=step(.001,reflectionCS.w)*step(0,reflectionUV.x)*step(reflectionUV.x,1)*step(0,reflectionUV.y)*step(reflectionUV.y,1);
-                half3 screenEnvironment=SampleSceneColor(saturate(reflectionUV));
-                environment=lerp(environment,screenEnvironment,reflectionOnScreen*.68);
+                float4 planarCS=mul(_PlanarReflectionVP,float4(input.positionWS,1));
+                float2 planarUV=planarCS.xy/max(.0001,planarCS.w)*.5+.5;
+                #if UNITY_UV_STARTS_AT_TOP
+                    planarUV.y=1-planarUV.y;
+                #endif
+                float planarInside=step(.001,planarCS.w)*step(0,planarUV.x)*step(planarUV.x,1)*step(0,planarUV.y)*step(planarUV.y,1)*saturate(_PlanarReflectionAvailable);
+                half3 planarEnvironment=SAMPLE_TEXTURE2D(_PlanarReflectionTexture,sampler_PlanarReflectionTexture,saturate(planarUV)).rgb;
+                environment=lerp(environment,planarEnvironment,planarInside);
                 environment=max(environment,_SkyReflection.rgb*.18);
                 // Water reflects a small amount even head-on and grows strongly toward
                 // grazing angles; this avoids hiding a valid probe behind a zero-Fresnel floor.

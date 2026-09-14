@@ -1,0 +1,35 @@
+{
+    "worldId": "starfall.coastal-world.v1",
+    "terrainContentRevision": "fish-river-canyon-r1",
+    "terrainSeed": 1904242,
+    "treeSeed": 4242,
+    "rockSeed": 4242,
+    "terrainSourceSha256": "8227b4f46eb8b27ddc343c00195f70fee38f1eabb09b915e5b36b9fc5342e742",
+    "rockSourceSha256": "9c121c4505388bd675de9e330d71e5bd890bebd808b9f50b2d384c8d8ca00997",
+    "waterSourceSha256": "5a18dcd354346d9903aa4ae891ea62268738689981053a96cbc462f0736e234d",
+    "reference": "evidence/references/opening-world-approved-panorama-20260914.png; approved-water-shelves-20260914.png; approved-underwater-light-20260914.png; approved-tree-bank-detail-20260914.png; approved-rocky-foothill-planting-20260914.png",
+    "minimum": {
+        "x": -600.0,
+        "y": -18.0,
+        "z": -700.0
+    },
+    "maximum": {
+        "x": 600.0,
+        "y": 170.0,
+        "z": 900.0
+    },
+    "waterLevelMetres": -2.0,
+    "sideCameraPosition": {
+        "x": 21.0,
+        "y": 4.599999904632568,
+        "z": -25.0
+    },
+    "sideCameraTarget": {
+        "x": 0.0,
+        "y": 3.4000000953674316,
+        "z": 14.0
+    },
+    "fieldOfView": 52.0,
+    "visualOcean": "Additional surface x[-1800,1800],z[900,2200], visual only; outside active terrain/collision slice",
+    "acceptance": "Actual Unity composition and scene collider probes; no exact reference match, swimming or native coastal player acceptance"
+}
