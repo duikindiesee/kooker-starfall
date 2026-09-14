@@ -95,6 +95,14 @@ Shader "CityLife/CoastalTerrain"
                 // Moving refracted light belongs only to the submerged bed. The
                 // cutoff stays below the authored wave trough, so dry sand cannot glow.
                 float submerged=1-smoothstep(_SeaLevel-.16,_SeaLevel-.03,p.y);
+                // The riverbed needs readable material variation beneath clear water.
+                // Broad mineral patches and smaller gravel variation are world-space and
+                // remain attached to the actual collision terrain as the camera moves.
+                float bedPatch=Noise(float3(p.x*.17,19,p.z*.17));
+                float bedGravel=Noise(float3(p.x*.83,47,p.z*.83));
+                float3 submergedBed=lerp(float3(.16,.205,.17),float3(.36,.275,.17),bedPatch);
+                submergedBed*=lerp(.78,1.12,bedGravel);
+                albedo=lerp(albedo,submergedBed,submerged*.62);
                 float causticLines=CausticNetwork(p.xz,_Time.y);
                 float opticalDepth=max(0,_SeaLevel-p.y);
                 albedo+=float3(.035,.12,.115)*causticLines*submerged*exp(-opticalDepth*.30);

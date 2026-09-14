@@ -96,7 +96,9 @@ namespace Starfall.Food
             {
                 float angle=i*2.399963f+.22f, radius=.18f+(i%3)*.12f;
                 Vector3 basePoint=new Vector3(Mathf.Cos(angle)*radius,.08f,Mathf.Sin(angle)*radius);
-                Primitive(PrimitiveType.Cylinder,"Partly concealed woody runner "+i,basePoint+new Vector3(0,.18f,0),new Vector3(.045f,.22f,.045f),Quaternion.Euler(14*Mathf.Sin(angle),angle*Mathf.Rad2Deg,-14*Mathf.Cos(angle)),wood);
+                // Sourfig spreads along the ground. Keep the woody runner connected and
+                // mostly concealed rather than presenting a ring of upright brown sticks.
+                Runner("Grounded concealed woody runner "+i,new Vector3(0,.055f,0),basePoint+Vector3.up*.035f);
                 int leafCount=5+(i%2);
                 for(int j=0;j<leafCount;j++)
                 {
@@ -110,9 +112,10 @@ namespace Starfall.Food
                 }
                 if(i%2==0)
                 {
-                    Vector3 fruitPosition=basePoint+new Vector3(Mathf.Cos(angle)*.50f,.48f,Mathf.Sin(angle)*.50f);
-                    Primitive(PrimitiveType.Sphere,"Visible ripe sourfig fruit "+i,fruitPosition,new Vector3(.20f,.24f,.20f),Quaternion.identity,fruit);
-                    Primitive(PrimitiveType.Sphere,"Sourfig fruit crown "+i,fruitPosition+Vector3.up*.13f,new Vector3(.13f,.055f,.13f),Quaternion.identity,leafLight);
+                    Vector3 fruitPosition=basePoint+new Vector3(Mathf.Cos(angle)*.30f,.31f,Mathf.Sin(angle)*.30f);
+                    Runner("Fruit-bearing stem "+i,basePoint+Vector3.up*.13f,fruitPosition-Vector3.up*.07f);
+                    Primitive(PrimitiveType.Sphere,"Visible ripe sourfig fruit "+i,fruitPosition,new Vector3(.17f,.20f,.17f),Quaternion.identity,fruit);
+                    Primitive(PrimitiveType.Sphere,"Sourfig fruit crown "+i,fruitPosition+Vector3.up*.105f,new Vector3(.11f,.045f,.11f),Quaternion.identity,leafLight);
                 }
             }
             Vector3 flowerCenter=new Vector3(-.38f,.58f,.26f); Runner("Flower stem",new Vector3(-.20f,.20f,.12f),flowerCenter-Vector3.up*.04f);
