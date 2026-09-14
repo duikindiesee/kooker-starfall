@@ -1,6 +1,14 @@
 # One living memory thought
 
-Isolated 0.0.6-memory-preview.1 implementation. **Runtime acceptance pending until an actual-player report passes.** This does not add death/return, survival, ecology, saved-world migration or cross-world sharing.
+**One complete living-memory thought passed in Unity Editor Play Mode on 14 September 2026.** Standalone acceptance remains blocked by Windows signing policy. This isolated slice does not add death/return, survival, ecology, saved-world migration or cross-world sharing.
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Grounded event and scoped memory | Editor runtime PASS | Actual amber delivery at tick 588, three receipts, bounded own retrieval, SQLite restart; event `58150e0ef2c00827b7f68ee3b6ebaa504cd75a8345a6f79c6c286232447c527e` | Broader gameplay events |
+| Complete model thought and live HUD | Editor runtime PASS | E4B generated "Delivered Amber"; strict parse/live admission at **991 ms / 1500 ms**, one attempt, zero reasoning tokens | Latency reliability and standalone acceptance |
+| Isolation and preservation | PASS for this slice | Other inhabitant empty, foreign query rejected 400, 558 prior build hashes unchanged, Smart App Control On | Broader privacy testing |
+
+Exact runtime source: `fda786a434b6618b8d405e731b7262c7f140a61d`. Evidence: `evidence/local/living-memory/run-20260914-editor-two-word/REPORT.md`, `runtime/living-memory.json`, and `runtime/51-living-memory-thought-or-fallback.png`. The screenshot explicitly labels Editor Play Mode and shows the model text, actor/world and delivery event. Model inventory took 21 ms, completion 968 ms, with 991 ms total measured through parsing. The linked E4B ran on the already-loaded Mac through laptop loopback. The seven focused runtime checks passed with no runtime errors; physical keyboard and standalone acceptance are separate. Earlier failed attempts below remain historical evidence.
 
 The compiled courtyard performs its existing deterministic pickup and delivery. A trusted receipt hook exports identity and successful action receipts through StarfallMemoryExport. The isolated runner creates a new private capability configuration and SQLite database, starts the reviewed v1 HTTP service with outbound networking disabled, and passes an explicit client configuration path to this new player. The publisher and inhabitant reader capabilities are distinct and never enter model context or evidence output.
 
