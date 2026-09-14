@@ -10,7 +10,11 @@ namespace CityLife.World
         public const string RegionId = "starfall.integrated-coastal.v1";
         public string WorldId => RegionId;
         public string Revision => CoastalTerrain.ContentRevision + ".integrated1";
-        public Bounds PhysicalBounds => new Bounds(new Vector3(0, 40, 45), new Vector3(176, 260, 196));
+        public Bounds PhysicalBounds => new Bounds(
+            new Vector3((CoastalTerrain.MinX + CoastalTerrain.MaxX) * .5f, 50,
+                (CoastalTerrain.MinZ + CoastalTerrain.MaxZ) * .5f),
+            new Vector3(CoastalTerrain.MaxX - CoastalTerrain.MinX, 400,
+                CoastalTerrain.MaxZ - CoastalTerrain.MinZ));
         public bool Contains(Vector3 p) => EnvironmentClock.Finite(p.sqrMagnitude) && PhysicalBounds.Contains(p);
         public bool TryGround(Vector3 p, out float height, out Vector3 normal)
         {

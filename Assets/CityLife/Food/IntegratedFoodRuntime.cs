@@ -22,7 +22,7 @@ namespace Starfall.Food
         {
             Actor = actor; Model = new FoodModel(worldId, Generation, 4242);
             // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
-            BerryPosition = new Vector3(34, CoastalTerrain.Height(34, -18), -18);
+            BerryPosition = FindClearBerryPosition();
             SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));
@@ -60,6 +60,21 @@ namespace Starfall.Food
                 best=Mathf.Min(best,Vector3.Distance(position,nearest));
             }
             return best==float.MaxValue ? 999f : best;
+        }
+        static Vector3 FindClearBerryPosition()
+        {
+            // Prefer the broad east activity bank, then search deterministic dry
+            // sites until the whole bush is visibly clear of authored rocks.
+            for (int ring = 0; ring < 8; ring++)
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    float x = 205 + ring * 14;
+                    float z = -80 + side * (12 + ring * 7);
+                    var candidate = new Vector3(x, CoastalTerrain.Height(x, z), z);
+                    if (candidate.y > CoastalWater.Level + .5f && MeasureRockClearance(candidate) >= 4f)
+                        return candidate;
+                }
+            throw new System.InvalidOperationException("No dry, rock-clear integrated berry site was found.");
         }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
         {
