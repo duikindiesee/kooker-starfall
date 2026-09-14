@@ -50,6 +50,7 @@ namespace CityLife.World
             // Living-memory verification updates the HUD and captures within the
             // same coroutine step. Flush the Canvas before the explicit camera
             // render so the retained frame contains the accepted thought text.
+            Controls.Hud.Refresh();
             Canvas.ForceUpdateCanvases();
             var camera = Controls.View.GetComponent<Camera>();
             var target = new RenderTexture(1600, 900, 24, RenderTextureFormat.ARGB32);

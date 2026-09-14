@@ -96,6 +96,8 @@ namespace CityLife.World.Editor
                     plinth.transform.position = new Vector3(plinth.transform.position.x + activityOffset.x, floor + .43f, plinth.transform.position.z + activityOffset.z);
             }
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
+            var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
+            livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
             brain.SpawnPosition = new Vector3(activityOffset.x - 4, 4.02f, activityOffset.z - 5); actor.Place(brain.SpawnPosition);
             var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
