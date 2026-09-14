@@ -106,8 +106,10 @@ namespace CityLife.World
                     float radius=Lerp(2.2f,8.4f,id,202);
                     Vector2 q=p+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
                     float width=Lerp(.38f,1.35f,id,203),height=Lerp(.22f,.72f,id,204),depth=width*Lerp(.55f,1.25f,id,205);
+                    float floor=CoastalTerrain.Height(q.x,q.y);
+                    if(floor>-2.28f) continue; // never label exposed shore rubble as submerged ecology
                     var rubble=MeshObject("Submerged fractured reef fragment "+i+"-"+fragment,RockMesh(width,height,depth,id),rock,root.transform,false);
-                    rubble.transform.localPosition=new Vector3(q.x,CoastalTerrain.Height(q.x,q.y)-height*.10f,q.y);
+                    rubble.transform.localPosition=new Vector3(q.x,floor-height*.10f,q.y);
                     rubble.transform.localRotation=Quaternion.Euler(Lerp(-8,8,id,206),Lerp(-180,180,id,207),Lerp(-6,6,id,208));
                 }
                 // Low irregular rosettes sit between rubble; tall flower spikes are
@@ -117,7 +119,9 @@ namespace CityLife.World
                     int id=700+i*23+clump;
                     float angle=Lerp(-Mathf.PI,Mathf.PI,id,211),radius=Lerp(1.4f,7.1f,id,212);
                     Vector2 q=p+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
-                    Vector3 rooted=new Vector3(q.x,CoastalTerrain.Height(q.x,q.y)+.035f,q.y);
+                    float floor=CoastalTerrain.Height(q.x,q.y);
+                    if(floor>-2.72f) continue; // keep the complete low rosette beneath the surface
+                    Vector3 rooted=new Vector3(q.x,floor+.035f,q.y);
                     AddRosette(aquatic,rooted,Lerp(.62f,1.30f,id,213),id);
                 }
             }

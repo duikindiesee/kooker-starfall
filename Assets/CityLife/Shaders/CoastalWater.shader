@@ -139,7 +139,7 @@ Shader "CityLife/CoastalWater"
                     half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.34,.105,.045));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
-                    float transmission = .92*exp(-depth*.14);
+                    float transmission = .96*exp(-depth*.10);
                     water = lerp(water,transmittedBed,transmission);
                 }
 

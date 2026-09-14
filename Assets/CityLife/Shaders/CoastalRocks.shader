@@ -38,13 +38,13 @@ Shader "CityLife/CoastalRocks"
             }
             float CausticNetwork(float2 p,float t)
             {
-                p*=.62;
+                p*=1.25;
                 float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
                 float a=sin((p.x+warp.x)*1.73+t*1.13),b=sin((p.y+warp.y)*2.07-t*.91);
                 float c=sin((p.x+p.y+warp.x-warp.y)*1.19+t*.57);
                 float field=min(abs(a+b+c*.82),abs(a*.73-b+c));
                 float pixelAA=max(.008,fwidth(field)*.55);
-                float networkLine=1-smoothstep(.026-pixelAA,.026+pixelAA,field);
+                float networkLine=1-smoothstep(.018-pixelAA,.018+pixelAA,field);
                 float patch=smoothstep(.46,.73,Noise(float3(p.x*.16,t*.045,p.y*.16)+83));
                 return networkLine*lerp(.12,1,patch);
             }
