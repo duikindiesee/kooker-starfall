@@ -5,6 +5,24 @@ not an accumulating archive. This supersedes earlier binary-preservation notes.
 Keep one runtime-verified current player and its optional current ZIP. A temporary
 candidate may coexist until validation; no source merge or release is implied.
 
+## Storage reconciliation is not promotion
+
+Explicit follow-up authorization: do not accumulate partial candidates while
+waiting for freshwater, visual or other wider acceptance. Independently identify
+the best runtime-verified fallback and the current testing candidate, bind both
+to manifests and full-content hashes, and protect all active player paths.
+Confirmed superseded binaries and redundant archives may then be removed without
+declaring the candidate accepted. Never weaken `check-survival-promotion.ps1` or
+feed synthetic passing evidence into promotion to enable cleanup.
+
+Reconciliation must validate resolved direct build-child paths, reject reparse
+points and user-state stores, preserve source/saves/compact evidence, and retain
+an exact removal manifest with before/after inventory and drive free space.
+Unknown paths remain untouched. A stopped failed test and a retained fallback
+have different roles; recording these roles is mandatory. The existing promotion
+helper's survival gate does not justify retaining every intermediate executable.
+This paragraph records authorized workflow, not a completed cleanup claim.
+
 - `build-integrated.ps1` removes an explicitly failed candidate through
   `remove-failed-integrated-build.ps1`. Missing or ambiguous failure receipts fail
   closed and require inspection; successful but visually unaccepted is not a build failure.

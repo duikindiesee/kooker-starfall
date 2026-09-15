@@ -14,6 +14,13 @@ these integrated binaries; retain their evidence instead. See
 or bypass protected review. Keep the real Task API owning record aligned; do not
 invent an epic/task/workstream ID or claim an unverified queue receipt.
 
+Storage reconciliation is separate from survival promotion: an open spring or
+visual gate must not retain every superseded test binary. Keep an explicitly
+identified best verified fallback and the one current candidate, protect live
+processes, and remove only manifest-bound superseded outputs after path/content
+checks. Record counts and free space before/after. This does not promote the
+candidate or weaken any acceptance verifier.
+
 Read `README.md` and `docs/WORLD-FOUNDATION.md` before changing the world. The current milestone is an explorable island foundation; road, plot, house-tool, shared-world and household integrations are separate future work.
 
 - Preserve the versioned world definition and explicit migration boundary. Never silently regenerate a saved world using a changed algorithm/configuration.
