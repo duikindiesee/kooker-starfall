@@ -16,7 +16,29 @@ A world in the making · Unity 6 · Windows preview
 
 Beneath a blue giant and a river of stars, warm desert gives way to luminous seas. Explore, shape, and one day inhabit a world still becoming.
 
-**That is the destination.** This branch preserves the [first coastal scene review](docs/COASTAL-SLICE.md) and now adds a separate [bounded coastal player checkpoint](docs/COASTAL-PLAYABLE-CHECKPOINT.md): rocky tree bank, turquoise river/sea, canyon terrain and procedural galaxy in an actual built player. It is not yet the full panorama-scale world or living sea. World shaping, swimming, houses, building tools, inhabitants, bots and shared-world connections are future work.
+**That is the destination.** This branch now contains a compiled integrated coastal
+candidate with a clothed autonomous inhabitant, weather, refuge, food and scoped
+memory components. It is still a candidate, not the accepted opening-world release.
+The [first coastal review](docs/COASTAL-SLICE.md) and
+[bounded coastal checkpoint](docs/COASTAL-PLAYABLE-CHECKPOINT.md) below preserve
+earlier stages; they do not describe all current implementation.
+
+## Current integration checkpoint — 15 September 2026
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Integrated Windows candidate | Round196 compiled, source pinned in manifest | [Exact build manifest](evidence/milestones/coastal/round-196/preview-build.json) | Compiling does not establish release acceptance |
+| Grounded model-selected meal and return to refuge | Bounded compiled evidence reviewed | [Round195 survival review](docs/REVIEW-ROUND195-SURVIVAL.md) | Sustained exploration/drinking; death pacing was explicitly accelerated |
+| Canyon, giant and clear-water visual target | Not accepted | [Canyon/water review](docs/VISUAL-REVIEW-ROUND193.md), [rejected filter experiment](docs/VISUAL-REVIEW-ROUND197.md), [water isolation](docs/VISUAL-REVIEW-ROUND198.md) | Current-player multi-view review and reference-quality terrain, water and planting |
+| Remembered events and scoped food state | Component persistence exists, not a whole-world save | [Architecture and installation state](docs/SYSTEM-ARCHITECTURE.md) | Unified checkpointing remains separate from event recall |
+| Narrated walkthrough | Capture/encoding tools implemented and tested in bounded stages | [Walkthrough evidence and remaining gates](docs/OPENING-WORLD-WALKTHROUGH.md) | Correctly oriented game footage, narration, replay and user acceptance |
+
+The [opening-world acceptance record](docs/OPENING-WORLD-ACCEPTANCE.md) owns the
+full milestone. No combination of isolated test passes authorizes promotion,
+merge or release. [Build retention](docs/BUILD-RETENTION.md) keeps the verified
+player until a replacement passes the required gates; preserve source, saves
+and compact evidence. Whole-world shaping, swimming, boats, construction and
+shared-world connections remain outside this release milestone.
 
 ## 🌌 The world ahead
 
@@ -29,10 +51,10 @@ milestone descriptions below retain their original scope.
 | Element | Direction | Current state |
 |---|---|---|
 | Trees | Gold and ochre kokerboom trunks, rounded crowns and cool blue-green rosettes | R06 approved reference; R19 experiment frozen |
-| Land | Warm sculpted mesas, rocky shores and turquoise bays | Bounded coastal scene review; no coastal player yet |
-| Sky | A large blue gas giant, moons and a distant galaxy | Giant/stars in R19; procedural galaxy in coastal study |
-| Sea | Clear shallows, submerged arches, kelp-like growth, coral forms, fish schools and rays | Surface colour study; underwater life and swimming unimplemented |
-| Life and building | Explore, shape and eventually inhabit the world | Future scope |
+| Land | Warm sculpted mesas, rocky shores and turquoise bays | Integrated canyon candidate exists; visual and traversal acceptance incomplete |
+| Sky | A large blue gas giant, moons and a distant galaxy | Integrated sky exists; current distant-background composition remains under review |
+| Sea | Clear shallows and submerged rocky plant shelves | Candidate depth transmission/reflection; repetitive bands remain, swimming and fauna unimplemented |
+| Life and building | Inhabit, learn and eventually construct | Inhabitant/food/memory integration under test; construction remains future scope |
 
 The [visual direction](docs/KOKERBOOM-REFERENCE.md) records the concept references separately from actual Unity evidence. The new landscape will have its own versioned world definition, preserving the earlier island and its saved edits.
 
@@ -47,6 +69,11 @@ The [visual direction](docs/KOKERBOOM-REFERENCE.md) records the concept referenc
 R16's historical full review remains **5.75/10, rejected under that rubric**; its numeric buried-root failure is preserved. R17/R18 are unscored six-view pilots. The revised R18 experimental source [passed 536 numeric assertions](evidence/verified/kokerboom-round-18-family-validation.json); the closing [R19 set contains all 21 actual offscreen views](docs/VISUAL-MILESTONES.md#round-19-frozen-family-review), with an independent **7.375/10 (7.4)** result, rejected under the historical rubric and frozen with defects deferred. These results do not change the retained R06 executable or establish native performance.
 
 ## 🎮 Build & run
+
+The following R19 commands and controls describe **historical standalone studies**,
+not the newest integrated survival candidate. Use the current acceptance and
+architecture links above for the integrated launcher and its manual service
+dependencies. Do not infer current build acceptance from these older releases.
 
 The separate **0.0.2-preview.2** build adds a visible fullscreen/windowed button. Both button transitions were verified in the actual player, restoring its window size and preserving scene/player state. See [display release evidence and remaining checks](docs/RELEASE-0.0.2-preview.2.md). The earlier builds remain available and unchanged.
 
