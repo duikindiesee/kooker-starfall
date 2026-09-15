@@ -156,7 +156,11 @@ Shader "CityLife/CoastalWater"
                     // lit warm sandy bed. Estuary water is optically clear at these 2-5m depths;
                     // use restrained wavelength absorption so red is reduced first without
                     // converting the real bed into an opaque green silhouette.
-                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-depth*half3(.16,.07,.025));
+                    // In optically clear shallows the real sand/rock remains
+                    // identifiable; wavelength separation increases with
+                    // optical path rather than imposing a green wash at contact.
+                    float opticalPath=depth*smoothstep(.35,5,depth);
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-opticalPath*half3(.11,.055,.025));
                     // Clear estuary shallows favour the authored bed; depth still removes
                     // it smoothly before the channel becomes open-sea blue.
                     water = lerp(water,transmittedBed,transmission);
@@ -211,9 +215,9 @@ Shader "CityLife/CoastalWater"
 
                 // Thin intermittent contact edge only when depth is measured, never a false
                 // white line generated from the fallback colour gradient.
-                float shore = (1-smoothstep(.04,.36,depth))*measured;
+                float shore = (1-smoothstep(.015,.14,depth))*measured;
                 float pulse = .45+.55*smoothstep(-.5,.65,sin(phase.x*2.1-phase.y*.4));
-                water = lerp(water,_FoamColor.rgb,shore*pulse*.68);
+                water = lerp(water,_FoamColor.rgb,shore*pulse*.22);
                 // The opaque scene was already transmitted above. Do not add the warm bed a
                 // second time through ordinary alpha; retain only a narrow actual contact fade.
                 float alpha=lerp(1,smoothstep(0,.045,depth),measured);
