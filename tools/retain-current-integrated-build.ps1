@@ -1,8 +1,12 @@
-param([Parameter(Mandatory)][string]$BuildManifest,[Parameter(Mandatory)][string]$RuntimeDirectory,[switch]$Execute)
+param([Parameter(Mandatory)][string]$BuildManifest,[Parameter(Mandatory)][string]$RuntimeDirectory,[string]$SurvivalAcceptance,[switch]$Execute)
 $ErrorActionPreference='Stop'
 $project=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 & (Join-Path $PSScriptRoot 'check-integrated-build.ps1') -BuildManifest $BuildManifest -RuntimeDirectory $RuntimeDirectory | Out-Host
 $keep=Get-Content -LiteralPath $BuildManifest -Raw | ConvertFrom-Json
+if ($keep.version -match 'survival') {
+    if (!$SurvivalAcceptance) { throw 'Survival retention held: legacy regression alone cannot promote a survival build. Supply separate validated survival evidence.' }
+    & (Join-Path $PSScriptRoot 'check-survival-promotion.ps1') -BuildManifest $BuildManifest -ScopedReceipt $SurvivalAcceptance | Out-Host
+}
 $builds=(Resolve-Path -LiteralPath (Join-Path $project 'Builds')).Path
 if ((Get-Item -LiteralPath $builds).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Linked build root rejected.' }
 if (@(Get-Process Unity -ErrorAction SilentlyContinue).Count) { throw 'Unity active; defer retention.' }

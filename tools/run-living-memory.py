@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--scene')
     parser.add_argument('--integrated', action='store_true')
     parser.add_argument('--no-retention', action='store_true', help='Keep a passing candidate without replacing the current build')
+    parser.add_argument('--survival-acceptance', type=Path, help='Separate full-content-bound survival evidence required for survival build promotion')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
@@ -209,10 +210,13 @@ def main():
         # Promote only after the compiled runtime, isolation and restart checks.
         # The retention helper independently rechecks every required runtime gate
         # and the complete build bytes; packaging is not required for cleanup.
-        subprocess.check_call(['pwsh', '-NoProfile', '-File',
+        retention_command = ['pwsh', '-NoProfile', '-File',
             str(ROOT / 'tools/retain-current-integrated-build.ps1'),
             '-BuildManifest', str(build_manifest), '-RuntimeDirectory', str(output),
-            '-Execute'], cwd=ROOT)
+            '-Execute']
+        if args.survival_acceptance:
+            retention_command.extend(['-SurvivalAcceptance', str(args.survival_acceptance.resolve())])
+        subprocess.check_call(retention_command, cwd=ROOT)
 
 
 if __name__ == '__main__':

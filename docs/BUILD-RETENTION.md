@@ -45,3 +45,24 @@ runtime were both rejected as deletion authority; repeat retention reported zero
 targets; the retained player's full content hash passed before and after cleanup.
 The newly wired automatic lifecycle branches have syntax validation but still
 require a fresh end-to-end candidate run; do not report that integration as tested.
+# Survival promotion boundary (15 September follow-up)
+
+The legacy regression runner promoted round185 before survival was tested and
+removed the previous 050306 and 060513 binary copies. Their source and evidence
+remain, but those exact executable folders are no longer retained. This was a
+gate mismatch, not survival acceptance.
+
+Survival-version candidates now require `-SurvivalAcceptance` at retention and
+packaging, or `--survival-acceptance` in the regression runner. Without it the
+operation fails closed before deletion. Use `--no-retention` for regression-only
+candidate testing. The separate `check-survival-promotion.ps1` checks a matching
+full-content fingerprint, fresh v2 live process flags, at least five minutes of
+ordinary play, model-provenance-linked meals and freshwater drinking, and the
+same-build explicitly accelerated cause/return/scoped-reload diagnostic. Capture
+both live processes with `capture-normal-process.ps1`; the death receipt path is
+`acceleratedDeathDiagnostic.process` in the scoped survival receipt.
+
+This is a technical retention boundary, not natural-timeline death, polished
+animation, human visual acceptance or permission to release. Round190's older
+process receipt is deliberately rejected. Positive end-to-end promotion remains
+pending the expanded evidence; no further cleanup was performed for this change.

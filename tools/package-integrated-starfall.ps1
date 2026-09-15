@@ -1,12 +1,17 @@
 param(
     [Parameter(Mandatory)][string]$BuildManifest,
     [Parameter(Mandatory)][string]$RuntimeDirectory,
-    [Parameter(Mandatory)][string]$ReleaseReadme
+    [Parameter(Mandatory)][string]$ReleaseReadme,
+    [string]$SurvivalAcceptance
 )
 $ErrorActionPreference = 'Stop'
 # Local packaging only. Passing this tool is not review, publication or user acceptance.
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $identity = & (Join-Path $PSScriptRoot 'check-integrated-build.ps1') -BuildManifest $BuildManifest -RuntimeDirectory $RuntimeDirectory | ConvertFrom-Json
+if ((Get-Content -LiteralPath $BuildManifest -Raw | ConvertFrom-Json).version -match 'survival') {
+    if (!$SurvivalAcceptance) { throw 'Separate survival acceptance required before packaging this candidate.' }
+    & (Join-Path $PSScriptRoot 'check-survival-promotion.ps1') -BuildManifest $BuildManifest -ScopedReceipt $SurvivalAcceptance | Out-Host
+}
 $buildRoot = Join-Path $root ('Builds/' + $identity.build)
 $readmeItem = Get-Item -LiteralPath $ReleaseReadme
 if ($readmeItem.PSIsContainer -or ($readmeItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Release README must be an ordinary file.' }
@@ -70,4 +75,4 @@ try {
     scope = 'No services, model weights, saves or private configuration included. Review and user acceptance remain separate.'
 } | ConvertTo-Json | Set-Content -LiteralPath $receiptPath -Encoding utf8
 Get-Content -LiteralPath $receiptPath
-& (Join-Path $PSScriptRoot 'retain-current-integrated-build.ps1') -BuildManifest $BuildManifest -RuntimeDirectory $RuntimeDirectory -Execute | Out-Host
+& (Join-Path $PSScriptRoot 'retain-current-integrated-build.ps1') -BuildManifest $BuildManifest -RuntimeDirectory $RuntimeDirectory -SurvivalAcceptance $SurvivalAcceptance -Execute | Out-Host
