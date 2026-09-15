@@ -1,5 +1,19 @@
 # Playable berry-survival checkpoint — not final acceptance
 
+## Latest verified update — round211 fallback, round212 temporary
+
+This section supersedes historical open-spring and retention rows below; those rows describe earlier inspections, not current status.
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Ordinary meal and freshwater coverage plus scoped diagnostic return | Technical gate passed independently | Root reran `tools/check-survival-promotion.ps1` against round211 and `evidence/local/normal-survival/run-25/scoped-today-receipt.json`: exit0, `TECHNICAL_SURVIVAL_RETENTION_GATE_PASS_NOT_RELEASE`;357.904seconds ordinary play, same post-exit full hash | Death timing separately accelerated; repeated overfull spring approaches remain defective; lesson context is not proof of improved learning |
+| Automatic successful-build cleanup | Actual lifecycle verified | Commit94680ce; `evidence/local/build-retention/reconcile-20260915-123605/reconciliation.json`; inventory retains211 fallback and212 temporary | Substantive failed-output lifecycle proof remains separate from invalid-Editor/no-output negative test |
+| Superseded binary removal | Receipt and directory inventory verified | Only round209 build111220 removed permanently:684835759bytes; source/manifests/evidence preserved | Exact runnable copy is gone; recreation requires matching source/assets/toolchain |
+| Round212 spring-relevance fix | Compiled, runtime unverified | Source `af8caadb058650370d56079c36e3f4bf20ed6820`, manifest round212, build123435, full hash `0656cae67368ca7a4389f915b07ab3006630ccd59c3e6af44a848063c22cd738` | Runtime regression and ordinary behavior test pending; not recommended replacement yet |
+| Combined final experience | Not accepted | Existing playable211 prototype and scoped receipts | Giant/water/terrain visuals, watchable narrated gameplay, human/club acceptance, full-world saving and protected review remain open |
+
+Cleanup source rejects active Unity/player processes and linked targets, limits removal to manifest-known direct build children, and excludes detected save/database stores. This is source review plus an actual one-target success receipt, not proof every failure branch was exercised. No authoritative Task API epic/workstream IDs were verified in this update; no identifiers were invented.
+
 ## Current ordinary food continuity update
 
 Independently inspected current round211 runs23/24. Run23 records genuine model-driven `gathered-ripe-berry`, request6, foodTick131, inventory1. Run24 startup restores tick131/energy8455/hydration5654/fruit1 and earned authority; local model `eat fruit` is admitted and executed as **new request7** at foodTick135, +1200energy/+400hydration/-1fruit. Request hash `5fa3404ab5d7046e566190c4791bf6e2b289a10b4e7d6f7c55f54efeb597885c`, response `61645f5d602cf959ff7331272a85b472ed2069deecf09ae06837c711dab68a82`;3632ms within survival budget. Raw receipts: `evidence/local/normal-survival/run-23/survival-evidence/normal-survival.jsonl` and corresponding run24 path, with live v2 process observations. Worker reports both clean exits and unchanged current build hash.

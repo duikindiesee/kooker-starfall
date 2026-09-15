@@ -34,6 +34,10 @@ P: options; Tab: possess/release; F: spectator; R: autonomy; right mouse: look; 
 
 Runs23/24 prove real gathered fruit persisted and became a fresh model-chosen meal after restart: saved request6 -> executed request7, +1200energy/+400hydration/-1fruit. Run22 proves an explicitly accelerated death, grounded cave return and subsequent model action with the retained own-cause lesson in context. This does not establish natural mortality timing or improved survival policy caused by the lesson.
 
-Freshwater discovery/drinking, the panorama-level giant/water/terrain visuals, final human play/club review, full-world saving, protected review, ZIP and final narrated walkthrough remain open. Detailed evidence is in `BERRY-SURVIVAL-MILESTONE-RECEIPT.md`.
+Round211 run25 now proves ordinary freshwater discovery, inspection and drinking as well as meals over357.904seconds. The strict technical survival verifier passed against its scoped receipt and the separately accelerated run22 diagnostic. Repeated spring approaches while already hydrated remain a behavior defect, not complete survival-policy acceptance.
+
+Round212 (`20260915-123435`, source `af8caadb058650370d56079c36e3f4bf20ed6820`) is a newly compiled temporary candidate for that fix, not yet runtime-verified. Keep using the round211 launch instructions above until new evidence supports replacement. Automatic cleanup preserved211 and212 and removed only superseded209; receipt `evidence/local/build-retention/reconcile-20260915-123605/reconciliation.json`.
+
+The panorama-level giant/water/terrain visuals, final human play/club review, full-world saving, protected review, ZIP and final watchable narrated walkthrough remain open. Detailed evidence is in `BERRY-SURVIVAL-MILESTONE-RECEIPT.md`.
 
 Existing silent WIP gameplay video (older round206, not this build): `evidence/local/normal-survival/run-14/starfall-round206-WIP-first-meal.mp4`. Keep its version label; it is not the final narrated before/after.
