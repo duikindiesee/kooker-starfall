@@ -1,6 +1,27 @@
 # Starfall system architecture and installation state
 
-## Current model-routing clarification — 15 September, round202
+## Current continuity boundary — 15 September, round206
+
+Round206 run14 demonstrates actual model-chosen inspection, gathering and seven
+meals in ordinary play, plus a separate 454 ms delivery reflection. See
+[first-meal evidence](ROUND206-FIRST-MEAL.md). Run15 restores food/body needs,
+meal-benefit knowledge and prior event recall, but does **not** resume survival:
+the reconstructed delivery scene starts its three-delivery prerequisite again,
+and no fresh survival request was issued during the bounded restart diagnostic.
+
+| Component | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Scoped food/body checkpoint | Runtime reload observed | Run14 final and run15 startup match tick1187, energy6582, hydration2582, identity and knowledge | Fresh action following reload; not a complete world snapshot |
+| Event recall | Visible after restart | Run15 prior-journey image recalls blue delivery at tick1757 | Recall is not a newly generated thought or restored delivery-object state |
+| Survival authority after restart | Failed | Run15 has no new survival requests while the delivery prerequisite restarts | Preserve justified progression or separate demo authority without inventing deliveries |
+| Relocated cave/weather adapter | Source-only repair, commit31651fd | Main weather calls authored cave sampling; regional clock drives integrated fire/rest and pause | Compile; inside/outside, roof removal and pause tests |
+
+The cave adapter repair is newer than round206 and is not present in its
+executable or WIP clip. Likewise, reloading a scoped food snapshot cannot be
+described as restoring terrain edits, ecology, every world object or all gameplay
+progression. No automatic installer or full-world saving is certified here.
+
+## Earlier model-routing clarification — 15 September, round202
 
 The two inference purposes have independent model selection and deadlines:
 
