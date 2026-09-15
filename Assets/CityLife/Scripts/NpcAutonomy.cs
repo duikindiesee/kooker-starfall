@@ -111,7 +111,8 @@ namespace CityLife.World
             if (Possessed) { Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds); return; }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
             if (Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
-                (goal == null && Actions.Held == null && Registry.Where(x => x.Kind == NpcObjectKind.Item).All(x => x.DeliveredTo.Length > 0))))
+                (goal == null && Actions.Held == null && Actions.Deliveries >= 3 &&
+                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission).All(x => x.DeliveredTo.Length > 0))))
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }

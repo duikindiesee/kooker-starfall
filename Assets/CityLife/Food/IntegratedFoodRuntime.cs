@@ -17,7 +17,11 @@ namespace Starfall.Food
         void Awake() { EnsureModel(); }
         void EnsureModel()
         {
-            if (Model == null) Model = new FoodModel(NpcTerrainNavigation.RegionId, Generation, 4242);
+            if (Model == null)
+            {
+                Model = new FoodModel(Brain != null ? Brain.InstanceWorldId : NpcTerrainNavigation.RegionId, Generation, 4242);
+                if (Brain != null) Model.State.actorId = NpcAutonomy.AgentId;
+            }
         }
 
         public void Attach(Transform actor, Transform worldRoot, string worldId)
