@@ -122,10 +122,10 @@ Shader "CityLife/CoastalTerrain"
                 // Refracted sun is concentrated light, not another brown/green bed
                 // pigment. Add it after PBR shading, only to truly submerged upward
                 // facing terrain, and attenuate with measured physical water depth.
-                Light sun=GetMainLight();
+                Light sun=GetMainLight(input.shadowCoord);
                 float sunEnergy=min(1.4,max(sun.color.r,max(sun.color.g,sun.color.b)));
-                float sunFacing=saturate(dot(n,sun.direction))*.55+.45;
-                float causticLight=causticLines*submerged*exp(-opticalDepth*.36)*sunEnergy*sunFacing;
+                float sunFacing=saturate(dot(n,sun.direction));
+                float causticLight=causticLines*submerged*exp(-opticalDepth*.36)*sunEnergy*sunFacing*sun.shadowAttenuation;
                 color.rgb+=half3(.20,.33,.31)*causticLight;
                 color.rgb=MixFog(color.rgb,i.fog);return color;
             }

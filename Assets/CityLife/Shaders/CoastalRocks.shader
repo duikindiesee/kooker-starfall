@@ -67,11 +67,10 @@ Shader "CityLife/CoastalRocks"
             {
                 float3 n=normalize(i.normalWS), p=i.positionWS;
                 float3 albedo;float smoothness;
+                float causticSubmerged=1-smoothstep(-2.16,-2.03,p.y);
                 if(_Vegetation>.5)
                 {
                     albedo=i.color.rgb*(.96+.08*Noise(p*36));smoothness=.30;
-                    float submerged=1-smoothstep(-2.16,-2.03,p.y);
-                    albedo+=float3(.03,.11,.105)*CausticNetwork(p.xz,_Time.y)*submerged*exp(-max(0,-2-p.y)*.30);
                 }
                 else
                 {
@@ -89,8 +88,6 @@ Shader "CityLife/CoastalRocks"
                     float wet=1-smoothstep(-2.10,-1.58,p.y);
                     albedo*=lerp(float3(1,1,1),float3(.48,.64,.67),wet*.85);
                     // Coherent animated underwater caustics affect submerged stone only.
-                    float causticSubmerged=1-smoothstep(-2.16,-2.03,p.y);
-                    albedo+=float3(.04,.13,.12)*CausticNetwork(p.xz,_Time.y)*causticSubmerged*exp(-max(0,-2-p.y)*.30);
                     smoothness=lerp(.12,.31,wet);
                     float h=Surface(p);
                     float3 dx=ddx(p),dy=ddy(p),r1=cross(dy,n),r2=cross(n,dx);
@@ -102,7 +99,13 @@ Shader "CityLife/CoastalRocks"
                 input.bakedGI=SampleSH(n);input.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);input.shadowMask=1;
                 SurfaceData surface=(SurfaceData)0;surface.albedo=albedo;surface.alpha=1;surface.smoothness=smoothness;
                 surface.occlusion=1;surface.normalTS=float3(0,0,1);
-                half4 color=UniversalFragmentPBR(input,surface);color.rgb=MixFog(color.rgb,i.fog);return color;
+                half4 color=UniversalFragmentPBR(input,surface);
+                Light sun=GetMainLight(input.shadowCoord);
+                float sunEnergy=min(1.4,max(sun.color.r,max(sun.color.g,sun.color.b)));
+                float causticLight=CausticNetwork(p.xz,_Time.y)*causticSubmerged*exp(-max(0,-2-p.y)*.36)*
+                    sunEnergy*saturate(dot(n,sun.direction))*sun.shadowAttenuation;
+                color.rgb+=half3(.20,.33,.31)*causticLight;
+                color.rgb=MixFog(color.rgb,i.fog);return color;
             }
             ENDHLSL
         }
