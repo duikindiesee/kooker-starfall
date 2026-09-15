@@ -235,10 +235,12 @@ namespace CityLife.World
             var islands=GameObject.Find("Distant islands - visual only - outside playable boundary");
             CheckThat("inaccessible-offshore-landforms-present",islands!=null&&islands.GetComponentsInChildren<MeshRenderer>().Length==3&&islands.GetComponentsInChildren<Collider>().Length==0,
                 islands==null?"missing":"renderers="+islands.GetComponentsInChildren<MeshRenderer>().Length+"; colliders="+islands.GetComponentsInChildren<Collider>().Length+"; centres beyond active terrain z=900");
-            Controls.View.GetComponent<Camera>().farClipPlane=2400;
+            var scenicCamera=Controls.View.GetComponent<Camera>();
+            float priorFarClip=scenicCamera.farClipPlane;
+            scenicCamera.farClipPlane=2400;
             Controls.View.transform.SetPositionAndRotation(new Vector3(0,32,520),Quaternion.LookRotation(new Vector3(-40,18,1250)-new Vector3(0,32,520)));
             yield return CaptureWorld("01i-offshore-islands-sea-vista");
-            Controls.View.GetComponent<Camera>().farClipPlane=1500;
+            scenicCamera.farClipPlane=priorFarClip;
             Controls.View.transform.SetPositionAndRotation(new Vector3(0,17,29),Quaternion.LookRotation(shallowTarget-new Vector3(0,17,29)));
             yield return CaptureWorld("01f-shallow-bed-overhead");
             Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();

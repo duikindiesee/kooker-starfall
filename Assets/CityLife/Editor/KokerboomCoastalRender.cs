@@ -39,7 +39,9 @@ namespace CityLife.World.Editor
             if(coastalWater==null)coastalWater=GameObject.Find("Coastal water - luminous river and sea");
             camera.GetComponent<UniversalAdditionalCameraData>().requiresDepthTexture=true;
             camera.GetComponent<UniversalAdditionalCameraData>().requiresColorTexture=true;
-            camera.farClipPlane=1500;
+            // The visual sea continues to z=2200; a shorter camera far plane exposes
+            // the solid-color background as a false light-gray ocean horizon.
+            camera.farClipPlane=2400;
         }
 
         [Serializable]private sealed class CoastalDefinition
