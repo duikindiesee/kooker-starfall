@@ -276,7 +276,7 @@ namespace CityLife.World
             float priorFarClip=scenicCamera.farClipPlane;
             try
             {
-                scenicCamera.farClipPlane=2400;
+                scenicCamera.farClipPlane=IntegratedCelestial.SkyFarClip;
                 Controls.View.transform.SetPositionAndRotation(new Vector3(0,32,520),Quaternion.LookRotation(new Vector3(-40,18,1250)-new Vector3(0,32,520)));
                 yield return CaptureWorld("01i-offshore-islands-sea-vista");
             }
