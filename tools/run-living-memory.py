@@ -60,6 +60,14 @@ def select_loaded_instance(inventory, instance_id, model_format):
     return dict(id=instance['id'], key=model['key'], format=model['format'])
 
 
+def verify_selected_device(devices, selected, expected_device):
+    rows = [line.split() for line in devices.splitlines()
+            if line.split() and line.split()[0] == selected['id']]
+    if len(rows) != 1 or len(rows[0]) < 8 or rows[0][1] != selected['key'] or rows[0][7] != expected_device:
+        raise RuntimeError('Selected loaded instance device or identity differs')
+    return expected_device
+
+
 def main():
     parser = argparse.ArgumentParser()
     host = parser.add_mutually_exclusive_group(required=True)
@@ -102,11 +110,7 @@ def main():
         inventory_client.close()
     selected = select_loaded_instance(inventory, args.model_instance, args.model_format)
     devices = subprocess.check_output([str(Path.home() / '.lmstudio/bin/lms.exe'), 'ps'], text=True)
-    selected_lines = [line.split() for line in devices.splitlines()
-                      if line.split() and line.split()[0] == selected['id']]
-    if len(selected_lines) != 1 or len(selected_lines[0]) < 8 or selected_lines[0][1] != selected['key'] or selected_lines[0][7] != args.model_device:
-        raise RuntimeError('Selected loaded instance device or identity differs')
-    selected['device'] = args.model_device
+    selected['device'] = verify_selected_device(devices, selected, args.model_device)
     save(output / 'selected-model.json', selected)
     save(output / 'model-inventory-before.json', inventory)
     (output / 'model-devices.txt').write_text(devices, encoding='utf-8')

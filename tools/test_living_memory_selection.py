@@ -34,6 +34,14 @@ class SelectionTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             runner.select_loaded_instance(self.inventory, 'starfall-local-e4b', 'gguf')
 
+    def test_device_exact_match(self):
+        selected = runner.select_loaded_instance(self.inventory, 'starfall-local-e4b', 'gguf')
+        row = 'starfall-local-e4b google/gemma-4-e4b IDLE 6.33 GB 2048 4 Local 41m / 1h'
+        self.assertEqual(runner.verify_selected_device(row, selected, 'Local'), 'Local')
+        for bad in [row.replace('Local', 'NotLocal'), row.replace('google/gemma-4-e4b', 'other'), row + '\n' + row, 'starfall-local-e4b', '']:
+            with self.assertRaises(RuntimeError):
+                runner.verify_selected_device(bad, selected, 'Local')
+
 
 if __name__ == '__main__':
     unittest.main()
