@@ -40,7 +40,7 @@ namespace CityLife.World
             var args=Environment.GetCommandLineArgs();
             if(Array.IndexOf(args,"-npcSurvivalRuntime")<0)yield break;
             string Arg(string name){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:null;}
-            endpoint=Arg("-npcLocalEndpoint");model=Arg("-npcLocalModel");
+            endpoint=Arg("-npcLocalEndpoint");model=Arg("-npcSurvivalModel");
             evidenceDirectory=Arg("-npcSurvivalEvidence");savePath=Arg("-npcSurvivalSave");
             if(Brain==null||Food==null){Status="Survival mind unavailable: missing world adapter";yield break;}
             while(!Brain.Ready)yield return null;

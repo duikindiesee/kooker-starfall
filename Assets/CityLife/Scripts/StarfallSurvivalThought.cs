@@ -12,7 +12,11 @@ namespace CityLife.World
     // action tokens, never a map of undiscovered resources or Unity objects.
     public static class StarfallSurvivalThought
     {
-        public const int DeadlineMilliseconds = 1500;
+        // This is a separately bounded, asynchronous high-level choice, not
+        // the 1500 ms immediate action/reflection deadline. Warm Nano 4B
+        // emitted an actual eligible message around 3.55 s after 80 reasoning
+        // tokens; the shorter cap yielded finish_reason=length without text.
+        public const int DeadlineMilliseconds = 5000;
         public sealed class Result
         {
             public string status="fallback", answer="", requestJson="", responseJson="", finishReason="", model="";
@@ -33,7 +37,7 @@ namespace CityLife.World
         {
             if(eligible==null||eligible.Count==0||eligible.Count>8)throw new ArgumentException("bounded eligible actions required");
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
-                ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=12,["reasoning_effort"]="none",
+                ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {
                     new Dictionary<string,object>{["role"]="system",["content"]="Choose exactly one listed two-word action. No explanation, JSON, coordinates, facts, or extra words. Sight and outcomes are checked by the game."},
                     new Dictionary<string,object>{["role"]="user",["content"]="Energy="+hunger+"; hydration="+thirst+". Eligible actions: "+string.Join(", ",eligible)+"."}
@@ -58,6 +62,8 @@ namespace CityLife.World
                     else
                     {
                         result.responseJson=await work.ConfigureAwait(false); var body=StarfallLivingMemoryClient.Map(result.responseJson);
+                        if(!string.Equals((string)body["model"],model,StringComparison.Ordinal))
+                            throw new FormatException("model-identity-mismatch");
                         var choices=(List<object>)body["choices"];
                         if(choices.Count!=1)throw new FormatException("single choice required");
                         var choice=(Dictionary<string,object>)choices[0]; result.finishReason=(string)choice["finish_reason"];

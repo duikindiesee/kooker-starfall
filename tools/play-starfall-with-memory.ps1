@@ -5,6 +5,7 @@ param(
     [string]$InhabitantId='inhabitant-01',
     [string]$ModelEndpoint,
     [string]$Model,
+    [string]$SurvivalModel,
     [string]$Evidence,
     [switch]$Survival,
     [string]$SurvivalEvidence,
@@ -32,8 +33,18 @@ if(-not(Test-Path -LiteralPath $playConfig)){
     if($LASTEXITCODE -ne 0){throw 'Private scoped memory configuration failed.'}
 }
 $playServiceConfig=Get-Content -LiteralPath $playConfig -Raw | ConvertFrom-Json
-if($Survival -and (-not $ModelEndpoint -or -not $Model -or -not $SurvivalEvidence)){
-    throw 'Survival normal play requires a local model endpoint, model and separate empty evidence directory.'
+if($Survival -and (-not $ModelEndpoint -or -not $Model -or -not $SurvivalModel -or -not $SurvivalEvidence)){
+    throw 'Survival normal play requires a local endpoint, memory model, separate survival model and empty evidence directory.'
+}
+if($Survival){
+    $playModelUri=[Uri]$ModelEndpoint
+    if($playModelUri.Scheme -ne 'http' -or $playModelUri.Host -notin @('127.0.0.1','localhost') -or $playModelUri.AbsolutePath -ne '/'){
+        throw 'Survival model endpoint must be loopback HTTP.'
+    }
+    $playInventory=Invoke-RestMethod -Uri ([Uri]::new($playModelUri,'api/v1/models')) -TimeoutSec 3
+    if(@($playInventory.models|Where-Object {$_.key -eq $SurvivalModel -and $_.loaded_instances.Count -eq 1}).Count -ne 1){
+        throw 'Exactly one already-loaded survival model instance is required; auto-loading is not accepted.'
+    }
 }
 if($playServiceConfig.world_id -ne $WorldId -or $playServiceConfig.publisher_id -ne 'unity-local' -or $playServiceConfig.build_ids -notcontains $playBuild -or
     @($playServiceConfig.inhabitants|Where-Object inhabitant_id -eq $InhabitantId).Count -ne 1){
@@ -93,7 +104,8 @@ try{
             if(Test-Path -LiteralPath $playSurvivalEvidence){
                 if((Get-ChildItem -LiteralPath $playSurvivalEvidence -Force|Select-Object -First 1)){throw 'Survival evidence directory must be empty.'}
             }else{$null=New-Item -ItemType Directory -Path $playSurvivalEvidence}
-            $playArgs+=@('-npcSurvivalRuntime','-npcSurvivalSave',$playSurvivalSave,'-npcSurvivalEvidence',$playSurvivalEvidence)
+            $playArgs+=@('-npcSurvivalRuntime','-npcSurvivalModel',$SurvivalModel,
+                '-npcSurvivalSave',$playSurvivalSave,'-npcSurvivalEvidence',$playSurvivalEvidence)
         }
     }else{
         if($Survival){throw 'Survival launch requires the scoped living-memory service to be ready.'}
