@@ -35,7 +35,8 @@ namespace CityLife.World
             return false;
         }
         public static string BuildRequest(string model, int hunger, int thirst, IReadOnlyCollection<string> eligible,
-            int carriedFruit=0, bool mealOutcomeVerified=false, string recentVerifiedOutcome=null)
+            int carriedFruit=0, bool mealOutcomeVerified=false, string recentVerifiedOutcome=null,
+            string verifiedDeathCause=null)
         {
             if(eligible==null||eligible.Count==0||eligible.Count>8)throw new ArgumentException("bounded eligible actions required");
             bool explorationOnly=true;
@@ -60,14 +61,20 @@ namespace CityLife.World
                 "Last verified outcome: inspected the observed maintained freshwater seep. ":
                 recentVerifiedOutcome!=null&&recentVerifiedOutcome.StartsWith("explore ",StringComparison.Ordinal)&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
                 "Last verified outcome: "+recentVerifiedOutcome+". ":"";
+            // Only the two measured, hash-validated own-death causes can enter
+            // the request. Never forward arbitrary saved text as a model fact.
+            string death=verifiedDeathCause=="prolonged-dehydration"?
+                "Prior verified own death: Hydration remained depleted before fatal damage. ":
+                verifiedDeathCause=="prolonged-starvation"?
+                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":"";
             string energyLabel=hunger<2000?"severe low energy":hunger<8500?"below replenish target":"at replenish target";
             string waterLabel=thirst<2000?"severe low hydration":thirst<8500?"below replenish target":"at replenish target";
-            string user=explorationOnly?prior+"Eligible: "+string.Join(", ",eligible)+".":
+            string user=explorationOnly?death+prior+"Eligible: "+string.Join(", ",eligible)+".":
                 "Energy="+hunger+"/10000 "+energyLabel+
                 "; water="+thirst+"/10000 "+waterLabel+
                 "; carried fruit="+carriedFruit+
                 "; eaten fruit outcome="+(mealOutcomeVerified?"previously helped":"not observed")+
-                ". "+prior+"Eligible: "+string.Join(", ",eligible)+".";
+                ". "+death+prior+"Eligible: "+string.Join(", ",eligible)+".";
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
                 ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {

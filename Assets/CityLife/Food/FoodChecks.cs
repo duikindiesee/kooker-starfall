@@ -57,6 +57,14 @@ namespace Starfall.Food
                 !explorationPrompt.Contains("Energy=")&&!explorationPrompt.Contains("fruit")&&
                 !explorationPrompt.Contains("spring"),
                 "pure exploration request omits irrelevant need and unknown-resource context");
+            string groundedDeath=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,
+                new List<string>{"explore south","explore east"},0,false,null,"prolonged-dehydration");
+            string falseDeath=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,
+                new List<string>{"explore south","explore east"},0,false,null,"unverified-water-source-claim");
+            Check(groundedDeath.Contains("Prior verified own death: Hydration remained depleted")&&
+                !groundedDeath.Contains("spring")&&!falseDeath.Contains("Prior verified own death")&&
+                !falseDeath.Contains("unverified-water-source-claim"),
+                "only measured own death cause enters model request without inventing a spring location");
             string reachedFruit=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6300,5200,
                 new List<string>{"gather berry","explore west"},0,false,"approach berry reached");
             string untrustedFruit=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6300,5200,
@@ -198,6 +206,14 @@ namespace Starfall.Food
             Check(ds.body.dead&&ds.deaths.Count==1&&ds.deaths[0].cause=="prolonged-dehydration"&&
                 ds.deaths[0].lesson.Contains("Hydration remained depleted")&&!ds.knowsSpring&&!ds.knowsMealBenefit,
                 "dehydration death records actual cause without inventing water or meal knowledge");
+            Check(CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(ds)==null,
+                "dead inhabitant cannot issue a new postreturn death lesson request");
+            var returned=dehydration.Execute("dehydration","g",1,FoodAction.Return,"inventory",a);
+            Check(returned.success&&CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(ds)=="prolonged-dehydration",
+                "only valid returned own-world hash-linked death cause supplies model context");
+            ds.deaths[0].lesson="A spring was nearby";
+            Check(CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(ds)==null,
+                "tampered death lesson cannot be supplied to the model");
             string deathPath=Path.Combine(folder,"death.json");mortality.Save(deathPath);var mortalityReload=new FoodModel("mortality","g",4242);Check(mortalityReload.Load(deathPath,"mortality","g")&&mortalityReload.Json()==mortality.Json(),"death body bags and lesson survive reload");
             int oldSnapshots=Directory.GetFiles(folder,"snap-*.json").Length;
             mortality.Execute("mortality","g",3,FoodAction.Return,"inventory",a);Starve();Check(ms.deaths.Count==3&&ms.deaths[2].lesson==ms.deaths[0].lesson,"repeated death retains only the same measured cause lesson");

@@ -27,8 +27,16 @@ namespace CityLife.World
         {
             public string status="FAIL",scope="Explicit accelerated-physiology diagnostic in compiled integrated player; NOT natural timeline death",world,actor,build;
             public bool actualModelMealBeforeProbe,geometryPreserved;
+            public bool postReturnLessonRequestIssued,postReturnModelChoiceAdmitted,postReturnActionExecuted;
+            public string postReturnRequestHash,postReturnResponseHash,postReturnChoice,postReturnDeathHash;
             public int modelFoodOutcomes,ordinaryActionDeliveries;
             public List<Case> cases=new List<Case>();
+        }
+        [Serializable] private sealed class EvidenceRow
+        {
+            public string kind,code,choice,requestHash,responseHash,deathHash;
+            public bool deathLessonInRequest;
+            public int foodDelta,waterDelta,inventoryDelta;
         }
         private IEnumerator Start()
         {
@@ -37,6 +45,10 @@ namespace CityLife.World
             int at=Array.IndexOf(args,"-npcSurvivalDeathEvidence");
             if(at<0||at+1>=args.Length||!Path.IsPathFullyQualified(args[at+1]))yield break;
             string folder=args[at+1];
+            int survivalAt=Array.IndexOf(args,"-npcSurvivalEvidence");
+            string survivalRows=survivalAt>=0&&survivalAt+1<args.Length&&
+                Path.IsPathFullyQualified(args[survivalAt+1])?
+                Path.Combine(args[survivalAt+1],"normal-survival.jsonl"):null;
             if(Directory.Exists(folder)&&Directory.GetFileSystemEntries(folder).Length!=0)yield break;
             Directory.CreateDirectory(folder);
             var report=new Report{build=Application.version};
@@ -110,8 +122,55 @@ namespace CityLife.World
                 if(!result.realPhysiologyDeath||!result.safeRefugeReturn)break;
             }
             report.geometryPreserved=Food.Berry.transform.position==berry&&Brain.TerrainNavigation.Revision==revision;
+            // Resume the unchanged ordinary local-model loop after both safe
+            // returns. The issued request must include the valid own-cause
+            // lesson; a complete admitted answer must then execute in-world.
+            if(report.cases.Count==2&&survivalRows!=null&&File.Exists(survivalRows)&&
+                StarfallSurvivalAutonomy.VerifiedOwnDeathCause(Food.Model.State)!=null)
+            {
+                int priorLines=File.ReadAllLines(survivalRows).Length;
+                string finalHash=Food.Model.State.deaths[Food.Model.State.deaths.Count-1].hash;
+                if(!Brain.Running&&!Brain.Possessed)Brain.ToggleAutonomy();
+                float until=Time.realtimeSinceStartup+50f;
+                while(Time.realtimeSinceStartup<until&&!report.postReturnActionExecuted)
+                {
+                    yield return new WaitForSecondsRealtime(.2f);
+                    string[] lines=File.ReadAllLines(survivalRows);
+                    for(int i=priorLines;i<lines.Length;i++)
+                    {
+                        EvidenceRow row;
+                        try{row=JsonUtility.FromJson<EvidenceRow>(lines[i]);}catch(Exception){continue;}
+                        if(row==null)continue;
+                        if(row.kind=="model"&&row.code=="request-issued"&&
+                            row.deathLessonInRequest&&row.deathHash==finalHash&&
+                            !string.IsNullOrEmpty(row.requestHash))
+                        {
+                            report.postReturnLessonRequestIssued=true;
+                            report.postReturnRequestHash=row.requestHash;
+                            report.postReturnDeathHash=row.deathHash;
+                        }
+                        if(report.postReturnLessonRequestIssued&&row.code=="live-admitted"&&
+                            row.requestHash==report.postReturnRequestHash&&
+                            !string.IsNullOrEmpty(row.responseHash))
+                        {
+                            report.postReturnModelChoiceAdmitted=true;
+                            report.postReturnResponseHash=row.responseHash;
+                            report.postReturnChoice=row.choice;
+                        }
+                        if(report.postReturnModelChoiceAdmitted&&row.choice==report.postReturnChoice&&
+                            (row.code=="reached"||row.kind=="food"&&
+                                (row.foodDelta!=0||row.waterDelta!=0||row.inventoryDelta!=0||
+                                 !string.IsNullOrEmpty(row.code)&&
+                                 (row.code.StartsWith("observed-",StringComparison.Ordinal)||
+                                  row.code.StartsWith("inspected-",StringComparison.Ordinal)))))
+                            report.postReturnActionExecuted=true;
+                    }
+                }
+            }
             report.status=report.actualModelMealBeforeProbe&&report.ordinaryActionDeliveries>=3&&
-                report.cases.Count==2&&report.geometryPreserved&&report.cases.TrueForAll(c=>
+                report.cases.Count==2&&report.geometryPreserved&&
+                report.postReturnLessonRequestIssued&&report.postReturnModelChoiceAdmitted&&
+                report.postReturnActionExecuted&&report.cases.TrueForAll(c=>
                     c.realPhysiologyDeath&&c.safeRefugeReturn&&c.scopedReload&&c.worldAndActorPreserved&&c.noInventedKnowledge&&c.feetGrounded)
                 ?"PASS_COMPILED_ACCELERATED_CAUSE_AND_SAFE_RETURN_NOT_NATURAL_PACING":"FAIL";
             File.WriteAllText(Path.Combine(folder,"death-diagnostic.json"),JsonUtility.ToJson(report,true));

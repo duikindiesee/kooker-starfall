@@ -43,6 +43,7 @@ namespace CityLife.World
             public int tick,incarnation,foodDelta,waterDelta,inventoryDelta,request;
             public int foodTick,energy,hydration,stomach,carriedFruit,modelRequestSequence;
             public bool knowsBerry,knowsSpring,mealBenefitVerified;
+            public bool deathLessonInRequest;
             public long modelMilliseconds;
             public float x,y,z;
         }
@@ -130,6 +131,10 @@ namespace CityLife.World
                 foodDelta=receipt==null?0:receipt.foodDelta,waterDelta=receipt==null?0:receipt.waterDelta,
                 inventoryDelta=receipt==null?0:receipt.inventoryDelta,
                 deathCause=s.body.dead?s.body.cause:null,deathHash=s.deaths.Count>0?s.deaths[s.deaths.Count-1].hash:null,
+                deathLessonInRequest=kind=="model"&&code=="request-issued"&&
+                    VerifiedOwnDeathCause(s)!=null&&result!=null&&
+                    !string.IsNullOrEmpty(result.requestJson)&&
+                    result.requestJson.Contains("Prior verified own death: "),
                 x=Brain.transform.position.x,y=Brain.transform.position.y,z=Brain.transform.position.z};
             try{File.AppendAllText(Path.Combine(evidenceDirectory,"normal-survival.jsonl"),JsonUtility.ToJson(row)+"\n");}
             catch(Exception){Enabled=false;Status="Survival evidence failed closed";evidenceDirectory=null;Cancel("evidence-write-failed");}
@@ -149,6 +154,17 @@ namespace CityLife.World
                 (s.carriedFruit==0||s.knowsMealBenefit)&&
                 (!s.knowsBerry||(s.body.stomach<=8800&&
                     (s.satiety<8500||s.hydration<8500&&s.knowsMealBenefit)));
+        }
+        public static string VerifiedOwnDeathCause(FoodState s)
+        {
+            if(s==null||s.body.dead||s.deaths==null||s.deaths.Count==0||
+                !FoodModel.Valid(s,s.world,s.generation))return null;
+            var latest=s.deaths[s.deaths.Count-1];
+            if(latest.cause=="prolonged-dehydration"&&
+                latest.lesson=="Hydration remained depleted before fatal damage.")return latest.cause;
+            if(latest.cause=="prolonged-starvation"&&
+                latest.lesson=="Energy and fat were exhausted before fatal damage.")return latest.cause;
+            return null;
         }
         private List<string> Eligible()
         {
@@ -398,7 +414,8 @@ namespace CityLife.World
             {Enabled=false;Status="Survival model request sequence exhausted";return true;}
             modelRequestSequence++;
             string requestJson=StarfallSurvivalThought.BuildRequest(model,s.satiety,s.hydration,offered,
-                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome);
+                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome,
+                VerifiedOwnDeathCause(s));
             Record("model","request-issued",null,new StarfallSurvivalThought.Result{model=model,requestJson=requestJson});
             if(!Enabled)return true;
             cancellation=new CancellationTokenSource();
