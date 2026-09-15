@@ -62,3 +62,15 @@ NOT actor discovery, actor position, or autonomous exploration evidence; the
 actor/model timeline must remain uninterrupted. It is supplemental composition
 evidence only and cannot substitute ordinary survival, death/return, or user
 visual acceptance. The terrain/art repair for too much plain sand remains open.
+
+Round 223 ordinary run 28 found the first scenic attempt **refused**, not
+rendered: 862 real follow frames, `scenicRequested=true` but
+`scenicAvailable=false`, `scenicRendered=false`. Actual player source revealed
+the cause: `NpcPlayerControls.Start` sets `CharacterPreviewCamera.ExternalView`
+true even in ordinary follow and then owns `Follow()` in its `LateUpdate`.
+The observer had treated `ExternalView=true` as an active free spectator and
+therefore rejected the ordinary controller. The bounded correction uses the
+controller's public `SuppressView` only during the labelled 20-second shot,
+restoring ordinary follow and ending early on manual possession/spectator
+override. This still requires actual compiled first/scenic/returned frame and
+tick proof; no static assertion or Editor proxy is enough to claim it works.

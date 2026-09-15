@@ -77,9 +77,14 @@ namespace CityLife.World
             {
                 follow=View.GetComponent<CharacterPreviewCamera>();
                 controls=View.GetComponent<NpcPlayerControls>();
-                scenicAvailable=follow!=null && controls!=null && !follow.ExternalView && !Brain.Possessed &&
-                    CoastalSkyViewSites.TryDryEyeNear(-52,-55,View.nearClipPlane,out scenicEye,out scenicSiteEvidence);
-                if(!scenicAvailable)scenicSiteEvidence="Scenic observer refused: missing follow/controls, possession/external view, or no dry clear PhysX bank site.";
+                // NpcPlayerControls intentionally owns Follow() in ordinary
+                // play and leaves CharacterPreviewCamera.ExternalView=true.
+                // Suppress only that controller's view update during the
+                // observer interval; never mistake ExternalView for free mode.
+                if(follow==null || controls==null || controls.FreeSpectator || controls.SuppressView || Brain.Possessed)
+                    scenicSiteEvidence="Scenic observer refused: missing camera controller or manual free/possessed/suppressed view.";
+                else scenicAvailable=CoastalSkyViewSites.TryDryEyeNear(-52,-55,View.nearClipPlane,
+                    out scenicEye,out scenicSiteEvidence);
             }
             clock=Stopwatch.StartNew();
             long nextSampleMs=0;
@@ -173,8 +178,15 @@ namespace CityLife.World
         void OnDisable(){SetScenic(false);}
         void SetScenic(bool on)
         {
-            if(!scenicAvailable||follow==null||controls==null||View==null||scenicActive==on)return;
-            if(on && (follow.ExternalView||Brain.Possessed||controls.FreeSpectator))
+            if(!scenicAvailable||follow==null||controls==null||View==null)return;
+            bool playerOverride=scenicActive && on && (Brain.Possessed||controls.FreeSpectator);
+            if(playerOverride)
+            {
+                on=false;
+                scenicSiteEvidence="Scripted interval ended early: player selected possession or free spectator.";
+            }
+            if(scenicActive==on)return;
+            if(on && (Brain.Possessed||controls.FreeSpectator||controls.SuppressView))
             {
                 scenicAvailable=false;
                 scenicSiteEvidence="Scenic observer refused: player changed camera or possessed actor before the scripted interval.";
@@ -182,15 +194,15 @@ namespace CityLife.World
             }
             scenicActive=on;
             controls.ScriptedScenicCapture=on;
-            if(!on && controls.FreeSpectator)return;
-            follow.ExternalView=on;
+            controls.SuppressView=on;
             if(on)
             {
                 follow.ReleasePointer();
                 View.transform.position=scenicEye;
                 View.transform.rotation=Quaternion.LookRotation(new Vector3(.04f,.07f,1).normalized);
             }
-            else follow.Follow();
+            else if(!controls.FreeSpectator)follow.Follow();
+            if(playerOverride)scenicAvailable=false;
         }
     }
 }
