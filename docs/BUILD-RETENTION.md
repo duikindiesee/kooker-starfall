@@ -12,6 +12,12 @@ candidate may coexist until validation; no source merge or release is implied.
   promotes the specified verified candidate for local retention and removes older
   manifest-bound outputs. Without `-Execute` it is read-only. Packaging calls it
   only after ZIP entry verification succeeds.
+- `run-living-memory.py --integrated` invokes retention after the standalone
+  player, memory-isolation and restart checks, independently of packaging.
+  An explicit runtime `FAIL` invokes failed-candidate cleanup after shutdown;
+  any prior passing runtime receipt protects the current player. A crash without
+  an attributable terminal receipt remains fail-closed for manual inspection.
+  Newer timestamped candidates are not pruned by an older promotion request.
 - Cleanup refuses active Unity operations, active target executables, linked
   output trees, out-of-scope paths and recognizable user-state stores. Unknown
   directories remain untouched and are reported for review.
@@ -33,3 +39,9 @@ One failed output (171,928,120 bytes), 51 superseded outputs and one old ZIP
 
 Task API / owning epic linkage remains pending authoritative discovery; the
 local integration queue's Codex task IDs are not Task API identifiers.
+
+Validation: the real failed output was removed; a successful build and a passing
+runtime were both rejected as deletion authority; repeat retention reported zero
+targets; the retained player's full content hash passed before and after cleanup.
+The newly wired automatic lifecycle branches have syntax validation but still
+require a fresh end-to-end candidate run; do not report that integration as tested.

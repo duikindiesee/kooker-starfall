@@ -184,6 +184,13 @@ def main():
         service.terminate(); service.wait(timeout=10); service_log.close()
         for path, original in settings.items():
             path.write_bytes(original)
+        failed_report = output / 'runtime/integrated-runtime.json'
+        if args.integrated and not args.editor and failed_report.is_file():
+            if json.loads(failed_report.read_text(encoding='utf-8'))['status'] == 'FAIL':
+                subprocess.run(['pwsh', '-NoProfile', '-File',
+                    str(ROOT / 'tools/remove-failed-integrated-build.ps1'),
+                    '-Manifest', str(build_manifest), '-FailedRuntimeDirectory', str(output),
+                    '-Execute'], cwd=ROOT, check=True)
     # Reopen the real database after process shutdown to verify persisted chain and namespace.
     store = MemoryStore(output / 'private/data/starfall-memory.sqlite3', config['world_id'], config['publisher_id'], config['build_ids'])
     checkpoint = store.verify()

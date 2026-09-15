@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$Manifest,[switch]$Execute)
+param([Parameter(Mandatory=$true)][string]$Manifest,[string]$FailedRuntimeDirectory,[switch]$Execute)
 $ErrorActionPreference='Stop'
 $project=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $buildRoot=(Resolve-Path -LiteralPath (Join-Path $project 'Builds')).Path
@@ -6,7 +6,21 @@ $receiptSource=(Resolve-Path -LiteralPath $Manifest).Path
 $evidenceRoot=Join-Path $project 'evidence/milestones/coastal'
 if (!$receiptSource.StartsWith($evidenceRoot+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) { throw 'Manifest must be coastal milestone evidence.' }
 $m=Get-Content -LiteralPath $receiptSource -Raw | ConvertFrom-Json
-if ($m.status -ne 'Failed') { throw 'Only explicit Failed build receipts authorize cleanup.' }
+if ($FailedRuntimeDirectory) {
+    $runtimeRoot=(Resolve-Path -LiteralPath $FailedRuntimeDirectory).Path
+    if(!$runtimeRoot.StartsWith((Join-Path $project 'evidence/local')+'\',[StringComparison]::OrdinalIgnoreCase)){throw 'Runtime evidence outside local evidence root.'}
+    $launch=Get-Content -LiteralPath (Join-Path $runtimeRoot 'launch.json') -Raw|ConvertFrom-Json
+    $runtime=Get-Content -LiteralPath (Join-Path $runtimeRoot 'runtime/integrated-runtime.json') -Raw|ConvertFrom-Json
+    if($runtime.status -ne 'FAIL' -or $launch.build -ne $m.buildId -or $launch.source_commit -ne $m.sourceCommit){throw 'Require exact failed runtime identity.'}
+    foreach($prior in Get-ChildItem -LiteralPath (Join-Path $project 'evidence/local') -Recurse -Filter launch.json){
+        $identity=Get-Content -LiteralPath $prior.FullName -Raw|ConvertFrom-Json
+        $priorReport=Join-Path $prior.DirectoryName 'runtime/integrated-runtime.json'
+        if($identity.build -eq $m.buildId -and (Test-Path -LiteralPath $priorReport)){
+            $p=Get-Content -LiteralPath $priorReport -Raw|ConvertFrom-Json
+            if($p.status -eq 'PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING'){throw 'Previously verified player protected from runtime-failure cleanup.'}
+        }
+    }
+} elseif ($m.status -ne 'Failed') { throw 'Only explicit Failed build receipts authorize cleanup.' }
 if ($m.buildId -notmatch '^KookerStarfallIntegrated-0\.0\.[0-9]+-[a-z]+\.[0-9]+-[0-9]{8}-[0-9]{6}$') { throw 'Unexpected build identity.' }
 $expected=Join-Path (Join-Path $buildRoot $m.buildId) 'KookerStarfallIntegrated.exe'
 $output=[IO.Path]::GetFullPath((Join-Path $project $m.output))
@@ -15,7 +29,7 @@ $target=[IO.Path]::GetDirectoryName($output)
 if ([IO.Path]::GetDirectoryName($target) -ne $buildRoot) { throw 'Target is not a direct build-output child.' }
 foreach($other in Get-ChildItem -LiteralPath $evidenceRoot -Recurse -Filter preview-build.json) {
     $record=Get-Content -LiteralPath $other.FullName -Raw | ConvertFrom-Json
-    if ($record.buildId -eq $m.buildId -and $record.status -eq 'Succeeded') { throw 'A successful receipt protects this output.' }
+    if (!$FailedRuntimeDirectory -and $record.buildId -eq $m.buildId -and $record.status -eq 'Succeeded') { throw 'A successful receipt protects this output.' }
 }
 if (!(Test-Path -LiteralPath $target)) { return [pscustomobject]@{status='ALREADY_ABSENT';target=$target} }
 if (@(Get-Process Unity -ErrorAction SilentlyContinue).Count) { throw 'Unity is active; defer cleanup.' }
