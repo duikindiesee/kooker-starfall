@@ -24,7 +24,7 @@ try {
     $candidateProcess.WaitForExit()
     if ($candidateProcess.ExitCode -ne 0) { throw ('Integrated build failed: '+$candidateLog) }
     $candidateEvidence=Get-Content -Raw -LiteralPath (Join-Path $candidateOutput 'preview-build.json') | ConvertFrom-Json
-    if ($candidateEvidence.status -ne 'Succeeded' -or $candidateEvidence.sourceCommit -ne $candidateCommit -or $candidateEvidence.version -ne '0.0.10-canyon.1') { throw 'Build evidence does not match this candidate.' }
+    if ($candidateEvidence.status -ne 'Succeeded' -or $candidateEvidence.sourceCommit -ne $candidateCommit -or $candidateEvidence.version -ne '0.0.11-survival.1') { throw 'Build evidence does not match this candidate.' }
     [ordered]@{status=$candidateEvidence.status;source=$candidateCommit;player=(Join-Path $candidateRoot $candidateEvidence.output);evidence=$candidateOutput;log=$candidateLog;runtime='UNVERIFIED'} | ConvertTo-Json
 } catch {
     $failedManifest=Join-Path $candidateOutput 'preview-build.json'

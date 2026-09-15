@@ -58,8 +58,9 @@ namespace Starfall.Food
         void RecordDeath()
         {
             var s=State;string lesson="";
-            if(s.body.cause=="prolonged-starvation"&&s.knowsBerry&&!s.knowsMealBenefit){lesson="Known-safe berries restore energy. Return to a previously observed bush.";s.knowsMealBenefit=true;}
-            else if(s.body.cause=="prolonged-starvation"&&s.knowsBerry&&s.seenBed&&!s.knowsPlanting&&s.seeds>0){lesson="Saved berry seeds can grow in the moist bed you already observed.";s.knowsPlanting=true;s.plantingEvidence=s.generation+".death-lesson."+(s.deaths.Count+1);}
+            if(s.body.cause=="prolonged-starvation")lesson="Energy and fat were exhausted before fatal damage.";
+            else if(s.body.cause=="prolonged-dehydration")lesson="Hydration remained depleted before fatal damage.";
+            s.causalMemory=lesson;
             var d=new FoodDeath{id=s.generation+".death."+(s.deaths.Count+1),world=s.world,generation=s.generation,actor=s.actorId,tick=s.tick,incarnation=s.incarnation,cause=s.body.cause,lesson=lesson,energy=s.satiety,hydration=s.hydration,fat=s.body.fat,health=s.body.health,deficitSeconds=s.body.deficitSeconds,drySeconds=s.body.drySeconds,previousHash=s.deaths.Count==0?"":s.deaths[s.deaths.Count-1].hash,hash=""};
             d.hash=Hash(JsonUtility.ToJson(d));s.deaths.Add(d);s.bags.Add(new RecoveryBag{death=s.deaths.Count,owner=s.actorId,berries=s.carriedFruit,seeds=s.seeds});s.carriedFruit=s.seeds=0;
             EdenEcology.Event(s,"death","refuge",d.cause+"; world continues. "+(lesson==""?"No new grounded lesson available.":lesson));
@@ -84,8 +85,8 @@ namespace Starfall.Food
             switch(action)
             {
                 case FoodAction.Inspect:
-                    if(target=="berry"){s.knowsBerry=true;s.berryEvidence=s.generation+".lesson."+request;code="observed-signed-ripe-berry-lesson";}
-                    else if(target=="bed"){s.knowsPlanting=true;s.plantingEvidence=s.generation+".garden-lesson."+request;code="observed-moist-soil-and-watering-lesson";}
+                    if(target=="berry"){s.knowsBerry=true;s.berryEvidence=s.generation+".observed-fruit."+request;code="observed-fruiting-succulent-unproven-food";}
+                    else if(target=="bed"){s.seenBed=true;code="observed-moist-soil-no-cultivation-lesson";}
                     else if(target=="spring"&&gate.verifiedFreshwater){s.knowsSpring=true;s.springEvidence=s.generation+".source."+request;code="verified-maintained-freshwater-source";}
                     else return End("no-safety-evidence");break;
                 case FoodAction.Gather:
@@ -132,7 +133,7 @@ namespace Starfall.Food
                     s.aidUsed++;s.satiety=Math.Max(s.satiety,5000);s.hydration=Math.Max(s.hydration,5000);s.freshwaterMl=Math.Max(s.freshwaterMl,500);s.seeds=Math.Max(s.seeds,1);code="explicit-camp-aid-assisted-run";break;
                 case FoodAction.Return:
                     if(target!="inventory"||!s.body.dead)return End("not-awaiting-return");
-                    s.body=new FoodBody();s.satiety=6500;s.hydration=5500;s.incarnation++;s.actorPosition=new Vector3(0,0,-2);code="returned-same-inhabitant-world-unchanged";break;
+                    s.body=new FoodBody();s.satiety=6500;s.hydration=5500;s.incarnation++;code="returned-same-inhabitant-world-position-requires-safe-runtime-placement";break;
                 case FoodAction.Recover:
                     if(target!="refuge")return End("wrong-target");
                     bool recovered=false;foreach(var bag in s.bags)if(bag.owner==s.actorId){int f=Math.Min(4-s.carriedFruit,bag.berries),seed=Math.Min(4-s.seeds,bag.seeds);s.carriedFruit+=f;s.seeds+=seed;bag.berries-=f;bag.seeds-=seed;recovered|=f+seed>0;}
@@ -155,12 +156,17 @@ namespace Starfall.Food
             if(s.regrowthProgress<0||s.regrowthProgress>=EdenEcology.Regrow||s.soilWater<0||s.soilWater>100||s.fruitStock==maxFruit&&s.regrowthProgress!=0)return false;
             if(s.plantedAt< -1||s.plantedAt>s.tick||s.gardenStage<0||s.gardenStage>4||s.gardenGrowth<0||s.gardenGrowth>EdenEcology.Mature)return false;
             int stage=s.plantedAt<0?0:s.gardenGrowth>=EdenEcology.Mature?3:s.gardenGrowth>=EdenEcology.Mature/2?2:1;
-            if(s.gardenStage!=4&&s.gardenStage!=stage||s.knowsBerry!=!string.IsNullOrEmpty(s.berryEvidence)||s.knowsSpring!=!string.IsNullOrEmpty(s.springEvidence))return false;
+            if(s.gardenStage!=4&&s.gardenStage!=stage||s.knowsBerry!=!string.IsNullOrEmpty(s.berryEvidence)||
+                s.knowsSpring!=!string.IsNullOrEmpty(s.springEvidence)||
+                s.knowsMealBenefit!=!string.IsNullOrEmpty(s.lastMealEvidence))return false;
             if(s.bushes==null||s.drops==null||s.ecologyEvents==null||s.bushes.Count>3||s.drops.Count>8||s.ecologyEvents.Count>24||s.temperatureC< -30||s.temperatureC>60||s.nextSeed<0||s.ecologySequence<0||s.aidUsed<0||s.knowsPlanting!=!string.IsNullOrEmpty(s.plantingEvidence))return false;
             var sites=new HashSet<int>();foreach(var b in s.bushes)if(b==null||b.site<1||b.site>3||!sites.Add(b.site)||b.stock<0||b.stock>2||b.progress<0||b.progress>=EdenEcology.Regrow||b.growth<0||b.growth>EdenEcology.Mature||b.stress<0)return false;
             var seedsSeen=new HashSet<int>();foreach(var d in s.drops)if(d==null||d.id<=0||d.id>s.nextSeed||!seedsSeen.Add(d.id)||d.site<2||d.site>3||d.age<0||d.age>=EdenEcology.SeedLifetime||(d.outcome!="dropped"&&d.outcome!="germinated"&&d.outcome!="failed"))return false;
             if(EdenEcology.Living(s)>EdenEcology.PopulationCap)return false;
-            if(s.knowsBerry&&!s.berryEvidence.StartsWith(generation+".lesson.",StringComparison.Ordinal)||s.knowsSpring&&!s.springEvidence.StartsWith(generation+".source.",StringComparison.Ordinal))return false;
+            if(s.knowsBerry&&!(s.berryEvidence.StartsWith(generation+".observed-fruit.",StringComparison.Ordinal)||
+                s.berryEvidence.StartsWith(generation+".lesson.",StringComparison.Ordinal))||
+                s.knowsSpring&&!s.springEvidence.StartsWith(generation+".source.",StringComparison.Ordinal)||
+                s.knowsMealBenefit&&!s.lastMealEvidence.StartsWith(generation+".ate.",StringComparison.Ordinal))return false;
             var p=s.actorPosition;return Finite(p.x)&&Finite(p.y)&&Finite(p.z)&&p.magnitude<10000;
         }
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);

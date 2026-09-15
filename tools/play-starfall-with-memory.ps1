@@ -5,22 +5,36 @@ param(
     [string]$InhabitantId='inhabitant-01',
     [string]$ModelEndpoint,
     [string]$Model,
-    [string]$Evidence
+    [string]$Evidence,
+    [switch]$Survival,
+    [string]$SurvivalEvidence,
+    [string]$Python
 )
 $ErrorActionPreference='Stop'
 $playRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $playExe=(Resolve-Path -LiteralPath $Player).Path
 $playBuild=(Split-Path (Split-Path $playExe -Parent) -Leaf)
+if($WorldId -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$' -or
+   $InhabitantId -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$'){
+    throw 'World and inhabitant IDs must be bounded path-safe identifiers.'
+}
 $playStorage=[IO.Path]::GetFullPath($Storage)
 $playPrivate=Join-Path $playStorage 'private'
 $playConfig=Join-Path $playPrivate 'config.json'
-$playPython=(Get-Command python -ErrorAction Stop).Source
+if($Python){$playPython=(Resolve-Path -LiteralPath $Python).Path}
+else{
+    $playBundledPython='C:\Users\irwin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
+    $playPython=if(Test-Path -LiteralPath $playBundledPython){$playBundledPython}else{(Get-Command python -ErrorAction Stop).Source}
+}
 if(-not(Test-Path -LiteralPath $playConfig)){
     if(Test-Path -LiteralPath $playPrivate){throw 'Private memory directory exists without a valid config; choose a new storage path or migrate it explicitly.'}
     & $playPython (Join-Path $playRoot 'services/starfall-memory/local.py') init --directory $playPrivate --world-id $WorldId --build-id $playBuild --inhabitant $InhabitantId | Out-Null
     if($LASTEXITCODE -ne 0){throw 'Private scoped memory configuration failed.'}
 }
 $playServiceConfig=Get-Content -LiteralPath $playConfig -Raw | ConvertFrom-Json
+if($Survival -and (-not $ModelEndpoint -or -not $Model -or -not $SurvivalEvidence)){
+    throw 'Survival normal play requires a local model endpoint, model and separate empty evidence directory.'
+}
 if($playServiceConfig.world_id -ne $WorldId -or $playServiceConfig.publisher_id -ne 'unity-local' -or $playServiceConfig.build_ids -notcontains $playBuild -or
     @($playServiceConfig.inhabitants|Where-Object inhabitant_id -eq $InhabitantId).Count -ne 1){
     throw 'Existing private memory configuration does not match this world, inhabitant and build; migrate explicitly or choose a new storage path.'
@@ -70,7 +84,21 @@ try{
         }
         if($ModelEndpoint -and $Model){$playArgs+=@('-npcLocalEndpoint',$ModelEndpoint,'-npcLocalModel',$Model)}
         elseif($ModelEndpoint -or $Model){Write-Warning 'Both ModelEndpoint and Model are required for optional thought; action memory will continue without model calls.'}
-    }else{Write-Warning 'Living-memory service was unavailable; launching deterministic gameplay without memory integration.'}
+        if($Survival){
+            $playSurvivalData=Join-Path $playData 'survival-food'
+            $null=New-Item -ItemType Directory -Force -Path $playSurvivalData
+            Assert-PrivateMemoryAcl $playSurvivalData $false
+            $playSurvivalSave=Join-Path $playSurvivalData ($WorldId+'-'+$InhabitantId+'.json')
+            $playSurvivalEvidence=[IO.Path]::GetFullPath($SurvivalEvidence)
+            if(Test-Path -LiteralPath $playSurvivalEvidence){
+                if((Get-ChildItem -LiteralPath $playSurvivalEvidence -Force|Select-Object -First 1)){throw 'Survival evidence directory must be empty.'}
+            }else{$null=New-Item -ItemType Directory -Path $playSurvivalEvidence}
+            $playArgs+=@('-npcSurvivalRuntime','-npcSurvivalSave',$playSurvivalSave,'-npcSurvivalEvidence',$playSurvivalEvidence)
+        }
+    }else{
+        if($Survival){throw 'Survival launch requires the scoped living-memory service to be ready.'}
+        Write-Warning 'Living-memory service was unavailable; launching deterministic gameplay without memory integration.'
+    }
     $playGameArgs=($playArgs|ForEach-Object{if($_ -match '\s'){'"'+$_+'"'}else{$_}})-join ' '
     $playGame=Start-Process -FilePath $playExe -ArgumentList $playGameArgs -WorkingDirectory (Split-Path $playExe -Parent) -WindowStyle Normal -PassThru
     $playGame.WaitForExit()

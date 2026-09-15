@@ -8,6 +8,7 @@ namespace Starfall.Food
         public const string Generation = "combined-v1";
         public FoodModel Model { get; private set; }
         public Transform Actor;
+        public NpcAutonomy Brain;
         public NpcInteractable Berry, Spring;
         public Vector3 BerryPosition, SpringPosition;
         [field: SerializeField] public float MinimumRockClearance { get; private set; }
@@ -22,6 +23,7 @@ namespace Starfall.Food
         public void Attach(Transform actor, Transform worldRoot, string worldId)
         {
             Actor = actor; Model = new FoodModel(worldId, Generation, 4242);
+            Model.State.actorId=NpcAutonomy.AgentId;
             Physics.SyncTransforms();
             // Resource sites sit away from the hero rock bank and on dry, sampled terrain.
             // The readable berry site shares the broad activity shelf but stays
@@ -29,7 +31,7 @@ namespace Starfall.Food
             BerryPosition = new Vector3(126, CoastalTerrain.Height(126, -80), -80);
             SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
-            Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, new Color(.05f, .72f, .86f));
+            Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, worldId, new Color(.05f, .72f, .86f));
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
@@ -125,6 +127,7 @@ namespace Starfall.Food
                     flowerCenter+new Vector3(Mathf.Cos(a)*.12f,0,Mathf.Sin(a)*.12f),new Vector3(.13f,.035f,.075f),Quaternion.Euler(0,-a*Mathf.Rad2Deg,0),flower);
             }
             Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
+            root.layer=11;
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
             var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place; item.Approach=root.transform; return item;
         }
@@ -156,25 +159,37 @@ namespace Starfall.Food
                 if (collider.gameObject != Berry.gameObject) count++;
             return count;
         }
-        static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, Color colour)
+        static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, string worldId, Color colour)
         {
             var target = GameObject.CreatePrimitive(PrimitiveType.Sphere); target.name = name; target.transform.SetParent(parent);
             target.transform.position = position;
             target.transform.localScale = id.StartsWith("berry") ? new Vector3(1.2f, .9f, 1.2f) : new Vector3(1.8f, .25f, 1.8f);
+            target.layer=11;
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             var material = new Material(shader) { name = name + " material", color = colour };
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", colour);
             target.GetComponent<Renderer>().sharedMaterial = material;
-            var item = target.AddComponent<NpcInteractable>(); item.StableId = id; item.WorldId = NpcTerrainNavigation.RegionId; item.Kind = NpcObjectKind.Place;
+            target.GetComponent<Collider>().isTrigger=true;
+            var item = target.AddComponent<NpcInteractable>(); item.StableId = id; item.WorldId = worldId; item.Kind = NpcObjectKind.Place;
             return item;
         }
         public FoodAccess Inspect(string target)
         {
             if (acceptanceAccess) return new FoodAccess { visible = true, inReach = true, permitted = true, verifiedFreshwater = target == "spring" };
             bool inventory = target == "inventory";
-            Vector3 subject = target == "berry" ? BerryPosition : target == "spring" ? SpringPosition : Actor.position;
-            return new FoodAccess { visible = true, inReach = inventory || Vector3.Distance(Actor.position, subject) < 2.2f,
-                permitted = true, verifiedFreshwater = target == "spring" };
+            if(Actor==null) return new FoodAccess();
+            NpcInteractable item = target == "berry" ? Berry : target == "spring" ? Spring : null;
+            if(!inventory && item==null) return new FoodAccess();
+            bool visible=inventory;
+            if(item!=null && item.isActiveAndEnabled && item.WorldId==Model.State.world && item.Permission)
+            {
+                Vector3 eye=Actor.position+Vector3.up*1.6f, ray=item.SightPoint-eye;
+                visible=ray.magnitude<=12f && !Physics.Raycast(eye,ray.normalized,ray.magnitude,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore);
+            }
+            return new FoodAccess { visible=visible,
+                inReach=inventory || (visible && Vector3.Distance(Actor.position,item.transform.position)<2.2f),
+                permitted=inventory || (item!=null && item.Permission),
+                verifiedFreshwater=target=="spring" && visible && item==Spring };
         }
         public bool RunAcceptanceSequence(out string evidence)
         {
@@ -192,6 +207,7 @@ namespace Starfall.Food
             }
             finally { acceptanceAccess = false; }
         }
-        void FixedUpdate() { EnsureModel(); if (Actor != null) { Model.State.actorPosition = Actor.position; Model.FixedStep(false); } }
+        void FixedUpdate() { EnsureModel(); if (Actor != null) { bool paused=Brain!=null&&Brain.MenuPaused;
+            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused); } }
     }
 }

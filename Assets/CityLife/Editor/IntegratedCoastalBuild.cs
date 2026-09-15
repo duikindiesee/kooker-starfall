@@ -10,7 +10,7 @@ namespace CityLife.World.Editor
 {
     public static class IntegratedCoastalBuild
     {
-        public const string Version = "0.0.10-canyon.1";
+        public const string Version = "0.0.11-survival.1";
         public static bool Requested => System.Environment.GetCommandLineArgs().Contains("-starfallIntegrated");
         public static void Run()
         {
@@ -149,7 +149,10 @@ namespace CityLife.World.Editor
             brain.Registry = brain.Registry.Concat(new[] { place }).ToArray();
             var foodObject = new GameObject("Food and ecology / integrated adapter"); foodObject.transform.SetParent(ground.transform);
             var food = foodObject.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+            food.Brain = brain;
             food.Attach(brain.transform, ground.transform, brain.InstanceWorldId);
+            var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
+            survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");

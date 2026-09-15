@@ -13,6 +13,7 @@ namespace CityLife.World
         public NpcPerception Perception;
         public NpcDecisionLog Log;
         public NpcOptionalPlanner OptionalPlanner;
+        public StarfallSurvivalAutonomy Survival;
         public NpcInteractable[] Registry;
         public string InstanceWorldId = WorldId;
         public Vector3 SpawnPosition = new Vector3(0, .02f, -5);
@@ -47,6 +48,7 @@ namespace CityLife.World
         public void ResetState()
         {
             if (OptionalPlanner != null) OptionalPlanner.ResetSession();
+            if (Survival != null) Survival.Cancel("world-reset");
             foreach (var item in Registry) item.RestoreInitial();
             Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
             goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
@@ -61,6 +63,7 @@ namespace CityLife.World
         {
             if (Possessed == possessed) return;
             if (OptionalPlanner != null) OptionalPlanner.Cancel("possession-change");
+            if (Survival != null) Survival.Cancel("possession-change");
             Possessed = possessed; ManualDirection = Vector3.zero; gestureTicks = 0; Actor.CancelGesture();
             if (!possessed) Running = true;
             if (!possessed && goal != null)
@@ -75,6 +78,7 @@ namespace CityLife.World
         public void Pause()
         {
             if (OptionalPlanner != null) OptionalPlanner.Cancel("autonomy-paused");
+            if (Survival != null) Survival.Cancel("autonomy-paused");
             Running = false;
         }
         public void ToggleAutonomy()
@@ -82,6 +86,7 @@ namespace CityLife.World
             if (Possessed) return;
             Running = !Running;
             if (!Running && OptionalPlanner != null) OptionalPlanner.Cancel("autonomy-paused");
+            if (!Running && Survival != null) Survival.Cancel("autonomy-paused");
             Log.Record(Tick, "control", DescribePerception(), GoalId, Running ? "resume-autonomy" : "pause-autonomy", "current goal and cargo retained");
         }
         public void StepTick()
@@ -101,8 +106,13 @@ namespace CityLife.World
                 var remembered = goal == null ? null : Perception.Current.Find(x => x.id == goal.id);
                 if (remembered != null) { lastSeenTick = Tick; }
             }
+            if (Survival != null && Survival.Enabled && Survival.Food.Model.State.body.dead && Possessed)
+            { Actor.Step(Vector3.zero, StepSeconds); return; }
             if (Possessed) { Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds); return; }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
+            if (Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
+                (goal == null && Actions.Held == null && Registry.Where(x => x.Kind == NpcObjectKind.Item).All(x => x.DeliveredTo.Length > 0))))
+            { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }
             if (gestureTicks > 0)

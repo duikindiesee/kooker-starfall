@@ -19,8 +19,16 @@ namespace Starfall.Food
             FoodReceipt Do(FoodAction action,string target)=>m.Execute(m.State.world,m.State.generation,m.State.lastRequest+1,action,target,a);
             void Advance(int seconds){for(int i=0;i<seconds*50;i++)m.FixedStep(false);}
             Check(!Do(FoodAction.Gather,"berry").success,"unknown berry not edible/gatherable");
+            var sensedChoices=new List<string>{"explore north","inspect berry"};
+            Check(CityLife.World.StarfallSurvivalThought.Parse("Inspect berry",sensedChoices,out string sensedAction)&&sensedAction=="inspect berry"&&
+                !CityLife.World.StarfallSurvivalThought.Parse("gather berry",sensedChoices,out _)&&
+                !CityLife.World.StarfallSurvivalThought.Parse("inspect berry now",sensedChoices,out _),
+                "survival thought admits only an eligible exact two-word action");
+            string scopedPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,sensedChoices);
+            Check(scopedPrompt.Contains("inspect berry")&&!scopedPrompt.Contains("126")&&!scopedPrompt.Contains("spring"),
+                "survival prompt contains eligible observed action but no authored berry coordinate or unseen spring");
             m.State.satiety=0;Check(!Do(FoodAction.Eat,"inventory").success,"starvation does not grant food knowledge");m.State.satiety=6500;
-            Check(Do(FoodAction.Inspect,"berry").success&&m.State.berryEvidence.Contains("lesson"),"grounded lesson provenance");
+            Check(Do(FoodAction.Inspect,"berry").success&&m.State.berryEvidence.Contains("observed-fruit")&&!m.State.knowsMealBenefit,"observed fruit does not grant a meal outcome");
             a.visible=false;Check(!Do(FoodAction.Gather,"berry").success,"occlusion blocks action");a.visible=true;
             a.reach=false;Check(!Do(FoodAction.Gather,"berry").success,"reach blocks action");a.reach=true;
             a.permission=false;Check(!Do(FoodAction.Gather,"berry").success,"permission blocks action");a.permission=true;
@@ -32,7 +40,12 @@ namespace Starfall.Food
             Check(!Do(FoodAction.Drink,"spring").success,"source needs evidence");int hydration=m.State.hydration;
             Check(!Do(FoodAction.Drink,"sea").success&&m.State.hydration==hydration,"seawater has no nutrition effect");
             Check(Do(FoodAction.Inspect,"spring").success&&Do(FoodAction.Drink,"spring").success&&m.State.freshwaterMl==1750,"verified finite freshwater transfer");
-            Check(!Do(FoodAction.Plant,"bed").success,"planting requires grounded lesson");Do(FoodAction.Inspect,"bed");int seedCount=m.State.seeds;
+            Check(!Do(FoodAction.Plant,"bed").success,"planting requires grounded lesson");Do(FoodAction.Inspect,"bed");
+            Check(m.State.seenBed&&!m.State.knowsPlanting&&!Do(FoodAction.Plant,"bed").success,"seeing moist soil does not teach seed cultivation");
+            // This separate ecology regression supplies explicit prior germination
+            // evidence; the ordinary player does not receive it from a glance.
+            m.State.knowsPlanting=true;m.State.plantingEvidence="generation-a.prior-verified-germination";
+            int seedCount=m.State.seeds;
             Check(Do(FoodAction.Plant,"bed").success&&m.State.seeds==seedCount-1,"plant consumes a seed");
             Check(!Do(FoodAction.Plant,"bed").success&&!Do(FoodAction.Harvest,"bed").success,"duplicate planting and premature harvest rejected");
             Do(FoodAction.Gather,"berry");Check(m.State.fruitStock==0&&!Do(FoodAction.Gather,"berry").success,"depletion rejects harvest");
@@ -74,16 +87,22 @@ namespace Starfall.Food
             Check(!full.Execute("full","g",1,FoodAction.Eat,"inventory",a).success&&full.State.carriedFruit==1,"overeating rejected before inventory mutation");
             var mortality=new FoodModel("mortality","g",4242);var ms=mortality.State;ms.knowsBerry=true;ms.berryEvidence="g.lesson.1";ms.seenBed=true;ms.carriedFruit=2;ms.seeds=1;ms.wetSeason=false;ms.fruitStock=0;
             void Starve(){ms.satiety=0;ms.hydration=10000;ms.body.fat=0;ms.body.health=1;ms.body.deficitSeconds=3600;for(int i=0;i<50;i++)mortality.FixedStep(false);}
-            Starve();Check(ms.body.dead&&ms.deaths.Count==1&&ms.deaths[0].cause=="prolonged-starvation"&&ms.deaths[0].lesson!="","verified death and one mechanic-grounded lesson");
+            Starve();Check(ms.body.dead&&ms.deaths.Count==1&&ms.deaths[0].cause=="prolonged-starvation"&&ms.deaths[0].lesson.Contains("Energy and fat")&&!ms.knowsMealBenefit&&!ms.knowsPlanting,"verified death records measured cause without invented meal or planting knowledge");
             int deathTick=ms.tick;string deathHash=ms.deaths[0].hash;
             Check(ms.bags[0].berries==2&&ms.bags[0].seeds==1&&ms.carriedFruit==0,"ordinary inventory transferred to recoverable owned bag");
             Check(mortality.Execute("mortality","g",1,FoodAction.Return,"inventory",a).success&&ms.tick==deathTick&&ms.fruitStock==0&&!ms.wetSeason&&ms.incarnation==2,"return restores body without rewinding world");
-            Check(ms.body.health==10000&&ms.satiety==6500&&ms.hydration==5500&&ms.knowsMealBenefit,"safe body defaults and learned memory persist");
+            Check(ms.body.health==10000&&ms.satiety==6500&&ms.hydration==5500&&!ms.knowsMealBenefit&&ms.causalMemory==ms.deaths[0].lesson,"safe body defaults and cause-grounded memory persist");
             Check(mortality.Execute("mortality","g",2,FoodAction.Recover,"refuge",a).success&&ms.carriedFruit==2&&ms.bags[0].berries==0,"refuge inventory recovery exactly once");
-            Starve();Check(ms.deaths.Count==2&&ms.deaths[0].hash==deathHash&&ms.knowsPlanting,"second death preserves immutable first event and teaches only new eligible mechanic");
+            Starve();Check(ms.deaths.Count==2&&ms.deaths[0].hash==deathHash&&!ms.knowsPlanting&&!ms.knowsMealBenefit,"second death preserves immutable first event without fabricated mechanics");
+            var dehydration=new FoodModel("dehydration","g",4242);var ds=dehydration.State;
+            ds.satiety=10000;ds.hydration=0;ds.body.health=1;ds.body.drySeconds=901;
+            for(int i=0;i<50;i++)dehydration.FixedStep(false);
+            Check(ds.body.dead&&ds.deaths.Count==1&&ds.deaths[0].cause=="prolonged-dehydration"&&
+                ds.deaths[0].lesson.Contains("Hydration remained depleted")&&!ds.knowsSpring&&!ds.knowsMealBenefit,
+                "dehydration death records actual cause without inventing water or meal knowledge");
             string deathPath=Path.Combine(folder,"death.json");mortality.Save(deathPath);var mortalityReload=new FoodModel("mortality","g",4242);Check(mortalityReload.Load(deathPath,"mortality","g")&&mortalityReload.Json()==mortality.Json(),"death body bags and lesson survive reload");
             int oldSnapshots=Directory.GetFiles(folder,"snap-*.json").Length;
-            mortality.Execute("mortality","g",3,FoodAction.Return,"inventory",a);Starve();Check(ms.deaths.Count==3&&ms.deaths[2].lesson=="","repeated death does not fabricate another lesson");
+            mortality.Execute("mortality","g",3,FoodAction.Return,"inventory",a);Starve();Check(ms.deaths.Count==3&&ms.deaths[2].lesson==ms.deaths[0].lesson,"repeated death retains only the same measured cause lesson");
             mortality.Save(deathPath);Check(Directory.GetFiles(folder,"snap-*.json").Length==oldSnapshots+1,"new save retains immutable prior snapshot");
             var stranger=new FoodModel("mortality","g",4242);stranger.State.actorId="inhabitant-2";Check(!stranger.Load(deathPath,"mortality","g")&&!stranger.State.knowsBerry&&stranger.State.body.health==10000,"new inhabitant defaults and no cross-inhabitant memory leakage");
             return passed;

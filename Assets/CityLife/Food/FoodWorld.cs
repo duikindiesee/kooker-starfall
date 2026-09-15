@@ -113,11 +113,11 @@ namespace Starfall.Food
                 if(s.hydration<6000)Queue(s.knowsSpring?FoodAction.Drink:FoodAction.Inspect,"spring",s.knowsSpring?"Thirst: revisit remembered verified spring":"Thirst: inspect marked freshwater source");
                 else if(s.satiety<7500)
                 {
-                    if(!s.knowsBerry)Queue(FoodAction.Inspect,"berry","Hungry: seek signed food lesson; never taste unknown fruit");
-                    else if(s.carriedFruit>0)Queue(FoodAction.Eat,"inventory",s.deaths.Count>0&&s.knowsMealBenefit?"Use remembered death/meal evidence: known berries restore energy":"Hungry: try a safely taught berry and observe its effect");
+                    if(!s.knowsBerry)Queue(FoodAction.Inspect,"berry","Hungry: observe reachable fruit before considering it");
+                    else if(s.carriedFruit>0)Queue(FoodAction.Eat,"inventory",s.knowsMealBenefit?"Use prior observed meal outcome":"Hungry: try observed fruit and record its effect");
                     else Queue(FoodAction.Gather,"berry","Hungry: revisit remembered bush; verify stock on arrival");
                 }
-                else if(s.plantedAt<0&&s.seeds>0)Queue(s.knowsPlanting?FoodAction.Plant:FoodAction.Inspect,"bed","Needs met: learn moist-soil cultivation, then plant saved seed");
+                else if(s.plantedAt<0&&s.seeds>0&&s.knowsPlanting)Queue(FoodAction.Plant,"bed","Needs met: use separately verified cultivation knowledge");
                 else {Auto=false;Record("decision","Needs met. Rest and observe growth.");}
             }
             RefreshVisuals();
