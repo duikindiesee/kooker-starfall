@@ -20,7 +20,9 @@ $receipt=[ordered]@{
     build=[IO.Path]::GetFileName([IO.Path]::GetDirectoryName($observed.ExecutablePath))
     executableSha256=(Get-FileHash -LiteralPath $observed.ExecutablePath -Algorithm SHA256).Hash
     flags=$flags
-    normalFlagsVerified=($flags.npcLivingMemoryRuntime -and -not($flags.integratedSmoke -or $flags.npcSmoke -or $flags.npcRealProbe -or $flags.npcLivingMemoryEvidence))
+    # npcLivingMemoryEvidence is a passive output directory in the ordinary
+    # runtime, not a scripted scenario switch. Keep it recorded, not rejected.
+    normalFlagsVerified=($flags.npcLivingMemoryRuntime -and -not($flags.integratedSmoke -or $flags.npcSmoke -or $flags.npcRealProbe))
     boundary='Live OS process observation only; does not prove gameplay, model origin or persistence. Raw arguments, capabilities and private paths are excluded.'
 }
 $json=$receipt|ConvertTo-Json -Depth 4
