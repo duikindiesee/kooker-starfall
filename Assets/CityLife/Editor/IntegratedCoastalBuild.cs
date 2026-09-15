@@ -153,7 +153,7 @@ namespace CityLife.World.Editor
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
-            giant.transform.position = new Vector3(120, 420, 2800); giant.transform.localScale = Vector3.one * 650;
+            IntegratedCelestial.PlaceDistantGiant(giant.transform,camera);
             var moonPositions = new[] { new Vector3(-800, 640, 3400), new Vector3(1400, 800, 3600), new Vector3(-450, 2100, 4200) };
             var moonSizes = new[] { 95f, 70f, 52f }; var moons = new Transform[3];
             var moonMaterial = Material("Distant moon rock", new Color(.5f, .65f, .77f));
@@ -163,7 +163,7 @@ namespace CityLife.World.Editor
                 moon.AddComponent<MeshFilter>().sharedMesh = giant.GetComponent<MeshFilter>().sharedMesh;
                 moon.AddComponent<MeshRenderer>().sharedMaterial = moonMaterial; moons[i] = moon.transform;
             }
-            camera.farClipPlane = 6000;
+            camera.farClipPlane = IntegratedCelestial.SkyFarClip;
             var celestial = camera.gameObject.AddComponent<IntegratedCelestial>(); celestial.Environment = environment; celestial.Giant = giant.transform; celestial.Moons = moons;
             var rainObject = new GameObject("Regional precipitation"); var rain = rainObject.AddComponent<ParticleSystem>(); rain.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = rain.main; main.maxParticles = 512; main.startLifetime = 1.4f; main.startSpeed = 0; main.startSize = .008f;

@@ -5,6 +5,17 @@ namespace CityLife.World
     // Slow visual ephemeris driven by the regional simulation clock, not a gravity model.
     public sealed class IntegratedCelestial : MonoBehaviour
     {
+        // Preserve the original study's large angular diameter, but move the
+        // complete sphere far beyond the explorable terrain, not into the canyon.
+        public static readonly Vector3 GiantPosition = new Vector3(4500, 4200, 21000);
+        public const float GiantScale = 9800;
+        public const float SkyFarClip = 40000;
+        public static void PlaceDistantGiant(Transform giant, Camera view)
+        {
+            giant.position = GiantPosition;
+            giant.localScale = Vector3.one * GiantScale;
+            view.farClipPlane = SkyFarClip;
+        }
         public IntegratedEnvironment Environment;
         public Transform Giant;
         public Transform[] Moons;

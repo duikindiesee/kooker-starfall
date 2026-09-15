@@ -41,7 +41,9 @@ namespace CityLife.World.Editor
             camera.GetComponent<UniversalAdditionalCameraData>().requiresColorTexture=true;
             // The visual sea continues to z=2200; a shorter camera far plane exposes
             // the solid-color background as a false light-gray ocean horizon.
-            camera.farClipPlane=2400;
+            var giant=GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
+            if(giant==null)throw new InvalidOperationException("Coastal giant missing.");
+            IntegratedCelestial.PlaceDistantGiant(giant.transform,camera);
         }
 
         [Serializable]private sealed class CoastalDefinition
