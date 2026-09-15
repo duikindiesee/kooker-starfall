@@ -13,6 +13,7 @@ namespace CityLife.World
         public float WalkSpeed = 1.65f;
         public bool TestControl;
         public bool ExternalDrive;
+        public bool DeadPose;
         public Vector3 TestDirection;
         public float ActualSpeed { get; private set; }
         public float Travelled { get; private set; }
@@ -74,7 +75,7 @@ namespace CityLife.World
             Travelled += distance.magnitude;
             if (direction.sqrMagnitude > .01f)
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 360 * dt);
-            if (Time.time >= gestureUntil) Animate(ActualSpeed > .12f ? "Walk" : "Idle");
+            if (Time.time >= gestureUntil) Animate(DeadPose ? "Crouch" : ActualSpeed > .12f ? "Walk" : "Idle");
         }
         private void Animate(string wanted)
         {

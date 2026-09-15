@@ -56,6 +56,7 @@ def main():
     host.add_argument('--editor', type=Path)
     parser.add_argument('--scene')
     parser.add_argument('--integrated', action='store_true')
+    parser.add_argument('--no-retention', action='store_true', help='Keep a passing candidate without replacing the current build')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
@@ -204,7 +205,7 @@ def main():
     print(json.dumps({'checkpoint': 'player-finished', 'exit_code': exit_code, 'persisted_events': checkpoint['events']}), flush=True)
     if exit_code:
         raise SystemExit(exit_code)
-    if args.integrated and not args.editor:
+    if args.integrated and not args.editor and not args.no_retention:
         # Promote only after the compiled runtime, isolation and restart checks.
         # The retention helper independently rechecks every required runtime gate
         # and the complete build bytes; packaging is not required for cleanup.

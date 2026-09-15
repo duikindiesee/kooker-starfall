@@ -81,6 +81,9 @@ namespace CityLife.World
                 {
                     result.lesson=s.deaths[variant].lesson;result.deathHash=s.deaths[variant].hash;
                     result.bagCount=s.bags.Count;
+                    Brain.Actor.DeadPose=true;
+                    Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                    for(int settle=0;settle<12;settle++)yield return null;
                     yield return Capture(folder,variant==0?"01-measured-dehydration-death.png":"03-measured-starvation-death.png");
                     result.safeRefugeReturn=Survival.DiagnosticSafeReturn();
                     result.scopedReload=Survival.DiagnosticVerifyReload();
@@ -113,14 +116,33 @@ namespace CityLife.World
             Canvas.ForceUpdateCanvases();
             var buffer=new RenderTexture(1600,900,24,RenderTextureFormat.ARGB32);
             buffer.Create();var previous=View.targetTexture;var active=RenderTexture.active;
+            var driver=View.GetComponent<CharacterPreviewCamera>();
+            bool priorExternal=driver!=null&&driver.ExternalView;
+            Vector3 priorPosition=View.transform.position;Quaternion priorRotation=View.transform.rotation;
             try
             {
+                if(name.Contains("safe-return")&&driver!=null&&Survival.Refuge!=null)
+                {
+                    // The ordinary follow camera shortens to 0.3 m against the
+                    // cave wall and produces a face-only image. For evidence,
+                    // hold a fixed view near the real ingress looking into the
+                    // same landed inhabitant; restore user camera afterward.
+                    driver.ExternalView=true;
+                    View.transform.position=Survival.Refuge.OriginOffset+new Vector3(-6.15f,3.0f,-.2f);
+                    View.transform.LookAt(Brain.transform.position+Vector3.up*1.2f);
+                }
                 View.targetTexture=buffer;View.Render();RenderTexture.active=buffer;
                 var image=new Texture2D(1600,900,TextureFormat.RGB24,false);
                 image.ReadPixels(new Rect(0,0,1600,900),0,0);image.Apply();
                 File.WriteAllBytes(Path.Combine(folder,name),image.EncodeToPNG());Destroy(image);
             }
-            finally{View.targetTexture=previous;RenderTexture.active=active;buffer.Release();Destroy(buffer);}
+            finally
+            {
+                View.targetTexture=previous;RenderTexture.active=active;
+                View.transform.SetPositionAndRotation(priorPosition,priorRotation);
+                if(driver!=null)driver.ExternalView=priorExternal;
+                buffer.Release();Destroy(buffer);
+            }
         }
     }
 }

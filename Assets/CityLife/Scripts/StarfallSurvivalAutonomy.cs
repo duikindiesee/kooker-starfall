@@ -168,7 +168,8 @@ namespace CityLife.World
                 var s=Food.Model.State;
                 FoodReceipt returned=Food.Model.Execute(s.world,s.generation,++request,FoodAction.Return,"inventory",Food);
                 if(!returned.success)return false;
-                Brain.Actor.Place(safe);s.actorPosition=safe;Record("return","safe-refuge-world-preserved",null,null,returned);
+                Brain.Actor.Place(safe);Brain.Actor.DeadPose=false;Brain.Actor.RefreshAnimation();
+                s.actorPosition=safe;Record("return","safe-refuge-world-preserved",null,null,returned);
                 LastChoice="safe return";LastOutcome="Returned after "+s.deaths[s.deaths.Count-1].cause;
                 Persist();
                 return true;

@@ -230,6 +230,8 @@ namespace Starfall.Food
             finally { acceptanceAccess = false; }
         }
         void FixedUpdate() { EnsureModel(); if (Actor != null) { bool paused=Brain!=null&&Brain.MenuPaused;
-            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused); SyncFruitVisual(); } }
+            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused);
+            if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;
+            SyncFruitVisual(); } }
     }
 }
