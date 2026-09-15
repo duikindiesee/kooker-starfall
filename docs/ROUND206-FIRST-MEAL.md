@@ -25,7 +25,24 @@ Private evidence remains under `evidence/local/normal-survival/run-14`:
 `process.json`, `survival-evidence/normal-survival.jsonl`,
 `memory-evidence/normal-living-memory.json`, and the game-only frame capture.
 The 120-second capture reports 875 frames, zero dropped readbacks and two busy
-skips. It has not yet been encoded/replayed as a final narrated walkthrough.
+skips. It is now encoded as local `starfall-round206-WIP-first-meal.mp4`:
+119.67 seconds, full decode passed, SHA256
+`76fe55227858b7f4b390ed3c923150315aeee521496f087a1dcc826f94c26bbf`.
+Its companion capture receipt records measured timing and source-index hash.
+This silent diagnostic clip is not the final narrated walkthrough.
+
+The completed unchanged run records 174 issued requests, 150 admitted choices,
+124 completed routes, seven meals, 22 timeouts, two stale rejections, five
+live-terrain blocks and six unplannable routes. Final physiology tick is 1187.
+No spring drink occurred. Fruit hydration is a valid survival outcome; absence
+of a drink does not invalidate it or justify manufacturing thirst.
+
+Run15 restores the scoped needs and learned meal benefit, and visibly recalls
+the earlier delivery. However, its fresh delivery prerequisite blocks new
+survival requests. Therefore gameplay continuation after restart FAILED even
+though data reload succeeded. The next source correction records earned
+survival authority separately; historical saves are preserved, not silently
+treated as containing that marker. See SYSTEM-ARCHITECTURE.md.
 
 Remaining: sustained ordinary behavior, actual drinking, restart retention,
 separate death diagnostic, cave/weather integration, club and sky/water visuals,
