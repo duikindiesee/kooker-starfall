@@ -14,8 +14,10 @@ namespace CityLife.World.Editor
         private static GameObject coastalTerrain;
         private static GameObject coastalWater;
         private static bool skySiteMode;
+        private static bool filmSiteMode;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void RenderCoastalSkySites(){skySiteEvidence.Clear();coastalMode=true;skySiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
+        public static void RenderCoastalFilmSites(){filmSiteEvidence.Clear();coastalMode=true;filmSiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
         private static void Coastal()
@@ -105,6 +107,7 @@ namespace CityLife.World.Editor
         private static List<Shot> BuildCoastalShots()
         {
             if(skySiteMode) return BuildSkySiteShots();
+            if(filmSiteMode) return BuildFilmSiteShots();
             return new List<Shot>{
             new Shot{Id="01-coastal-side-composition",Purpose="Fixed provisional side-view: frozen R19 tree on rocky bank, wrapping turquoise river toward deep sea, canyon mountains, blue gas giant and distant procedural galaxy. Actual Unity geometry; no artwork billboard.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(21,4.6f,-25),new Vector3(0,3.4f,14))},
             new Shot{Id="02-water-to-sea",Purpose="Fixed surface material/depth comparison from the river toward open sea; no underwater-life or swimming claim.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(10,-.1f,13),new Vector3(-2,-1,64))},
@@ -131,6 +134,34 @@ namespace CityLife.World.Editor
             skySiteEvidence.Add(label+": "+evidence);
             File.WriteAllLines(Path.Combine(outputDirectory,"sky-site-selection.txt"),skySiteEvidence);
             CoastalCamera(eye,eye+new Vector3(.04f,.07f,1)*100f);
+        }
+        private static readonly List<string> filmSiteEvidence = new List<string>();
+        private static List<Shot> BuildFilmSiteShots() => new List<Shot> {
+            new Shot{Id="01-film-near-south",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(128,-100),new Vector2(120,-96),new Vector2(116,-94)},"near-south")},
+            new Shot{Id="02-film-high-south",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(128,-112),new Vector2(120,-105),new Vector2(110,-101)},"high-south")},
+            new Shot{Id="03-film-east-oblique",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(145,-110),new Vector2(135,-100),new Vector2(128,-94)},"east-oblique")}
+        };
+        private static void FilmSiteCamera(Vector2[] candidates,string label)
+        {
+            Coastal();Physics.SyncTransforms();
+            Vector3 actor=new Vector3(CoastalTerrain.ActivityCentre.x-4,4.02f,CoastalTerrain.ActivityCentre.y-5);
+            Vector3 target=actor+Vector3.up*1.05f;
+            const int solid=(1<<8)|(1<<10);
+            foreach(var site in candidates)
+            {
+                if(!Physics.Raycast(new Vector3(site.x,300,site.y),Vector3.down,out var floor,400,solid,QueryTriggerInteraction.Ignore))
+                {filmSiteEvidence.Add(label+" candidate "+site+": no solid floor");continue;}
+                var eye=new Vector3(site.x,floor.point.y+4f,site.y);
+                if(floor.point.y<=CoastalWater.Level+1f || Physics.CheckSphere(eye,.7f,solid,QueryTriggerInteraction.Ignore) ||
+                   Physics.Linecast(eye,target,solid,QueryTriggerInteraction.Ignore))
+                {filmSiteEvidence.Add(label+" candidate "+site+": rejected floor="+floor.point+" eye="+eye+" dry/sight/clear guard");continue;}
+                filmSiteEvidence.Add(label+": camera="+eye+"; actorProxy="+actor+"; floor="+floor.point+
+                    "; floorFreeboard="+(floor.point.y-CoastalWater.Level)+"; FOV=60; not ordinary player capture");
+                File.WriteAllLines(Path.Combine(outputDirectory,"film-site-selection.txt"),filmSiteEvidence);
+                CoastalCamera(eye,target);camera.fieldOfView=60;return;
+            }
+            File.WriteAllLines(Path.Combine(outputDirectory,"film-site-selection.txt"),filmSiteEvidence);
+            throw new InvalidOperationException("No dry, clear film camera for "+label+" from bounded measured candidates");
         }
 
         private static void BuildCoastalGalaxy()

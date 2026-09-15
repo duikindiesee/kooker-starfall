@@ -21,14 +21,14 @@ namespace CityLife.World
         [Serializable] sealed class FinalRow
         {
             public string schema="starfall.game-frames.v1", status, build, sourceCamera, boundary;
-            public int frameCount, droppedCount, skippedSamples, width, height, requestedSeconds;
+            public int frameCount, droppedCount, skippedSamples, width, height, requestedSeconds, requestedStartTick, actualStartTick;
             public long firstElapsedMs, lastElapsedMs, captureEndMs;
         }
         public NpcAutonomy Brain;
         public Camera View;
         const long IntervalMs=125;
         string directory, framesPath, finalPath, build;
-        int seconds, width, height, frameCount, dropped, skipped;
+        int seconds, width, height, frameCount, dropped, skipped, requestedStartTick, actualStartTick;
         long firstMs=-1, lastMs=-1, filmedEndMs;
         bool inFlight, finalized, failed;
         Stopwatch clock;
@@ -52,6 +52,9 @@ namespace CityLife.World
                 Brain==null||View==null)yield break;
             if(!int.TryParse(Flag("-npcSurvivalCaptureSeconds"),out seconds)||seconds<10||seconds>120)
                 yield break;
+            string startTick=Flag("-npcSurvivalCaptureAfterTick");
+            if(startTick!=null && (!int.TryParse(startTick,out requestedStartTick)||requestedStartTick<0||requestedStartTick>50000))
+                yield break;
             directory=Path.GetFullPath(target);
             if(!Directory.Exists(directory)||Directory.GetFileSystemEntries(directory).Length!=0)yield break;
             framesPath=Path.Combine(directory,"frames.jsonl");finalPath=Path.Combine(directory,"capture.json");
@@ -59,6 +62,11 @@ namespace CityLife.World
             width=Screen.width;height=Screen.height;
             if(width<320||height<240||(width&1)!=0||(height&1)!=0||
                 !SystemInfo.supportsAsyncGPUReadback)yield break;
+            // Delay only the optional film, not the simulation. Brain keeps
+            // its normal compiled autonomous decisions; the receipt records
+            // both requested and observed start ticks.
+            while(Brain.Tick<requestedStartTick)yield return null;
+            actualStartTick=Brain.Tick;
             clock=Stopwatch.StartNew();
             long nextSampleMs=0;
             while(!failed)
@@ -134,9 +142,10 @@ namespace CityLife.World
             finalized=true;
             var row=new FinalRow{status=status,build=build,sourceCamera=View==null?"unknown":View.name,
                 frameCount=frameCount,droppedCount=dropped,skippedSamples=skipped,width=width,height=height,
-                requestedSeconds=seconds,firstElapsedMs=firstMs,lastElapsedMs=lastMs,
+                requestedSeconds=seconds,requestedStartTick=requestedStartTick,actualStartTick=actualStartTick,
+                firstElapsedMs=firstMs,lastElapsedMs=lastMs,
                 captureEndMs=filmedEndMs>0?filmedEndMs:clock==null?0:clock.ElapsedMilliseconds,
-                boundary="Actual game framebuffer and HUD only; real elapsed samples. Skipped are busy capture slots, dropped are readback/write errors. Gaps hold prior image; no desktop capture or simulated pacing."};
+                boundary="Actual game framebuffer and compact HUD only; optional start waits for ordinary autonomous tick without pausing simulation. Real elapsed samples. Skipped are busy capture slots, dropped are readback/write errors. Gaps hold prior image; no desktop capture or simulated pacing."};
             try{File.WriteAllText(finalPath,JsonUtility.ToJson(row,true));}catch(Exception){}
         }
         void OnApplicationQuit(){Finish("PLAYER_EXITED_BEFORE_CAPTURE_COMPLETE");}

@@ -64,7 +64,11 @@ namespace CityLife.World
                 client = new StarfallLivingMemoryClient(config, Brain.InstanceWorldId, NpcAutonomy.AgentId, build);
                 lifetime = new CancellationTokenSource(); enabledForSession = true;
                 export.RegisterIdentity(NpcAutonomy.AgentId, "Inhabitant 01", Brain.Tick);
-                Brain.MemoryExport = export; Hud.Detailed = true;
+                Brain.MemoryExport = export;
+                // The opt-in real-game film keeps the verified choice/outcome
+                // panel while leaving perception/history in the JSONL trail.
+                // No autonomy, memory export, or model behavior is changed.
+                Hud.Detailed = Array.IndexOf(args,"-npcSurvivalCaptureFrames")<0;
                 SetStatus("LIVING MEMORY\nRecording real actions locally.\nWaiting for a verified delivery.");
                 StartCoroutine(ProcessEvents());
             }

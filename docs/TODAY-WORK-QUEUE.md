@@ -35,3 +35,18 @@ success kept verified 211 plus temporary 212, then its genuine runtime failure
 removed exactly 212 in the helper `finally` cleanup. See
 `evidence/local/build-retention/reconcile-20260915-123605/reconciliation.json`
 and `evidence/local/failed-build-cleanup/KookerStarfallIntegrated-0.0.11-survival.1-20260915-123435-20260915-123931/cleanup.json`.
+
+September 15 later boundary: round 216 ordinary run 26 proved scoped normal
+local-model exploration, seven positive meals and one genuinely discovered
+freshwater drink before broad smoke. Broad smoke failed two wet posed sky eyes
+and the independent Mac immediate thought at 1502 ms; automatic cleanup
+removed only candidate 216. The revised common sky-site ray guard selected
+four dry, clear Editor sites in rounds 217/218; raised giant source at round
+218 improves its lower-limb gap, but this is not compiled-player or user visual
+acceptance. Static actor-proxy film-site trials 219/220 failed the scene-level
+film criterion even where dry/LOS-valid: the view is mostly sand and shadow.
+They are rejected, not wired into the player. The next justified candidate
+uses the existing actual follow camera, a compact filmed HUD, and an opt-in
+real-frame capture delayed to a recorded autonomous tick; it does not steer
+the actor or pregrant discovery. Ordinary play/video precedes the unchanged
+immediate-reflection smoke, with 211 retained as verified fallback.
