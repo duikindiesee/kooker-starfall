@@ -66,9 +66,20 @@ namespace Starfall.Food
                 reopenedPlace.State.observedPlaces[2].brainTick==2&&
                 PlaceLedger.LastSeen(reopenedPlace.State,"berry-food").available,
                 "restarted local brain tick may reset while persisted food time advances and revises belief");
+            var visibleAfterReload=new HashSet<string>(StringComparer.Ordinal);
+            CityLife.World.StarfallSurvivalAutonomy.SeedVisibleForReload(visibleAfterReload,
+                new List<CityLife.World.NpcObservation>{new CityLife.World.NpcObservation{
+                    id="berry-food",kind=CityLife.World.NpcObjectKind.Place,seenAtTick=2}});
+            Check(visibleAfterReload.Contains("berry-food")&&!visibleAfterReload.Contains("spring-food"),
+                "same-position reload seeds current LOS so it does not fabricate an unchanged revisit");
             reopenedPlace.State.tick=4;
+            Check(PlaceLedger.Observe(reopenedPlace.State,"berry-food","Place","fruiting-succulent",
+                new Vector3(6,4,9),true,true,4,4,!visibleAfterReload.Contains("berry-food"))&&
+                reopenedPlace.State.observedPlaces.Count==3,
+                "still-visible unchanged place at reload adds no false revisit event");
+            visibleAfterReload.Remove("berry-food");
             Check(PlaceLedger.Observe(reopenedPlace.State,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),
-                true,true,4,4,true)&&reopenedPlace.State.observedPlaces.Count==4&&
+                true,true,4,5,!visibleAfterReload.Contains("berry-food"))&&reopenedPlace.State.observedPlaces.Count==4&&
                 PlaceLedger.LastSeen(reopenedPlace.State,"berry-food").kind=="revisit"&&
                 reopenedPlace.State.observedPlaces[0].kind=="first-seen"&&
                 reopenedPlace.State.observedPlaces[1].kind=="changed",

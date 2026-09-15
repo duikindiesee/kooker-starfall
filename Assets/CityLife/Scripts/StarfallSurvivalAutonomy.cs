@@ -92,6 +92,14 @@ namespace CityLife.World
                     if(PlaceLedger.Cell(Food.Model.State,savedCell.x,savedCell.y)!=null)
                         lastOccupiedCell=savedCell;
                 }
+                if(prior)
+                {
+                    // A process restart at the same saved position is not a
+                    // physical revisit. Seed the transient visible set from
+                    // live LOS now; only leaving and re-entering can later
+                    // append an unchanged-place revisit event.
+                    SeedVisibleForReload(visiblePlaceIds,Brain.Perception.Sense(Brain.Tick));
+                }
                 Enabled=true;Status="Survival mind ready; waiting for ordinary task authority";
                 lastCheckpointSecond=Food.Model.State.tick;
                 Record("startup",prior?(VerifiedScopedContinuation?"earned-survival-authority-reloaded":
@@ -154,6 +162,13 @@ namespace CityLife.World
             observation=Brain.Perception.Current.FirstOrDefault(x=>x.id==id&&x.kind==NpcObjectKind.Place&&
                 x.permission&&x.available&&x.seenAtTick>=Brain.Tick-10);
             return observation!=null;
+        }
+        public static void SeedVisibleForReload(HashSet<string> visible,IEnumerable<NpcObservation> sensed)
+        {
+            if(visible==null||sensed==null)throw new ArgumentNullException();
+            foreach(var seen in sensed)
+                if(seen!=null&&seen.kind==NpcObjectKind.Place&&FoodModel.Id(seen.id))
+                    visible.Add(seen.id);
         }
         private bool RememberCurrentWorld()
         {
