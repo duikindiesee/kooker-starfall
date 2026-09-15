@@ -33,6 +33,18 @@ A roughly two-to-three-minute narrated MP4 showing the earlier component scene a
 - Do not include credentials, private service configuration, machine logs, or unrelated desktop windows in footage.
 - Human visual/play approval remains a separate final requirement.
 
+## Sustained-operation evidence boundary
+
+The existing eight-second post-delivery dwell is a short regression check, not
+proof of sustained autonomy. Before final acceptance, retain a bounded normal-play
+soak of at least three minutes with periodic timestamps, brain ticks, phase,
+failure count, held item and delivery count, plus visible control responsiveness.
+Check the intervening samples, not just the first and last state. Preserve the
+build identity and logs alongside that observation. Do not manufacture additional
+deliveries or seed tasks to make an idle character appear busy: after the finite
+three-item job, healthy idle is expected. This test establishes continued operation,
+not autonomous foraging, learning or survival planning.
+
 ## Completion checklist
 
 - [ ] Final candidate identified by source commit and executable hash.
