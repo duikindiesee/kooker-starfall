@@ -154,6 +154,33 @@ namespace CityLife.World
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
                 Quaternion.LookRotation(new Vector3(0, 42, 500) - new Vector3(-250, 170, -360)));
             yield return CaptureWorld("01b-spacious-canyon-vista");
+            // Same-pose object isolation: the pale river-mouth band must be
+            // attributed to actual rendered geometry rather than a camera guess.
+            var seaIsolation=GameObject.Find("Coastal water - luminous river and sea")?.GetComponent<MeshRenderer>();
+            var galaxyIsolation=GameObject.Find("Distant galaxy - procedural dust and stellar band")?.GetComponent<MeshRenderer>();
+            var domeIsolation=GameObject.Find("Surrounding procedural stars")?.GetComponent<MeshRenderer>();
+            if(seaIsolation!=null)
+            {
+                bool priorSea=seaIsolation.enabled;
+                try { seaIsolation.enabled=false; yield return CaptureWorld("01b-sea-renderer-off-same-pose"); }
+                finally { seaIsolation.enabled=priorSea; }
+            }
+            if(galaxyIsolation!=null||domeIsolation!=null)
+            {
+                bool priorGalaxy=galaxyIsolation!=null&&galaxyIsolation.enabled;
+                bool priorDome=domeIsolation!=null&&domeIsolation.enabled;
+                try
+                {
+                    if(galaxyIsolation!=null)galaxyIsolation.enabled=false;
+                    if(domeIsolation!=null)domeIsolation.enabled=false;
+                    yield return CaptureWorld("01b-sky-backdrop-off-same-pose");
+                }
+                finally
+                {
+                    if(galaxyIsolation!=null)galaxyIsolation.enabled=priorGalaxy;
+                    if(domeIsolation!=null)domeIsolation.enabled=priorDome;
+                }
+            }
             if (Food != null)
             {
                 var berryView = Food.BerryPosition + new Vector3(-3.2f, 1.45f, -2.8f);
@@ -237,10 +264,13 @@ namespace CityLife.World
                 islands==null?"missing":"renderers="+islands.GetComponentsInChildren<MeshRenderer>().Length+"; colliders="+islands.GetComponentsInChildren<Collider>().Length+"; centres beyond active terrain z=900");
             var scenicCamera=Controls.View.GetComponent<Camera>();
             float priorFarClip=scenicCamera.farClipPlane;
-            scenicCamera.farClipPlane=2400;
-            Controls.View.transform.SetPositionAndRotation(new Vector3(0,32,520),Quaternion.LookRotation(new Vector3(-40,18,1250)-new Vector3(0,32,520)));
-            yield return CaptureWorld("01i-offshore-islands-sea-vista");
-            scenicCamera.farClipPlane=priorFarClip;
+            try
+            {
+                scenicCamera.farClipPlane=2400;
+                Controls.View.transform.SetPositionAndRotation(new Vector3(0,32,520),Quaternion.LookRotation(new Vector3(-40,18,1250)-new Vector3(0,32,520)));
+                yield return CaptureWorld("01i-offshore-islands-sea-vista");
+            }
+            finally { scenicCamera.farClipPlane=priorFarClip; }
             Controls.View.transform.SetPositionAndRotation(new Vector3(0,17,29),Quaternion.LookRotation(shallowTarget-new Vector3(0,17,29)));
             yield return CaptureWorld("01f-shallow-bed-overhead");
             Controls.SuppressView = false; Controls.View.ExternalView = true; Brain.Actor.View.Follow();
@@ -267,6 +297,20 @@ namespace CityLife.World
                 "; result=" + Brain.LastResult + "; failures=" + Brain.FailureCount + "; lastFailure=" + Brain.LastFailureDiagnostic);
             CheckThat("remembered-action-receipts", report.memoryEvents == 7 && Brain.MemoryExportFailure.Length == 0,
                 "identity plus six successful pickup/delivery receipts; events=" + report.memoryEvents + "; export=" + Brain.MemoryExportFailure);
+            int failuresBeforeDwell=Brain.FailureCount, tickBeforeDwell=Brain.Tick;
+            int deliveriesBeforeDwell=Brain.Actions.Deliveries;
+            float dwellUntil=Time.realtimeSinceStartup+8f;
+            while(Time.realtimeSinceStartup<dwellUntil)yield return null;
+            bool stableAfterCycle=Brain.Running&&Brain.Tick>tickBeforeDwell&&
+                Brain.FailureCount==failuresBeforeDwell&&Brain.Actions.Deliveries==deliveriesBeforeDwell&&
+                Brain.Actions.Held==null;
+            CheckThat("post-cycle-autonomy-stays-unblocked",stableAfterCycle,
+                "8s ordinary autonomous dwell after third delivery; tick="+tickBeforeDwell+"->"+Brain.Tick+
+                "; failures="+failuresBeforeDwell+"->"+Brain.FailureCount+
+                "; deliveries="+deliveriesBeforeDwell+"->"+Brain.Actions.Deliveries+
+                "; held="+(Brain.Actions.Held==null?"none":Brain.Actions.Held.StableId)+
+                "; phase="+Brain.Phase+"; lastResult="+Brain.LastResult+
+                "; no new tasks are seeded; an idle phase is expected and is not autonomous foraging");
             report.decisionEvents.AddRange(Brain.Log.Entries);
             yield return Capture("02-complete-autonomy-cycle");
             yield return Tap(Key.Tab);
