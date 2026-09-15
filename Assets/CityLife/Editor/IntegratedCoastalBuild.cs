@@ -17,6 +17,9 @@ namespace CityLife.World.Editor
             if (!Requested || !Application.isBatchMode) throw new InvalidOperationException("Explicit isolated integrated batch required.");
             UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
             IslandValidation.Run(); NpcMilestoneValidation.Run(); NpcHybridValidation.Run();
+            string foodChecksFolder=Path.Combine("evidence/local/food-checks","integrated-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
+            var foodChecks=Starfall.Food.FoodChecks.Run(foodChecksFolder);
+            File.WriteAllLines(Path.Combine(foodChecksFolder,"passed.txt"),foodChecks);
             KokerboomRender.BuildCoastalPlayableSlice();
         }
         public static void Attach(Camera camera, GameObject ground, string folder)
