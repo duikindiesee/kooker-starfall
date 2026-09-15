@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -84,15 +85,24 @@ def main():
         listing.write_text('\n'.join(lines) + '\n', encoding='utf-8')
         subprocess.run([str(args.ffmpeg), '-hide_banner', '-loglevel', 'error', '-n',
                         '-f', 'concat', '-safe', '0', '-i', str(listing),
-                        '-fps_mode', 'vfr', '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+                        '-vf', 'fps=30', '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
                         '-t', str(duration), str(args.output)], check=True, timeout=600)
     subprocess.run([str(args.ffmpeg), '-hide_banner', '-loglevel', 'error', '-xerror',
                     '-i', str(args.output), '-f', 'null', '-'], check=True, timeout=600)
+    probe = subprocess.run([str(args.ffmpeg), '-hide_banner', '-i', str(args.output)],
+                           capture_output=True, text=True, timeout=30)
+    match = re.search(r'Duration: (\d+):(\d+):(\d+(?:\.\d+)?)', probe.stderr)
+    if not match:
+        raise ValueError('Output duration missing')
+    hours, minutes, seconds = map(float, match.groups())
+    actual = hours * 3600 + minutes * 60 + seconds
+    if abs(actual - duration) > .05:
+        raise ValueError('Encoded duration does not preserve measured capture time')
     if sha(args.frames) != index_hash or any(sha(p) != h for p, _, h in frames):
         raise ValueError('Capture inputs changed during encoding')
     result = dict(status='GAME_FRAME_ENCODE_DECODE_PASS_VISUAL_REVIEW_PENDING',
-                  frameCount=len(frames), measuredDurationSeconds=duration,
-                  timing='Variable frame durations from measured wall-clock timestamps; gaps hold prior frame',
+                  frameCount=len(frames), measuredDurationSeconds=duration, encodedDurationSeconds=actual,
+                  timing='Measured timestamps sampled at 30 fps; repeated frames hold gaps, no interpolated motion',
                   indexSha256=index_hash, outputSha256=sha(args.output),
                   boundary='Does not independently prove game provenance, absence of frame drops, or visual acceptance')
     receipt.write_text(json.dumps(result, indent=2) + '\n')

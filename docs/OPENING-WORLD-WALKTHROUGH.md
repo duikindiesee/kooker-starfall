@@ -76,3 +76,20 @@ PID; the finite-padding repair passed. Test artifacts live under ignored
 - [ ] MP4 replayed with audible narration and intact ending.
 - [ ] Executable, ZIP, install guide, known gaps, and recording linked in the final handoff.
 - [ ] User play/visual acceptance recorded.
+# Game-only frame encoding validation (15 September 2026)
+
+`tools/encode-game-frames.py` accepts successful PNG samples plus measured
+wall-clock timestamps, never desktop pixels. A five-frame synthetic sequence at
+0, 120, 400, 1100 and 2300 ms with capture end 3000 ms exercised irregular timing.
+The first variable-frame-rate output fully decoded but reported an incorrect
+0.84-second duration: its initial decode-only receipt is rejected. Full decode
+alone therefore does not establish correct presentation timing.
+
+The corrected encoder samples the measured timeline at 30 fps, explicitly holding
+previous frames across gaps without generating interpolated motion. The same
+fixture now reports and fully decodes as 3.00 seconds. A duration discrepancy
+greater than 0.05 seconds prevents a success receipt. Ordered-index validation
+also rejected duplicate timestamps. Synthetic files remain local under
+`evidence/local/walkthrough-tool-test-20260915`; they are not gameplay evidence.
+Actual game capture, provenance, dropped-frame review and narrated replay remain
+required before delivering the walkthrough.
