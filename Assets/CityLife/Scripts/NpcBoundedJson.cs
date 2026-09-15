@@ -10,6 +10,14 @@ namespace CityLife.World
     // No dynamic type names, reflection, code evaluation, comments or permissive repair.
     public static class NpcBoundedJson
     {
+        // Loaded inventory is not proof that a completion came from the
+        // requested instance. Require the response's own exact model ID too.
+        public static bool ExactCompletionModel(Dictionary<string,object> body,string requested)
+        {
+            if(body==null||string.IsNullOrWhiteSpace(requested)||
+                !body.TryGetValue("model",out object value)||!(value is string actual))return false;
+            return string.Equals(actual,requested,StringComparison.Ordinal);
+        }
         public static object Parse(string json, int maxBytes = 4096)
         {
             if (json == null || Encoding.UTF8.GetByteCount(json) > maxBytes) throw new FormatException("json-size");

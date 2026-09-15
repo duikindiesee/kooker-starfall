@@ -60,7 +60,8 @@ namespace CityLife.World
             string responseText = await Send(message, cancellation).ConfigureAwait(false);
             CompletionResponseReceived = true;
             var response = NpcBoundedJson.Parse(responseText, 65536) as Dictionary<string, object>;
-            if (response == null || !response.TryGetValue("choices", out object choicesValue) || !(choicesValue is List<object> choices) ||
+            if (!NpcBoundedJson.ExactCompletionModel(response,model) ||
+                !response.TryGetValue("choices", out object choicesValue) || !(choicesValue is List<object> choices) ||
                 choices.Count != 1 || !(choices[0] is Dictionary<string, object> choice) ||
                 !choice.TryGetValue("finish_reason", out object finish) || (finish as string) != "stop" ||
                 !choice.TryGetValue("message", out object messageValue) || !(messageValue is Dictionary<string, object> reply) ||

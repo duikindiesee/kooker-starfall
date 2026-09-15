@@ -18,7 +18,7 @@ namespace Starfall.Refuge
   public bool IntegratedMode; public Vector3 OriginOffset;
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
   readonly CaveZonePolicy policy=new CaveZonePolicy(WorldId,Revision,"first-refuge",3,.1f,.01f);
-  public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY;public string Notice="Explore the first refuge";
+  public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY,MaximumDesignWaterY=float.NaN;public int WaterMeshCount;public string Notice="Explore the first refuge";
   int restTicks;public bool Sleeping=>Resting&&restTicks>=150;GameObject[] storedLogs;float yaw,pitch,fall;bool paused;ZoneExposure exposure;public ZoneWeather Local;string output;
   bool Automated=>System.Environment.GetCommandLineArgs().Contains("-refugeAcceptance");
   [Serializable] public class CheckResult {public string name;public bool pass;public float value;}
@@ -32,8 +32,35 @@ namespace Starfall.Refuge
    IngressY=OriginOffset.y+1.8f; // Closed solid floor perimeter: only connected opening is the east ramp crest.
    bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(OriginOffset+new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,GeometryMask))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
    GeometryVerified=valid&&crest&&Roof!=null&&Roof.enabled;
-   WaterVerified=true;int waters=0;foreach(var r in FindObjectsByType<MeshRenderer>()){var m=r.sharedMaterial;if(m==null||m.shader.name!="CityLife/CoastalWater")continue;waters++;if(m.GetFloat("_WaveStrength")<0||m.GetFloat("_WaveStrength")>1)WaterVerified=false;var mesh=r.GetComponent<MeshFilter>().sharedMesh;foreach(var v in mesh.vertices)if(Mathf.Abs(r.transform.TransformPoint(v).y+2)>.0001f)WaterVerified=false;}
-   WaterVerified &= waters>0;
+   WaterVerified=true;WaterMeshCount=0;float upper=float.NegativeInfinity;
+   foreach(var r in FindObjectsByType<MeshRenderer>())
+   {
+    var m=r.sharedMaterial;if(m==null)continue;
+    bool regional=m.shader.name=="CityLife/CoastalWater";
+    var source=r.GetComponentInParent<NpcInteractable>();
+    bool freshwater=r.gameObject.name=="Terrain-following shallow seep water"&&
+     source!=null&&source.StableId=="spring-food"&&m.name=="Seep clear shallow freshwater";
+    if(!regional&&!freshwater)continue;
+    WaterMeshCount++;
+    if(regional)
+    {
+     float strength=m.GetFloat("_WaveStrength");
+     if(!CaveZonePolicy.Finite(strength)||strength<0||strength>1)WaterVerified=false;
+    }
+    var filter=r.GetComponent<MeshFilter>();var mesh=filter==null?null:filter.sharedMesh;
+    if(mesh==null||mesh.vertexCount==0){WaterVerified=false;continue;}
+    // Conservatively consider both water optics: the regional water shader's
+    // displacement bound is .047 m; the bounded Lit seep has none. .111 m
+    // retains the prior storm-design margin without a guessed exclusion.
+    foreach(var v in mesh.vertices)
+    {
+     float y=r.transform.TransformPoint(v).y;
+     if(!CaveZonePolicy.Finite(y)||Mathf.Abs(y)>10000){WaterVerified=false;continue;}
+     upper=Mathf.Max(upper,y+.111f);
+    }
+   }
+   MaximumDesignWaterY=upper;
+   WaterVerified &= WaterMeshCount>0&&CaveZonePolicy.Finite(upper);
   }
   public ZoneWeather Sample(Vector3 p)
   {
@@ -53,10 +80,12 @@ namespace Starfall.Refuge
    var windDirection=new Vector3(outside.WindX,outside.WindY,outside.WindZ);
    float wind=0;if(inside&&windDirection.sqrMagnitude>.001f&&Physics.Raycast(p,-windDirection.normalized,10,GeometryMask,QueryTriggerInteraction.Ignore))wind=1;
    float heat=Fire.HeatAt(Vector3.Distance(p,Hearth+Vector3.up*.8f));
-   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-local.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(outside.AirC+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
+   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-local.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(outside.AirC+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=MaximumDesignWaterY};
    return CaveZoneEvaluator.Evaluate(policy,outside,probe);
   }
-  bool SafeFire()=>GeometryVerified&&WaterVerified&&Roof!=null&&Roof.enabled&&Vector3.Distance(Bed,Hearth)>2.5f;
+  bool SafeFire()=>GeometryVerified&&WaterVerified&&Roof!=null&&Roof.enabled&&
+   Mathf.Min(FloorY,IngressY)-MaximumDesignWaterY>=policy.FreeboardMetres&&
+   Vector3.Distance(Bed,Hearth)>2.5f;
   public void TogglePause(){paused=!paused;}
   public bool ToggleFire(){if(Vector3.Distance(Body.transform.position,Hearth)>=2.5f||Resting)return false;if(Fire.Burning){Fire.Extinguish();return true;}return Ignite();}
   public bool TransferLog()=>!Resting&&Vector3.Distance(Body.transform.position,Storage)<2&&Fire.AddLog();

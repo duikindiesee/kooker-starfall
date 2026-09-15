@@ -19,6 +19,14 @@ namespace Starfall.Food
             FoodReceipt Do(FoodAction action,string target)=>m.Execute(m.State.world,m.State.generation,m.State.lastRequest+1,action,target,a);
             void Advance(int seconds){for(int i=0;i<seconds*50;i++)m.FixedStep(false);}
             Check(!Do(FoodAction.Gather,"berry").success,"unknown berry not edible/gatherable");
+            var exactModel=new Dictionary<string,object>{{"model","starfall-local-e4b"}};
+            Check(CityLife.World.NpcBoundedJson.ExactCompletionModel(exactModel,"starfall-local-e4b")&&
+                !CityLife.World.NpcBoundedJson.ExactCompletionModel(exactModel,"google/gemma-4-e4b")&&
+                !CityLife.World.NpcBoundedJson.ExactCompletionModel(
+                    new Dictionary<string,object>{{"model",false}},"starfall-local-e4b")&&
+                !CityLife.World.NpcBoundedJson.ExactCompletionModel(
+                    new Dictionary<string,object>(),"starfall-local-e4b"),
+                "completion response must carry the exact requested loaded model identity");
             var sensedChoices=new List<string>{"explore north","inspect berry"};
             Check(CityLife.World.StarfallSurvivalThought.Parse("Inspect berry",sensedChoices,out string sensedAction)&&sensedAction=="inspect berry"&&
                 !CityLife.World.StarfallSurvivalThought.Parse("gather berry",sensedChoices,out _)&&

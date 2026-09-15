@@ -67,6 +67,8 @@ namespace CityLife.World
                     result.completionAttempts++;
                     result.responseJson = await StarfallLivingMemoryClient.Send(http, message, local.Token).ConfigureAwait(false);
                     var body = StarfallLivingMemoryClient.Map(result.responseJson);
+                    if(!NpcBoundedJson.ExactCompletionModel(body,model))
+                        throw new FormatException("response-model-mismatch");
                     result.completionMilliseconds = timer.ElapsedMilliseconds - result.inventoryMilliseconds;
                     var choices = (List<object>)body["choices"];
                     if (choices.Count != 1) throw new FormatException("single-choice-required");

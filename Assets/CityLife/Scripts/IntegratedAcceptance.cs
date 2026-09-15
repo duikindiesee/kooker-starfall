@@ -494,6 +494,15 @@ namespace CityLife.World
                 exteriorWeather.Valid && exteriorWeather.RainMultiplier > .99f,
                 "same regional clock; interior rainMultiplier=" + sheltered.RainMultiplier.ToString("F3") +
                 "; exterior rainMultiplier=" + exteriorWeather.RainMultiplier.ToString("F3"));
+            CheckThat("refuge-all-visible-water-sources-bounded",refugeRuntime != null &&
+                refugeRuntime.WaterVerified && refugeRuntime.WaterMeshCount >= 2 &&
+                Mathf.Min(refugeRuntime.FloorY,refugeRuntime.IngressY)-
+                    refugeRuntime.MaximumDesignWaterY >= .75f,
+                "water meshes="+(refugeRuntime==null?0:refugeRuntime.WaterMeshCount)+
+                "; conservative highest surface="+(refugeRuntime==null?"missing":refugeRuntime.MaximumDesignWaterY.ToString("F3"))+
+                "; floor="+(refugeRuntime==null?"missing":refugeRuntime.FloorY.ToString("F3"))+
+                "; ingress="+(refugeRuntime==null?"missing":refugeRuntime.IngressY.ToString("F3"))+
+                "; regional river/sea and elevated freshwater basin both included");
             if(refugeRuntime!=null&&refugeRuntime.Roof!=null)
             {
                 bool originalRoof=refugeRuntime.Roof.enabled;
@@ -507,6 +516,50 @@ namespace CityLife.World
                 CheckThat("refuge-removed-roof-withholds-regional-credit", !roofMissing.GeometryCredited &&
                     roofMissing.RainMultiplier > .99f,
                     "removed authored roof; rainMultiplier="+roofMissing.RainMultiplier.ToString("F3"));
+                var stormHearth=Environment.SampleAt(refugeRuntime.Hearth+Vector3.up*.5f);
+                bool stormAllowed=refugeRuntime.GeometryVerified&&refugeRuntime.WaterVerified&&
+                    refugeRuntime.Roof.enabled&&
+                    Mathf.Min(refugeRuntime.FloorY,refugeRuntime.IngressY)-
+                        refugeRuntime.MaximumDesignWaterY>=.75f&&
+                    Vector3.Distance(refugeRuntime.Bed,refugeRuntime.Hearth)>2.5f&&
+                    stormHearth.Valid&&stormHearth.Rain01<=.2f&&stormHearth.WindSpeed<=12;
+                bool stormLit=refugeRuntime.Ignite();
+                CheckThat("refuge-storm-hearth-follows-regional-weather",stormLit==stormAllowed,
+                    "storm local rain="+stormHearth.Rain01.ToString("F3")+
+                    "; wind="+stormHearth.WindSpeed.ToString("F2")+
+                    "; allowed="+stormAllowed+"; lit="+stormLit+
+                    "; reason="+refugeRuntime.Fire.Reason);
+                refugeRuntime.Fire.Extinguish();
+                // Separate clock ownership/pause from storm ignition safety.
+                Environment.Clock.Tick=400;
+                var basinWater=Food != null && Food.Spring != null ?
+                    Array.Find(Food.Spring.GetComponentsInChildren<MeshRenderer>(),
+                        r=>r.gameObject.name=="Terrain-following shallow seep water") : null;
+                bool raisedUnsafe=false;float raisedUpper=float.NaN;
+                if(basinWater!=null)
+                {
+                    Vector3 originalWaterPosition=basinWater.transform.position;
+                    try
+                    {
+                        basinWater.transform.position += Vector3.up *
+                            (refugeRuntime.FloorY-refugeRuntime.MaximumDesignWaterY+1f);
+                        refugeRuntime.ValidateGeometry();
+                        var raised=Environment.SampleAt(Brain.transform.position+Vector3.up);
+                        raisedUpper=refugeRuntime.MaximumDesignWaterY;
+                        raisedUnsafe=refugeRuntime.WaterVerified&&!raised.FloodSafe&&
+                            !refugeRuntime.Ignite();
+                    }
+                    finally
+                    {
+                        basinWater.transform.position=originalWaterPosition;
+                        refugeRuntime.ValidateGeometry();Physics.SyncTransforms();
+                    }
+                }
+                CheckThat("refuge-raised-water-invalidates-fire-and-flood",basinWater!=null&&raisedUnsafe&&
+                    refugeRuntime.WaterVerified,
+                    "temporary basin upper="+raisedUpper.ToString("F3")+
+                    "; restored upper="+refugeRuntime.MaximumDesignWaterY.ToString("F3")+
+                    "; rendered geometry restored before subsequent player checks");
                 bool lit=refugeRuntime.Ignite();
                 yield return new WaitForFixedUpdate();
                 long fireTick=refugeRuntime.Fire.Tick,regionalTick=Environment.Clock.Tick;
@@ -518,7 +571,11 @@ namespace CityLife.World
                     CheckThat("refuge-regional-pause-freezes-hearth",lit && refugeRuntime.Fire.Burning &&
                         refugeRuntime.Fire.Tick==fireTick && Environment.Clock.Tick==regionalTick,
                         "regional paused; fireTick="+fireTick+"->"+refugeRuntime.Fire.Tick+
-                        "; weatherTick="+regionalTick+"->"+Environment.Clock.Tick);
+                        "; weatherTick="+regionalTick+"->"+Environment.Clock.Tick+
+                        "; lit="+lit+"; burning="+refugeRuntime.Fire.Burning+
+                        "; reason="+refugeRuntime.Fire.Reason+
+                        "; geometry="+refugeRuntime.GeometryVerified+
+                        "; water="+refugeRuntime.WaterVerified);
                 }
                 finally{Brain.MenuPaused=originallyPaused;refugeRuntime.Fire.Extinguish();}
             }
