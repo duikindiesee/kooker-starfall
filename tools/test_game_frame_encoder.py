@@ -1,6 +1,7 @@
 """Validation tests only; synthetic PNG encode evidence is recorded separately."""
 import importlib.util
 import json
+import struct
 from pathlib import Path
 import tempfile
 import unittest
@@ -20,7 +21,9 @@ class FrameContractTests(unittest.TestCase):
                           width=320, height=180, sourceCamera='synthetic', readbackStatus='ok')
                      for i in (1, 2)]
         for i in (1, 2):
-            (self.root / f'frame-{i:06d}.png').write_bytes(b'validation-only-fixture')
+            # Minimal header for validation only; not a decodable image fixture.
+            (self.root / f'frame-{i:06d}.png').write_bytes(
+                b'\x89PNG\r\n\x1a\n'+struct.pack('>I',13)+b'IHDR'+struct.pack('>II',320,180))
 
     def validate(self, end=200):
         self.index.write_text('\n'.join(json.dumps(row) for row in self.rows))
@@ -51,6 +54,14 @@ class FrameContractTests(unittest.TestCase):
 
     def test_changed_dimensions(self):
         self.rows[1]['width'] = 640
+        with self.assertRaises(ValueError): self.validate()
+
+    def test_false_metadata_dimensions(self):
+        for row in self.rows: row['width'] = 640
+        with self.assertRaises(ValueError): self.validate()
+
+    def test_invalid_png(self):
+        (self.root / 'frame-000002.png').write_bytes(b'not a png')
         with self.assertRaises(ValueError): self.validate()
 
     def test_readback_failed(self):

@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import re
+import struct
 from pathlib import Path
 import subprocess
 import tempfile
@@ -51,6 +52,12 @@ def validate(index, end):
         path = index.parent / f'frame-{frame:06d}.png'
         if path.is_symlink() or not path.is_file() or path.resolve().parent != index.parent.resolve():
             raise ValueError('Missing or redirected frame')
+        with path.open('rb') as source:
+            header = source.read(24)
+        if (len(header) != 24 or header[:8] != b'\x89PNG\r\n\x1a\n'
+                or header[12:16] != b'IHDR'
+                or struct.unpack('>II', header[16:24]) != dimensions[:2]):
+            raise ValueError('PNG dimensions do not match capture metadata')
         frames.append((path, elapsed, sha(path)))
         previous_id, previous_time = frame, elapsed
     if number(end) <= previous_time:
