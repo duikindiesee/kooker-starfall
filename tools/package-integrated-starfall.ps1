@@ -36,11 +36,8 @@ $receiptPath = $zipPath + '.manifest.json'
 if ((Test-Path -LiteralPath $zipPath) -or (Test-Path -LiteralPath $receiptPath)) { throw 'Refusing to overwrite a preserved package.' }
 # Only the fingerprinted player directory and explicit documents enter the ZIP.
 # Never sweep repository evidence, saves, service configuration or credentials.
-$files = @(Get-ChildItem -LiteralPath $buildRoot -File -Recurse -Force)
-foreach ($file in $files) {
-    $relative = $file.FullName.Substring($buildRoot.Length + 1).Replace('\','/')
-    & (Join-Path $PSScriptRoot 'check-distribution-path.ps1') -RelativePath $relative
-}
+$selection = & (Join-Path $PSScriptRoot 'select-distribution-files.ps1') -BuildDirectory $buildRoot
+$files = @($selection.files)
 $stream = [IO.File]::Open($zipPath, [IO.FileMode]::CreateNew)
 $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
 try {
@@ -73,6 +70,8 @@ try {
     archive = $zipPath
     archiveSha256 = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
     entries = $files.Count + $documents.Count
+    excludedBuildFiles = @($selection.excluded)
+    distributionBoundary = 'ZIP is a verified subset of the complete fingerprinted build; only executable-matched Unity do-not-ship backups omitted and recorded. Original build bytes remain unchanged.'
     scope = 'No services, model weights, saves or private configuration included. Review and user acceptance remain separate.'
 } | ConvertTo-Json | Set-Content -LiteralPath $receiptPath -Encoding utf8
 Get-Content -LiteralPath $receiptPath
