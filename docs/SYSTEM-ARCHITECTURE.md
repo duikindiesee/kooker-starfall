@@ -1,5 +1,16 @@
 # Starfall system architecture and installation state
 
+## New authorized direction: spatial memory and agent access
+
+The expanded goal adds persistent observed-place memory, location timelines,
+bounded needs/day planning and private Telegram access to the same inhabitant.
+These are new requirements, not claims of installed or runtime-proven features.
+See [acceptance order](AGENT-MEMORY-GOAL-ACCEPTANCE.md) and
+[conditional agent runtime decision](AGENT-RUNTIME-DECISION.md).
+Unity remains authoritative for physical outcomes. A conversation host must
+retrieve scoped memories and submit validated requests, not rewrite live-world
+facts or report queued requests as completed actions.
+
 ## Current continuity boundary — 15 September, round206
 
 Round206 run14 demonstrates actual model-chosen inspection, gathering and seven
