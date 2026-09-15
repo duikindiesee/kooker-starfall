@@ -42,6 +42,8 @@ foreach($choice in @('eat fruit','drink spring')) {
     foreach($outcome in $outcomes) {
         RequireNumber $outcome.foodDelta
         RequireNumber $outcome.waterDelta
+        if ($choice -eq 'drink spring' -and ($outcome.code -ne 'drank-250ml-freshwater' -or $outcome.waterDelta -le 0)) { throw 'Drinking requires a successful freshwater receipt and positive hydration recovery.' }
+        if ($choice -eq 'eat fruit' -and ($outcome.code -ne 'ate-ripe-berry-and-kept-visible-seed' -or $outcome.foodDelta -le 0)) { throw 'Eating requires a successful meal receipt and positive energy recovery.' }
         if (!@($decisions | Where-Object { $_.requestHash -eq $outcome.requestHash -and $_.responseHash -eq $outcome.responseHash -and $_.choice -eq $choice -and $_.tick -le $outcome.tick }).Count) { throw 'Food outcome lacks matching admitted model choice.' }
     }
 }

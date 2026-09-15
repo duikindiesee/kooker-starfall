@@ -41,7 +41,9 @@ class SurvivalPromotionTests(unittest.TestCase):
                        requestHash=str(index + 1) * 64, responseHash=str(index + 4) * 64)
             self.events.append(row)
             if index:
-                self.events.append(dict(row, kind='food', foodDelta=1200 if index == 1 else 0,
+                self.events.append(dict(row, kind='food',
+                                        code='ate-ripe-berry-and-kept-visible-seed' if index == 1 else 'drank-250ml-freshwater',
+                                        foodDelta=1200 if index == 1 else 0,
                                         waterDelta=400 if index == 1 else 2000))
             self.events.append(dict(row, kind='route', code='reached'))
         self.death = dict(status='PASS_COMPILED_ACCELERATED_CAUSE_AND_SAFE_RETURN_NOT_NATURAL_PACING',
@@ -82,6 +84,20 @@ class SurvivalPromotionTests(unittest.TestCase):
 
     def test_missing_drink(self):
         self.events = [r for r in self.events if not (r['kind'] == 'food' and r['choice'] == 'drink spring')]
+        self.reject()
+
+    def test_drink_requires_water_not_energy(self):
+        row = next(r for r in self.events if r['kind'] == 'food' and r['choice'] == 'drink spring')
+        row.update(foodDelta=1200, waterDelta=0)
+        self.reject()
+
+    def test_meal_requires_energy_not_water(self):
+        row = next(r for r in self.events if r['kind'] == 'food' and r['choice'] == 'eat fruit')
+        row.update(foodDelta=0, waterDelta=400)
+        self.reject()
+
+    def test_failed_food_receipt_cannot_count(self):
+        next(r for r in self.events if r['kind'] == 'food')['code'] = 'out-of-reach'
         self.reject()
 
     def test_old_process_schema(self):
