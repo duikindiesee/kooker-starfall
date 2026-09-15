@@ -35,7 +35,7 @@ namespace CityLife.World
             return false;
         }
         public static string BuildRequest(string model, int hunger, int thirst, IReadOnlyCollection<string> eligible,
-            int carriedFruit=0, bool mealOutcomeVerified=false)
+            int carriedFruit=0, bool mealOutcomeVerified=false, string recentVerifiedOutcome=null)
         {
             if(eligible==null||eligible.Count==0||eligible.Count>8)throw new ArgumentException("bounded eligible actions required");
             bool explorationOnly=true;
@@ -46,12 +46,28 @@ namespace CityLife.World
             // list produced complete final actions 5/5 inside this deadline.
             // There is no observed food/drink to weigh in this branch; omit
             // irrelevant physiology rather than weakening the time bound.
-            string user=explorationOnly?"Eligible: "+string.Join(", ",eligible)+".":
-                "Energy="+hunger+"/10000 "+(hunger<8500?"below replenish target":"at replenish target")+
-                "; water="+thirst+"/10000 "+(thirst<8500?"below replenish target":"at replenish target")+
+            // A short-term resolved action is not world knowledge: only the
+            // executed route/food receipt may enter this field. It supplies the
+            // missing multi-step experiment context (approach -> gather) without
+            // asserting that untested fruit is edible or nutritious.
+            string prior=recentVerifiedOutcome=="approach berry reached"?
+                "Last verified outcome: approach berry reached observed fruit. Gathering stores one fruit for a test; food benefit unknown. ":
+                recentVerifiedOutcome=="gather berry succeeded"?
+                "Last verified outcome: gather berry put one observed fruit in inventory. Eating it would test an unknown meal effect. ":
+                recentVerifiedOutcome=="approach spring reached"?
+                "Last verified outcome: approach spring reached observed seep. ":
+                recentVerifiedOutcome=="inspect spring succeeded"?
+                "Last verified outcome: inspected the observed maintained freshwater seep. ":
+                recentVerifiedOutcome!=null&&recentVerifiedOutcome.StartsWith("explore ",StringComparison.Ordinal)&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
+                "Last verified outcome: "+recentVerifiedOutcome+". ":"";
+            string energyLabel=hunger<2000?"severe low energy":hunger<8500?"below replenish target":"at replenish target";
+            string waterLabel=thirst<2000?"severe low hydration":thirst<8500?"below replenish target":"at replenish target";
+            string user=explorationOnly?prior+"Eligible: "+string.Join(", ",eligible)+".":
+                "Energy="+hunger+"/10000 "+energyLabel+
+                "; water="+thirst+"/10000 "+waterLabel+
                 "; carried fruit="+carriedFruit+
                 "; eaten fruit outcome="+(mealOutcomeVerified?"previously helped":"not observed")+
-                ". Eligible: "+string.Join(", ",eligible)+".";
+                ". "+prior+"Eligible: "+string.Join(", ",eligible)+".";
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
                 ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {
@@ -62,9 +78,13 @@ namespace CityLife.World
         }
         public static async Task<Result> Request(string endpoint,string model,int hunger,int thirst,
             IReadOnlyCollection<string> eligible,CancellationToken cancellation,
-            int carriedFruit=0,bool mealOutcomeVerified=false)
+            int carriedFruit=0,bool mealOutcomeVerified=false,string recentVerifiedOutcome=null,
+            string preparedRequestJson=null)
         {
-            var result=new Result{model=model,requestJson=BuildRequest(model,hunger,thirst,eligible,carriedFruit,mealOutcomeVerified)};
+            string expected=BuildRequest(model,hunger,thirst,eligible,carriedFruit,mealOutcomeVerified,recentVerifiedOutcome);
+            if(preparedRequestJson!=null && !string.Equals(preparedRequestJson,expected,StringComparison.Ordinal))
+                throw new ArgumentException("issued-request-context-mismatch");
+            var result=new Result{model=model,requestJson=preparedRequestJson??expected};
             Uri origin=StarfallLivingMemoryClient.Loopback(endpoint);
             using(var http=new HttpClient(new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false}){Timeout=Timeout.InfiniteTimeSpan})
             using(var local=CancellationTokenSource.CreateLinkedTokenSource(cancellation))

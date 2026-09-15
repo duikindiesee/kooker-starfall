@@ -33,12 +33,15 @@ namespace CityLife.World
         private readonly Queue<Vector3> route=new Queue<Vector3>();
         private readonly Dictionary<Vector2Int,int> exploredCells=new Dictionary<Vector2Int,int>();
         private List<string> offered;
-        private int request, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed;
+        private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond;
+        private string routePurpose, recentVerifiedOutcome;
         private Vector3 routeOrigin;
         [Serializable] private sealed class Row
         {
             public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash,offeredActions;
             public int tick,incarnation,foodDelta,waterDelta,inventoryDelta,request;
+            public int foodTick,energy,hydration,stomach,carriedFruit,modelRequestSequence;
+            public bool knowsBerry,knowsSpring,mealBenefitVerified;
             public long modelMilliseconds;
             public float x,y,z;
         }
@@ -64,6 +67,9 @@ namespace CityLife.World
                 bool prior=savePath!=null&&File.Exists(savePath);
                 if(prior&&!Food.Model.Load(savePath,Brain.InstanceWorldId,IntegratedFoodRuntime.Generation))
                     throw new InvalidOperationException("scoped-save-rejected");
+                if(!TryNextFoodRequest(Food.Model.State.lastRequest,out _))
+                    throw new InvalidOperationException("scoped-food-request-sequence-exhausted");
+                request=Food.Model.State.lastRequest;
                 if(prior&&!Food.Model.State.body.dead)
                 {
                     Vector3 remembered=Food.Model.State.actorPosition;
@@ -71,6 +77,7 @@ namespace CityLife.World
                     Brain.Actor.Place(floor+Vector3.up*.06f);
                 }
                 Enabled=true;Status="Survival mind ready; waiting for ordinary task authority";
+                lastCheckpointSecond=Food.Model.State.tick;
                 Record("startup",prior?"scoped-food-save-reloaded":"new-scoped-food-journey",null,null);
             }
             catch(Exception error){Enabled=false;Status="Survival mind unavailable: "+error.GetType().Name;}
@@ -79,11 +86,25 @@ namespace CityLife.World
         {
             if(pending!=null && (Brain==null||Brain.MenuPaused||Brain.Possessed||!Brain.Running||!Enabled))
                 Cancel("control-interruption");
+            // Physiology and exploratory position change even without a food
+            // transaction. An immutable scoped snapshot every 30 simulated
+            // seconds prevents a clean quit from resetting hunger/thirst to the
+            // last berry inspection. No in-game time is accelerated.
+            if(Enabled && Food!=null && Food.Model.State.tick-lastCheckpointSecond>=30)
+            {
+                Persist();
+                if(Enabled)
+                {
+                    lastCheckpointSecond=Food.Model.State.tick;
+                    Record("checkpoint","scoped-food-body-checkpoint-saved",null,null);
+                }
+            }
         }
+        private void OnApplicationQuit(){if(Enabled&&Food!=null)Persist();}
         public void Cancel(string reason)
         {
             if(pending!=null){cancellation.Cancel();cancellation.Dispose();cancellation=null;pending=null;offered=null;Record("cancel",reason,null,null);}
-            route.Clear();nextRequestTick=Brain==null?0:Brain.Tick+25;
+            route.Clear();routePurpose=null;nextRequestTick=Brain==null?0:Brain.Tick+25;
         }
         private void OnDestroy()=>Cancel("destroyed");
         private void Record(string kind,string code,string choice,StarfallSurvivalThought.Result result,FoodReceipt receipt=null)
@@ -91,10 +112,15 @@ namespace CityLife.World
             if(string.IsNullOrEmpty(evidenceDirectory)||!Directory.Exists(evidenceDirectory)||Food==null||Brain==null)return;
             var s=Food.Model.State; var row=new Row{world=s.world,actor=s.actorId,kind=kind,code=code,choice=choice,
                 model=result==null?null:result.model,requestHash=result==null?null:result.RequestHash,
-                responseHash=result==null?null:result.ResponseHash,finishReason=result==null?null:result.finishReason,
+                responseHash=result==null||string.IsNullOrEmpty(result.responseJson)?null:result.ResponseHash,
+                finishReason=result==null?null:result.finishReason,
                 modelMilliseconds=result==null?0:result.milliseconds,
                 offeredActions=offered==null?null:string.Join(",",offered),
                 tick=Brain.Tick,incarnation=s.incarnation,request=receipt==null?0:receipt.request,
+                modelRequestSequence=modelRequestSequence,
+                foodTick=s.tick,energy=s.satiety,hydration=s.hydration,stomach=s.body.stomach,
+                carriedFruit=s.carriedFruit,knowsBerry=s.knowsBerry,knowsSpring=s.knowsSpring,
+                mealBenefitVerified=s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),
                 foodDelta=receipt==null?0:receipt.foodDelta,waterDelta=receipt==null?0:receipt.waterDelta,
                 inventoryDelta=receipt==null?0:receipt.inventoryDelta,
                 deathCause=s.body.dead?s.body.cause:null,deathHash=s.deaths.Count>0?s.deaths[s.deaths.Count-1].hash:null,
@@ -111,6 +137,10 @@ namespace CityLife.World
         public static bool BerryRelevant(FoodState s)
         {
             return s!=null&&s.fruitStock>0&&s.carriedFruit<4&&
+                // One untested fruit is enough for the first experiment.
+                // Do not repeatedly circle the plant/hoard unknown berries
+                // before an actual eaten outcome establishes meal utility.
+                (s.carriedFruit==0||s.knowsMealBenefit)&&
                 (!s.knowsBerry||(s.body.stomach<=8800&&
                     (s.satiety<8500||s.hydration<8500&&s.knowsMealBenefit)));
         }
@@ -186,15 +216,17 @@ namespace CityLife.World
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
                 LastOutcome="Walked to model-chosen place";
-                Record("route","reached",null,null);nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
+                recentVerifiedOutcome=routePurpose+" reached";
+                Record("route","reached",routePurpose,null);routePurpose=null;
+                nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
             if(Brain.Tick-routeStartTick>1000)
-            {route.Clear();Record("route","bounded-route-timeout",null,null);nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
+            {route.Clear();Record("route","bounded-route-timeout",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
             Vector3 delta=route.Peek()-Brain.transform.position;delta.y=0;
             Vector3 direction=Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position,delta.normalized,
                 Brain.Actor.WalkSpeed*NpcAutonomy.StepSeconds);
             if(direction==Vector3.zero)
-            {route.Clear();Record("route","live-terrain-blocked",null,null);nextRequestTick=Brain.Tick+50;}
+            {route.Clear();Record("route","live-terrain-blocked",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;}
             Brain.Actor.Step(direction,NpcAutonomy.StepSeconds);return true;
         }
         private bool TrySafeReturn()
@@ -214,7 +246,8 @@ namespace CityLife.World
                     Starfall.Refuge.RefugeRuntime.GeometryMask,QueryTriggerInteraction.Ignore))continue;
                 if(Refuge.Sample(safe+Vector3.up).RainMultiplier>=.02f)continue;
                 var s=Food.Model.State;
-                FoodReceipt returned=Food.Model.Execute(s.world,s.generation,++request,FoodAction.Return,"inventory",Food);
+                if(!AllocateFoodRequest(out int returnRequest))return false;
+                FoodReceipt returned=Food.Model.Execute(s.world,s.generation,returnRequest,FoodAction.Return,"inventory",Food);
                 if(!returned.success)return false;
                 Brain.Actor.Place(safe);Brain.Actor.DeadPose=false;Brain.Actor.RefreshAnimation();
                 Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
@@ -254,6 +287,23 @@ namespace CityLife.World
                 Enabled=false;Status="Survival save failed closed";Cancel("save-failed");
             }
         }
+        private bool AllocateFoodRequest(out int allocated)
+        {
+            allocated=0;
+            if(!TryNextFoodRequest(request,out int next))
+            {
+                Enabled=false;Status="Scoped food request sequence exhausted";
+                Record("food","request-sequence-exhausted",null,null);
+                return false;
+            }
+            request=allocated=next;return true;
+        }
+        public static bool TryNextFoodRequest(int previous,out int next)
+        {
+            next=0;
+            if(previous<0||previous==int.MaxValue)return false;
+            next=previous+1;return true;
+        }
         private void Execute(string action,StarfallSurvivalThought.Result result)
         {
             // Re-sense after the asynchronous answer. No target survives a world,
@@ -267,31 +317,35 @@ namespace CityLife.World
             Status="Local model choice admitted after live validation";
             if(accepted.StartsWith("explore ",StringComparison.Ordinal))
             {
+                routePurpose=accepted;
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:
                     accepted.EndsWith("east")?Vector3.right:Vector3.left;
                 Vector3 destination=Brain.transform.position+direction*6f;
                 explorationSeed++;
                 var cell=new Vector2Int(Mathf.RoundToInt(destination.x/3f),Mathf.RoundToInt(destination.z/3f));
                 exploredCells.TryGetValue(cell,out int visits);exploredCells[cell]=visits+1;
-                if(!StartRoute(destination))Record("route","no-walkable-exploration-route",accepted,result);
+                if(!StartRoute(destination)){routePurpose=null;Record("route","no-walkable-exploration-route",accepted,result);}
             }
             else if(accepted.StartsWith("approach ",StringComparison.Ordinal))
             {
+                routePurpose=accepted;
                 string target=accepted.EndsWith("berry")?"berry-food":"spring-food";
                 if(!Observed(target,out var observation)||!StartRoute(observation.approach))
-                    Record("route","live-target-route-rejected",accepted,result);
+                {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
             }
             else
             {
                 FoodAction kind=accepted.StartsWith("inspect")?FoodAction.Inspect:
                     accepted.StartsWith("gather")?FoodAction.Gather:accepted.StartsWith("eat")?FoodAction.Eat:FoodAction.Drink;
                 string target=accepted.EndsWith("berry")?"berry":accepted.EndsWith("spring")?"spring":"inventory";
-                var s=Food.Model.State;FoodReceipt receipt=Food.Model.Execute(s.world,s.generation,++request,kind,target,Food);
+                if(!AllocateFoodRequest(out int foodRequest))return;
+                var s=Food.Model.State;FoodReceipt receipt=Food.Model.Execute(s.world,s.generation,foodRequest,kind,target,Food);
                 Record("food",receipt.code,accepted,result,receipt);
                 LastOutcome=receipt.success&&kind==FoodAction.Eat?"Meal +"+receipt.foodDelta+" energy / +"+receipt.waterDelta+" water":
                     receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
                     receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
                 if(receipt.success){FoodOutcomes++;Food.SyncFruitVisual();Persist();}
+                if(receipt.success)recentVerifiedOutcome=accepted+" succeeded";
             }
             nextRequestTick=Brain.Tick+25;
         }
@@ -324,9 +378,16 @@ namespace CityLife.World
             if(Brain.Tick<nextRequestTick){Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
             offered=Eligible();
             if(offered.Count==0){Record("model","no-current-walkable-or-observed-options",null,null);nextRequestTick=Brain.Tick+100;return true;}
+            if(modelRequestSequence==int.MaxValue)
+            {Enabled=false;Status="Survival model request sequence exhausted";return true;}
+            modelRequestSequence++;
+            string requestJson=StarfallSurvivalThought.BuildRequest(model,s.satiety,s.hydration,offered,
+                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome);
+            Record("model","request-issued",null,new StarfallSurvivalThought.Result{model=model,requestJson=requestJson});
+            if(!Enabled)return true;
             cancellation=new CancellationTokenSource();
             pending=StarfallSurvivalThought.Request(endpoint,model,s.satiety,s.hydration,offered,cancellation.Token,
-                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence));
+                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome,requestJson);
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
         }

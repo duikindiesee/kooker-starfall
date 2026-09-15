@@ -33,6 +33,12 @@ namespace Starfall.Food
                 heldPrompt.Contains("carried fruit=1")&&heldPrompt.Contains("not observed")&&
                 !heldPrompt.Contains("previously helped")&&!heldPrompt.Contains("spring")&&!heldPrompt.Contains("126"),
                 "survival prompt states measured need and carried fruit without inventing a meal outcome or resource");
+            string urgentNeed=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",1700,1800,
+                new List<string>{"explore north","approach berry"});
+            Check(urgentNeed.Contains("1700/10000 severe low energy")&&
+                urgentNeed.Contains("1800/10000 severe low hydration")&&
+                !heldPrompt.Contains("severe low"),
+                "only measured severe depletion receives urgent physiological wording");
             string learnedPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",7700,5900,
                 new List<string>{"eat fruit","explore south"},1,true);
             Check(learnedPrompt.Contains("previously helped")&&!learnedPrompt.Contains("not observed"),
@@ -43,6 +49,20 @@ namespace Starfall.Food
                 !explorationPrompt.Contains("Energy=")&&!explorationPrompt.Contains("fruit")&&
                 !explorationPrompt.Contains("spring"),
                 "pure exploration request omits irrelevant need and unknown-resource context");
+            string reachedFruit=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6300,5200,
+                new List<string>{"gather berry","explore west"},0,false,"approach berry reached");
+            string untrustedFruit=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6300,5200,
+                new List<string>{"gather berry","explore west"},0,false,"approach berry claimed edible");
+            Check(reachedFruit.Contains("approach berry reached observed fruit")&&
+                reachedFruit.Contains("food benefit unknown")&&!reachedFruit.Contains("edible")&&
+                !untrustedFruit.Contains("claimed edible")&&!untrustedFruit.Contains("Last verified outcome"),
+                "only an executed route supplies short experiment context; unverified benefit is not invented");
+            string gatheredFruit=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6300,5200,
+                new List<string>{"eat fruit","explore west"},1,false,"gather berry succeeded");
+            Check(gatheredFruit.Contains("put one observed fruit in inventory")&&
+                gatheredFruit.Contains("unknown meal effect")&&gatheredFruit.Contains("not observed")&&
+                !gatheredFruit.Contains("previously helped")&&!gatheredFruit.Contains("edible"),
+                "gathered fruit can motivate a test without fabricating nutritional proof");
             Check(scopedPrompt.Contains("stay alive and discover resources")&&
                 scopedPrompt.Contains("Inspect unknown visible things before using them")&&
                 !scopedPrompt.Contains("edible")&&!scopedPrompt.Contains("safe berry"),
@@ -53,6 +73,9 @@ namespace Starfall.Food
             exhausted.fruitStock=1;exhausted.carriedFruit=4;
             Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
                 "full inventory does not lure repeated harvest");
+            exhausted.carriedFruit=1;exhausted.knowsMealBenefit=false;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
+                "one carried untested fruit prevents berry-hoarding before a meal outcome");
             exhausted.carriedFruit=0;exhausted.satiety=9900;exhausted.hydration=9900;
             Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
                 "known berry does not displace exploration when measured food and water targets are met");
@@ -83,6 +106,21 @@ namespace Starfall.Food
             Do(FoodAction.Gather,"berry");Check(m.State.fruitStock==0&&!Do(FoodAction.Gather,"berry").success,"depletion rejects harvest");
             Advance(5);string midway=m.Json();string path=Path.Combine(folder,"a.json");m.Save(path);
             var reloaded=new FoodModel("test-a","generation-a",4242);Check(reloaded.Load(path,"test-a","generation-a")&&reloaded.Json()==midway,"atomic save reload exact state including regrowth");
+            int postLoadRequest=reloaded.State.lastRequest+1;
+            var postLoadAction=reloaded.Execute("test-a","generation-a",postLoadRequest,FoodAction.Inspect,"berry",a);
+            Check(postLoadAction.success&&reloaded.State.lastRequest==postLoadRequest&&
+                reloaded.State.berryEvidence.EndsWith("."+postLoadRequest)&&
+                reloaded.Execute("test-a","generation-a",postLoadRequest,FoodAction.Inspect,"berry",a).duplicate,
+                "reloaded request sequence admits exactly one fresh mutation; duplicate remains idempotent");
+            Check(CityLife.World.StarfallSurvivalAutonomy.TryNextFoodRequest(postLoadRequest,out int nextAction)&&
+                nextAction==postLoadRequest+1&&
+                CityLife.World.StarfallSurvivalAutonomy.TryNextFoodRequest(int.MaxValue-1,out int lastAction)&&
+                lastAction==int.MaxValue&&
+                !CityLife.World.StarfallSurvivalAutonomy.TryNextFoodRequest(int.MaxValue,out _)&&
+                !CityLife.World.StarfallSurvivalAutonomy.TryNextFoodRequest(-1,out _),
+                "autonomy allocates fresh post-restart request IDs and fails closed at sequence boundaries");
+            Check(reloaded.Load(path,"test-a","generation-a")&&reloaded.Json()==m.Json(),
+                "test restores exact scoped snapshot after request-sequence negative probe");
             for(int i=0;i<55*50;i++){m.FixedStep(false);reloaded.FixedStep(false);}
             Check(m.Json()==reloaded.Json()&&m.State.fruitStock==2&&m.State.gardenStage==3,"regrowth and cultivation continue identically across reload");
             Check(Do(FoodAction.Harvest,"bed").success&&m.State.seeds==seedCount,"mature garden yields fruit and viable seed");

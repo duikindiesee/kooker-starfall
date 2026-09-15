@@ -220,6 +220,41 @@ namespace CityLife.World
                 Controls.View.transform.SetPositionAndRotation(seepView,
                     Quaternion.LookRotation(Food.SpringPosition+Vector3.up*.25f-seepView));
                 yield return CaptureWorld("01d-terrain-fitted-freshwater-seep");
+                // Compiled-player visual diagnostics only: same orientation at
+                // two bank positions exposes any near-object parallax illusion;
+                // distinct mouth/lookout views expose cliff occlusion. These
+                // posed camera images do not claim autonomous traversal.
+                var skyCamera=Controls.View.GetComponent<Camera>();
+                float skyPreviousFar=skyCamera.farClipPlane,skyPreviousFov=skyCamera.fieldOfView;
+                var giant=GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
+                CheckThat("distant-giant-is-beyond-coastal-terrain",giant!=null &&
+                    Vector3.Distance(giant.transform.position,Food.BerryPosition)-IntegratedCelestial.GiantScale*.5f>10000f,
+                    giant==null?"missing":"centre="+giant.transform.position+"; diameter="+IntegratedCelestial.GiantScale+
+                    "; source-distance contract only; visual occlusion/parallax reviewed from frames");
+                try
+                {
+                    skyCamera.farClipPlane=IntegratedCelestial.SkyFarClip;
+                    skyCamera.fieldOfView=52f;
+                    Vector3 bank=new Vector3(126,CoastalTerrain.Height(126,-80)+1.75f,-80);
+                    Quaternion bankOrientation=Quaternion.LookRotation(IntegratedCelestial.GiantPosition-bank);
+                    Controls.View.transform.SetPositionAndRotation(bank,bankOrientation);
+                    yield return CaptureWorld("01e-distant-giant-bank-same-orientation");
+                    Controls.View.transform.SetPositionAndRotation(bank+Vector3.forward*50f,bankOrientation);
+                    yield return CaptureWorld("01e-distant-giant-forward-50m-same-orientation");
+                    Vector3 mouth=new Vector3(-17,10,5);
+                    Controls.View.transform.SetPositionAndRotation(mouth,
+                        Quaternion.LookRotation(IntegratedCelestial.GiantPosition-mouth));
+                    yield return CaptureWorld("01e-distant-giant-canyon-mouth");
+                    Vector3 lookout=new Vector3(-90,CoastalTerrain.Height(-90,110)+8f,110);
+                    Controls.View.transform.SetPositionAndRotation(lookout,
+                        Quaternion.LookRotation(IntegratedCelestial.GiantPosition-lookout));
+                    yield return CaptureWorld("01e-distant-giant-high-lookout");
+                    CheckThat("distant-giant-player-view-metadata-retained",true,
+                        "mouth="+mouth+"; bank="+bank+"; bankForward50="+(bank+Vector3.forward*50f)+
+                        "; lookout="+lookout+"; FOV=52; far="+skyCamera.farClipPlane+
+                        "; aspect="+skyCamera.aspect+"; actual frame visual review remains separate");
+                }
+                finally{skyCamera.farClipPlane=skyPreviousFar;skyCamera.fieldOfView=skyPreviousFov;}
             }
             var shallowCamera=new Vector3(-11,3.2f,20); var shallowTarget=new Vector3(-2,-2.25f,34);
             Controls.View.transform.SetPositionAndRotation(shallowCamera,Quaternion.LookRotation(shallowTarget-shallowCamera));
