@@ -37,13 +37,23 @@ namespace Starfall.Refuge
   }
   public ZoneWeather Sample(Vector3 p)
   {
+   if(IntegratedMode&&Body!=null)
+   {
+    var regional=Body.GetComponent<IntegratedEnvironment>();
+    if(regional!=null)return Sample(p,regional.OutdoorSample());
+   }
    var s=Clock.Sample;var outside=new OutdoorWeather{WindX=s.wind.x,WindY=s.wind.y,WindZ=s.wind.z,AirC=s.temperature,Rain01=s.precipitation};
+   return Sample(p,outside);
+  }
+  public ZoneWeather Sample(Vector3 p,OutdoorWeather outside)
+  {
    Vector3 local=p-OriginOffset;
    bool inside=local.x<=-6&&local.x>=-12.6f&&Mathf.Abs(local.z)<=2&&local.y>=1.75f&&local.y<5;
    bool roof=inside&&Roof!=null&&Roof.enabled&&Physics.Raycast(p+Vector3.up*.1f,Vector3.up,8,GeometryMask,QueryTriggerInteraction.Ignore);
-   float wind=0;if(inside&&s.wind.sqrMagnitude>.001f&&Physics.Raycast(p,-s.wind.normalized,10,GeometryMask,QueryTriggerInteraction.Ignore))wind=1;
+   var windDirection=new Vector3(outside.WindX,outside.WindY,outside.WindZ);
+   float wind=0;if(inside&&windDirection.sqrMagnitude>.001f&&Physics.Raycast(p,-windDirection.normalized,10,GeometryMask,QueryTriggerInteraction.Ignore))wind=1;
    float heat=Fire.HeatAt(Vector3.Distance(p,Hearth+Vector3.up*.8f));
-   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-local.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(s.temperature+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
+   var probe=new CaveProbe{WorldId=WorldId,WorldRevision=Revision,ZoneId="first-refuge",MetresInside=inside?-6-local.x:0,GeometryVerified=GeometryVerified&&roof,WindOcclusion01=wind,RainOcclusion01=roof?1:0,ThermalVerified=heat>0,RockAirTargetC=Mathf.Clamp(outside.AirC+heat,-30,30),WaterBoundKnown=WaterVerified,FloorKnown=GeometryVerified,IngressKnown=GeometryVerified,LowestRefugeFloorY=FloorY,LowestConnectedIngressY=IngressY,MaximumDesignWaterY=-1.889f};
    return CaveZoneEvaluator.Evaluate(policy,outside,probe);
   }
   bool SafeFire()=>GeometryVerified&&WaterVerified&&Roof!=null&&Roof.enabled&&Vector3.Distance(Bed,Hearth)>2.5f;
@@ -51,7 +61,16 @@ namespace Starfall.Refuge
   public bool ToggleFire(){if(Vector3.Distance(Body.transform.position,Hearth)>=2.5f||Resting)return false;if(Fire.Burning){Fire.Extinguish();return true;}return Ignite();}
   public bool TransferLog()=>!Resting&&Vector3.Distance(Body.transform.position,Storage)<2&&Fire.AddLog();
   public bool Ignite(){var w=Sample(Hearth+Vector3.up*.5f);return Fire.Ignite(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);}
-  void FixedUpdate(){if(paused)return;if(Resting&&restTicks<150)restTicks++;Clock.Step();var w=Sample(Hearth+Vector3.up*.5f);Fire.Step(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);Local=Sample(Body.transform.position+Vector3.up);exposure.Step(Local,false);}
+  void FixedUpdate(){if(IntegratedMode||paused)return;if(Resting&&restTicks<150)restTicks++;Clock.Step();var w=Sample(Hearth+Vector3.up*.5f);Fire.Step(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);Local=Sample(Body.transform.position+Vector3.up);exposure.Step(Local,false);}
+  // Called once by the regional clock owner, never while its pause gate is closed.
+  public void StepIntegrated(OutdoorWeather outside)
+  {
+   if(!IntegratedMode)return;
+   if(Resting&&restTicks<150)restTicks++;
+   var w=Sample(Hearth+Vector3.up*.5f,outside);
+   Fire.Step(w.Rain01,w.WindSpeed,SafeFire()&&w.Valid);
+   Local=Sample(Body.transform.position+Vector3.up,outside);exposure.Step(Local,false);
+  }
   public void Move(Vector3 direction,float seconds){if(Resting||paused)return;fall=Body.isGrounded?-2:Mathf.Max(-30,fall-9.81f*seconds);Body.Move((Vector3.ClampMagnitude(direction,1)*3+Vector3.up*fall)*seconds);if(Body.transform.position.y < -1||Mathf.Abs(Body.transform.position.x)>87||Body.transform.position.z < -52||Body.transform.position.z>142){Place(new Vector3(-4,.05f,-4));Notice="Recovered to dry spawn";}}
   public void Place(Vector3 p){Body.enabled=false;Body.transform.position=p;Body.enabled=true;fall=0;}
   public bool Rest(){if(Vector3.Distance(Body.transform.position,Bed)>2)return false;Resting=!Resting;restTicks=0;Notice=Resting?"Resting on the mat — dreams and memory are planned":"Awake";return true;}

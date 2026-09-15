@@ -17,34 +17,31 @@ namespace CityLife.World
         public CaveZonePolicy ShelterPolicy;
         public string Weather => Clock.Sample.target.ToString();
         private Color sunColor;
+        private Starfall.Refuge.RefugeRuntime refuge;
+        public OutdoorWeather OutdoorSample()
+        {
+            var s = Clock.Sample;
+            return new OutdoorWeather { WindX=s.wind.x, WindY=s.wind.y, WindZ=s.wind.z,
+                AirC=s.temperature, Rain01=s.precipitation };
+        }
         private void Start() { sunColor = Sun.color; Application.targetFrameRate = 60; QualitySettings.vSyncCount = 1; Shader.SetGlobalFloat("_StarfallIntegratedWeather", 1); ShelterPolicy = new CaveZonePolicy(Surface.WorldId, Surface.Revision, "first-refuge"); }
         public ZoneWeather SampleAt(Vector3 position)
         {
-            var s = Clock.Sample;
-            var outside = new OutdoorWeather { WindX = s.wind.x, WindY = s.wind.y, WindZ = s.wind.z, AirC = s.temperature, Rain01 = s.precipitation };
-            bool inside = position.x < -6 && position.x > -13 && Mathf.Abs(position.z) < 2 && position.y > -.1f && position.y < 3;
-            var origin = position + Vector3.up * 1.5f;
-            bool roof = Physics.Raycast(origin, Vector3.up, 5, 1 << 8, QueryTriggerInteraction.Ignore);
-            bool wind = Physics.Raycast(origin, -s.wind.normalized, 12, 1 << 8, QueryTriggerInteraction.Ignore);
-            var rainDirection = (Vector3.up * 13 - s.wind * .3f).normalized;
-            bool rain = Physics.Raycast(origin, rainDirection, 12, 1 << 8, QueryTriggerInteraction.Ignore);
-            bool floor = Surface.TryGround(position, out float h, out _);
-            bool ingress = Surface.TryGround(new Vector3(-6.5f, 0, 0), out float entry, out _);
+            if (refuge == null && View != null) refuge = View.GetComponent<Starfall.Refuge.RefugeRuntime>();
+            if (refuge != null && refuge.IntegratedMode)
+                return refuge.Sample(position, OutdoorSample());
+            // No authored adapter means no shelter credit at the retired fixture coordinates.
             var probe = new CaveProbe { WorldId = Surface.WorldId, WorldRevision = Surface.Revision, ZoneId = "first-refuge",
-                MetresInside = inside ? -6 - position.x : 0, GeometryVerified = inside && roof && floor,
-                WindOcclusion01 = wind ? 1 : 0, RainOcclusion01 = rain ? 1 : 0,
-                FloorKnown = false, IngressKnown = false, LowestRefugeFloorY = h, LowestConnectedIngressY = entry,
-                WaterBoundKnown = true, MaximumDesignWaterY = CoastalWater.Level + .111f,
-                ThermalVerified = false };
-            // The maximum applies only to this fixed-datum regional shader, whose vertex strength is saturated.
-            // A point probe is not a completed survey of every ingress; thermal refuge acceptance remains false.
-            return CaveZoneEvaluator.Evaluate(ShelterPolicy ?? new CaveZonePolicy(Surface.WorldId, Surface.Revision, "first-refuge"), outside, probe);
+                GeometryVerified = false, FloorKnown = false, IngressKnown = false,
+                WaterBoundKnown = false, ThermalVerified = false };
+            return CaveZoneEvaluator.Evaluate(ShelterPolicy ?? new CaveZonePolicy(Surface.WorldId, Surface.Revision, "first-refuge"), OutdoorSample(), probe);
         }
         private void FixedUpdate()
         {
             Clock.Paused = Brain.MenuPaused;
             if (Clock.Paused) return;
-            Clock.Step(); LocalWeather = SampleAt(Brain.transform.position);
+            Clock.Step(); LocalWeather = SampleAt(Brain.transform.position + Vector3.up);
+            if (refuge != null && refuge.IntegratedMode) refuge.StepIntegrated(OutdoorSample());
             Exposure.Step(LocalWeather, false);
         }
         private void Update()
