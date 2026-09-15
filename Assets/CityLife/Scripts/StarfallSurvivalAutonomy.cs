@@ -413,14 +413,16 @@ namespace CityLife.World
             if(modelRequestSequence==int.MaxValue)
             {Enabled=false;Status="Survival model request sequence exhausted";return true;}
             modelRequestSequence++;
+            string verifiedDeathCause=VerifiedOwnDeathCause(s);
             string requestJson=StarfallSurvivalThought.BuildRequest(model,s.satiety,s.hydration,offered,
                 s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome,
-                VerifiedOwnDeathCause(s));
+                verifiedDeathCause);
             Record("model","request-issued",null,new StarfallSurvivalThought.Result{model=model,requestJson=requestJson});
             if(!Enabled)return true;
             cancellation=new CancellationTokenSource();
             pending=StarfallSurvivalThought.Request(endpoint,model,s.satiety,s.hydration,offered,cancellation.Token,
-                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome,requestJson);
+                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence),recentVerifiedOutcome,
+                requestJson,verifiedDeathCause);
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
         }

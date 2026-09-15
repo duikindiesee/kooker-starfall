@@ -86,9 +86,10 @@ namespace CityLife.World
         public static async Task<Result> Request(string endpoint,string model,int hunger,int thirst,
             IReadOnlyCollection<string> eligible,CancellationToken cancellation,
             int carriedFruit=0,bool mealOutcomeVerified=false,string recentVerifiedOutcome=null,
-            string preparedRequestJson=null)
+            string preparedRequestJson=null,string verifiedDeathCause=null)
         {
-            string expected=BuildRequest(model,hunger,thirst,eligible,carriedFruit,mealOutcomeVerified,recentVerifiedOutcome);
+            string expected=BuildRequest(model,hunger,thirst,eligible,carriedFruit,mealOutcomeVerified,
+                recentVerifiedOutcome,verifiedDeathCause);
             if(preparedRequestJson!=null && !string.Equals(preparedRequestJson,expected,StringComparison.Ordinal))
                 throw new ArgumentException("issued-request-context-mismatch");
             var result=new Result{model=model,requestJson=preparedRequestJson??expected};
