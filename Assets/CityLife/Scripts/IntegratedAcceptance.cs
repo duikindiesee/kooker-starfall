@@ -82,6 +82,19 @@ namespace CityLife.World
             }
             return groundHits == 0 ? float.MinValue : minimum;
         }
+        private static bool TrySkyEye(float x, float z, float nearClip, out Vector3 eye, out string ground)
+        {
+            eye = Vector3.zero; ground = "no grounded eye";
+            const int solid = (1 << 8) | (1 << 10);
+            if (!Physics.Raycast(new Vector3(x, 300, z), Vector3.down, out var hit, 400,
+                solid, QueryTriggerInteraction.Ignore)) return false;
+            eye = hit.point + Vector3.up * 2.1f;
+            ground = hit.collider.name + "; floor=" + hit.point + "; eye=" + eye;
+            // The old fixed-Y forward pose passed straight through a bank.
+            // Reject even near-plane clipping instead of retaining a misleading sky frame.
+            return !Physics.CheckSphere(eye, Mathf.Max(.55f, nearClip + .25f),
+                solid, QueryTriggerInteraction.Ignore);
+        }
         private IEnumerator ClickMenuButton(int index)
         {
             // Let deferred destruction/layout from the page transition settle;
@@ -220,10 +233,9 @@ namespace CityLife.World
                 Controls.View.transform.SetPositionAndRotation(seepView,
                     Quaternion.LookRotation(Food.SpringPosition+Vector3.up*.25f-seepView));
                 yield return CaptureWorld("01d-terrain-fitted-freshwater-seep");
-                // Compiled-player visual diagnostics only: same orientation at
-                // two bank positions exposes any near-object parallax illusion;
-                // distinct mouth/lookout views expose cliff occlusion. These
-                // posed camera images do not claim autonomous traversal.
+                // Posed player diagnostics, not autonomous traversal. Use the
+                // ordinary sea-facing camera heading rather than aim each frame
+                // at the planet (which made every frame a centered full disk).
                 var skyCamera=Controls.View.GetComponent<Camera>();
                 float skyPreviousFar=skyCamera.farClipPlane,skyPreviousFov=skyCamera.fieldOfView;
                 var giant=GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
@@ -235,24 +247,39 @@ namespace CityLife.World
                 {
                     skyCamera.farClipPlane=IntegratedCelestial.SkyFarClip;
                     skyCamera.fieldOfView=52f;
-                    Vector3 bank=new Vector3(126,CoastalTerrain.Height(126,-80)+1.75f,-80);
-                    Quaternion bankOrientation=Quaternion.LookRotation(IntegratedCelestial.GiantPosition-bank);
-                    Controls.View.transform.SetPositionAndRotation(bank,bankOrientation);
-                    yield return CaptureWorld("01e-distant-giant-bank-same-orientation");
-                    Controls.View.transform.SetPositionAndRotation(bank+Vector3.forward*50f,bankOrientation);
-                    yield return CaptureWorld("01e-distant-giant-forward-50m-same-orientation");
-                    Vector3 mouth=new Vector3(-17,10,5);
-                    Controls.View.transform.SetPositionAndRotation(mouth,
-                        Quaternion.LookRotation(IntegratedCelestial.GiantPosition-mouth));
-                    yield return CaptureWorld("01e-distant-giant-canyon-mouth");
-                    Vector3 lookout=new Vector3(-90,CoastalTerrain.Height(-90,110)+8f,110);
-                    Controls.View.transform.SetPositionAndRotation(lookout,
-                        Quaternion.LookRotation(IntegratedCelestial.GiantPosition-lookout));
-                    yield return CaptureWorld("01e-distant-giant-high-lookout");
-                    CheckThat("distant-giant-player-view-metadata-retained",true,
-                        "mouth="+mouth+"; bank="+bank+"; bankForward50="+(bank+Vector3.forward*50f)+
-                        "; lookout="+lookout+"; FOV=52; far="+skyCamera.farClipPlane+
-                        "; aspect="+skyCamera.aspect+"; actual frame visual review remains separate");
+                    var seaHeading=Quaternion.LookRotation(new Vector3(.04f,.07f,1));
+                    bool bankSafe=TrySkyEye(126,-80,skyCamera.nearClipPlane,out var bank,out var bankGround);
+                    bool forwardSafe=TrySkyEye(126,-30,skyCamera.nearClipPlane,out var forward,out var forwardGround);
+                    bool mouthSafe=TrySkyEye(-17,5,skyCamera.nearClipPlane,out var mouth,out var mouthGround);
+                    bool lookoutSafe=TrySkyEye(-90,110,skyCamera.nearClipPlane,out var lookout,out var lookoutGround);
+                    CheckThat("distant-giant-posed-eyes-clear-of-terrain",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe,
+                        "bank="+bankGround+"; forward="+forwardGround+"; mouth="+mouthGround+"; lookout="+lookoutGround+
+                        "; posed eyes grounded by solid ray, not a verified traversal route");
+                    if(bankSafe)
+                    {
+                        Controls.View.transform.SetPositionAndRotation(bank,seaHeading);
+                        yield return CaptureWorld("01e-distant-giant-bank-same-orientation");
+                    }
+                    if(forwardSafe)
+                    {
+                        Controls.View.transform.SetPositionAndRotation(forward,seaHeading);
+                        yield return CaptureWorld("01e-distant-giant-forward-50m-same-orientation");
+                    }
+                    if(mouthSafe)
+                    {
+                        Controls.View.transform.SetPositionAndRotation(mouth,seaHeading);
+                        yield return CaptureWorld("01e-distant-giant-canyon-mouth");
+                    }
+                    if(lookoutSafe)
+                    {
+                        Controls.View.transform.SetPositionAndRotation(lookout,seaHeading);
+                        yield return CaptureWorld("01e-distant-giant-high-lookout");
+                    }
+                    CheckThat("distant-giant-player-view-metadata-retained",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe,
+                        "mouth="+mouth+"; bank="+bank+"; bankForward50="+forward+
+                        "; lookout="+lookout+"; identical sea-facing heading="+seaHeading+
+                        "; FOV=52; far="+skyCamera.farClipPlane+"; aspect="+skyCamera.aspect+
+                        "; visual occlusion/parallax remains separate review");
                 }
                 finally{skyCamera.farClipPlane=skyPreviousFar;skyCamera.fieldOfView=skyPreviousFov;}
             }

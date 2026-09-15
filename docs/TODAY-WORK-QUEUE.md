@@ -1,0 +1,27 @@
+# Starfall TODAY candidate queue — 15 September 2026
+
+This is a working queue, not a release receipt. The source and build identities
+below are exact at this checkpoint; later candidates require fresh evidence.
+
+| Priority / claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| 1. Distant giant must read as immense celestial background, not a globe in the canyon | Visual rejection remains open | Round 211 `04-canyon-opening` shows lower limb at valley horizon. Round 213 raises it too high; round 214 retains an intermediate elevation/diameter with cropped upper limb and some cliff silhouette. Posed player sky eyes were fixed in source to ground-ray/near-plane checks and a shared normal sea heading. | Compile and inspect actual-player bank, 50 m same-heading, mouth and lookout frames; prove clear eyes, cliff occlusion, stable apparent size and no local parallax. Round 214 Editor geometry is not player or user acceptance. |
+| 2. One replacement candidate containing spring relevance and sky fix | Source pending candidate | Spring relevance `af8caad` was compiled in round 212 but that player failed an unrelated 1503 ms immediate-thought deadline and was automatically removed. Round 211 remains the sole verified fallback. | Build only after source/evidence justify it; automatic retention must keep fallback plus at most one temporary candidate. |
+| 3. Compiled ordinary local-LLM survival and grounded death continuity | Scoped historical technical pass | Round 211 run 25: 357.904 s wall, real explore/gather/eat, two model-chosen spring drinks; run 22: two accelerated cause-scoped safe returns, lesson included in a hashed model request and an action reached. | Repeat spring relevance in replacement player, confirm no overfull spring approach trap. Natural death timing, robust policy and general model reliability remain open. |
+| 4. Watchable current-build clip and truthful play handoff | Unverified | Round 211 run 25 game-only 60 s capture is technically upright but the default follow view faces a nearby plain cliff, not the sea/giant; model-derived events exist in traces. | Produce a readable game-only clip from the new candidate showing actual model action, food and spring, with correct build binding and honest accelerated-only labels for death diagnostics. No external post without authorization. |
+
+Immediate model-risk diagnostic: off-game exact Mac `google/gemma-4-e4b` delivery
+samples with 20 s idle gaps were 1168, 425, 433, 520, **2785**, 425 ms.
+All six generated the same valid four-token answer with zero reasoning tokens;
+5/6 met the unchanged 1500 ms deadline. The round 212 in-game 1503 ms failure
+and this valid late sample show tail latency. They do not prove a cold/power
+cause or justify relaxing the gameplay deadline. Do not rebuild identical
+source merely to reroll this stochastic gate; if it blocks one replacement
+regression, retain the failed runtime and continue ordinary gameplay evidence
+without claiming the immediate thought passed.
+
+Build retention is a separate lifecycle, not survival promotion: round 212
+success kept verified 211 plus temporary 212, then its genuine runtime failure
+removed exactly 212 in the helper `finally` cleanup. See
+`evidence/local/build-retention/reconcile-20260915-123605/reconciliation.json`
+and `evidence/local/failed-build-cleanup/KookerStarfallIntegrated-0.0.11-survival.1-20260915-123435-20260915-123931/cleanup.json`.

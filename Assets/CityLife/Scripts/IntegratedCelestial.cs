@@ -8,8 +8,12 @@ namespace CityLife.World
         // Round199 expands apparent diameter for the panorama direction while
         // keeping the complete sphere far beyond terrain. Editor composition
         // reviewed; compiled traversal/parallax acceptance remains separate.
-        public static readonly Vector3 GiantPosition = new Vector3(9000, 16800, 42000);
-        public const float GiantScale = 34000;
+        // Keep the lower limb well above the sea horizon in a normal canyon
+        // heading, so cliffs silhouette it as sky rather than a valley globe.
+        // Greater distance to the raised centre is offset by diameter: about
+        // the same immense apparent angular size as the prior study.
+        public static readonly Vector3 GiantPosition = new Vector3(9000, 21000, 42000);
+        public const float GiantScale = 35000;
         public const float SkyFarClip = 80000;
         public static void PlaceDistantGiant(Transform giant, Camera view)
         {
