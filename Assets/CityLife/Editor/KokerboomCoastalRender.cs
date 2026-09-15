@@ -13,7 +13,9 @@ namespace CityLife.World.Editor
         private static GameObject coast;
         private static GameObject coastalTerrain;
         private static GameObject coastalWater;
+        private static bool skySiteMode;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
+        public static void RenderCoastalSkySites(){skySiteEvidence.Clear();coastalMode=true;skySiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
         private static void Coastal()
@@ -100,7 +102,10 @@ namespace CityLife.World.Editor
             Coastal();Perspective(position,aim,width*9/16);camera.fieldOfView=52;
         }
 
-        private static List<Shot> BuildCoastalShots()=>new List<Shot>{
+        private static List<Shot> BuildCoastalShots()
+        {
+            if(skySiteMode) return BuildSkySiteShots();
+            return new List<Shot>{
             new Shot{Id="01-coastal-side-composition",Purpose="Fixed provisional side-view: frozen R19 tree on rocky bank, wrapping turquoise river toward deep sea, canyon mountains, blue gas giant and distant procedural galaxy. Actual Unity geometry; no artwork billboard.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(21,4.6f,-25),new Vector3(0,3.4f,14))},
             new Shot{Id="02-water-to-sea",Purpose="Fixed surface material/depth comparison from the river toward open sea; no underwater-life or swimming claim.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(10,-.1f,13),new Vector3(-2,-1,64))},
             new Shot{Id="03-rocky-tree-bank",Purpose="Fixed gameplay-distance rock bank, grounding and secondary succulent surface view; collision geometry exists but native input not yet verified.",Height=width*9/16,Configure=()=>CoastalCamera(new Vector3(13,1.9f,-12),new Vector3(2,-.4f,-3))},
@@ -108,7 +113,25 @@ namespace CityLife.World.Editor
             new Shot{Id="05-shallow-bed-only-diagnostic",Purpose="Diagnostic actual opaque bed, shelves and planted geometry with only the water renderer disabled. Not a playable-water appearance or acceptance image.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(false);}},
             new Shot{Id="06-shallow-water-matched-diagnostic",Purpose="Exact camera matched to 05 with the authored water restored; establishes what the surface hides or transmits before further visual work.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(-11,3.2f,20),new Vector3(-2,-2.25f,34));coastalWater.SetActive(true);}},
             new Shot{Id="07-offshore-islands-sea-vista",Purpose="Traversable-boundary lookout toward three inaccessible render-only offshore landforms and the visual sea continuation. No boat or island navigation claim.",Height=width*9/16,Configure=()=>{CoastalCamera(new Vector3(0,32,520),new Vector3(-40,18,1250));camera.farClipPlane=2400;}}
+            };
+        }
+
+        private static readonly List<string> skySiteEvidence = new List<string>();
+        private static List<Shot> BuildSkySiteShots() => new List<Shot> {
+            new Shot{Id="01-sky-dry-bank",Purpose="Diagnostic dry western bank at ordinary sea heading; posed Editor geometry, not autonomous traversal.",Height=width*9/16,Configure=()=>SkySiteCamera(-52,-55,"bank")},
+            new Shot{Id="02-sky-forward-same-heading",Purpose="Same sea heading from separately dry forward site; parallax composition only, not route proof.",Height=width*9/16,Configure=()=>SkySiteCamera(-52,-5,"forward")},
+            new Shot{Id="03-sky-dry-mouth",Purpose="Mouth site selected by actual collider dry freeboard, not the prior submerged bed.",Height=width*9/16,Configure=()=>SkySiteCamera(-38,5,"mouth")},
+            new Shot{Id="04-sky-high-lookout",Purpose="Dry high lookout, same heading and 52-degree field of view.",Height=width*9/16,Configure=()=>SkySiteCamera(-90,110,"lookout")}
         };
+        private static void SkySiteCamera(float proposedX,float z,string label)
+        {
+            Coastal();
+            if(!CoastalSkyViewSites.TryDryEyeNear(proposedX,z,camera.nearClipPlane,out var eye,out var evidence))
+                throw new InvalidOperationException("No matched dry sky site for "+label+": "+evidence);
+            skySiteEvidence.Add(label+": "+evidence);
+            File.WriteAllLines(Path.Combine(outputDirectory,"sky-site-selection.txt"),skySiteEvidence);
+            CoastalCamera(eye,eye+new Vector3(.04f,.07f,1)*100f);
+        }
 
         private static void BuildCoastalGalaxy()
         {

@@ -82,20 +82,6 @@ namespace CityLife.World
             }
             return groundHits == 0 ? float.MinValue : minimum;
         }
-        private static bool TrySkyEye(float x, float z, float nearClip, out Vector3 eye, out string ground)
-        {
-            eye = Vector3.zero; ground = "no grounded eye";
-            const int solid = (1 << 8) | (1 << 10);
-            if (!Physics.Raycast(new Vector3(x, 300, z), Vector3.down, out var hit, 400,
-                solid, QueryTriggerInteraction.Ignore)) return false;
-            eye = hit.point + Vector3.up * 2.1f;
-            ground = hit.collider.name + "; floor=" + hit.point + "; eye=" + eye;
-            // The old fixed-Y forward pose passed straight through a bank.
-            // Reject even near-plane clipping instead of retaining a misleading sky frame.
-            return hit.point.y > CoastalWater.Level + 1f &&
-                !Physics.CheckSphere(eye, Mathf.Max(.55f, nearClip + .25f),
-                solid, QueryTriggerInteraction.Ignore);
-        }
         private IEnumerator ClickMenuButton(int index)
         {
             // Let deferred destruction/layout from the page transition settle;
@@ -252,13 +238,14 @@ namespace CityLife.World
                     // The former x=126 terrace faced a tall mesa rather than
                     // the river; x=-17 mouth was a submerged bed. Choose the
                     // open, dry western bank and reject any wet ray hit.
-                    bool bankSafe=TrySkyEye(-52,-55,skyCamera.nearClipPlane,out var bank,out var bankGround);
-                    bool forwardSafe=TrySkyEye(-52,-5,skyCamera.nearClipPlane,out var forward,out var forwardGround);
-                    bool mouthSafe=TrySkyEye(-38,5,skyCamera.nearClipPlane,out var mouth,out var mouthGround);
-                    bool lookoutSafe=TrySkyEye(-90,110,skyCamera.nearClipPlane,out var lookout,out var lookoutGround);
-                    CheckThat("distant-giant-posed-eyes-clear-of-terrain",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe,
+                    bool bankSafe=CoastalSkyViewSites.TryDryEyeNear(-52,-55,skyCamera.nearClipPlane,out var bank,out var bankGround);
+                    bool forwardSafe=CoastalSkyViewSites.TryDryEyeNear(-52,-5,skyCamera.nearClipPlane,out var forward,out var forwardGround);
+                    bool mouthSafe=CoastalSkyViewSites.TryDryEyeNear(-38,5,skyCamera.nearClipPlane,out var mouth,out var mouthGround);
+                    bool lookoutSafe=CoastalSkyViewSites.TryDryEyeNear(-90,110,skyCamera.nearClipPlane,out var lookout,out var lookoutGround);
+                    bool distinctTravel=bankSafe&&forwardSafe&&Vector2.Distance(new Vector2(bank.x,bank.z),new Vector2(forward.x,forward.z))>=35f;
+                    CheckThat("distant-giant-posed-eyes-clear-of-terrain",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe&&distinctTravel,
                         "bank="+bankGround+"; forward="+forwardGround+"; mouth="+mouthGround+"; lookout="+lookoutGround+
-                        "; posed eyes grounded by solid ray, not a verified traversal route");
+                        "; horizontal bank-forward="+Vector2.Distance(new Vector2(bank.x,bank.z),new Vector2(forward.x,forward.z))+"m; posed eyes grounded by solid ray, not a verified traversal route");
                     if(bankSafe)
                     {
                         Controls.View.transform.SetPositionAndRotation(bank,seaHeading);
@@ -279,7 +266,7 @@ namespace CityLife.World
                         Controls.View.transform.SetPositionAndRotation(lookout,seaHeading);
                         yield return CaptureWorld("01e-distant-giant-high-lookout");
                     }
-                    CheckThat("distant-giant-player-view-metadata-retained",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe,
+                    CheckThat("distant-giant-player-view-metadata-retained",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe&&distinctTravel,
                         "mouth="+mouth+"; bank="+bank+"; bankForward50="+forward+
                         "; lookout="+lookout+"; identical sea-facing heading="+seaHeading+
                         "; FOV=52; far="+skyCamera.farClipPlane+"; aspect="+skyCamera.aspect+

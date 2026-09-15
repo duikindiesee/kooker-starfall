@@ -12,9 +12,10 @@ def main():
     parser.add_argument('--models', nargs='+', default=['google/gemma-4-e4b', 'starfall-local-e4b'])
     parser.add_argument('--attempts', type=int, default=2)
     parser.add_argument('--gap-seconds', type=float, default=0)
+    parser.add_argument('--max-tokens', type=int, default=8)
     args = parser.parse_args()
-    if not 1 <= args.attempts <= 12 or not 0 <= args.gap_seconds <= 60:
-        raise RuntimeError('Bounded attempts 1..12 and gap 0..60 seconds required')
+    if not 1 <= args.attempts <= 12 or not 0 <= args.gap_seconds <= 60 or args.max_tokens not in (8, 16, 24, 32):
+        raise RuntimeError('Bounded attempts 1..12, gap 0..60 seconds, max tokens 8/16/24/32 required')
     if args.output.exists():
         raise RuntimeError('Refuse existing evidence output')
     rows = []
@@ -22,7 +23,7 @@ def main():
         for attempt in range(args.attempts):
             if attempt and args.gap_seconds:
                 time.sleep(args.gap_seconds)
-            request = {'model': model, 'stream': False, 'temperature': 0, 'max_tokens': 8, 'reasoning_effort': 'none', 'messages': [
+            request = {'model': model, 'stream': False, 'temperature': 0, 'max_tokens': args.max_tokens, 'reasoning_effort': 'none', 'messages': [
                 {'role': 'system', 'content': 'Output exactly two plain words and nothing else. First word Delivered. Second word is the delivered item named in verified memory. No quotes, braces, punctuation, explanation, goals, or commands.'},
                 {'role': 'user', 'content': 'Verified delivery item: amber.'}]}
             row = {'model': model, 'attempt': attempt + 1, 'scope': 'off-game synthetic prompt; not a real event', 'request': request}
@@ -51,7 +52,7 @@ def main():
             rows.append(row)
             print(json.dumps({k: v for k, v in row.items() if k not in ('request', 'response')}), flush=True)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps({'scope': 'Off-game synthetic event; idle gap is deliberate; true cold state unknown; no deadline policy change', 'models': args.models, 'attempts': args.attempts, 'gapSeconds': args.gap_seconds, 'rows': rows}, indent=2), encoding='utf-8')
+    args.output.write_text(json.dumps({'scope': 'Off-game synthetic event; token-budget variant is NOT game code; idle gap is deliberate; true cold state unknown; no deadline policy change', 'models': args.models, 'attempts': args.attempts, 'gapSeconds': args.gap_seconds, 'maxTokens': args.max_tokens, 'rows': rows}, indent=2), encoding='utf-8')
 
 
 if __name__ == '__main__':
