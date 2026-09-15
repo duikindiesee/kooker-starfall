@@ -142,28 +142,23 @@ Shader "CityLife/CoastalWater"
                 float deep = smoothstep(4,24,depth);
                 half3 water = lerp(_ShallowColor.rgb,_RiverColor.rgb,river);
                 water = lerp(water,_DeepColor.rgb,deep);
-                // R01's unfiltered alpha blend transmitted the strongly lit orange bed, turning
-                // turquoise gray/green. Preserve shallow detail through colour-filtered scene
-                // transmission instead. Increasing depth absorbs the bed; sky never acts as bed.
-                float transmission = measured*.90*exp(-depth*.10)*(1-smoothstep(520,880,input.positionWS.z));
+                // Transmit the captured bed once. Optical path depends on depth and
+                // viewing angle; the shallow-angle clamp bounds this stylized model.
+                float transmission = 0;
                 if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
                 {
                     half3 bed = mainCameraOpaque;
-                    // Preserve actual submerged rock/plant colour while water absorbs
-                    // red fastest and blue slowest. One transmission path avoids both
-                    // muddy double blending and monochrome cyan silhouettes.
-                    // The retained main-camera diagnostic proves this source is the correctly
-                    // lit warm sandy bed. Estuary water is optically clear at these 2-5m depths;
-                    // use restrained wavelength absorption so red is reduced first without
-                    // converting the real bed into an opaque green silhouette.
-                    // In optically clear shallows the real sand/rock remains
-                    // identifiable; wavelength separation increases with
-                    // optical path rather than imposing a green wash at contact.
-                    float opticalPath=depth*smoothstep(.35,5,depth);
-                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5)) * exp(-opticalPath*half3(.11,.055,.025));
-                    // Clear estuary shallows favour the authored bed; depth still removes
-                    // it smoothly before the channel becomes open-sea blue.
-                    water = lerp(water,transmittedBed,transmission);
+                    // Art-directed wavelength attenuation preserves contact detail and
+                    // removes warm bed colour progressively along the underwater ray.
+                    float viewCosine=max(.18,abs(GetWorldSpaceNormalizeViewDir(input.positionWS).y));
+                    float opticalPath=depth/viewCosine;
+                    half3 bedTransmission=exp(-opticalPath*half3(.42,.095,.035));
+                    transmission=dot(bedTransmission,half3(.2126,.7152,.0722));
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5))*bedTransmission;
+                    // Use a separate scalar scattering path, not inverse RGB absorption:
+                    // the latter washed the measured bed green in comparison round192.
+                    float scattering=1-exp(-opticalPath*.12);
+                    water = transmittedBed + water*scattering*.60;
                 }
                 // Retained acceptance diagnostics from the same main-camera render. These modes
                 // isolate input provenance; they are never enabled during ordinary play.
