@@ -34,6 +34,7 @@ $requiredChecks = @(
     'moving-shallow-bed-caustics', 'actual-coastal-scene-reflection-contribution',
     'inaccessible-offshore-landforms-present',
     'complete-three-object-autonomy-cycle', 'remembered-action-receipts',
+    'post-cycle-autonomy-stays-unblocked',
     'possessed-body-traversal', 'possessed-captured-look',
     'pause-releases-and-stops-simulation', 'pointer-opens-controls-menu',
     'pointer-returns-to-options', 'resume-restores-capture',
