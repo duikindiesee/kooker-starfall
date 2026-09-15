@@ -34,6 +34,8 @@ P: options; Tab: possess/release; F: spectator; R: autonomy; right mouse: look; 
 
 ## What is and is not proven
 
+Latest retained211 independent runs30/31: seven meals and two drinks before restart; preserved save417/energy9290/hydration9774/request18 reloaded, followed by a fresh model-chosen drink request19 (+1524 hydration). The second session lasted325.782s to close request, exceeding its300s plan by25.782s. No natural death occurred. The spring still visually resembles a raised sheet; geometry/ordinary-view repair is underway, not accepted. See `docs/REVIEW-ROUND211-INDEPENDENT-RESTART.md`.
+
 Runs23/24 prove real gathered fruit persisted and became a fresh model-chosen meal after restart: saved request6 -> executed request7, +1200energy/+400hydration/-1fruit. Run22 proves an explicitly accelerated death, grounded cave return and subsequent model action with the retained own-cause lesson in context. This does not establish natural mortality timing or improved survival policy caused by the lesson.
 
 Round211 run25 now proves ordinary freshwater discovery, inspection and drinking as well as meals over357.904seconds. The strict technical survival verifier passed against its scoped receipt and the separately accelerated run22 diagnostic. Repeated spring approaches while already hydrated remain a behavior defect, not complete survival-policy acceptance.
