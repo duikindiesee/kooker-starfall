@@ -1,6 +1,29 @@
 # Starfall system architecture and installation state
 
-## Current integrated connection snapshot — 15 September, round190
+## Current model-routing clarification — 15 September, round202
+
+The two inference purposes have independent model selection and deadlines:
+
+| Purpose | Observed configuration | Evidence and limit |
+|---|---|---|
+| Survival action proposal | `-SurvivalModel starfall-local-e4b`, Windows-loaded instance | Round200 run12 admitted 44 choices and reached 43 routes without useful food outcomes; speed is not action-quality acceptance |
+| Immediate delivery reflection | Separate `-Model google/gemma-4-e4b`, linked Mac configuration | Run12 fell back at its separate 1500 ms deadline; a survival-model success does not prove reflection success |
+| New discovery test | Round202 compiled source `7bb93a8750aea35e0fd0eabdc88f409a6c1a3e3b` | Run13 produced an actual `inspect berry` outcome; sustained food/water and final acceptance remain pending |
+
+The Windows loopback API is a routing endpoint, not proof of where inference
+runs. Confirm LM Studio's loaded instance and host before interpreting timings.
+The launcher checks `api/v1/models` for exactly one matching `loaded_instances.id`
+for survival; it does not load a model automatically. The recorded instance ID
+is a tested configuration, not an installed dependency guaranteed after reboot.
+Keep model files/settings and the two purposes distinct when changing providers.
+
+Normal setup still requires a selected compiled player, Python memory service,
+an already running model runtime and private scoped storage. `-FrameEvidence`
+and `-FrameSeconds` optionally record game-only frames during ordinary survival;
+they are forbidden with `-DeathDiagnostic`. Neither the clip nor the separate
+FoodModel checkpoint is a full-world save or packaged installer.
+
+## Earlier integrated connection snapshot — 15 September, round190
 
 This section supersedes the historical September13 wiring/installation claims
 below. It describes build source `35c1a742366a68630dba5fd4cc072bf0566ec36d`,
@@ -13,15 +36,15 @@ flowchart LR
     Launch --> Service["Scoped Python memory service<br/>private capability configuration"]
     Unity --> Sense["Unity perception and live eligibility<br/>radius, line of sight, reach"]
     Sense --> Proposal["Optional survival proposal<br/>observed choices only"]
-    Proposal --> LM["Loopback LM Studio API<br/>tested linked Mac model hosting"]
-    LM --> Admission["Complete bounded response<br/>revalidate current state"]
+    Proposal --> SurvivalLM["Selected survival model instance<br/>Windows local or verified linked host"]
+    SurvivalLM --> Admission["Complete bounded response<br/>revalidate current state"]
     Admission --> Actions["Unity movement and FoodModel actions"]
     Actions --> FoodSave["Separate private scoped FoodModel checkpoint<br/>not a whole-world save"]
     Unity --> Delivery["Verified delivery event exporter"]
     Delivery --> Service
     Service --> Ledger["Scoped SQLite event history"]
     Delivery --> Reflection["Optional event acknowledgement<br/>separate from survival choice"]
-    Reflection --> LM
+    Reflection --> ReflectionLM["Separately selected event-reflection model<br/>separate deadline and fallback"]
 ```
 
 | Claim | Status | Evidence | Remaining gap |
