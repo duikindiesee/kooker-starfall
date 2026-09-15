@@ -47,6 +47,26 @@ not autonomous foraging, learning or survival planning.
 
 ## Completion checklist
 
+### Local assembly tooling (tested fixture, not a delivered walkthrough)
+
+`tools/assemble-walkthrough.py` accepts explicit local `--ffmpeg`, `--video`,
+`--narration`, `--output`, `--build-id` and `--source-commit` arguments. It copies
+video frames unchanged and replaces original audio with reviewed narration,
+padding only to the finite measured footage length. Narration longer than the
+footage is rejected rather than truncated. Existing outputs are never replaced.
+It hashes inputs/output and performs a complete audio/video decode; audible
+replay, visual inspection, factual narration and footage/build identity still
+require independent checks.
+
+On 15 September the existing local FFmpeg7.1 encoder was verified without any
+download. A three-second synthetic test-video plus one-second tone assembled to
+exactly three seconds and fully decoded; a four-second narration was rejected.
+An initial unbounded-padding experiment hung and was stopped at its exact owned
+PID; the finite-padding repair passed. Test artifacts live under ignored
+`evidence/local/walkthrough-tool-test-20260915/`. None is Starfall gameplay.
+
+### Final delivery gates
+
 - [ ] Final candidate identified by source commit and executable hash.
 - [ ] Actual player gates pass, including full delivery cycle and cave access.
 - [ ] Food placement/readability and clothing reviewed in the player.
