@@ -30,3 +30,18 @@ Next acceptance: ordinary model-driven discovery followed by actual food and
 water outcomes; readable HUD; player sky checks from canyon mouth, near bank
 and high lookout; separate water/plant close-ups; club motion validation.
 No 7.3/10 visual pass, release promotion or user acceptance is granted here.
+
+## Freshwater placeholder diagnosis
+
+Source inspection identifies the cyan disk as `spring-food`: the sole call to
+`Target` in `IntegratedFoodRuntime.Attach` supplies the freshwater source.
+Its centre is sampled terrain height plus 0.18 m; `Target` uses a unit sphere
+scaled to `(1.8, 0.25, 1.8)`. With the primitive radius of 0.5, even its lowest
+point is 0.055 m above the centre terrain sample. Its 1.8 m horizontal extent
+also ignores the slope. The existing dry-height and rock-clearance guards do
+not test visible substrate contact, basin construction or approach slope.
+
+Required correction is a recognizable terrain-fitted rocky seep/basin, not an
+unexplained hovering cyan marker. Preserve source identity, finite water,
+scoped knowledge and real line-of-sight/reach checks. Verify substrate contact
+and an accessible approach in the compiled player; this diagnosis is not a fix.
