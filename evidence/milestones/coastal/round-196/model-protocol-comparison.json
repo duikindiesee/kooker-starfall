@@ -1,0 +1,58 @@
+{
+  "schema": "starfall.model-protocol-comparison.v1",
+  "scope": "Warm exact eligible-action requests to existing localhost LM Studio; off-game provider benchmark, not gameplay admission",
+  "deviceInventory": {
+    "localhostListener": "Windows LM Studio.exe",
+    "preferredBeforeAndAfter": "Irwins-Mac-mini-2.local",
+    "originalLoadedInstancesPreserved": [
+      "google/gemma-4-e4b: Mac MLX 4bit",
+      "nvidia/nemotron-3-nano-4b: Mac GGUF Q4_K_M"
+    ],
+    "isolatedCandidate": "starfall-local-e4b: Windows-local Gemma 4 E4B GGUF Q4_K_M, 2048 context, 60-minute idle TTL",
+    "loadGuard": "5.89 GiB estimated; loaded successfully without changing guardrails or model files",
+    "deviceProof": "lms ps listed starfall-local-e4b on Local and both original instances on Irwins-Mac-mini-2.local after preferred Mac restored"
+  },
+  "deadlineMilliseconds": 5000,
+  "admission": "Only exact two-word final message content, finish_reason stop and exact model instance ID pass; hidden reasoning, partial length and timeout do not",
+  "warmTrials": [
+    {
+      "instance": "nvidia/nemotron-3-nano-4b",
+      "device": "linked Mac GGUF",
+      "case": "12 ordered cardinal exploration pairs, short eligible-only prompt",
+      "completeWithinDeadline": 6,
+      "total": 12,
+      "remaining": "Six length/empty completions exceeded the unchanged bound"
+    },
+    {
+      "instance": "google/gemma-4-e4b",
+      "device": "linked Mac MLX",
+      "case": "Four representative ordered cardinal exploration pairs",
+      "completeWithinDeadline": 0,
+      "total": 4,
+      "remaining": "Each localhost request timed out at 10 seconds; this is not Windows-local GGUF performance"
+    },
+    {
+      "instance": "starfall-local-e4b",
+      "device": "Windows-local GGUF",
+      "case": "12 ordered cardinal exploration pairs, short eligible-only prompt",
+      "completeWithinDeadline": 12,
+      "total": 12,
+      "minMilliseconds": 1485,
+      "maxMilliseconds": 2536,
+      "finishReason": "stop",
+      "responseModel": "starfall-local-e4b"
+    },
+    {
+      "instance": "starfall-local-e4b",
+      "device": "Windows-local GGUF",
+      "case": "Measured need plus one actually eligible food/drink action and one exploration action",
+      "actions": ["eat fruit", "drink spring", "gather berry", "approach spring"],
+      "completeWithinDeadline": 4,
+      "total": 4,
+      "milliseconds": [2230, 2508, 3252, 1927],
+      "finishReason": "stop",
+      "responseModel": "starfall-local-e4b"
+    }
+  ],
+  "boundary": "These requests do not prove in-game perception, action admission, reach, meal outcome, spring discovery, death learning, or longer-run reliability. Exact compiled normal play must be tested separately."
+}

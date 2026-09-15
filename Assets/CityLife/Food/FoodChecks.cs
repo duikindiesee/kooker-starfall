@@ -43,6 +43,18 @@ namespace Starfall.Food
                 !explorationPrompt.Contains("Energy=")&&!explorationPrompt.Contains("fruit")&&
                 !explorationPrompt.Contains("spring"),
                 "pure exploration request omits irrelevant need and unknown-resource context");
+            var exhausted=new FoodState{fruitStock=0,knowsBerry=true,satiety=6500,hydration=5500};
+            Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
+                "known depleted berry stock does not lure repeated approach");
+            exhausted.fruitStock=1;exhausted.carriedFruit=4;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
+                "full inventory does not lure repeated harvest");
+            exhausted.carriedFruit=0;exhausted.satiety=9900;exhausted.hydration=9900;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
+                "known berry does not displace exploration when measured food and water targets are met");
+            exhausted.hydration=5000;exhausted.knowsMealBenefit=true;exhausted.body.stomach=8801;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
+                "full stomach does not promote a known berry as a hydration meal");
             m.State.satiety=0;Check(!Do(FoodAction.Eat,"inventory").success,"starvation does not grant food knowledge");m.State.satiety=6500;
             Check(Do(FoodAction.Inspect,"berry").success&&m.State.berryEvidence.Contains("observed-fruit")&&!m.State.knowsMealBenefit,"observed fruit does not grant a meal outcome");
             a.visible=false;Check(!Do(FoodAction.Gather,"berry").success,"occlusion blocks action");a.visible=true;

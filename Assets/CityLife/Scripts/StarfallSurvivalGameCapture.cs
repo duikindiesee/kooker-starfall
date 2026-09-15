@@ -100,7 +100,20 @@ namespace CityLife.World
                 var image=new Texture2D(width,height,TextureFormat.RGBA32,false);
                 try
                 {
-                    image.LoadRawTextureData(request.GetData<byte>());
+                    // Unity's GPU readback starts at the opposite vertical
+                    // origin from the PNG image. The first compiled frame was
+                    // visibly upside down; correct row order here, preserving
+                    // the original framebuffer pixels and timestamp.
+                    byte[] pixels=request.GetData<byte>().ToArray();
+                    int stride=width*4;var swap=new byte[stride];
+                    for(int y=0;y<height/2;y++)
+                    {
+                        int upper=y*stride,lower=(height-1-y)*stride;
+                        Buffer.BlockCopy(pixels,upper,swap,0,stride);
+                        Buffer.BlockCopy(pixels,lower,pixels,upper,stride);
+                        Buffer.BlockCopy(swap,0,pixels,lower,stride);
+                    }
+                    image.LoadRawTextureData(pixels);
                     image.Apply(false,false);
                     int number=frameCount+1;
                     string path=Path.Combine(directory,"frame-"+number.ToString("D6")+".png");

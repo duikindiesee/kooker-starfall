@@ -108,6 +108,12 @@ namespace CityLife.World
                 x.permission&&x.available&&x.seenAtTick>=Brain.Tick-10);
             return observation!=null;
         }
+        public static bool BerryRelevant(FoodState s)
+        {
+            return s!=null&&s.fruitStock>0&&s.carriedFruit<4&&
+                (!s.knowsBerry||(s.body.stomach<=8800&&
+                    (s.satiety<8500||s.hydration<8500&&s.knowsMealBenefit)));
+        }
         private List<string> Eligible()
         {
             var foodChoices=new List<string>();var s=Food.Model.State;
@@ -123,7 +129,12 @@ namespace CityLife.World
                     else if(s.hydration<8500&&s.freshwaterMl>=250)foodChoices.Add("drink spring");
                 }
             }
-            if(Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
+            // Do not repeatedly approach a familiar, exhausted bush or fill
+            // inventory when neither measured food nor water needs topping up.
+            // Stock and carried fruit are the inhabitant's actual scoped state,
+            // not foreknowledge of a new resource's location or effect.
+            bool berryRelevant=BerryRelevant(s);
+            if(berryRelevant&&Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
             {
                 FoodAccess gate=Food.Inspect("berry");
                 if(gate.visible && gate.permitted)
@@ -133,7 +144,8 @@ namespace CityLife.World
                     else if(s.fruitStock>0&&s.carriedFruit<4)foodChoices.Add("gather berry");
                 }
             }
-            if(s.carriedFruit>0&&s.knowsBerry&&(s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
+            if(s.carriedFruit>0&&s.knowsBerry&&s.body.stomach<=8800&&
+                (s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
             // Exact-payload probes proved four exploratory options 8/8
             // length/empty, and the three-option near-berry runtime stalled
             // repeatedly. Two genuinely eligible options generated a final
@@ -252,7 +264,7 @@ namespace CityLife.World
             {Record("decision","stale-or-ineligible",action,result);nextRequestTick=Brain.Tick+50;return;}
             AcceptedDecisions++;Record("decision","live-admitted",accepted,result);
             LastChoice=accepted;LastChoiceByModel=true;
-            Status="Nano model choice admitted after live validation";
+            Status="Local model choice admitted after live validation";
             if(accepted.StartsWith("explore ",StringComparison.Ordinal))
             {
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:

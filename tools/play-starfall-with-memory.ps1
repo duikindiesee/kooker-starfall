@@ -52,8 +52,10 @@ if($Survival){
         throw 'Survival model endpoint must be loopback HTTP.'
     }
     $playInventory=Invoke-RestMethod -Uri ([Uri]::new($playModelUri,'api/v1/models')) -TimeoutSec 3
-    if(@($playInventory.models|Where-Object {$_.key -eq $SurvivalModel -and $_.loaded_instances.Count -eq 1}).Count -ne 1){
-        throw 'Exactly one already-loaded survival model instance is required; auto-loading is not accepted.'
+    $playLoaded=@($playInventory.models|ForEach-Object { $_.loaded_instances }|
+        Where-Object { $_.id -eq $SurvivalModel })
+    if($playLoaded.Count -ne 1){
+        throw 'Exactly one already-loaded survival model instance ID is required; auto-loading is not accepted.'
     }
 }
 if($playServiceConfig.world_id -ne $WorldId -or $playServiceConfig.publisher_id -ne 'unity-local' -or $playServiceConfig.build_ids -notcontains $playBuild -or

@@ -13,9 +13,10 @@ namespace CityLife.World
     public static class StarfallSurvivalThought
     {
         // This is a separately bounded, asynchronous high-level choice, not
-        // the 1500 ms immediate action/reflection deadline. Warm Nano 4B
-        // emitted an actual eligible message around 3.55 s after 80 reasoning
-        // tokens; the shorter cap yielded finish_reason=length without text.
+        // the 1500 ms immediate action/reflection deadline. Warm local E4B
+        // GGUF returned exact eligible final-content actions for all twelve
+        // ordered cardinal pairs under 2.54 s. The older remote Nano path
+        // length-truncated about half those pairs under this same bound.
         public const int DeadlineMilliseconds = 5000;
         public sealed class Result
         {
