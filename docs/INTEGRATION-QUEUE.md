@@ -1,5 +1,27 @@
 # Dependency-ordered integration queue
 
+## Live GitHub readback: 15 September 2026
+
+Read-only `gh pr list` and `gh pr view 1` checks confirm the following. No
+publication, rebase, merge or review request was performed by this audit.
+
+| Component | Status | Evidence | Remaining gate |
+|---|---|---|---|
+| Foundation PR1 | Open, non-draft, blocked | Head `0d4291bb9c4208deba5cae0f79f8fbb03ebc7003`, base `0e6544efd926e5ab12983b9e0cf87050da495e4c`; exact-head review requests changes | Package guard must reject `.sqlite3` and case-insensitive `.ENV.production` with negative tests, then exact-head rereview |
+| Cosmic PR2 | Open draft | Cosmic branch targets foundation branch | Accepted prerequisite and deliberate refresh/review |
+| Coastal PR3 and display PR4 | Open drafts | Both target cosmic branch | Accepted prerequisite and deliberate refresh/review |
+| Current combined candidate | Local implementation, not represented by the four open PRs | Branch `codex/starfall-combined-today`; round200 compiled source `bd787ff3f9a99f020ddab650552886e93c316aae` | Runtime/visual gaps in REVIEW-ROUND200-PLAYER.md, exact-head dependency mapping and protected review |
+
+PR1's three hosted checks were successful, but the actual review on that same
+head requested changes. Green checks do not override that review. The review
+also reports its durable bridge receipt write was denied; this audit did not
+verify an authoritative Live Brief pickup. Do not report MoJoJo acceptance or a
+merge from GitHub state alone. The old component table below is historical:
+club and model code have since been integrated locally but are not certified
+by the older excluded/OFF statements.
+
+## Historical 14 September component queue
+
 Verified 14 September 2026. This is a local implementation queue, not the authoritative Kooker review queue. No epic/task/workstream identifiers or Live Brief receipt have been supplied for these heads; Codex task IDs below identify conversation work only. No mainline merge, release or deployment is authorized by this record.
 
 | Order / component | Exact local checkpoint | Claim / status | Evidence | Remaining gate |
