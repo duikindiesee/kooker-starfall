@@ -21,15 +21,15 @@ namespace CityLife.World
         [Serializable] sealed class FinalRow
         {
             public string schema="starfall.game-frames.v1", status, build, sourceCamera, boundary;
-            public int frameCount, droppedCount, width, height, requestedSeconds;
+            public int frameCount, droppedCount, skippedSamples, width, height, requestedSeconds;
             public long firstElapsedMs, lastElapsedMs, captureEndMs;
         }
         public NpcAutonomy Brain;
         public Camera View;
         const long IntervalMs=125;
         string directory, framesPath, finalPath, build;
-        int seconds, width, height, frameCount, dropped;
-        long firstMs=-1, lastMs=-1;
+        int seconds, width, height, frameCount, dropped, skipped;
+        long firstMs=-1, lastMs=-1, filmedEndMs;
         bool inFlight, finalized, failed;
         Stopwatch clock;
 
@@ -39,11 +39,16 @@ namespace CityLife.World
             for(int i=0;i+1<args.Length;i++)if(args[i]==name)return args[i+1];
             return null;
         }
+        static bool HasFlag(string name)
+        {
+            foreach(string arg in Environment.GetCommandLineArgs())if(arg==name)return true;
+            return false;
+        }
         IEnumerator Start()
         {
             string target=Flag("-npcSurvivalCaptureFrames");
             if(string.IsNullOrEmpty(target))yield break;
-            if(Flag("-npcSurvivalModel")==null||Flag("-npcSurvivalDeathAcceptance")!=null||
+            if(Flag("-npcSurvivalModel")==null||HasFlag("-npcSurvivalDeathAcceptance")||
                 Brain==null||View==null)yield break;
             if(!int.TryParse(Flag("-npcSurvivalCaptureSeconds"),out seconds)||seconds<10||seconds>120)
                 yield break;
@@ -52,16 +57,19 @@ namespace CityLife.World
             framesPath=Path.Combine(directory,"frames.jsonl");finalPath=Path.Combine(directory,"capture.json");
             build=Flag("-npcMemoryBuild")??Application.version;
             width=Screen.width;height=Screen.height;
-            if(width<320||height<240||!SystemInfo.supportsAsyncGPUReadback)yield break;
+            if(width<320||height<240||(width&1)!=0||(height&1)!=0||
+                !SystemInfo.supportsAsyncGPUReadback)yield break;
             clock=Stopwatch.StartNew();
-            long sampledAt=-IntervalMs;
-            while(clock.ElapsedMilliseconds<seconds*1000L&&!failed)
+            long nextSampleMs=0;
+            while(!failed)
             {
                 yield return new WaitForEndOfFrame();
                 if(Screen.width!=width||Screen.height!=height){failed=true;break;}
                 long elapsed=clock.ElapsedMilliseconds;
-                if(inFlight||elapsed-sampledAt<IntervalMs)continue;
-                sampledAt=elapsed;
+                if(elapsed>=seconds*1000L)break;
+                if(elapsed<nextSampleMs)continue;
+                nextSampleMs=elapsed+IntervalMs;
+                if(inFlight){skipped++;continue;}
                 int capturedTick=Brain.Tick;
                 var texture=new RenderTexture(width,height,0,RenderTextureFormat.ARGB32);
                 texture.Create();inFlight=true;
@@ -76,6 +84,7 @@ namespace CityLife.World
                     Destroy(texture);inFlight=false;dropped++;failed=true;
                 }
             }
+            filmedEndMs=clock.ElapsedMilliseconds;
             long waitFrom=clock.ElapsedMilliseconds;
             while(inFlight&&clock.ElapsedMilliseconds-waitFrom<2000)
                 yield return null;
@@ -86,6 +95,7 @@ namespace CityLife.World
         {
             try
             {
+                if(finalized)return;
                 if(request.hasError) {dropped++;failed=true;return;}
                 var image=new Texture2D(width,height,TextureFormat.RGBA32,false);
                 try
@@ -110,10 +120,10 @@ namespace CityLife.World
             if(finalized||string.IsNullOrEmpty(finalPath))return;
             finalized=true;
             var row=new FinalRow{status=status,build=build,sourceCamera=View==null?"unknown":View.name,
-                frameCount=frameCount,droppedCount=dropped,width=width,height=height,
+                frameCount=frameCount,droppedCount=dropped,skippedSamples=skipped,width=width,height=height,
                 requestedSeconds=seconds,firstElapsedMs=firstMs,lastElapsedMs=lastMs,
-                captureEndMs=clock==null?0:clock.ElapsedMilliseconds,
-                boundary="Actual game framebuffer and HUD only; real elapsed samples. Missing frames hold prior image; no desktop capture or simulated pacing."};
+                captureEndMs=filmedEndMs>0?filmedEndMs:clock==null?0:clock.ElapsedMilliseconds,
+                boundary="Actual game framebuffer and HUD only; real elapsed samples. Skipped are busy capture slots, dropped are readback/write errors. Gaps hold prior image; no desktop capture or simulated pacing."};
             try{File.WriteAllText(finalPath,JsonUtility.ToJson(row,true));}catch(Exception){}
         }
         void OnApplicationQuit(){Finish("PLAYER_EXITED_BEFORE_CAPTURE_COMPLETE");}
