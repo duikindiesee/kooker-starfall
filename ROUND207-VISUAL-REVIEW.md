@@ -33,3 +33,7 @@ Admission audit: `StarfallSurvivalThought` checks exact response model identity,
 ### Multi-view capture validity failure
 
 Also inspected actual player `01e-distant-giant-forward-50m-same-orientation.png` and `01e-distant-giant-bank-same-orientation.png`. The forward view is visibly inside/through terrain, with clipped triangular surfaces across the frame. The bank view is dominated by immediately adjacent ground/rock. These do **not** prove a usable normal-play multi-view route. Preserve them as failed diagnostic evidence; replace fixed-offset camera positions with terrain-cleared eye positions on an actual traversable route, checking camera clearance before capture. Similar giant screen size in these invalid views does not constitute visual acceptance.
+
+### Evidence tooling regression
+
+On 2026-09-15, ran `python -m unittest discover -s tools -p 'test_*.py' -v` using the bundled Python runtime. All 41 tests passed in 13.319 seconds, process exit 0: 12 frame-encoding contract tests, 6 exact loaded-model selection tests, 5 request/admission linkage tests, and 18 survival-promotion negative/positive fixture tests. These are tooling/synthetic-contract results only, not an integrated runtime or visual pass. In particular, the strict real survival promotion still requires actual drink, meal, sustained play and death/reload evidence.
