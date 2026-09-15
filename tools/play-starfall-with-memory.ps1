@@ -11,6 +11,7 @@ param(
     [string]$SurvivalEvidence,
     [string]$FrameEvidence,
     [ValidateRange(10,120)][int]$FrameSeconds=60,
+    [ValidateRange(0,50000)][int]$FrameStartTick=0,
     [switch]$DeathDiagnostic,
     [string]$DeathEvidence,
     [string]$Python
@@ -126,7 +127,8 @@ try{
                     }
                 }else{$null=New-Item -ItemType Directory -Path $playFrameEvidence}
                 $playArgs+=@('-npcSurvivalCaptureFrames',$playFrameEvidence,
-                    '-npcSurvivalCaptureSeconds',[string]$FrameSeconds)
+                    '-npcSurvivalCaptureSeconds',[string]$FrameSeconds,
+                    '-npcSurvivalCaptureAfterTick',[string]$FrameStartTick)
             }
             if($DeathDiagnostic){
                 $playDeathEvidence=[IO.Path]::GetFullPath($DeathEvidence)
