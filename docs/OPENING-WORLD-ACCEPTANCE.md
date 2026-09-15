@@ -1,5 +1,31 @@
 # Opening-world acceptance contract
 
+## Distant giant correction — user screenshot, 15 September
+
+The latest user review rejects the giant reading as a globe floating inside
+the canyon. Its large apparent size must be retained, but it must read as a
+distant celestial background, with cliffs in front. A larger source transform
+or one cropped screenshot does not close this requirement.
+
+For the final compiled candidate, retain three identified player views:
+canyon mouth, near riverbank and high lookout, plus continuous movement between
+at least two of them. Record build/source identity, camera positions, orientation
+and field of view. Compare the sky against terrain at matching orientations;
+ordinary camera rotation must not be mistaken for translation parallax.
+
+- The giant remains enormous in the sky, not a reachable object in the valley.
+- Terrain occludes its silhouette correctly wherever their screen areas overlap.
+- Translation produces no conspicuous nearby-object shift or scale change.
+- No clipping, horizon seam or disappearance occurs during look and traversal.
+- Smaller moons remain distinct celestial objects, with composition checked
+  alongside the giant rather than accepted merely because transforms exist.
+
+Current source uses centre `(9000, 16800, 42000)`, diameter `34000` and camera
+far clip `80000`. Round202 includes that source change; the worker reports only
+a follow-view runtime image, not the three-view proof above. Distance in world
+units does not by itself establish the intended perceived depth. This remains
+OPEN until the compiled evidence and user visual review support it.
+
 ## Current priority and evidence boundary — 15 September, round190
 
 The user's expanded gameplay acceptance requires the local-infrastructure model
