@@ -36,7 +36,7 @@ namespace CityLife.World
         private Vector3 routeOrigin;
         [Serializable] private sealed class Row
         {
-            public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash;
+            public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash,offeredActions;
             public int tick,incarnation,foodDelta,waterDelta,inventoryDelta,request;
             public long modelMilliseconds;
             public float x,y,z;
@@ -92,6 +92,7 @@ namespace CityLife.World
                 model=result==null?null:result.model,requestHash=result==null?null:result.RequestHash,
                 responseHash=result==null?null:result.ResponseHash,finishReason=result==null?null:result.finishReason,
                 modelMilliseconds=result==null?0:result.milliseconds,
+                offeredActions=offered==null?null:string.Join(",",offered),
                 tick=Brain.Tick,incarnation=s.incarnation,request=receipt==null?0:receipt.request,
                 foodDelta=receipt==null?0:receipt.foodDelta,waterDelta=receipt==null?0:receipt.waterDelta,
                 inventoryDelta=receipt==null?0:receipt.inventoryDelta,
@@ -132,12 +133,16 @@ namespace CityLife.World
                 }
             }
             if(s.carriedFruit>0&&s.knowsBerry&&s.satiety<8500)foodChoices.Add("eat fruit");
-            // Nano 4B at max128 exhausted its reasoning budget for the old
-            // four-direction exploration-only menu (8/8 length/empty in a
-            // separate exact-payload benchmark). A bounded live menu keeps
-            // two reachable exploratory choices while still letting the model
-            // choose; the world never chooses an action on its behalf.
-            var choices=foodChoices.Take(2).ToList();
+            // Exact-payload probes proved four exploratory options 8/8
+            // length/empty, and the three-option near-berry runtime stalled
+            // repeatedly. Two genuinely eligible options generated a final
+            // live action in 5/5 separate warm requests. Rotate the offered
+            // menu over time; this is capacity selection, not an action taken
+            // on the model's behalf or hidden resource knowledge.
+            string urgent=s.hydration<6500?foodChoices.FirstOrDefault(x=>x.EndsWith("spring")):null;
+            if(urgent==null&&s.carriedFruit>0&&s.satiety<8500&&foodChoices.Contains("eat fruit"))urgent="eat fruit";
+            if(urgent==null)urgent=foodChoices.FirstOrDefault();
+            var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
             var directions=new [] {("explore north",Vector3.forward),("explore east",Vector3.right),
                 ("explore south",Vector3.back),("explore west",Vector3.left)};
             var candidates=new List<(string action,int score)>();
@@ -149,7 +154,7 @@ namespace CityLife.World
                 exploredCells.TryGetValue(cell,out int visits);
                 candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
             }
-            foreach(var candidate in candidates.OrderBy(c=>c.score).Take(Mathf.Min(2,3-choices.Count)))
+            foreach(var candidate in candidates.OrderBy(c=>c.score).Take(2-choices.Count))
                 choices.Add(candidate.action);
             return choices;
         }
