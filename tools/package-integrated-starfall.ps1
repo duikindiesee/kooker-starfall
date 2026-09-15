@@ -70,3 +70,4 @@ try {
     scope = 'No services, model weights, saves or private configuration included. Review and user acceptance remain separate.'
 } | ConvertTo-Json | Set-Content -LiteralPath $receiptPath -Encoding utf8
 Get-Content -LiteralPath $receiptPath
+& (Join-Path $PSScriptRoot 'retain-current-integrated-build.ps1') -BuildManifest $BuildManifest -RuntimeDirectory $RuntimeDirectory -Execute | Out-Host

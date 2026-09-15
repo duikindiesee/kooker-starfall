@@ -1,5 +1,19 @@
 # CityLife Unity
 
+## Integrated build retention (user decision, 15 September 2026)
+
+Keep one current verified integrated build, not an archive of executable copies.
+A temporary replacement may coexist during build and validation. On explicit
+build failure, remove only that failed output; keep the current verified player.
+After replacement runtime/content checks pass, promote it and remove superseded
+integrated binaries and redundant ZIPs using the validated retention workflow.
+Protect active processes, source, user saves and compact logs/provenance/screenshots.
+Historical instructions to preserve previous build folders are superseded for
+these integrated binaries; retain their evidence instead. See
+`docs/BUILD-RETENTION.md`. Packaging/promotion is not permission to merge, release
+or bypass protected review. Keep the real Task API owning record aligned; do not
+invent an epic/task/workstream ID or claim an unverified queue receipt.
+
 Read `README.md` and `docs/WORLD-FOUNDATION.md` before changing the world. The current milestone is an explorable island foundation; road, plot, house-tool, shared-world and household integrations are separate future work.
 
 - Preserve the versioned world definition and explicit migration boundary. Never silently regenerate a saved world using a changed algorithm/configuration.

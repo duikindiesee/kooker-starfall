@@ -34,7 +34,7 @@ This is the completion checklist for the active opening-world goal, not a releas
 | Genuine local thought and safe fallback | Same compiled candidate admits a grounded model answer tied to event; timeout/unavailable fallback tested | Endpoint or Editor-only response is insufficient |
 | Clothing and club | Full motion/camera coverage; corrected grip and error-free required validation | Club remains held until validation repaired or user explicitly defers |
 | Integration governance | Dependency/source manifest, requested review fixes validated, protected review receipts | No inference of approval from old successful CI; no unauthorized merge |
-| Versioned executable and ZIP | Exact build path, source identity, SHA256, archive/private-file checks and launch test | Preserve prior build folders |
+| Versioned executable and ZIP | Exact build path, source identity, SHA256, archive/private-file checks and launch test | Keep one verified build plus temporary candidate; preserve historical evidence, not superseded binaries (BUILD-RETENTION.md) |
 | Architecture/install/status | Reproducible manual service steps, endpoint and memory ownership, honest limitations | Do not claim unified game saving from service-only reload |
 | Narrated before/after MP4 | Actual footage, evidence-backed narration, replay with audio and intact ending | See OPENING-WORLD-WALKTHROUGH.md; plan alone is not delivery |
 | Human acceptance | User tests identified final build and explicitly accepts visual/play result | Pending; cannot be supplied by automation |
