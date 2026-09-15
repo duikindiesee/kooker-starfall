@@ -29,7 +29,17 @@ It is not permission to discard source, saves, compact evidence or protected
 review. The queues and receipts below are historical unless explicitly tied to
 the final candidate's exact source and complete content fingerprint.
 
-## Immediate integration queue after round 139
+## Historical integration queue after round 139
+
+The queue below records the earlier failures, not current source state. Current
+source uses `HunterClubCarry.ClubRadius` in `HunterOutfitAuthoring.CreateClubMesh`;
+its shaft base is approximately 0.010 m, not the old 0.022 m. The integrated
+acceptance routine now requests 80 uphill/downhill pose samples plus 80 actual
+controller traversal samples, with complete terrain-ray coverage and at least
+1 m travelled. These source changes do not certify hand fit: the check explicitly
+leaves visual hand review separate. Final-candidate runtime results, retained
+close-ups and user acceptance remain required. See the current player review in
+[REVIEW-ROUND200-PLAYER.md](REVIEW-ROUND200-PLAYER.md).
 
 1. Repair and rerun the reproduced blue-delivery movement stall. Round 20
    stopped beside the relocated forage plant with blue cargo after two deliveries;
@@ -37,7 +47,7 @@ the final candidate's exact source and complete content fingerprint.
 2. Finish the bounded water/plant correction and retain matched compiled views;
    round 139 is not visually accepted.
 3. Transfer the corrected hunter grip deliberately from its isolated branch,
-   preserving garments and right-hand delivery. Combined authoring still uses
+   preserving garments and right-hand delivery. At round139 combined authoring used
    a 0.022 m shaft base radius, unlike the corrected candidate's documented
    0.010 m radius. These are not the same grip candidate.
 4. Validate the corrected club in the combined standalone player across movement
