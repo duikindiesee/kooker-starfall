@@ -474,19 +474,60 @@ namespace CityLife.World
             bool reachedInterior = interiorRoute != null && interiorRoute.Count == 0 &&
                 Vector2.Distance(new Vector2(Brain.transform.position.x, Brain.transform.position.z),
                     new Vector2(refugeInterior.x, refugeInterior.z)) < .5f;
-            if (refugeRuntime != null) refugeRuntime.Clock.Tick = 4900;
-            var sheltered = refugeRuntime == null ? default(Starfall.EnvironmentZones.ZoneWeather) :
-                refugeRuntime.Sample(Brain.transform.position + Vector3.up);
+            // IntegratedEnvironment, not the standalone refuge fixture, owns
+            // the one regional weather clock in this combined player.
+            Environment.Clock.Tick = 4900;
+            var sheltered = Environment.SampleAt(Brain.transform.position + Vector3.up);
+            var exteriorWeather = Environment.SampleAt(refugeOutside + Vector3.up);
+            bool floorHit = Physics.Raycast(Brain.transform.position + Vector3.up * .8f,
+                Vector3.down,out var refugeFloor,2.4f,Starfall.Refuge.RefugeRuntime.GeometryMask,
+                QueryTriggerInteraction.Ignore);
+            float footGap = floorHit ? Brain.transform.position.y-refugeFloor.point.y : float.NaN;
             CheckThat("refuge-continuous-actor-entry-and-shelter", reachedInterior && refugeRuntime != null &&
-                sheltered.Valid && sheltered.RainMultiplier < .02f,
+                sheltered.Valid && sheltered.RainMultiplier < .02f && floorHit &&
+                footGap >= -.04f && footGap <= .15f,
                 "same CharacterController; steps=" + refugeSteps + "; final=" + Brain.transform.position +
-                "; interior=" + refugeInterior + "; rainMultiplier=" + sheltered.RainMultiplier.ToString("F3"));
+                "; interior=" + refugeInterior + "; rainMultiplier=" + sheltered.RainMultiplier.ToString("F3") +
+                "; floor=" + (floorHit?refugeFloor.point.ToString():"none") + "; footGap=" + footGap.ToString("F3"));
+            CheckThat("refuge-regional-weather-adapter-inside-outside", refugeRuntime != null &&
+                sheltered.Valid && sheltered.GeometryCredited && sheltered.RainMultiplier < .02f &&
+                exteriorWeather.Valid && exteriorWeather.RainMultiplier > .99f,
+                "same regional clock; interior rainMultiplier=" + sheltered.RainMultiplier.ToString("F3") +
+                "; exterior rainMultiplier=" + exteriorWeather.RainMultiplier.ToString("F3"));
+            if(refugeRuntime!=null&&refugeRuntime.Roof!=null)
+            {
+                bool originalRoof=refugeRuntime.Roof.enabled;
+                Starfall.EnvironmentZones.ZoneWeather roofMissing;
+                try
+                {
+                    refugeRuntime.Roof.enabled=false;Physics.SyncTransforms();
+                    roofMissing=Environment.SampleAt(Brain.transform.position+Vector3.up);
+                }
+                finally{refugeRuntime.Roof.enabled=originalRoof;Physics.SyncTransforms();}
+                CheckThat("refuge-removed-roof-withholds-regional-credit", !roofMissing.GeometryCredited &&
+                    roofMissing.RainMultiplier > .99f,
+                    "removed authored roof; rainMultiplier="+roofMissing.RainMultiplier.ToString("F3"));
+                bool lit=refugeRuntime.Ignite();
+                yield return new WaitForFixedUpdate();
+                long fireTick=refugeRuntime.Fire.Tick,regionalTick=Environment.Clock.Tick;
+                bool originallyPaused=Brain.MenuPaused;
+                try
+                {
+                    Brain.MenuPaused=true;
+                    yield return new WaitForSecondsRealtime(.25f);
+                    CheckThat("refuge-regional-pause-freezes-hearth",lit && refugeRuntime.Fire.Burning &&
+                        refugeRuntime.Fire.Tick==fireTick && Environment.Clock.Tick==regionalTick,
+                        "regional paused; fireTick="+fireTick+"->"+refugeRuntime.Fire.Tick+
+                        "; weatherTick="+regionalTick+"->"+Environment.Clock.Tick);
+                }
+                finally{Brain.MenuPaused=originallyPaused;refugeRuntime.Fire.Extinguish();}
+            }
             Controls.View.transform.position = Brain.transform.position + new Vector3(3, 2.5f, -2);
             Controls.View.transform.LookAt(Brain.transform.position + Vector3.up);
             yield return CaptureWorld("07b-refuge-actor-inside");
             CheckThat("refuge-discoverable", refugeObject != null && Array.Exists(Brain.Registry, x => x.StableId == "first-refuge" && x.Kind == NpcObjectKind.Place) &&
                 refugeCentre.y > CoastalTerrain.Height(refugeCentre.x,refugeCentre.z),
-                "Authored geometry is above sampled terrain and registered as a non-pickup place; live memory is not connected.");
+                "Authored geometry above terrain, registered as a non-pickup place; this check does not verify refuge-discovery memory.");
             foreach (string pose in new[] { "Idle", "Crouch", "Sit" })
             {
                 Brain.Actor.Animator.Play(pose, 0, 0); Brain.Actor.Animator.Update(.5f);

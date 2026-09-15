@@ -19,7 +19,7 @@ namespace Starfall.Food
         public Vector3 actorPosition;
         public int ripeAge,primaryStress,gardenGrowth,gardenStress,gardenRipeAge,temperatureC=22,nextSeed,ecologySequence,lastNaturalSeason=-1,aidUsed;
         public bool primaryDead,knowsPlanting,gardenEstablished;
-        public string plantingEvidence="",causalMemory="";
+        public string plantingEvidence="",causalMemory="",survivalAuthorityEvidence="";
         public List<EdenBush> bushes=new List<EdenBush>{new EdenBush{site=1}};
         public List<EdenSeed> drops=new List<EdenSeed>();
         public List<EdenEvent> ecologyEvents=new List<EdenEvent>();
@@ -145,6 +145,14 @@ namespace Starfall.Food
         }
         public string Json()=>JsonUtility.ToJson(State);
         public static string Hash(string data){using(var h=SHA256.Create())return BitConverter.ToString(h.ComputeHash(Encoding.UTF8.GetBytes(data))).Replace("-","").ToLowerInvariant();}
+        // Minted only by the live autonomy dispatcher after its complete
+        // three-delivery prerequisite. This binds the scoped continuation to
+        // this world/actor/generation; it is not a cryptographic world save.
+        public static string SurvivalAuthorityEvidence(FoodState s)=>
+            s.world+"/"+s.actorId+"/"+s.generation+"/three-live-deliveries";
+        public static bool HasEarnedSurvivalAuthority(FoodState s)=>s!=null&&
+            !string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&
+            s.survivalAuthorityEvidence==SurvivalAuthorityEvidence(s);
         public static bool Valid(FoodState s,string world,string generation)
         {
             if(s==null||s.schema!="starfall.food.v1"||s.rules!="food-eden.2"||s.world!=world||s.generation!=generation||!Id(world)||!Id(generation)||!Id(s.actorId)||!FoodPhysiology.Valid(s.body)||s.incarnation<1||s.deaths==null||s.bags==null||s.deaths.Count>128||s.bags.Count!=s.deaths.Count)return false;
@@ -167,6 +175,8 @@ namespace Starfall.Food
                 s.berryEvidence.StartsWith(generation+".lesson.",StringComparison.Ordinal))||
                 s.knowsSpring&&!s.springEvidence.StartsWith(generation+".source.",StringComparison.Ordinal)||
                 s.knowsMealBenefit&&!s.lastMealEvidence.StartsWith(generation+".ate.",StringComparison.Ordinal))return false;
+            if(!string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&
+                s.survivalAuthorityEvidence!=SurvivalAuthorityEvidence(s))return false;
             var p=s.actorPosition;return Finite(p.x)&&Finite(p.y)&&Finite(p.z)&&p.magnitude<10000;
         }
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);

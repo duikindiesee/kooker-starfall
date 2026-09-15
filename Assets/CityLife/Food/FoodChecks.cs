@@ -131,6 +131,26 @@ namespace Starfall.Food
             var reset=new FoodModel("test-a","generation-reset",4242);Check(!reset.Load(path,"test-a","generation-reset")&&!reset.Execute("test-a","generation-a",999,FoodAction.Inspect,"berry",a).success,"reset rejects old generation save and command");
             File.WriteAllText(path,"corrupt");string unchanged=m.Json();Check(!m.Load(path,"test-a","generation-a")&&m.Json()==unchanged,"corrupt load retains live state");
             var invalid=JsonUtility.FromJson<FoodState>(m.Json());invalid.carriedFruit=-1;Check(!m.Restore(JsonUtility.ToJson(invalid),"test-a","generation-a"),"invalid counts rejected");
+            var unearned=new FoodModel("authority","generation-a",4242);
+            Check(!FoodModel.HasEarnedSurvivalAuthority(unearned.State),
+                "pre-survival food/body save cannot bypass live delivery prerequisite");
+            Check(!FoodModel.HasEarnedSurvivalAuthority(m.State),
+                "scripted food experiments and a meal never mint survival dispatch authority");
+            unearned.State.survivalAuthorityEvidence=FoodModel.SurvivalAuthorityEvidence(unearned.State);
+            string earnedPath=Path.Combine(folder,"earned-authority.json");unearned.Save(earnedPath);
+            var earnedReload=new FoodModel("authority","generation-a",4242);
+            Check(earnedReload.Load(earnedPath,"authority","generation-a")&&
+                FoodModel.HasEarnedSurvivalAuthority(earnedReload.State),
+                "scoped earned authority survives exact world/actor/generation reload");
+            var malformed=JsonUtility.FromJson<FoodState>(unearned.Json());
+            malformed.survivalAuthorityEvidence="foreign/actor/generation/three-live-deliveries";
+            Check(!FoodModel.Valid(malformed,"authority","generation-a")&&
+                !FoodModel.HasEarnedSurvivalAuthority(malformed),
+                "foreign or malformed survival authority marker rejected");
+            var wrongWorld=new FoodModel("foreign","generation-a",4242);
+            Check(!wrongWorld.Load(earnedPath,"foreign","generation-a")&&
+                !FoodModel.HasEarnedSurvivalAuthority(wrongWorld.State),
+                "earned continuation never crosses a world boundary");
             for(int seed=0;seed<10;seed++)
             {
                 var x=new FoodModel("replay","g",seed);var y=new FoodModel("replay","g",seed);

@@ -23,6 +23,7 @@ namespace CityLife.World
         public bool LastChoiceByModel { get; private set; }
         public string LastOutcome { get; private set; }="no survival outcome yet";
         public int AcceptedDecisions { get; private set; }
+        public bool VerifiedScopedContinuation { get; private set; }
         public int FoodOutcomes { get; private set; }
         public int ExploredMetres { get; private set; }
         public string LastSafeGround { get; private set; }="";
@@ -67,6 +68,10 @@ namespace CityLife.World
                 bool prior=savePath!=null&&File.Exists(savePath);
                 if(prior&&!Food.Model.Load(savePath,Brain.InstanceWorldId,IntegratedFoodRuntime.Generation))
                     throw new InvalidOperationException("scoped-save-rejected");
+                // Old food/body checkpoints, even ones containing a meal,
+                // never authorize survival dispatch on a reconstructed world.
+                // Only a marker minted after the live delivery prerequisite can.
+                VerifiedScopedContinuation=prior&&FoodModel.HasEarnedSurvivalAuthority(Food.Model.State);
                 if(!TryNextFoodRequest(Food.Model.State.lastRequest,out _))
                     throw new InvalidOperationException("scoped-food-request-sequence-exhausted");
                 request=Food.Model.State.lastRequest;
@@ -78,7 +83,8 @@ namespace CityLife.World
                 }
                 Enabled=true;Status="Survival mind ready; waiting for ordinary task authority";
                 lastCheckpointSecond=Food.Model.State.tick;
-                Record("startup",prior?"scoped-food-save-reloaded":"new-scoped-food-journey",null,null);
+                Record("startup",prior?(VerifiedScopedContinuation?"earned-survival-authority-reloaded":
+                    "scoped-food-save-reloaded-without-authority"):"new-scoped-food-journey",null,null);
             }
             catch(Exception error){Enabled=false;Status="Survival mind unavailable: "+error.GetType().Name;}
         }
@@ -354,6 +360,16 @@ namespace CityLife.World
             if(!Enabled)return false;
             if(Brain.MenuPaused||Brain.Possessed||!Brain.Running){Cancel("control-interruption");return false;}
             var s=Food.Model.State;
+            if(string.IsNullOrEmpty(s.survivalAuthorityEvidence) && !s.body.dead &&
+                Brain.Actions!=null && Brain.Actions.Held==null && Brain.Actions.Deliveries>=3 &&
+                Brain.Registry.Where(x=>x.Kind==NpcObjectKind.Item&&x.Permission)
+                    .All(x=>!string.IsNullOrEmpty(x.DeliveredTo)))
+            {
+                s.survivalAuthorityEvidence=FoodModel.SurvivalAuthorityEvidence(s);
+                Persist();
+                if(!Enabled)return true;
+                Record("authority","earned-after-three-live-deliveries",null,null);
+            }
             if(s.body.dead)
             {
                 if(deathAtTick<0){deathAtTick=Brain.Tick;Record("death","verified-physiology-cause",null,null);Persist();}
