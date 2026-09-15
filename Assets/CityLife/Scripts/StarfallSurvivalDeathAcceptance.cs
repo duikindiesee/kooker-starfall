@@ -18,10 +18,10 @@ namespace CityLife.World
         public Camera View;
         [Serializable] private sealed class Case
         {
-            public string cause,lesson,deathHash,returnCode;
+            public string cause,lesson,deathHash,returnCode,returnGround;
             public int incarnationBefore,incarnationAfter,worldTickBefore,worldTickAfter,bagCount;
-            public bool realPhysiologyDeath,safeRefugeReturn,scopedReload,worldAndActorPreserved,noInventedKnowledge;
-            public float returnX,returnY,returnZ;
+            public bool realPhysiologyDeath,safeRefugeReturn,scopedReload,worldAndActorPreserved,noInventedKnowledge,feetGrounded;
+            public float returnX,returnY,returnZ,returnFootFloorGap;
         }
         [Serializable] private sealed class Report
         {
@@ -87,9 +87,17 @@ namespace CityLife.World
                     yield return Capture(folder,variant==0?"01-measured-dehydration-death.png":"03-measured-starvation-death.png");
                     result.safeRefugeReturn=Survival.DiagnosticSafeReturn();
                     result.scopedReload=Survival.DiagnosticVerifyReload();
+                    result.returnGround=Survival.LastSafeGround;
                     result.returnCode=result.safeRefugeReturn?"verified-safe-refuge-landing":"no-safe-return";
                     result.incarnationAfter=s.incarnation;result.worldTickAfter=s.tick;
                     result.returnX=Brain.transform.position.x;result.returnY=Brain.transform.position.y;result.returnZ=Brain.transform.position.z;
+                    for(int settle=0;settle<12;settle++)yield return null;
+                    var left=Brain.Actor.Animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+                    var right=Brain.Actor.Animator.GetBoneTransform(HumanBodyBones.RightFoot);
+                    result.returnFootFloorGap=left!=null&&right!=null?
+                        Mathf.Min(left.position.y,right.position.y)-Survival.LastSafeGroundY:float.PositiveInfinity;
+                    result.feetGrounded=result.returnGround=="Refuge floor"&&Brain.Actor.Grounded&&
+                        result.returnFootFloorGap>=-.05f&&result.returnFootFloorGap<.28f;
                     result.worldAndActorPreserved=s.world==report.world&&s.actorId==report.actor&&
                         Food.Berry.transform.position==berry&&Brain.TerrainNavigation.Revision==revision&&
                         s.deaths[variant].hash==result.deathHash&&s.tick>=result.worldTickBefore;
@@ -104,7 +112,7 @@ namespace CityLife.World
             report.geometryPreserved=Food.Berry.transform.position==berry&&Brain.TerrainNavigation.Revision==revision;
             report.status=report.actualModelMealBeforeProbe&&report.ordinaryActionDeliveries>=3&&
                 report.cases.Count==2&&report.geometryPreserved&&report.cases.TrueForAll(c=>
-                    c.realPhysiologyDeath&&c.safeRefugeReturn&&c.scopedReload&&c.worldAndActorPreserved&&c.noInventedKnowledge)
+                    c.realPhysiologyDeath&&c.safeRefugeReturn&&c.scopedReload&&c.worldAndActorPreserved&&c.noInventedKnowledge&&c.feetGrounded)
                 ?"PASS_COMPILED_ACCELERATED_CAUSE_AND_SAFE_RETURN_NOT_NATURAL_PACING":"FAIL";
             File.WriteAllText(Path.Combine(folder,"death-diagnostic.json"),JsonUtility.ToJson(report,true));
             Application.Quit();

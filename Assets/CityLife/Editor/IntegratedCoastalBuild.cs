@@ -154,6 +154,7 @@ namespace CityLife.World.Editor
             var food = foodObject.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
             food.Brain = brain;
             food.Attach(brain.transform, ground.transform, brain.InstanceWorldId);
+            food.Refuge=refugeRuntime;
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
             var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();

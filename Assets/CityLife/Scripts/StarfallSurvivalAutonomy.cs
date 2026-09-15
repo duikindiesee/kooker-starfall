@@ -24,17 +24,21 @@ namespace CityLife.World
         public int AcceptedDecisions { get; private set; }
         public int FoodOutcomes { get; private set; }
         public int ExploredMetres { get; private set; }
+        public string LastSafeGround { get; private set; }="";
+        public float LastSafeGroundY { get; private set; }
         private string endpoint,model,evidenceDirectory,savePath;
         private Task<StarfallSurvivalThought.Result> pending;
         private CancellationTokenSource cancellation;
         private readonly Queue<Vector3> route=new Queue<Vector3>();
+        private readonly Dictionary<Vector2Int,int> exploredCells=new Dictionary<Vector2Int,int>();
         private List<string> offered;
-        private int request, nextRequestTick, routeStartTick, deathAtTick=-1;
+        private int request, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed;
         private Vector3 routeOrigin;
         [Serializable] private sealed class Row
         {
             public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash;
             public int tick,incarnation,foodDelta,waterDelta,inventoryDelta,request;
+            public long modelMilliseconds;
             public float x,y,z;
         }
         private IEnumerator Start()
@@ -87,6 +91,7 @@ namespace CityLife.World
             var s=Food.Model.State; var row=new Row{world=s.world,actor=s.actorId,kind=kind,code=code,choice=choice,
                 model=result==null?null:result.model,requestHash=result==null?null:result.RequestHash,
                 responseHash=result==null?null:result.ResponseHash,finishReason=result==null?null:result.finishReason,
+                modelMilliseconds=result==null?0:result.milliseconds,
                 tick=Brain.Tick,incarnation=s.incarnation,request=receipt==null?0:receipt.request,
                 foodDelta=receipt==null?0:receipt.foodDelta,waterDelta=receipt==null?0:receipt.waterDelta,
                 inventoryDelta=receipt==null?0:receipt.inventoryDelta,
@@ -103,29 +108,49 @@ namespace CityLife.World
         }
         private List<string> Eligible()
         {
-            var choices=new List<string>();var s=Food.Model.State;
-            if(Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
-            {
-                FoodAccess gate=Food.Inspect("berry");
-                if(gate.visible && gate.permitted)
-                {
-                    if(!gate.inReach)choices.Add("approach berry");
-                    else if(!s.knowsBerry)choices.Add("inspect berry");
-                    else if(s.fruitStock>0&&s.carriedFruit<4)choices.Add("gather berry");
-                }
-            }
-            if(s.carriedFruit>0&&s.knowsBerry&&s.satiety<8500)choices.Add("eat fruit");
+            var foodChoices=new List<string>();var s=Food.Model.State;
+            // First screen for actually seen, scoped freshwater. Its position
+            // is never disclosed; an approach token appears only after live LOS.
             if(Observed("spring-food",out _) && Food.Spring!=null && Food.Spring.WorldId==s.world)
             {
                 FoodAccess gate=Food.Inspect("spring");
                 if(gate.visible&&gate.permitted)
                 {
-                    if(!gate.inReach)choices.Add("approach spring");
-                    else if(!s.knowsSpring)choices.Add("inspect spring");
-                    else if(s.hydration<8500&&s.freshwaterMl>=250)choices.Add("drink spring");
+                    if(!gate.inReach)foodChoices.Add("approach spring");
+                    else if(!s.knowsSpring)foodChoices.Add("inspect spring");
+                    else if(s.hydration<8500&&s.freshwaterMl>=250)foodChoices.Add("drink spring");
                 }
             }
-            choices.Add("explore north");choices.Add("explore east");choices.Add("explore south");choices.Add("explore west");
+            if(Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
+            {
+                FoodAccess gate=Food.Inspect("berry");
+                if(gate.visible && gate.permitted)
+                {
+                    if(!gate.inReach)foodChoices.Add("approach berry");
+                    else if(!s.knowsBerry)foodChoices.Add("inspect berry");
+                    else if(s.fruitStock>0&&s.carriedFruit<4)foodChoices.Add("gather berry");
+                }
+            }
+            if(s.carriedFruit>0&&s.knowsBerry&&s.satiety<8500)foodChoices.Add("eat fruit");
+            // Nano 4B at max128 exhausted its reasoning budget for the old
+            // four-direction exploration-only menu (8/8 length/empty in a
+            // separate exact-payload benchmark). A bounded live menu keeps
+            // two reachable exploratory choices while still letting the model
+            // choose; the world never chooses an action on its behalf.
+            var choices=foodChoices.Take(2).ToList();
+            var directions=new [] {("explore north",Vector3.forward),("explore east",Vector3.right),
+                ("explore south",Vector3.back),("explore west",Vector3.left)};
+            var candidates=new List<(string action,int score)>();
+            for(int i=0;i<directions.Length;i++)
+            {
+                var p=Brain.transform.position+directions[i].Item2*6f;
+                if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                var cell=new Vector2Int(Mathf.RoundToInt(p.x/3f),Mathf.RoundToInt(p.z/3f));
+                exploredCells.TryGetValue(cell,out int visits);
+                candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
+            }
+            foreach(var candidate in candidates.OrderBy(c=>c.score).Take(Mathf.Min(2,3-choices.Count)))
+                choices.Add(candidate.action);
             return choices;
         }
         private bool StartRoute(Vector3 destination)
@@ -158,17 +183,25 @@ namespace CityLife.World
         {
             if(Refuge==null||!Refuge.GeometryVerified)return false;
             Physics.SyncTransforms();
-            for(float x=-11.5f;x<=-8.5f;x+=.5f)for(float z=-1f;z<=1f;z+=.5f)
+            for(float x=-9.5f;x<=-7.5f;x+=.5f)for(float z=-1.25f;z<=.5f;z+=.5f)
             {
                 Vector3 above=Refuge.OriginOffset+new Vector3(x,3,z);
                 if(!Physics.Raycast(above,Vector3.down,out var hit,2f,Starfall.Refuge.RefugeRuntime.GeometryMask,QueryTriggerInteraction.Ignore))continue;
+                // Ray hits on the mat/storage/hearth are not standing ground.
+                // The floor is the same solid authored support used by refuge
+                // traversal; keep a bare patch and verify roof protection.
+                if(hit.collider.name!="Refuge floor")continue;
                 Vector3 safe=hit.point+Vector3.up*.06f;
                 if(Physics.CheckCapsule(safe+Vector3.up*.45f,safe+Vector3.up*1.5f,.35f,
                     Starfall.Refuge.RefugeRuntime.GeometryMask,QueryTriggerInteraction.Ignore))continue;
+                if(Refuge.Sample(safe+Vector3.up).RainMultiplier>=.02f)continue;
                 var s=Food.Model.State;
                 FoodReceipt returned=Food.Model.Execute(s.world,s.generation,++request,FoodAction.Return,"inventory",Food);
                 if(!returned.success)return false;
                 Brain.Actor.Place(safe);Brain.Actor.DeadPose=false;Brain.Actor.RefreshAnimation();
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                LastSafeGround=hit.collider.name;
+                LastSafeGroundY=hit.point.y;
                 s.actorPosition=safe;Record("return","safe-refuge-world-preserved",null,null,returned);
                 LastChoice="safe return";LastOutcome="Returned after "+s.deaths[s.deaths.Count-1].cause;
                 Persist();
@@ -217,6 +250,9 @@ namespace CityLife.World
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:
                     accepted.EndsWith("east")?Vector3.right:Vector3.left;
                 Vector3 destination=Brain.transform.position+direction*6f;
+                explorationSeed++;
+                var cell=new Vector2Int(Mathf.RoundToInt(destination.x/3f),Mathf.RoundToInt(destination.z/3f));
+                exploredCells.TryGetValue(cell,out int visits);exploredCells[cell]=visits+1;
                 if(!StartRoute(destination))Record("route","no-walkable-exploration-route",accepted,result);
             }
             else if(accepted.StartsWith("approach ",StringComparison.Ordinal))
@@ -266,7 +302,9 @@ namespace CityLife.World
                 offered=null;return true;
             }
             if(Brain.Tick<nextRequestTick){Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
-            offered=Eligible();cancellation=new CancellationTokenSource();
+            offered=Eligible();
+            if(offered.Count==0){Record("model","no-current-walkable-or-observed-options",null,null);nextRequestTick=Brain.Tick+100;return true;}
+            cancellation=new CancellationTokenSource();
             pending=StarfallSurvivalThought.Request(endpoint,model,s.satiety,s.hydration,offered,cancellation.Token);
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;

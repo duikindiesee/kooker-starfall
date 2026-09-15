@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcAutonomy Brain;
         public NpcInteractable Berry, Spring;
+        public Starfall.Refuge.RefugeRuntime Refuge;
         public Vector3 BerryPosition, SpringPosition;
         [field: SerializeField] public float MinimumRockClearance { get; private set; }
         public int RockColliderCount { get; private set; }
@@ -34,12 +35,17 @@ namespace Starfall.Food
             // The readable berry site shares the broad activity shelf but stays
             // outside the delivery fixture, rather than hiding in a mesa wall.
             BerryPosition = new Vector3(126, CoastalTerrain.Height(126, -80), -80);
-            SpringPosition = new Vector3(-24, CoastalTerrain.Height(-24, 54) + .18f, 54);
+            // A maintained freshwater seep occupies a separate dry rocky-foot
+            // shelf north of the activity bank. It is outside initial 12 m
+            // perception; no model prompt receives this authored coordinate.
+            SpringPosition = new Vector3(121, CoastalTerrain.Height(121, -58) + .18f, -58);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, worldId, new Color(.05f, .72f, .86f));
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
+            if (SpringPosition.y <= CoastalWater.Level + 1f || MeasureRockClearance(SpringPosition) < 2f)
+                throw new System.InvalidOperationException("Freshwater seep requires a dry, clear discovered shelf.");
         }
         static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
         {
@@ -230,7 +236,14 @@ namespace Starfall.Food
             finally { acceptanceAccess = false; }
         }
         void FixedUpdate() { EnsureModel(); if (Actor != null) { bool paused=Brain!=null&&Brain.MenuPaused;
-            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused);
+            if(!paused)
+            {
+                Model.State.actorPosition=Actor.position;
+                Model.State.body.active=Brain!=null && Brain.Actor!=null && Brain.Actor.ActualSpeed>.12f;
+                Model.State.body.resting=Refuge!=null && Refuge.Resting && Refuge.Body!=null && Refuge.Body.transform==Actor;
+                Model.State.body.sheltered=Refuge!=null && Refuge.GeometryVerified && Refuge.Sample(Actor.position+Vector3.up).RainMultiplier<.05f;
+            }
+            Model.FixedStep(paused);
             if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;
             SyncFruitVisual(); } }
     }
