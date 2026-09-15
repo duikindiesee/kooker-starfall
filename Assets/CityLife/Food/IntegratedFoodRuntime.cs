@@ -38,7 +38,7 @@ namespace Starfall.Food
             // A maintained freshwater seep occupies a separate dry rocky-foot
             // shelf north of the activity bank. It is outside initial 12 m
             // perception; no model prompt receives this authored coordinate.
-            SpringPosition = new Vector3(121, CoastalTerrain.Height(121, -58), -58);
+            SpringPosition = FindDrySpringSite();
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
             Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId);
             Physics.SyncTransforms();
@@ -46,6 +46,36 @@ namespace Starfall.Food
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
             if (SpringPosition.y <= CoastalWater.Level + 1f || MeasureRockClearance(SpringPosition) < 2f)
                 throw new System.InvalidOperationException("Freshwater seep requires a dry, clear discovered shelf.");
+        }
+        static Vector3 FindDrySpringSite()
+        {
+            // Choose a real, reproducible dry pocket near the authored rocky-foot
+            // shelf. This is world generation, never model starting knowledge.
+            // The old centre point's flattened sphere passed while its wider
+            // visible rim crossed lower wet terrain; evaluate the full footprint.
+            for(int shell=0;shell<=12;shell+=2)
+            for(int dz=-shell;dz<=shell;dz+=2)
+            for(int dx=-shell;dx<=shell;dx+=2)
+            {
+                if(Mathf.Max(Mathf.Abs(dx),Mathf.Abs(dz))!=shell)continue;
+                float x=121+dx,z=-58+dz;
+                if(new Vector2(x-126,z+80).magnitude<16f)continue;
+                float centre=CoastalTerrain.Height(x,z),low=centre,high=centre;
+                for(int i=0;i<16;i++)
+                {
+                    float a=i*Mathf.PI*2f/16f;
+                    foreach(float radius in new[]{.66f,1.05f})
+                    {
+                        float y=CoastalTerrain.Height(x+Mathf.Cos(a)*radius,z+Mathf.Sin(a)*radius);
+                        low=Mathf.Min(low,y);high=Mathf.Max(high,y);
+                    }
+                }
+                if(low<=CoastalWater.Level+1f||high-low>.50f)continue;
+                var site=new Vector3(x,centre,z);
+                if(MeasureRockClearance(site)<2f)continue;
+                return site;
+            }
+            throw new System.InvalidOperationException("No dry terrain-fitted freshwater seep pocket near rocky-foot shelf.");
         }
         static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
         {
