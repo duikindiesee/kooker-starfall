@@ -73,7 +73,10 @@ namespace CityLife.World.Editor
             foreach (Transform t in model.GetComponentsInChildren<Transform>()) t.gameObject.layer = 9;
 
             actor.View = camera.gameObject.AddComponent<CharacterPreviewCamera>(); actor.View.Target = actor.transform;
-            actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
+            // Initial ordinary follow framing looks across the dry activity
+            // terrace toward the river, not straight into the nearby east mesa.
+            // Mouse orbit remains fully player-controlled after startup.
+            actor.View.Yaw = -25; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
             // Reuse the accepted interaction fixture's authority, not its old floor/courtyard.
             new GameObject("Warm starlight").AddComponent<Light>().enabled = false;
             NpcPreviewStage.Configure(actor, camera, folder);
@@ -104,7 +107,7 @@ namespace CityLife.World.Editor
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
-            camera.fieldOfView = 60; actor.View.Yaw = 0; actor.View.Pitch = 12; actor.View.Follow();
+            camera.fieldOfView = 60; actor.View.Yaw = -25; actor.View.Pitch = 12; actor.View.Follow();
             // Keep the composed galaxy view and add background coverage behind it.
             var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
             if (galaxy != null)

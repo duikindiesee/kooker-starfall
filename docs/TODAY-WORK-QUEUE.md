@@ -10,6 +10,16 @@ below are exact at this checkpoint; later candidates require fresh evidence.
 | 3. Compiled ordinary local-LLM survival and grounded death continuity | Scoped historical technical pass | Round 211 run 25: 357.904 s wall, real explore/gather/eat, two model-chosen spring drinks; run 22: two accelerated cause-scoped safe returns, lesson included in a hashed model request and an action reached. | Repeat spring relevance in replacement player, confirm no overfull spring approach trap. Natural death timing, robust policy and general model reliability remain open. |
 | 4. Watchable current-build clip and truthful play handoff | Unverified | Round 211 run 25 game-only 60 s capture is technically upright but the default follow view faces a nearby plain cliff, not the sea/giant; model-derived events exist in traces. | Produce a readable game-only clip from the new candidate showing actual model action, food and spring, with correct build binding and honest accelerated-only labels for death diagnostics. No external post without authorization. |
 
+Round 215 compiled the spring/sky source but its broad smoke again failed the
+unchanged immediate-reflection gate at **1502 ms** and the helper removed that
+temporary player. Native sky frames proved a separate defect: the original
+bank faced a steep ochre slope; the mouth camera floated above an underwater
+bed, although its eye itself cleared solid geometry. See
+`docs/REVIEW-ROUND215-PLAYER.md`. The next justified source patch rejects wet
+ground rays, picks a more open western bank and turns initial ordinary follow
+framing toward the river. Per origin ordering, run ordinary survival and
+capture on that changed candidate **before** broad smoke can remove it.
+
 Immediate model-risk diagnostic: off-game exact Mac `google/gemma-4-e4b` delivery
 samples with 20 s idle gaps were 1168, 425, 433, 520, **2785**, 425 ms.
 All six generated the same valid four-token answer with zero reasoning tokens;

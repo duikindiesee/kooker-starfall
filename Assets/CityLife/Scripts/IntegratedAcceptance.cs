@@ -92,7 +92,8 @@ namespace CityLife.World
             ground = hit.collider.name + "; floor=" + hit.point + "; eye=" + eye;
             // The old fixed-Y forward pose passed straight through a bank.
             // Reject even near-plane clipping instead of retaining a misleading sky frame.
-            return !Physics.CheckSphere(eye, Mathf.Max(.55f, nearClip + .25f),
+            return hit.point.y > CoastalWater.Level + 1f &&
+                !Physics.CheckSphere(eye, Mathf.Max(.55f, nearClip + .25f),
                 solid, QueryTriggerInteraction.Ignore);
         }
         private IEnumerator ClickMenuButton(int index)
@@ -248,9 +249,12 @@ namespace CityLife.World
                     skyCamera.farClipPlane=IntegratedCelestial.SkyFarClip;
                     skyCamera.fieldOfView=52f;
                     var seaHeading=Quaternion.LookRotation(new Vector3(.04f,.07f,1));
-                    bool bankSafe=TrySkyEye(126,-80,skyCamera.nearClipPlane,out var bank,out var bankGround);
-                    bool forwardSafe=TrySkyEye(126,-30,skyCamera.nearClipPlane,out var forward,out var forwardGround);
-                    bool mouthSafe=TrySkyEye(-17,5,skyCamera.nearClipPlane,out var mouth,out var mouthGround);
+                    // The former x=126 terrace faced a tall mesa rather than
+                    // the river; x=-17 mouth was a submerged bed. Choose the
+                    // open, dry western bank and reject any wet ray hit.
+                    bool bankSafe=TrySkyEye(-52,-55,skyCamera.nearClipPlane,out var bank,out var bankGround);
+                    bool forwardSafe=TrySkyEye(-52,-5,skyCamera.nearClipPlane,out var forward,out var forwardGround);
+                    bool mouthSafe=TrySkyEye(-38,5,skyCamera.nearClipPlane,out var mouth,out var mouthGround);
                     bool lookoutSafe=TrySkyEye(-90,110,skyCamera.nearClipPlane,out var lookout,out var lookoutGround);
                     CheckThat("distant-giant-posed-eyes-clear-of-terrain",bankSafe&&forwardSafe&&mouthSafe&&lookoutSafe,
                         "bank="+bankGround+"; forward="+forwardGround+"; mouth="+mouthGround+"; lookout="+lookoutGround+
