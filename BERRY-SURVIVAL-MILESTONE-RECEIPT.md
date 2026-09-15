@@ -1,5 +1,13 @@
 # Playable berry-survival checkpoint — not final acceptance
 
+## Current ordinary food continuity update
+
+Independently inspected current round211 runs23/24. Run23 records genuine model-driven `gathered-ripe-berry`, request6, foodTick131, inventory1. Run24 startup restores tick131/energy8455/hydration5654/fruit1 and earned authority; local model `eat fruit` is admitted and executed as **new request7** at foodTick135, +1200energy/+400hydration/-1fruit. Request hash `5fa3404ab5d7046e566190c4791bf6e2b289a10b4e7d6f7c55f54efeb597885c`, response `61645f5d602cf959ff7331272a85b472ed2069deecf09ae06837c711dab68a82`;3632ms within survival budget. Raw receipts: `evidence/local/normal-survival/run-23/survival-evidence/normal-survival.jsonl` and corresponding run24 path, with live v2 process observations. Worker reports both clean exits and unchanged current build hash.
+
+This closes the fresh post-reload food-mutation gap **relative to the saved ID6**, not the historical run17 ID15. No replay or injected fruit was used. The berry feeding/exploration, scoped restart and diagnostic cause/return/context loop is reviewable as a prototype; it is not the full goal or user acceptance. See `PLAY-BERRY-PROTOTYPE.md` for the ordinary launcher and dedicated user-slot instructions.
+
+Retention is now reconciled: exactly round209 fallback and round211 candidate remain. Receipt `evidence/local/build-retention/reconcile-20260915-120450/reconciliation.json` records14superseded folders removed,9,587,309,182bytes, free space54,875,234,304->64,466,472,960. Later historical retention-gap rows below are superseded. Replacement cleanup must continue to use explicit fallback/candidate reconciliation rather than wait indefinitely for promotion.
+
 ## Current update: round211 post-return loop
 
 Current candidate executable exists at `Builds/KookerStarfallIntegrated-0.0.11-survival.1-20260915-115223/KookerStarfallIntegrated.exe`, source `f27ae2484709396ff6d90b8312c2d1287d9723da`. Full184-file SHA256 `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c2236bfcebcc`. Use the configured normal-survival launcher for the scoped memory service/model flags; double-clicking the executable alone is not proof those services are connected.
