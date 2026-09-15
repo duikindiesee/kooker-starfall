@@ -36,6 +36,9 @@ namespace CityLife.World.Editor
                 GameObject water=CoastalWater.Create(coast.transform); coastalWater=water;
                 if(seepSiteMode)
                 {
+                    // IntegratedCoastalBuild.Attach assigns the solid terrain
+                    // navigation layer 10; match that actual player contract.
+                    terrain.layer=10;
                     var adapter=new GameObject("Editor-only spring footprint study");adapter.transform.SetParent(coast.transform);
                     seepStudy=adapter.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
                     seepStudy.Attach(adapter.transform,coast.transform,CoastalTerrain.DefinitionId);
@@ -125,6 +128,18 @@ namespace CityLife.World.Editor
                 return hit.point.y;
             }
             var record=new SeepFootprintRecord{site=food.SpringPosition,waterVertices=water.vertexCount,waterTriangles=water.triangles.Length/3,rimVertices=rim.vertexCount};
+            var navigation=food.gameObject.AddComponent<NpcTerrainNavigation>();
+            Vector3 approach=food.Spring.Approach.position;
+            record.approach=approach;
+            record.approachWalkable=navigation.Walkable(approach,out var approachFloor);
+            record.approachFloor=approachFloor;
+            Vector3 eye=approach+Vector3.up*1.4f,target=food.SpringPosition+Vector3.up*.25f;
+            Vector3 sight=target-eye;
+            record.approachLineOfSight=!Physics.Raycast(eye,sight.normalized,sight.magnitude-.03f,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore);
+            var route=navigation.Plan(food.Berry.Approach.position,approach);
+            record.berryToSpringWaypoints=route==null?0:route.Count;
+            if(!record.approachWalkable||!record.approachLineOfSight||Mathf.Abs(approach.y-approachFloor.y)>.03f||route==null||route.Count==0)
+                throw new InvalidOperationException("Editor spring approach is not physically grounded and reachable from the observed berry shelf.");
             foreach(var vertex in water.vertices)
             {
                 var world=renderer.transform.TransformPoint(vertex);
@@ -158,6 +173,10 @@ namespace CityLife.World.Editor
         {
             public string status;
             public Vector3 site;
+            public Vector3 approach,approachFloor;
+            public bool approachWalkable;
+            public bool approachLineOfSight;
+            public int berryToSpringWaypoints;
             public int waterVertices,waterTriangles,rimVertices;
             public float minimumWaterVertexGap=float.PositiveInfinity,maximumWaterVertexGap=float.NegativeInfinity;
             public float minimumWaterTriangleCentroidGap=float.PositiveInfinity,maximumWaterTriangleCentroidGap=float.NegativeInfinity;

@@ -1,0 +1,17 @@
+{
+    "status": "PASS_AUTHORED_COLLIDER_FOOTPRINT_ONLY",
+    "site": {
+        "x": 113.0,
+        "y": 4.0,
+        "z": -66.0
+    },
+    "waterVertices": 97,
+    "waterTriangles": 160,
+    "rimVertices": 96,
+    "minimumWaterVertexGap": 0.018000125885009766,
+    "maximumWaterVertexGap": 0.018000125885009766,
+    "minimumWaterTriangleCentroidGap": 0.018000125885009766,
+    "maximumWaterTriangleCentroidGap": 0.018000125885009766,
+    "maximumOuterSkirtGap": -0.11999988555908203,
+    "scope": "Actual Editor solid terrain MeshCollider rays at every wet vertex and triangle centroid; ordinary actor-view and gameplay interaction require a compiled player."
+}
