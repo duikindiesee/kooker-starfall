@@ -155,6 +155,8 @@ namespace CityLife.World
                 (!s.knowsBerry||(s.body.stomach<=8800&&
                     (s.satiety<8500||s.hydration<8500&&s.knowsMealBenefit)));
         }
+        public static bool SpringRelevant(FoodState s)=>s!=null&&
+            (!s.knowsSpring||s.hydration<8500&&s.freshwaterMl>=250);
         public static string VerifiedOwnDeathCause(FoodState s)
         {
             if(s==null||s.body.dead||s.deaths==null||s.deaths.Count==0||
@@ -171,7 +173,8 @@ namespace CityLife.World
             var foodChoices=new List<string>();var s=Food.Model.State;
             // First screen for actually seen, scoped freshwater. Its position
             // is never disclosed; an approach token appears only after live LOS.
-            if(Observed("spring-food",out _) && Food.Spring!=null && Food.Spring.WorldId==s.world)
+            if(SpringRelevant(s)&&Observed("spring-food",out _) &&
+                Food.Spring!=null && Food.Spring.WorldId==s.world)
             {
                 FoodAccess gate=Food.Inspect("spring");
                 if(gate.visible&&gate.permitted)

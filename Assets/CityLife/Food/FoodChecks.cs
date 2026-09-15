@@ -95,6 +95,18 @@ namespace Starfall.Food
             exhausted.carriedFruit=0;exhausted.satiety=9900;exhausted.hydration=9900;
             Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
                 "known berry does not displace exploration when measured food and water targets are met");
+            var source=new FoodState{knowsSpring=false,hydration=10000,freshwaterMl=2000};
+            Check(CityLife.World.StarfallSurvivalAutonomy.SpringRelevant(source),
+                "unknown visible spring remains available for live approach and inspection");
+            source.knowsSpring=true;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.SpringRelevant(source),
+                "known spring does not lure repeated approach when hydration is full");
+            source.hydration=8400;
+            Check(CityLife.World.StarfallSurvivalAutonomy.SpringRelevant(source),
+                "known finite spring may be approached for measured thirst");
+            source.freshwaterMl=0;
+            Check(!CityLife.World.StarfallSurvivalAutonomy.SpringRelevant(source),
+                "empty known spring cannot lure another approach");
             exhausted.hydration=5000;exhausted.knowsMealBenefit=true;exhausted.body.stomach=8801;
             Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
                 "full stomach does not promote a known berry as a hydration meal");
