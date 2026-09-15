@@ -1,5 +1,21 @@
 # Playable berry-survival checkpoint — not final acceptance
 
+## Current update: round211 post-return loop
+
+Current candidate executable exists at `Builds/KookerStarfallIntegrated-0.0.11-survival.1-20260915-115223/KookerStarfallIntegrated.exe`, source `f27ae2484709396ff6d90b8312c2d1287d9723da`. Full184-file SHA256 `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c2236bfcebcc`. Use the configured normal-survival launcher for the scoped memory service/model flags; double-clicking the executable alone is not proof those services are connected.
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Own death lesson enters next model decision | Verified in accelerated run22 | `evidence/local/death-survival/run-22/death-evidence/death-diagnostic.json` and raw `survival-evidence/normal-survival.jsonl`: issued tick3327, admitted tick3502, executed east route tick3695 | Does not prove the lesson caused improved survival or changed policy |
+| Request/response bound to retained death | Verified | Request `5ba9956750bc2613470b96811f402cb551662ec673d803b07bc61333b7503e80`, response `9d95de70cc022fee06470a884420cda0ca20dae74fb47005e81a26553b0bcb63`, starvation death `ab8af7879ff603fedfff96f1dedae7e1b1149b8bf6d36400885e09a97d34eddd` | Natural mortality pacing still unproven |
+| Diagnostic provenance | Verified live observation plus report | Run22 `process.json`, death flag true and normalFlagsVerified false; two causes, returns and scoped reloads pass | Not ordinary timeline evidence |
+| Post-reload food transaction greater than15 | Open | Run17 exploration passed but no new food transaction | Material continuity acceptance gap, not optional spring coverage |
+| One verified build plus candidate retention | Not met at inspection | Sixteen complete timestamped integrated build folders, each about653.1MiB, remain | Reconcile using approved retention workflow without deleting source/saves/receipts or promoting an unaccepted candidate |
+
+This supersedes the earlier **implementation gap** below: lesson context now reaches an admitted and executed model action. Earlier ordinary feeding/restart evidence remains round209-bound; do not relabel it as a complete round211 ordinary acceptance run. Worker reports run22 launcher session21172 exited0 and post-run build hash unchanged; retain its terminal receipt. Full panorama, spring/drinking, human controls/club acceptance, protected review and final deliverables remain open.
+
+## Historical round209 checkpoint
+
 Build: `KookerStarfallIntegrated-0.0.11-survival.1-20260915-111220` (round209). Full184-file SHA256 `2b3e9da88225315bfa5c98fa517b6cfa836d51686d822e7d78054891b1e99939`.
 
 | Claim | Status | Evidence | Remaining gap |
