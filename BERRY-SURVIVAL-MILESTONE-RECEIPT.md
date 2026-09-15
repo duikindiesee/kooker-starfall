@@ -2,6 +2,10 @@
 
 ## Current status — round211 sole fallback; newer failed builds preserved as evidence only
 
+Latest reconciliation: round224 source `381caa115063b2d8ba2e9b4e570118520da0f279` passed the narrow run29 observer-film sequence, then failed broad regression at immediate Mac reflection1503ms/inventory15ms/no raw answer. Root inspected `runtime-224/runtime/living-memory.json` and the cleanup receipt for build144524 at14:56:00UTC:184 files/684845131bytes removed; filesystem contains only211 player plus Download. Source, saves and historical film remain. Review: `docs/REVIEW-ROUND224-PLAYER.md`, commit532915a. Video SHA256 `050d5564199611c41c1a77b002d571e61f73f32c841f16b3ec76757a9db6c434`,119.7s; labelled scenic interval is observer context, not actor discovery.
+
+Current-hash evidence still available on retained211: run25 ordinary meals/drink and technical scoped gate, runs23/24 fresh post-restart food transaction, run22 accelerated verified-cause death/grounded return/lesson in executed model request. These are separate sessions on the same build, not one continuous combined demonstration or proof of beneficial learning. Rechecks remain possible with211; it lacks later spring-relevance repair and camera improvements.216/221/224 evidence is historical and cannot be relabelled as211 behavior. Remaining same-build end-to-end acceptance, ordinary-view quality, natural death pacing and reliable immediate reflection remain open. No identical-build latency rerolls or further optional film iterations are planned.
+
 | Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
 | Retained playable version | Round211 sole verified fallback, not final acceptance | Build115223, full hash `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c2236bfcebcc` | Spring-loop repair and newer camera changes are not accepted in this fallback |

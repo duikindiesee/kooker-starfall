@@ -6,6 +6,8 @@ Full184-file fingerprint: `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c
 
 ## Ordinary launch
 
+Latest round224 is also **failed and removed**, not a playable upgrade: its labelled follow/scenic/follow film worked, but the Mac reflection returned no answer by1500ms (observed timeout1503ms). The119.7s historical supplemental video is `evidence/local/normal-survival/run-29/starfall-round224-WIP-actor-and-scenic.mp4`, SHA256 `050d5564199611c41c1a77b002d571e61f73f32c841f16b3ec76757a9db6c434`. It does not replace same-build survival/restart/death-lesson acceptance or fix ordinary actor-view composition. Round211 remains the only retained player.
+
 Use the tested `tools/play-starfall-with-memory.ps1` launcher, not the smoke or death diagnostic. LM Studio must expose `http://127.0.0.1:1234` with these already-loaded exact instances:
 
 - `google/gemma-4-e4b`: linked Mac MLX, optional immediate delivery reflection,1500ms limit. First/cold requests can fall back.
