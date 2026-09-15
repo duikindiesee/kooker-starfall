@@ -1,5 +1,34 @@
 # Opening-world acceptance contract
 
+## Current priority and evidence boundary — 15 September, round190
+
+The user's expanded gameplay acceptance requires the local-infrastructure model
+to choose meaningful exploration and survival actions, not only acknowledge a
+completed delivery. Preserve every original world, clothing, controls, visual,
+memory, review, packaging and narrated-walkthrough requirement below.
+
+| Requirement | Current evidence | Remaining acceptance |
+|---|---|---|
+| Ordinary model-driven exploration and food recovery | Round190: 220s, 15 hashed admitted choices, five reached routes, three meals with measured state deltas | Longer sustained run, readable live decisions, reduced/understood timeouts |
+| Observe before knowing | Food observations are initially unproven; meal benefit follows an actual meal in run06 | No hidden resource coordinates or unearned cultivation/safety facts; retain negative tests |
+| Freshwater discovery and drinking | Legacy scripted interaction exists | Ordinary model-directed discovery, approach, verification and actual drinking; do not claim from scripted reach bypass |
+| Death preserves world and scoped knowledge | Run05 explicitly accelerated real physiology covers dehydration and starvation, cause-only lesson, return and scoped reload | Natural-timeline distinction; fix hovering return and death presentation; normal relaunch retention |
+| Recorded user walkthrough | Source/evidence available | Watchable actual gameplay recording, accurate narration, intact replay/audio |
+
+[Round190 scoped receipt](../evidence/milestones/coastal/round-190/today-survival-acceptance.json)
+is not full TODAY acceptance. Its 14 safe timeouts in 220 seconds remain a
+quality/reliability gap. Mac-hosted models through local infrastructure are
+allowed; laptop-only inference is not a new acceptance requirement. Accelerated
+need counters cannot be presented as naturally elapsed survival. Source tests
+and a safe-return coordinate do not prove an attractive or correctly grounded
+visible return pose.
+
+Current retention is one technically verified build plus a temporary candidate,
+with the separate survival evidence gate in [BUILD-RETENTION.md](BUILD-RETENTION.md).
+It is not permission to discard source, saves, compact evidence or protected
+review. The queues and receipts below are historical unless explicitly tied to
+the final candidate's exact source and complete content fingerprint.
+
 ## Immediate integration queue after round 139
 
 1. Repair and rerun the reproduced blue-delivery movement stall. Round 20

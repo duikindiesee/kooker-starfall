@@ -1,5 +1,58 @@
 # Starfall system architecture and installation state
 
+## Current integrated connection snapshot — 15 September, round190
+
+This section supersedes the historical September13 wiring/installation claims
+below. It describes build source `35c1a742366a68630dba5fd4cc072bf0566ec36d`,
+not live service availability or a released game. See the
+[scoped build receipt](../evidence/milestones/coastal/round-190/today-survival-acceptance.json).
+
+```mermaid
+flowchart LR
+    Launch["PowerShell normal-play launcher<br/>Explicit -Survival opt-in"] --> Unity["Combined Windows player<br/>terrain, cave, weather, clothed inhabitant"]
+    Launch --> Service["Scoped Python memory service<br/>private capability configuration"]
+    Unity --> Sense["Unity perception and live eligibility<br/>radius, line of sight, reach"]
+    Sense --> Proposal["Optional survival proposal<br/>observed choices only"]
+    Proposal --> LM["Loopback LM Studio API<br/>tested linked Mac model hosting"]
+    LM --> Admission["Complete bounded response<br/>revalidate current state"]
+    Admission --> Actions["Unity movement and FoodModel actions"]
+    Actions --> FoodSave["Separate private scoped FoodModel checkpoint<br/>not a whole-world save"]
+    Unity --> Delivery["Verified delivery event exporter"]
+    Delivery --> Service
+    Service --> Ledger["Scoped SQLite event history"]
+    Delivery --> Reflection["Optional event acknowledgement<br/>separate from survival choice"]
+    Reflection --> LM
+```
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Combined player regression | 35 checks passed | Round190 receipt, runtime36 | Human/visual acceptance and release |
+| Model-directed forage | 220 seconds ordinary play, 15 admitted choices, three meals, five routes | Round190 ordinaryNormalPlay, run06 model/outcome log | Drinking, longer exploration, 14 skipped timeouts |
+| Local model installation | Loopback Windows API used models hosted on linked Mac | Run06 model provenance; E4B reflection and Nano4B survival choices are separate | Availability is runtime-specific; not proof of laptop-only inference |
+| Death and return | Both measured causes, scoped reload and world preservation passed in explicit accelerated compiled diagnostic | Round190 acceleratedDeathDiagnostic, run05 | Natural timing, death presentation and visibly grounded refuge return |
+| Memory and survival stores | Separate scoped service ledger and FoodModel checkpoint | Runtime36 plus run05/run06 | Unified atomic world/terrain/ecology/brain save coordinator remains unimplemented |
+| Launcher | Repository PowerShell script starts selected player and scoped service; survival is explicit opt-in | `tools/play-starfall-with-memory.ps1` | This is not a packaged installer or automatic model provisioning |
+
+For reproduction use `play-starfall-with-memory.ps1 -Player <exact executable>`
+with `-ModelEndpoint`, `-Model`, `-SurvivalModel`, `-Survival`, and separate empty
+`-Evidence`/`-SurvivalEvidence` directories. Select already-loaded model IDs from
+the actual inventory. `-Storage` identifies private world/inhabitant-scoped data;
+reuse the same store only for an intentional same-world continuation. Never
+publish that store or capability configuration. `-DeathDiagnostic` is a labelled
+test switch, not ordinary play. Actual compiled evidence must bind all receipts
+to the full build content hash, not merely the shared Unity executable stub.
+
+Survival build retention now also requires the separate technical evidence gate
+in [BUILD-RETENTION.md](BUILD-RETENTION.md). None of these checks authorizes merge,
+release or a claim that the panorama target has been met.
+
+## Historical component architecture — 13 September
+
+The following diagram and installation table are retained as historical design
+and isolated-component evidence. Statements such as "not live-wired" and
+"sole implementation priority" in this historical section must not override the
+current integrated snapshot above or the expanded acceptance contract.
+
 Integration workstream update, 13 September 2026: [the separate current-component candidate](INTEGRATED-CANDIDATE.md) assembles coastal terrain, the environment adapter, an autonomous inhabitant and accepted clothing. The compiled round-104 player passed 16 automated runtime checks and native menu clicks; keyboard, full native control and coverage acceptance remain pending. [Planet migration](PLANET-MIGRATION.md) is a staged future gate; the immediate region stays flat and finite. The historical component installation evidence below does not promote this new executable to accepted.
 
 This is the repository-owned map of the Starfall system. Reviewed **13 September 2026** against memory source `0445e0f`, the preserved hybrid preview.2 evidence, and the recorded local Windows player. It is an implementation/installation snapshot, not a live service-health monitor. Cloning this repository does not install its ignored player builds, model runtime, private configuration or database.
