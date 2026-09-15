@@ -38,7 +38,8 @@ if ((Test-Path -LiteralPath $zipPath) -or (Test-Path -LiteralPath $receiptPath))
 # Never sweep repository evidence, saves, service configuration or credentials.
 $files = @(Get-ChildItem -LiteralPath $buildRoot -File -Recurse -Force)
 foreach ($file in $files) {
-    if ($file.Extension -match '^\.(log|db|sqlite|sqlite3|env|pem|key)$' -or $file.Name -match '(?i)credential|secret|^\.env') { throw "Unexpected private/runtime file in build: $($file.Name)" }
+    $relative = $file.FullName.Substring($buildRoot.Length + 1).Replace('\','/')
+    & (Join-Path $PSScriptRoot 'check-distribution-path.ps1') -RelativePath $relative
 }
 $stream = [IO.File]::Open($zipPath, [IO.FileMode]::CreateNew)
 $zip = [IO.Compression.ZipArchive]::new($stream, [IO.Compression.ZipArchiveMode]::Create)
