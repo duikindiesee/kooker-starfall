@@ -192,6 +192,12 @@ Shader "CityLife/CoastalWater"
                 #endif
                 float planarInside=step(.001,planarCS.w)*step(0,planarUV.x)*step(planarUV.x,1)*step(0,planarUV.y)*step(planarUV.y,1)*saturate(_PlanarReflectionAvailable);
                 half3 planarEnvironment=SAMPLE_TEXTURE2D(_PlanarReflectionTexture,sampler_PlanarReflectionTexture,saturate(planarUV)).rgb;
+                // Opt-in reflection provenance only; ordinary mode zero is unchanged.
+                // Compare these in the compiled player: Editor captures may lack
+                // the LateUpdate-driven planar camera and use only fallback sky.
+                if (_WaterDebugMode>4.5 && _WaterDebugMode<5.5) return half4(environment,1);
+                if (_WaterDebugMode>5.5 && _WaterDebugMode<6.5) return half4(planarEnvironment,1);
+                if (_WaterDebugMode>6.5 && _WaterDebugMode<7.5) return half4(planarInside.xxx,1);
                 environment=lerp(environment,planarEnvironment,planarInside);
                 environment=max(environment,_SkyReflection.rgb*.18);
                 // Water reflects a small amount even head-on and grows strongly toward
