@@ -21,7 +21,25 @@ an exact removal manifest with before/after inventory and drive free space.
 Unknown paths remain untouched. A stopped failed test and a retained fallback
 have different roles; recording these roles is mandatory. The existing promotion
 helper's survival gate does not justify retaining every intermediate executable.
-This paragraph records authorized workflow, not a completed cleanup claim.
+
+At 12:04 UTC on 15 September, `reconcile-integrated-builds.ps1` checked exact
+manifests and full-content fingerprints, then removed 14 superseded direct
+player folders (9,587,309,182 bytes). Only the round209 runtime-verified
+fallback and round211 tested candidate remained. The deletion was permanent,
+not Trash; source, manifests, runtime evidence and scoped stores remain for
+rebuilding. The receipt is
+`evidence/local/build-retention/reconcile-20260915-120450/reconciliation.json`.
+No ZIP was removed because there was no matching redundant player ZIP.
+
+New builds require an explicit verified fallback manifest and runtime receipt.
+After a successful Unity build, `build-integrated.ps1` invokes separate
+manifest/inventory-gated two-keep reconciliation: fallback plus an **unverified
+temporary** new candidate, never a survival promotion. A failed build still
+uses exact failed-output cleanup; a missing or ambiguous failure receipt leaves
+the output for review. Both paths reject active players, reparse points,
+user-state stores and unmanifested directories. The automatic success hook has
+parsed and passed a two-keep dry run; first real new-build execution remains
+to be tested. Keep this boundary distinct from release.
 
 - `build-integrated.ps1` removes an explicitly failed candidate through
   `remove-failed-integrated-build.ps1`. Missing or ambiguous failure receipts fail
@@ -94,5 +112,10 @@ both live processes with `capture-normal-process.ps1`; the death receipt path is
 
 This is a technical retention boundary, not natural-timeline death, polished
 animation, human visual acceptance or permission to release. Round190's older
-process receipt is deliberately rejected. Positive end-to-end promotion remains
-pending the expanded evidence; no further cleanup was performed for this change.
+process receipt is deliberately rejected. Round211's scoped receipt at
+`evidence/local/normal-survival/run-25/scoped-today-receipt.json` now passes
+the **technical** survival retention verifier: 357.904 seconds ordinary
+process observation, model-linked fruit meals and freshwater drinking,
+matching full-content post-exit hash, and an explicitly accelerated same-build
+death/return diagnostic. This does not prove natural mortality timing, visual
+acceptance, sustained high-quality policy or a releasable package.
