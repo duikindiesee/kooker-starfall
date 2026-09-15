@@ -49,6 +49,17 @@ def save(path, value):
     path.write_text(json.dumps(value, indent=2), encoding='utf-8')
 
 
+def select_loaded_instance(inventory, instance_id, model_format):
+    matches = [(m, i) for m in inventory.get('models', [])
+               for i in m.get('loaded_instances', []) if i.get('id') == instance_id]
+    if len(matches) != 1:
+        raise RuntimeError('Require one exact already-loaded instance; no automatic loading')
+    model, instance = matches[0]
+    if model.get('key') != 'google/gemma-4-e4b' or model.get('format') != model_format:
+        raise RuntimeError('Selected instance model identity or format differs')
+    return dict(id=instance['id'], key=model['key'], format=model['format'])
+
+
 def main():
     parser = argparse.ArgumentParser()
     host = parser.add_mutually_exclusive_group(required=True)
@@ -59,6 +70,9 @@ def main():
     parser.add_argument('--no-retention', action='store_true', help='Keep a passing candidate without replacing the current build')
     parser.add_argument('--survival-acceptance', type=Path, help='Separate full-content-bound survival evidence required for survival build promotion')
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--model-instance', default='google/gemma-4-e4b')
+    parser.add_argument('--model-format', choices=('mlx', 'gguf'), default='mlx')
+    parser.add_argument('--model-device', default='Irwins-Mac-mini-2.local')
     args = parser.parse_args()
     exe, output = (args.editor or args.exe).resolve(), args.output.resolve()
     if not exe.is_file() or output.exists():
@@ -86,13 +100,14 @@ def main():
             raise RuntimeError('Model inventory unavailable')
     finally:
         inventory_client.close()
-    candidate = [m for m in inventory['models'] if m['key'] == 'google/gemma-4-e4b' and m['loaded_instances']]
-    if len(candidate) != 1 or len(candidate[0]['loaded_instances']) != 1 or candidate[0]['format'] != 'mlx':
-        raise RuntimeError('Require exactly one already-loaded linked MLX E4B; no automatic loading')
+    selected = select_loaded_instance(inventory, args.model_instance, args.model_format)
     devices = subprocess.check_output([str(Path.home() / '.lmstudio/bin/lms.exe'), 'ps'], text=True)
-    selected_lines = [line for line in devices.splitlines() if 'google/gemma-4-e4b' in line]
-    if len(selected_lines) != 1 or 'Irwins-Mac-mini-2.local' not in selected_lines[0]:
-        raise RuntimeError('Loaded E4B device differs from reviewed linked Mac')
+    selected_lines = [line.split() for line in devices.splitlines()
+                      if line.split() and line.split()[0] == selected['id']]
+    if len(selected_lines) != 1 or len(selected_lines[0]) < 8 or selected_lines[0][1] != selected['key'] or selected_lines[0][7] != args.model_device:
+        raise RuntimeError('Selected loaded instance device or identity differs')
+    selected['device'] = args.model_device
+    save(output / 'selected-model.json', selected)
     save(output / 'model-inventory-before.json', inventory)
     (output / 'model-devices.txt').write_text(devices, encoding='utf-8')
     build = 'editor-' + source if args.editor else exe.parent.name
@@ -144,11 +159,11 @@ def main():
         else:
             command += ['-npcSmoke', '-npcEvidence', str(output / 'runtime')]
         command += ['-npcLivingMemory', '-npcMemoryClient', str(client_path),
-            '-npcLocalEndpoint', 'http://127.0.0.1:1234', '-npcLocalModel', 'google/gemma-4-e4b',
+            '-npcLocalEndpoint', 'http://127.0.0.1:1234', '-npcLocalModel', selected['id'],
             '-logFile', str(output / 'player.log')]
         content_before = build_content(exe.parent)
         launch = dict(build=build, sha256=hashlib.sha256(exe.read_bytes()).hexdigest(),
-            memory='isolated SQLite HTTP service; no archive mounts', model='google/gemma-4-e4b', deadline_ms=1500,
+            memory='isolated SQLite HTTP service; no archive mounts', model=selected['id'], selected_model=selected, deadline_ms=1500,
             execution_host='Unity Editor Play Mode; not standalone acceptance' if args.editor else 'standalone', source_commit=source,
             scene=args.scene, scene_sha256=hashlib.sha256((ROOT / args.scene).read_bytes()).hexdigest() if args.editor else None,
             buildContentSchema=content_before['schema'], buildContentSha256=content_before['sha256'], buildContentFiles=content_before['files'],
