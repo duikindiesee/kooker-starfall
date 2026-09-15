@@ -55,6 +55,10 @@ missing post-run death hash and evidence path escape. The fixture contains only
 nonexecutable dummy bytes in a temporary directory, never invokes retention,
 and is not gameplay or positive real-build promotion evidence.
 
+A subsequent malformed-type review reproduced three false passes: string
+`"false"` in normal/scoped-reload flags and a string duration. Strict JSON boolean
+and finite-number checks now reject them; the expanded fifteen-case suite passes.
+
 The legacy regression runner promoted round185 before survival was tested and
 removed the previous 050306 and 060513 binary copies. Their source and evidence
 remain, but those exact executable folders are no longer retained. This was a

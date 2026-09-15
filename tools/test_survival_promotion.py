@@ -124,6 +124,18 @@ class SurvivalPromotionTests(unittest.TestCase):
         self.receipt['ordinaryNormalPlay']['process'] = '../outside.json'
         self.reject()
 
+    def test_string_is_not_a_boolean_pass(self):
+        self.death['cases'][0]['scopedReload'] = 'false'
+        self.reject()
+
+    def test_string_normal_flag_rejected(self):
+        self.process['normalFlagsVerified'] = 'false'
+        self.reject()
+
+    def test_string_duration_rejected(self):
+        self.receipt['ordinaryNormalPlay']['durationSecondsAtFinalLiveSample'] = '900'
+        self.reject()
+
 
 if __name__ == '__main__':
     unittest.main()
