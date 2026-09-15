@@ -155,6 +155,11 @@ namespace CityLife.World.Editor
             food.Brain = brain;
             food.Attach(brain.transform, ground.transform, brain.InstanceWorldId);
             food.Refuge=refugeRuntime;
+            refugeRuntime.FreshwaterSurface=food.SpringWaterRenderer;
+            refugeRuntime.ValidateGeometry();
+            if(!refugeRuntime.WaterVerified||refugeRuntime.FreshwaterWaterCount!=1||
+                Mathf.Min(refugeRuntime.FloorY,refugeRuntime.IngressY)-refugeRuntime.MaximumDesignWaterY<.75f)
+                throw new InvalidOperationException("Authored freshwater and regional water require a measured refuge freeboard.");
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
             var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();

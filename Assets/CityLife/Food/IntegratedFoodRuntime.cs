@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcAutonomy Brain;
         public NpcInteractable Berry, Spring;
+        public MeshRenderer SpringWaterRenderer;
         public Starfall.Refuge.RefugeRuntime Refuge;
         public Vector3 BerryPosition, SpringPosition;
         [field: SerializeField] public float MinimumRockClearance { get; private set; }
@@ -40,7 +41,7 @@ namespace Starfall.Food
             // perception; no model prompt receives this authored coordinate.
             SpringPosition = FindDrySpringSite();
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
-            Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId);
+            Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId,out SpringWaterRenderer);
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
@@ -219,7 +220,8 @@ namespace Starfall.Food
                 if(crown!=null)crown.gameObject.SetActive(ripe);
             }
         }
-        static NpcInteractable FreshwaterSeep(Vector3 position, Transform parent, string worldId)
+        static NpcInteractable FreshwaterSeep(Vector3 position, Transform parent, string worldId,
+            out MeshRenderer waterRenderer)
         {
             const int sectors=16;
             const float outerRadius=1.05f, waterRadius=.66f;
@@ -283,13 +285,14 @@ namespace Starfall.Food
                 int floor=sectors*12+i*3;
                 rockTriangles[floor]=sectors*3;rockTriangles[floor+1]=n+2;rockTriangles[floor+2]=b+2;
             }
-            void Visual(string name,Vector3[] vertices,int[] triangles,Material material)
+            MeshRenderer Visual(string name,Vector3[] vertices,int[] triangles,Material material)
             {
                 var part=new GameObject(name);part.transform.SetParent(target.transform,false);
                 var mesh=new Mesh{name=name};mesh.vertices=vertices;mesh.triangles=triangles;
                 mesh.RecalculateNormals();mesh.RecalculateBounds();
                 part.AddComponent<MeshFilter>().sharedMesh=mesh;
-                part.AddComponent<MeshRenderer>().sharedMaterial=material;
+                var renderer=part.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;
+                return renderer;
             }
             Visual("Grounded fractured seep rock rim",rockVertices,rockTriangles,stone);
             var waterVertices=new Vector3[sectors+1];var waterTriangles=new int[sectors*3];
@@ -299,7 +302,7 @@ namespace Starfall.Food
                 waterVertices[i+1]=wet[i];
                 int t=i*3;waterTriangles[t]=0;waterTriangles[t+1]=(i+1)%sectors+1;waterTriangles[t+2]=i+1;
             }
-            Visual("Terrain-following shallow seep water",waterVertices,waterTriangles,water);
+            waterRenderer=Visual("Terrain-following shallow seep water",waterVertices,waterTriangles,water);
             // The target's trigger is deliberately independent of visual meshes:
             // no hidden primitive collider can obstruct walking beside the seep.
             var trigger=target.AddComponent<SphereCollider>();trigger.radius=.94f;trigger.isTrigger=true;

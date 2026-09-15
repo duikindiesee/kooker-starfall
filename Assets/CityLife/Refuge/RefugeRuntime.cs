@@ -18,7 +18,8 @@ namespace Starfall.Refuge
   public bool IntegratedMode; public Vector3 OriginOffset;
   public readonly HearthState Fire=new HearthState();public readonly EnvironmentClock Clock=new EnvironmentClock(1904243);
   readonly CaveZonePolicy policy=new CaveZonePolicy(WorldId,Revision,"first-refuge",3,.1f,.01f);
-  public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY,MaximumDesignWaterY=float.NaN;public int WaterMeshCount;public string Notice="Explore the first refuge";
+  public MeshRenderer FreshwaterSurface;
+  public bool GeometryVerified,WaterVerified,Resting;public float FloorY,IngressY,MaximumDesignWaterY=float.NaN;public int WaterMeshCount,FreshwaterWaterCount;public string Notice="Explore the first refuge";
   int restTicks;public bool Sleeping=>Resting&&restTicks>=150;GameObject[] storedLogs;float yaw,pitch,fall;bool paused;ZoneExposure exposure;public ZoneWeather Local;string output;
   bool Automated=>System.Environment.GetCommandLineArgs().Contains("-refugeAcceptance");
   [Serializable] public class CheckResult {public string name;public bool pass;public float value;}
@@ -32,16 +33,22 @@ namespace Starfall.Refuge
    IngressY=OriginOffset.y+1.8f; // Closed solid floor perimeter: only connected opening is the east ramp crest.
    bool crest=true;for(float z=-1.8f;z<=1.8f;z+=.2f){if(!Physics.Raycast(OriginOffset+new Vector3(-6.05f,2.1f,z),Vector3.down,out var h,1,GeometryMask))crest=false;else IngressY=Mathf.Min(IngressY,h.point.y);}
    GeometryVerified=valid&&crest&&Roof!=null&&Roof.enabled;
-   WaterVerified=true;WaterMeshCount=0;float upper=float.NegativeInfinity;
+   WaterVerified=true;WaterMeshCount=FreshwaterWaterCount=0;float upper=float.NegativeInfinity;
    foreach(var r in FindObjectsByType<MeshRenderer>())
    {
     var m=r.sharedMaterial;if(m==null)continue;
     bool regional=m.shader.name=="CityLife/CoastalWater";
-    var source=r.GetComponentInParent<NpcInteractable>();
-    bool freshwater=r.gameObject.name=="Terrain-following shallow seep water"&&
-     source!=null&&source.StableId=="spring-food"&&m.name=="Seep clear shallow freshwater";
+    bool freshwater=IntegratedMode&&r==FreshwaterSurface;
     if(!regional&&!freshwater)continue;
     WaterMeshCount++;
+    if(freshwater)
+    {
+     FreshwaterWaterCount++;
+     var source=r.GetComponentInParent<NpcInteractable>();
+     if(source==null||source.StableId!="spring-food"||!r.enabled||
+        (m.shader.name!="Universal Render Pipeline/Lit"&&m.shader.name!="Standard"))
+      WaterVerified=false;
+    }
     if(regional)
     {
      float strength=m.GetFloat("_WaveStrength");
@@ -60,7 +67,8 @@ namespace Starfall.Refuge
     }
    }
    MaximumDesignWaterY=upper;
-   WaterVerified &= WaterMeshCount>0&&CaveZonePolicy.Finite(upper);
+   WaterVerified &= WaterMeshCount>0&&CaveZonePolicy.Finite(upper)&&
+    (!IntegratedMode||FreshwaterWaterCount==1);
   }
   public ZoneWeather Sample(Vector3 p)
   {

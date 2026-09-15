@@ -494,11 +494,14 @@ namespace CityLife.World
                 exteriorWeather.Valid && exteriorWeather.RainMultiplier > .99f,
                 "same regional clock; interior rainMultiplier=" + sheltered.RainMultiplier.ToString("F3") +
                 "; exterior rainMultiplier=" + exteriorWeather.RainMultiplier.ToString("F3"));
-            CheckThat("refuge-all-visible-water-sources-bounded",refugeRuntime != null &&
+            CheckThat("refuge-all-visible-water-sources-bounded",refugeRuntime != null && Food != null &&
                 refugeRuntime.WaterVerified && refugeRuntime.WaterMeshCount >= 2 &&
+                refugeRuntime.FreshwaterWaterCount == 1 &&
+                refugeRuntime.FreshwaterSurface == Food.SpringWaterRenderer &&
                 Mathf.Min(refugeRuntime.FloorY,refugeRuntime.IngressY)-
                     refugeRuntime.MaximumDesignWaterY >= .75f,
                 "water meshes="+(refugeRuntime==null?0:refugeRuntime.WaterMeshCount)+
+                "; directly bound freshwater meshes="+(refugeRuntime==null?0:refugeRuntime.FreshwaterWaterCount)+
                 "; conservative highest surface="+(refugeRuntime==null?"missing":refugeRuntime.MaximumDesignWaterY.ToString("F3"))+
                 "; floor="+(refugeRuntime==null?"missing":refugeRuntime.FloorY.ToString("F3"))+
                 "; ingress="+(refugeRuntime==null?"missing":refugeRuntime.IngressY.ToString("F3"))+
@@ -532,9 +535,7 @@ namespace CityLife.World
                 refugeRuntime.Fire.Extinguish();
                 // Separate clock ownership/pause from storm ignition safety.
                 Environment.Clock.Tick=400;
-                var basinWater=Food != null && Food.Spring != null ?
-                    Array.Find(Food.Spring.GetComponentsInChildren<MeshRenderer>(),
-                        r=>r.gameObject.name=="Terrain-following shallow seep water") : null;
+                var basinWater=Food==null?null:Food.SpringWaterRenderer;
                 bool raisedUnsafe=false;float raisedUpper=float.NaN;
                 if(basinWater!=null)
                 {
