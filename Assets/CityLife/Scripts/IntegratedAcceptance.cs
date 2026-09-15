@@ -154,16 +154,26 @@ namespace CityLife.World
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
                 Quaternion.LookRotation(new Vector3(0, 42, 500) - new Vector3(-250, 170, -360)));
             yield return CaptureWorld("01b-spacious-canyon-vista");
-            // Same-pose object isolation: the pale river-mouth band must be
-            // attributed to actual rendered geometry rather than a camera guess.
-            var seaIsolation=GameObject.Find("Coastal water - luminous river and sea")?.GetComponent<MeshRenderer>();
+            // Reproduce the Editor canyon-opening pose where the pale band is
+            // visible; the aerial vista above cannot identify its cause.
+            var canyonCamera=new Vector3(-17,10,5);
+            Controls.View.transform.SetPositionAndRotation(canyonCamera,
+                Quaternion.LookRotation(new Vector3(11,6,46)-canyonCamera));
+            yield return CaptureWorld("01b-canyon-horizon-full-same-pose");
+            var seaRoot=GameObject.Find("Coastal water - luminous river and sea");
+            var seaIsolation=seaRoot==null?new MeshRenderer[0]:seaRoot.GetComponentsInChildren<MeshRenderer>(true);
             var galaxyIsolation=GameObject.Find("Distant galaxy - procedural dust and stellar band")?.GetComponent<MeshRenderer>();
             var domeIsolation=GameObject.Find("Surrounding procedural stars")?.GetComponent<MeshRenderer>();
-            if(seaIsolation!=null)
+            if(seaIsolation.Length>0)
             {
-                bool priorSea=seaIsolation.enabled;
-                try { seaIsolation.enabled=false; yield return CaptureWorld("01b-sea-renderer-off-same-pose"); }
-                finally { seaIsolation.enabled=priorSea; }
+                var priorSea=new bool[seaIsolation.Length];
+                for(int i=0;i<seaIsolation.Length;i++)priorSea[i]=seaIsolation[i].enabled;
+                try
+                {
+                    foreach(var renderer in seaIsolation)renderer.enabled=false;
+                    yield return CaptureWorld("01b-all-water-renderers-off-same-pose");
+                }
+                finally { for(int i=0;i<seaIsolation.Length;i++)seaIsolation[i].enabled=priorSea[i]; }
             }
             if(galaxyIsolation!=null||domeIsolation!=null)
             {
@@ -173,7 +183,7 @@ namespace CityLife.World
                 {
                     if(galaxyIsolation!=null)galaxyIsolation.enabled=false;
                     if(domeIsolation!=null)domeIsolation.enabled=false;
-                    yield return CaptureWorld("01b-sky-backdrop-off-same-pose");
+                    yield return CaptureWorld("01b-sky-backdrop-off-canyon-same-pose");
                 }
                 finally
                 {
