@@ -15,9 +15,12 @@ namespace CityLife.World.Editor
         private static GameObject coastalWater;
         private static bool skySiteMode;
         private static bool filmSiteMode;
+        private static bool seepSiteMode;
+        private static Starfall.Food.IntegratedFoodRuntime seepStudy;
         public static void RenderCoastalSlice(){coastalMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void RenderCoastalSkySites(){skySiteEvidence.Clear();coastalMode=true;skySiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void RenderCoastalFilmSites(){filmSiteEvidence.Clear();coastalMode=true;filmSiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
+        public static void RenderCoastalSeepSite(){coastalMode=true;seepSiteMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
         public static void BuildCoastalPlayableSlice(){coastalMode=true;playablePreviewMode=true;ph02FamilyMode=true;hybridMode=true;Run(false);}
 
         private static void Coastal()
@@ -31,6 +34,14 @@ namespace CityLife.World.Editor
                 coastalTerrain=terrain;
                 GameObject rocks=CoastalRocks.Create(coast.transform);
                 GameObject water=CoastalWater.Create(coast.transform); coastalWater=water;
+                if(seepSiteMode)
+                {
+                    var adapter=new GameObject("Editor-only spring footprint study");adapter.transform.SetParent(coast.transform);
+                    seepStudy=adapter.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+                    seepStudy.Attach(adapter.transform,coast.transform,CoastalTerrain.DefinitionId);
+                    VerifySeepFootprint(terrain,seepStudy);
+                    subjects.Add(new Subject{Root=seepStudy.Spring.gameObject,Kind="editor-only-freshwater-seep-study"});
+                }
                 subjects.Add(new Subject{Root=terrain,Kind="coastal-terrain"});
                 subjects.Add(new Subject{Root=rocks,Kind="coastal-rocks-and-succulents"});
                 subjects.Add(new Subject{Root=water,Kind="coastal-water-surface"});
@@ -99,13 +110,102 @@ namespace CityLife.World.Editor
             public string scope="Actual Unity scene PhysX rays against exact static rendered rock/terrain meshes. Not a native coastal player movement or swimming test.";
         }
 
+        private static void VerifySeepFootprint(GameObject terrain,Starfall.Food.IntegratedFoodRuntime food)
+        {
+            Physics.SyncTransforms();
+            var collider=terrain.GetComponent<MeshCollider>();
+            var renderer=food.SpringWaterRenderer;
+            var water=renderer?.GetComponent<MeshFilter>()?.sharedMesh;
+            var rim=food.Spring?.GetComponentInChildren<MeshFilter>()?.sharedMesh;
+            if(collider==null||water==null||rim==null)throw new InvalidOperationException("Editor seep footprint is missing exact terrain or visual mesh.");
+            float Ground(Vector3 world)
+            {
+                if(!collider.Raycast(new Ray(new Vector3(world.x,1000,world.z),Vector3.down),out var hit,2000))
+                    throw new InvalidOperationException("Seep footprint ray does not meet the terrain collider.");
+                return hit.point.y;
+            }
+            var record=new SeepFootprintRecord{site=food.SpringPosition,waterVertices=water.vertexCount,waterTriangles=water.triangles.Length/3,rimVertices=rim.vertexCount};
+            foreach(var vertex in water.vertices)
+            {
+                var world=renderer.transform.TransformPoint(vertex);
+                float gap=world.y-Ground(world);
+                record.minimumWaterVertexGap=Mathf.Min(record.minimumWaterVertexGap,gap);
+                record.maximumWaterVertexGap=Mathf.Max(record.maximumWaterVertexGap,gap);
+                if(gap<.012f||gap>.025f)throw new InvalidOperationException("Seep water vertex is not draped to actual collider: "+gap);
+            }
+            var triangles=water.triangles;
+            var vertices=water.vertices;
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                var centre=renderer.transform.TransformPoint((vertices[triangles[i]]+vertices[triangles[i+1]]+vertices[triangles[i+2]])/3);
+                float gap=centre.y-Ground(centre);
+                record.minimumWaterTriangleCentroidGap=Mathf.Min(record.minimumWaterTriangleCentroidGap,gap);
+                record.maximumWaterTriangleCentroidGap=Mathf.Max(record.maximumWaterTriangleCentroidGap,gap);
+                if(gap<-.015f||gap>.055f)throw new InvalidOperationException("Seep water triangle bridges terrain: "+gap);
+            }
+            var rimFilter=food.Spring.GetComponentInChildren<MeshFilter>();
+            for(int i=0;i<rim.vertexCount;i+=3)
+            {
+                var world=rimFilter.transform.TransformPoint(rim.vertices[i]);
+                float embed=world.y-Ground(world);
+                record.maximumOuterSkirtGap=Mathf.Max(record.maximumOuterSkirtGap,embed);
+                if(embed>-.095f)throw new InvalidOperationException("Seep stone outer skirt is not embedded: "+embed);
+            }
+            record.status="PASS_AUTHORED_COLLIDER_FOOTPRINT_ONLY";
+            File.WriteAllText(Path.Combine(outputDirectory,"freshwater-seep-grounding.json"),JsonUtility.ToJson(record,true));
+        }
+        [Serializable]private sealed class SeepFootprintRecord
+        {
+            public string status;
+            public Vector3 site;
+            public int waterVertices,waterTriangles,rimVertices;
+            public float minimumWaterVertexGap=float.PositiveInfinity,maximumWaterVertexGap=float.NegativeInfinity;
+            public float minimumWaterTriangleCentroidGap=float.PositiveInfinity,maximumWaterTriangleCentroidGap=float.NegativeInfinity;
+            public float maximumOuterSkirtGap=float.NegativeInfinity;
+            public string scope="Actual Editor solid terrain MeshCollider rays at every wet vertex and triangle centroid; ordinary actor-view and gameplay interaction require a compiled player.";
+        }
+
         private static void CoastalCamera(Vector3 position,Vector3 aim)
         {
             Coastal();Perspective(position,aim,width*9/16);camera.fieldOfView=52;
         }
+        private static void SeepSiteCamera(Vector3 offset)
+        {
+            Coastal();
+            var site=seepStudy.SpringPosition;
+            Perspective(site+offset,site+Vector3.up*.06f,width*9/16);
+            camera.fieldOfView=52;
+        }
+        private static void SeepFollowPoseCamera(string label,Vector3 point,float yaw,float pitch)
+        {
+            Coastal();
+            Vector3 pivot=point+Vector3.up*1.05f;
+            Vector3 offset=Quaternion.Euler(pitch,yaw,0)*Vector3.back;
+            bool occluded=Physics.SphereCast(pivot,.2f,offset,out var hit,4.8f,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore);
+            float distance=occluded?Mathf.Max(.3f,hit.distance-.08f):4.8f;
+            Perspective(pivot+offset*distance,pivot,width*9/16);
+            camera.fieldOfView=60;
+            File.WriteAllText(Path.Combine(outputDirectory,"freshwater-seep-follow-pose-"+label+".json"),JsonUtility.ToJson(new SeepFollowRecord{
+                approach=point,pivot=pivot,eye=camera.transform.position,actualDistance=distance,occluded=occluded,yaw=yaw,pitch=pitch
+            },true));
+        }
+        [Serializable]private sealed class SeepFollowRecord
+        {
+            public Vector3 approach,pivot,eye;
+            public float actualDistance,yaw,pitch;
+            public bool occluded;
+            public string scope="Editor pose computed with CharacterPreviewCamera.Follow equations (distance4.8,FOV60) and actual terrain/rock spherecast. Actor rig, HUD, input and ordinary compiled-camera acceptance absent.";
+        }
 
         private static List<Shot> BuildCoastalShots()
         {
+            if(seepSiteMode) return new List<Shot>{
+                new Shot{Id="01-grounded-freshwater-seep-close",Purpose="Collider-draped shallow seep and stone rim close view; Editor geometry only, not ordinary actor camera or functional drink proof.",Height=width*9/16,Configure=()=>SeepSiteCamera(new Vector3(3,1.45f,-4.8f))},
+                new Shot{Id="02-grounded-freshwater-seep-oblique",Purpose="Same authored site oblique footprint/terrain gap critique with no actor-model authority.",Height=width*9/16,Configure=()=>SeepSiteCamera(new Vector3(-3.2f,1.75f,-4.6f))},
+                new Shot{Id="03-pose-matched-default-follow-spring",Purpose="Editor camera pose using unchanged follow defaults yaw155,pitch15 and actual spherecast at observed external spring approach; actor/HUD absent.",Height=width*9/16,Configure=()=>{Coastal();SeepFollowPoseCamera("default-spring",seepStudy.Spring.Approach.position,155,15);}},
+                new Shot{Id="04-candidate-horizon-follow-spring",Purpose="Bounded proposed yaw0,pitch-5 follow framing at spring; actor/HUD absent, not gameplay setting or ordinary player proof.",Height=width*9/16,Configure=()=>{Coastal();SeepFollowPoseCamera("candidate-spring",seepStudy.Spring.Approach.position,0,-5);}},
+                new Shot{Id="05-candidate-horizon-follow-berry",Purpose="Same proposed yaw0,pitch-5 framing at activity berry to test broader landscape composition before any gameplay camera setting.",Height=width*9/16,Configure=()=>{Coastal();SeepFollowPoseCamera("candidate-berry",seepStudy.Berry.Approach.position,0,-5);}}
+            };
             if(skySiteMode) return BuildSkySiteShots();
             if(filmSiteMode) return BuildFilmSiteShots();
             return new List<Shot>{

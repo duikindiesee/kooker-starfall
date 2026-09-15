@@ -54,6 +54,7 @@ namespace Starfall.Food
             // shelf. This is world generation, never model starting knowledge.
             // The old centre point's flattened sphere passed while its wider
             // visible rim crossed lower wet terrain; evaluate the full footprint.
+            var terrain=SolidTerrain();
             for(int shell=0;shell<=12;shell+=2)
             for(int dz=-shell;dz<=shell;dz+=2)
             for(int dx=-shell;dx<=shell;dx+=2)
@@ -61,22 +62,37 @@ namespace Starfall.Food
                 if(Mathf.Max(Mathf.Abs(dx),Mathf.Abs(dz))!=shell)continue;
                 float x=121+dx,z=-58+dz;
                 if(new Vector2(x-126,z+80).magnitude<16f)continue;
-                float centre=CoastalTerrain.Height(x,z),low=centre,high=centre;
-                for(int i=0;i<16;i++)
+                float centre=GroundAt(terrain,x,z),low=centre,high=centre;
+                for(int i=0;i<32;i++)
                 {
-                    float a=i*Mathf.PI*2f/16f;
-                    foreach(float radius in new[]{.66f,1.05f})
+                    float a=i*Mathf.PI*2f/32f;
+                    foreach(float radius in new[]{.22f,.44f,.66f,.88f,1.05f})
                     {
-                        float y=CoastalTerrain.Height(x+Mathf.Cos(a)*radius,z+Mathf.Sin(a)*radius);
+                        float y=GroundAt(terrain,x+Mathf.Cos(a)*radius,z+Mathf.Sin(a)*radius);
                         low=Mathf.Min(low,y);high=Mathf.Max(high,y);
                     }
                 }
-                if(low<=CoastalWater.Level+1f||high-low>.50f)continue;
+                float approachY=GroundAt(terrain,x+1.42f,z);
+                if(low<=CoastalWater.Level+1f||approachY<=CoastalWater.Level+1f||high-low>.50f)continue;
                 var site=new Vector3(x,centre,z);
-                if(MeasureRockClearance(site)<2f)continue;
+                if(MeasureRockClearance(site)<2f||MeasureRockClearance(new Vector3(x+1.42f,approachY,z))<1f)continue;
                 return site;
             }
             throw new System.InvalidOperationException("No dry terrain-fitted freshwater seep pocket near rocky-foot shelf.");
+        }
+        static MeshCollider SolidTerrain()
+        {
+            var terrain=GameObject.Find("Coastal terrain "+CoastalTerrain.DefinitionId+" seed "+CoastalTerrain.Seed)?.GetComponent<MeshCollider>();
+            if(terrain==null||!terrain.enabled)
+                throw new System.InvalidOperationException("Freshwater seep requires the authored solid terrain collider.");
+            return terrain;
+        }
+        static float GroundAt(MeshCollider terrain,float x,float z)
+        {
+            var ray=new Ray(new Vector3(x,1000f,z),Vector3.down);
+            if(!terrain.Raycast(ray,out var hit,2000f)||!float.IsFinite(hit.point.y))
+                throw new System.InvalidOperationException("Freshwater seep footprint is not grounded by solid terrain.");
+            return hit.point.y;
         }
         static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
         {
@@ -223,7 +239,7 @@ namespace Starfall.Food
         static NpcInteractable FreshwaterSeep(Vector3 position, Transform parent, string worldId,
             out MeshRenderer waterRenderer)
         {
-            const int sectors=16;
+            const int sectors=32;
             const float outerRadius=1.05f, waterRadius=.66f;
             var target=new GameObject("Food / terrain-fitted freshwater seep");
             target.transform.SetParent(parent); target.transform.position=position; target.layer=11;
@@ -238,53 +254,70 @@ namespace Starfall.Food
             }
             var stone=Make("Seep fractured dark stone",new Color(.17f,.19f,.18f),.11f);
             var water=Make("Seep clear shallow freshwater",new Color(.12f,.48f,.54f),.56f);
-            // Each bottom vertex follows the actual terrain footprint. The rim is
-            // a shallow fractured rock pocket, not a hovering flattened sphere.
-            var bottom=new Vector3[sectors]; var rim=new Vector3[sectors];
-            var wet=new Vector3[sectors];
-            float lowest=0,highest=0;
+            var terrain=SolidTerrain();
+            float Ground(float x,float z)
+            {
+                return GroundAt(terrain,position.x+x,position.z+z)-position.y;
+            }
+            // A wetted rock film follows the *actual collider*, including its
+            // centre and interior, rather than bridging the highest outer point
+            // with a flat, apparently suspended pond/basin. The low stone skirt
+            // embeds beneath this same collider; decorative geometry stays
+            // nonblocking and the spring interaction source is unchanged.
+            var rockVertices=new Vector3[sectors*3];
+            var rockTriangles=new int[sectors*12];
+            var waterVertices=new Vector3[1+sectors*3];
+            var waterTriangles=new int[sectors*15];
+            float lowest=float.PositiveInfinity,highest=float.NegativeInfinity;
+            float WetRadius(int i)
+            {
+                // Broken wet-rock perimeter, not a perfect cyan saucer. All
+                // varied radii are independently ray-fitted to the collider.
+                return waterRadius*(.88f+.11f*Mathf.Sin(i*2.69f)+.08f*Mathf.Sin(i*5.17f));
+            }
+            float centre=Ground(0,0);
+            waterVertices[0]=new Vector3(0,centre+.018f,0);
+            lowest=Mathf.Min(lowest,centre);highest=Mathf.Max(highest,centre);
+            for(int ring=0;ring<3;ring++)
             for(int i=0;i<sectors;i++)
             {
                 float a=i*Mathf.PI*2f/sectors;
-                float radius=outerRadius*(.91f+.07f*Mathf.Sin(i*3.71f));
+                float radius=WetRadius(i)*(ring+1)/3f;
                 float x=Mathf.Cos(a)*radius,z=Mathf.Sin(a)*radius;
-                float ground=CoastalTerrain.Height(position.x+x,position.z+z)-position.y;
+                float ground=Ground(x,z);
                 lowest=Mathf.Min(lowest,ground);highest=Mathf.Max(highest,ground);
-                bottom[i]=new Vector3(x,ground-.045f,z);
-                float innerGround=CoastalTerrain.Height(position.x+Mathf.Cos(a)*waterRadius,position.z+Mathf.Sin(a)*waterRadius)-position.y;
-                highest=Mathf.Max(highest,innerGround);
-                wet[i]=new Vector3(Mathf.Cos(a)*waterRadius,0,Mathf.Sin(a)*waterRadius);
+                waterVertices[1+ring*sectors+i]=new Vector3(x,ground+.018f,z);
+            }
+            for(int i=0;i<sectors;i++)
+            {
+                int next=(i+1)%sectors,b=i*3,n=next*3,t=i*12;
+                float a=i*Mathf.PI*2f/sectors,outer=outerRadius*(.91f+.07f*Mathf.Sin(i*3.71f));
+                float ox=Mathf.Cos(a)*outer,oz=Mathf.Sin(a)*outer;
+                float rx=Mathf.Cos(a)*outerRadius*.83f,rz=Mathf.Sin(a)*outerRadius*.83f;
+                float wx=Mathf.Cos(a)*WetRadius(i),wz=Mathf.Sin(a)*WetRadius(i);
+                float outerGround=Ground(ox,oz),rimGround=Ground(rx,rz),wetGround=Ground(wx,wz);
+                lowest=Mathf.Min(lowest,outerGround);highest=Mathf.Max(highest,outerGround);
+                rockVertices[b]=new Vector3(ox,outerGround-.12f,oz);
+                rockVertices[b+1]=new Vector3(rx,rimGround+.055f+(i%4)*.012f,rz);
+                rockVertices[b+2]=new Vector3(wx,wetGround+.009f,wz);
+                rockTriangles[t]=b;rockTriangles[t+1]=b+1;rockTriangles[t+2]=n;
+                rockTriangles[t+3]=b+1;rockTriangles[t+4]=n+1;rockTriangles[t+5]=n;
+                rockTriangles[t+6]=b+1;rockTriangles[t+7]=b+2;rockTriangles[t+8]=n+1;
+                rockTriangles[t+9]=b+2;rockTriangles[t+10]=n+2;rockTriangles[t+11]=n+1;
+                waterTriangles[i*3]=0;
+                waterTriangles[i*3+1]=1+next;
+                waterTriangles[i*3+2]=1+i;
+                for(int ring=0;ring<2;ring++)
+                {
+                    int inner=1+ring*sectors+i,innerNext=1+ring*sectors+next;
+                    int outerIndex=inner+sectors,outerNext=innerNext+sectors;
+                    int v=sectors*3+ring*sectors*6+i*6;
+                    waterTriangles[v]=inner;waterTriangles[v+1]=innerNext;waterTriangles[v+2]=outerIndex;
+                    waterTriangles[v+3]=outerIndex;waterTriangles[v+4]=innerNext;waterTriangles[v+5]=outerNext;
+                }
             }
             if(highest-lowest>.62f || position.y+lowest<=CoastalWater.Level+1f)
                 throw new System.InvalidOperationException("Freshwater seep footprint requires a dry walkable rock pocket.");
-            // A level pool sits just above its highest sampled patch. The
-            // fractured stone rim rises above it and its lower skirt embeds in
-            // the real slope; a fitted dark basin hides any exposed terrain gap.
-            float waterY=highest+.045f;
-            for(int i=0;i<sectors;i++)
-            {
-                float a=i*Mathf.PI*2f/sectors;
-                rim[i]=new Vector3(Mathf.Cos(a)*outerRadius*.83f,
-                    Mathf.Max(bottom[i].y+.18f,waterY+.105f)+(i%4)*.025f,
-                    Mathf.Sin(a)*outerRadius*.83f);
-                wet[i].y=waterY;
-            }
-            var rockVertices=new Vector3[sectors*3+1];
-            var rockTriangles=new int[sectors*12+sectors*3];
-            rockVertices[sectors*3]=new Vector3(0,waterY-.075f,0);
-            for(int i=0;i<sectors;i++)
-            {
-                int next=(i+1)%sectors;
-                int b=i*3,n=next*3,t=i*12;
-                rockVertices[b]=bottom[i];rockVertices[b+1]=rim[i];
-                rockVertices[b+2]=new Vector3(wet[i].x,waterY-.075f,wet[i].z);
-                rockTriangles[t]=b;rockTriangles[t+1]=n;rockTriangles[t+2]=b+1;
-                rockTriangles[t+3]=b+1;rockTriangles[t+4]=n;rockTriangles[t+5]=n+1;
-                rockTriangles[t+6]=b+1;rockTriangles[t+7]=n+1;rockTriangles[t+8]=b+2;
-                rockTriangles[t+9]=b+2;rockTriangles[t+10]=n+1;rockTriangles[t+11]=n+2;
-                int floor=sectors*12+i*3;
-                rockTriangles[floor]=sectors*3;rockTriangles[floor+1]=n+2;rockTriangles[floor+2]=b+2;
-            }
             MeshRenderer Visual(string name,Vector3[] vertices,int[] triangles,Material material)
             {
                 var part=new GameObject(name);part.transform.SetParent(target.transform,false);
@@ -295,14 +328,7 @@ namespace Starfall.Food
                 return renderer;
             }
             Visual("Grounded fractured seep rock rim",rockVertices,rockTriangles,stone);
-            var waterVertices=new Vector3[sectors+1];var waterTriangles=new int[sectors*3];
-            waterVertices[0]=new Vector3(0,waterY,0);
-            for(int i=0;i<sectors;i++)
-            {
-                waterVertices[i+1]=wet[i];
-                int t=i*3;waterTriangles[t]=0;waterTriangles[t+1]=(i+1)%sectors+1;waterTriangles[t+2]=i+1;
-            }
-            waterRenderer=Visual("Terrain-following shallow seep water",waterVertices,waterTriangles,water);
+            waterRenderer=Visual("Collider-draped shallow seep water",waterVertices,waterTriangles,water);
             // The target's trigger is deliberately independent of visual meshes:
             // no hidden primitive collider can obstruct walking beside the seep.
             var trigger=target.AddComponent<SphereCollider>();trigger.radius=.94f;trigger.isTrigger=true;
@@ -318,7 +344,7 @@ namespace Starfall.Food
             var marker=new GameObject("Grounded observed-resource approach");
             marker.transform.SetParent(source,false);
             float x=position.x+offset,z=position.z;
-            marker.transform.position=new Vector3(x,CoastalTerrain.Height(x,z),z);
+            marker.transform.position=new Vector3(x,GroundAt(SolidTerrain(),x,z),z);
             return marker.transform;
         }
         public FoodAccess Inspect(string target)
