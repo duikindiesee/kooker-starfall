@@ -20,6 +20,7 @@ namespace CityLife.World
         public bool Enabled { get; private set; }
         public string Status { get; private set; }="Survival mind off";
         public string LastChoice { get; private set; }="waiting for discovery";
+        public bool LastChoiceByModel { get; private set; }
         public string LastOutcome { get; private set; }="no survival outcome yet";
         public int AcceptedDecisions { get; private set; }
         public int FoodOutcomes { get; private set; }
@@ -132,7 +133,7 @@ namespace CityLife.World
                     else if(s.fruitStock>0&&s.carriedFruit<4)foodChoices.Add("gather berry");
                 }
             }
-            if(s.carriedFruit>0&&s.knowsBerry&&s.satiety<8500)foodChoices.Add("eat fruit");
+            if(s.carriedFruit>0&&s.knowsBerry&&(s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
             // Exact-payload probes proved four exploratory options 8/8
             // length/empty, and the three-option near-berry runtime stalled
             // repeatedly. Two genuinely eligible options generated a final
@@ -208,7 +209,8 @@ namespace CityLife.World
                 LastSafeGround=hit.collider.name;
                 LastSafeGroundY=hit.point.y;
                 s.actorPosition=safe;Record("return","safe-refuge-world-preserved",null,null,returned);
-                LastChoice="safe return";LastOutcome="Returned after "+s.deaths[s.deaths.Count-1].cause;
+                LastChoice="safe return";LastChoiceByModel=false;
+                LastOutcome="Returned after "+s.deaths[s.deaths.Count-1].cause;
                 Persist();
                 return true;
             }
@@ -249,7 +251,8 @@ namespace CityLife.World
             if(!StarfallSurvivalThought.Parse(action,live,out string accepted))
             {Record("decision","stale-or-ineligible",action,result);nextRequestTick=Brain.Tick+50;return;}
             AcceptedDecisions++;Record("decision","live-admitted",accepted,result);
-            LastChoice=accepted;Status="Nano model choice admitted after live validation";
+            LastChoice=accepted;LastChoiceByModel=true;
+            Status="Nano model choice admitted after live validation";
             if(accepted.StartsWith("explore ",StringComparison.Ordinal))
             {
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:

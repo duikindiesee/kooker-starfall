@@ -85,7 +85,7 @@ namespace CityLife.World
                 var food=Brain.Survival.Food.Model.State;
                 Summary.text=mode+" survivor | Tick "+Brain.Tick+
                     "\nEnergy "+food.satiety+" / water "+food.hydration+" / fruit "+food.carriedFruit+
-                    "\nModel chose: "+Brain.Survival.LastChoice+
+                    "\n"+(Brain.Survival.LastChoiceByModel?"Model chose: ":"System state: ")+Brain.Survival.LastChoice+
                     "\nOutcome: "+Brain.Survival.LastOutcome;
                 if(food.body.dead)
                     Summary.text=mode+" survivor | Tick "+Brain.Tick+

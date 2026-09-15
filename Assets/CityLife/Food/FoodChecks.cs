@@ -37,6 +37,12 @@ namespace Starfall.Food
                 new List<string>{"eat fruit","explore south"},1,true);
             Check(learnedPrompt.Contains("previously helped")&&!learnedPrompt.Contains("not observed"),
                 "meal outcome enters model context only after verified eating");
+            string explorationPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,
+                new List<string>{"explore south","explore east"},1,false);
+            Check(explorationPrompt.Contains("explore south")&&explorationPrompt.Contains("explore east")&&
+                !explorationPrompt.Contains("Energy=")&&!explorationPrompt.Contains("fruit")&&
+                !explorationPrompt.Contains("spring"),
+                "pure exploration request omits irrelevant need and unknown-resource context");
             m.State.satiety=0;Check(!Do(FoodAction.Eat,"inventory").success,"starvation does not grant food knowledge");m.State.satiety=6500;
             Check(Do(FoodAction.Inspect,"berry").success&&m.State.berryEvidence.Contains("observed-fruit")&&!m.State.knowsMealBenefit,"observed fruit does not grant a meal outcome");
             a.visible=false;Check(!Do(FoodAction.Gather,"berry").success,"occlusion blocks action");a.visible=true;

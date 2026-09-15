@@ -37,15 +37,25 @@ namespace CityLife.World
             int carriedFruit=0, bool mealOutcomeVerified=false)
         {
             if(eligible==null||eligible.Count==0||eligible.Count>8)throw new ArgumentException("bounded eligible actions required");
+            bool explorationOnly=true;
+            foreach(string action in eligible)
+                if(action==null||!action.StartsWith("explore ",StringComparison.Ordinal))explorationOnly=false;
+            // Exact warm Nano probes: two pure exploration actions plus need
+            // context ended length/empty 5/5, while the same short eligible
+            // list produced complete final actions 5/5 inside this deadline.
+            // There is no observed food/drink to weigh in this branch; omit
+            // irrelevant physiology rather than weakening the time bound.
+            string user=explorationOnly?"Eligible: "+string.Join(", ",eligible)+".":
+                "Energy="+hunger+"/10000 "+(hunger<8500?"below replenish target":"at replenish target")+
+                "; water="+thirst+"/10000 "+(thirst<8500?"below replenish target":"at replenish target")+
+                "; carried fruit="+carriedFruit+
+                "; eaten fruit outcome="+(mealOutcomeVerified?"previously helped":"not observed")+
+                ". Eligible: "+string.Join(", ",eligible)+".";
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
                 ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {
                     new Dictionary<string,object>{["role"]="system",["content"]="Choose exactly one listed two-word action. No explanation, JSON, coordinates, facts, or extra words. Sight and outcomes are checked by the game."},
-                    new Dictionary<string,object>{["role"]="user",["content"]="Energy="+hunger+"/10000 "+(hunger<8500?"below replenish target":"at replenish target")+
-                        "; water="+thirst+"/10000 "+(thirst<8500?"below replenish target":"at replenish target")+
-                        "; carried fruit="+carriedFruit+
-                        "; eaten fruit outcome="+(mealOutcomeVerified?"previously helped":"not observed")+
-                        ". Eligible: "+string.Join(", ",eligible)+"."}
+                    new Dictionary<string,object>{["role"]="user",["content"]=user}
                 }
             });
         }

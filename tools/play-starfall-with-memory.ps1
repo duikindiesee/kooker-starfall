@@ -9,6 +9,8 @@ param(
     [string]$Evidence,
     [switch]$Survival,
     [string]$SurvivalEvidence,
+    [string]$FrameEvidence,
+    [ValidateRange(10,120)][int]$FrameSeconds=60,
     [switch]$DeathDiagnostic,
     [string]$DeathEvidence,
     [string]$Python
@@ -40,6 +42,9 @@ if($Survival -and (-not $ModelEndpoint -or -not $Model -or -not $SurvivalModel -
 }
 if($DeathDiagnostic -and (-not $Survival -or -not $DeathEvidence)){
     throw 'Compiled death diagnostic requires survival opt-in and a separate empty evidence directory.'
+}
+if($FrameEvidence -and (-not $Survival -or $DeathDiagnostic)){
+    throw 'Game-only frame capture is opt-in ordinary survival play, not a death diagnostic.'
 }
 if($Survival){
     $playModelUri=[Uri]$ModelEndpoint
@@ -111,6 +116,16 @@ try{
             }else{$null=New-Item -ItemType Directory -Path $playSurvivalEvidence}
             $playArgs+=@('-npcSurvivalRuntime','-npcSurvivalModel',$SurvivalModel,
                 '-npcSurvivalSave',$playSurvivalSave,'-npcSurvivalEvidence',$playSurvivalEvidence)
+            if($FrameEvidence){
+                $playFrameEvidence=[IO.Path]::GetFullPath($FrameEvidence)
+                if(Test-Path -LiteralPath $playFrameEvidence){
+                    if((Get-ChildItem -LiteralPath $playFrameEvidence -Force|Select-Object -First 1)){
+                        throw 'Game-frame evidence directory must be empty.'
+                    }
+                }else{$null=New-Item -ItemType Directory -Path $playFrameEvidence}
+                $playArgs+=@('-npcSurvivalCaptureFrames',$playFrameEvidence,
+                    '-npcSurvivalCaptureSeconds',[string]$FrameSeconds)
+            }
             if($DeathDiagnostic){
                 $playDeathEvidence=[IO.Path]::GetFullPath($DeathEvidence)
                 if(Test-Path -LiteralPath $playDeathEvidence){
