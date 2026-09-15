@@ -11,6 +11,7 @@ function ReadEvidence([string]$relative) {
 }
 $m=Get-Content -LiteralPath $BuildManifest -Raw | ConvertFrom-Json
 $r=Get-Content -LiteralPath $ScopedReceipt -Raw | ConvertFrom-Json
+if ($r.schema -ne 'starfall.survival-today-scoped-receipt.v1') { throw 'Unsupported scoped survival receipt schema.' }
 $content=& (Join-Path $PSScriptRoot 'get-integrated-content-hash.ps1') -BuildDirectory (Join-Path $project ('Builds/'+$m.buildId))
 if ($r.build -ne $m.buildId -or $r.sourceCommit -ne $m.sourceCommit -or $r.buildContentSha256 -ne $content.sha256) { throw 'Survival receipt/build identity mismatch.' }
 $normal=$r.ordinaryNormalPlay
@@ -24,6 +25,7 @@ $world=$events[0].world; $actor=$events[0].actor
 if (!$world -or !$actor -or @($events | Where-Object { $_.world -ne $world -or $_.actor -ne $actor }).Count) { throw 'Mixed or missing world/inhabitant scope.' }
 $decisions=@($events | Where-Object { $_.kind -eq 'decision' -and $_.code -eq 'live-admitted' })
 if ($decisions.Count -lt 3 -or @($decisions | Where-Object { $_.finishReason -ne 'stop' -or $_.requestHash -notmatch '^[0-9a-f]{64}$' -or $_.responseHash -notmatch '^[0-9a-f]{64}$' }).Count) { throw 'Genuine complete model-choice provenance missing.' }
+if (!@($decisions | Where-Object { $_.choice -like 'explore *' }).Count -or @($events | Where-Object { $_.kind -eq 'route' -and $_.code -eq 'reached' }).Count -lt 3) { throw 'Ordinary exploration choices and completed routes required.' }
 foreach($choice in @('eat fruit','drink spring')) {
     $outcomes=@($events | Where-Object { $_.kind -eq 'food' -and $_.choice -eq $choice -and ($_.foodDelta -gt 0 -or $_.waterDelta -gt 0) })
     if (!$outcomes.Count) { throw "No measured ordinary outcome: $choice" }
@@ -32,6 +34,7 @@ foreach($choice in @('eat fruit','drink spring')) {
     }
 }
 $death=$r.acceleratedDeathDiagnostic
+if ($death.buildContentSha256AfterExit -ne $content.sha256) { throw 'Death diagnostic post-exit content fingerprint required.' }
 $dp=Get-Content -LiteralPath (ReadEvidence $death.process) -Raw | ConvertFrom-Json
 if ($dp.schema -ne 'starfall.normal-process-observation.v2' -or $dp.build -ne $m.buildId -or $dp.buildContentSha256 -ne $content.sha256 -or !$dp.flags.npcSurvivalDeathAcceptance) { throw 'Same-build explicit death diagnostic process required.' }
 $d=Get-Content -LiteralPath (ReadEvidence $death.evidence) -Raw | ConvertFrom-Json
