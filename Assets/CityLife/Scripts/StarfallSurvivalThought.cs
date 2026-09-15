@@ -55,7 +55,7 @@ namespace CityLife.World
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
                 ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {
-                    new Dictionary<string,object>{["role"]="system",["content"]="Choose exactly one listed two-word action. No explanation, JSON, coordinates, facts, or extra words. Sight and outcomes are checked by the game."},
+                    new Dictionary<string,object>{["role"]="system",["content"]="Goal: stay alive and discover resources. Inspect unknown visible things before using them. Choose exactly one listed two-word action. No extra words."},
                     new Dictionary<string,object>{["role"]="user",["content"]=user}
                 }
             });

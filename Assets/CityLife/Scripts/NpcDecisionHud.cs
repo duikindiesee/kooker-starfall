@@ -17,6 +17,7 @@ namespace CityLife.World
         public NpcPlayerControls Controls;
         private RectTransform backgroundRect, footerRect;
         private Text footer, thoughts;
+        private GameObject thoughtsBackground;
         public string LivingMemoryText;
         private void Awake()
         {
@@ -50,7 +51,12 @@ namespace CityLife.World
             footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nDeterministic rules; no LLM or learning.";
             if (Brain.OptionalPlanner != null)
             {
-                var o = new GameObject("Optional local thoughts", typeof(RectTransform), typeof(Text)); Rect(o, 970, 25, 600, 410);
+                // Keep memory/reflection inside the centre lane, clear of the
+                // top-right Controls/Options overlay in the actual player.
+                thoughtsBackground = new GameObject("Local thoughts background", typeof(RectTransform), typeof(Image));
+                Rect(thoughtsBackground, 535, 20, 550, 430);
+                thoughtsBackground.GetComponent<Image>().color = new Color(.02f, .045f, .07f, .86f);
+                var o = new GameObject("Optional local thoughts", typeof(RectTransform), typeof(Text)); Rect(o, 555, 35, 510, 390);
                 thoughts = o.GetComponent<Text>(); thoughts.font = font; thoughts.fontSize = 20; thoughts.color = new Color(.8f, .94f, .97f);
                 thoughts.supportRichText = false; thoughts.horizontalOverflow = HorizontalWrapMode.Wrap;
                 footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts off by default";
@@ -63,6 +69,7 @@ namespace CityLife.World
             if (thoughts != null)
             {
                 var planner = Brain.OptionalPlanner; thoughts.gameObject.SetActive(Detailed);
+                if(thoughtsBackground!=null)thoughtsBackground.SetActive(Detailed);
                 thoughts.text = "OPTIONAL LOCAL THOUGHTS\n" + planner.Status + "\nAdvisory plan: " + planner.Plan +
                     "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
                     "\n\nActions use deterministic checks. No learning.";

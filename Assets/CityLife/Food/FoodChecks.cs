@@ -43,6 +43,10 @@ namespace Starfall.Food
                 !explorationPrompt.Contains("Energy=")&&!explorationPrompt.Contains("fruit")&&
                 !explorationPrompt.Contains("spring"),
                 "pure exploration request omits irrelevant need and unknown-resource context");
+            Check(scopedPrompt.Contains("stay alive and discover resources")&&
+                scopedPrompt.Contains("Inspect unknown visible things before using them")&&
+                !scopedPrompt.Contains("edible")&&!scopedPrompt.Contains("safe berry"),
+                "model gets a survival and investigation goal, not pregranted food safety");
             var exhausted=new FoodState{fruitStock=0,knowsBerry=true,satiety=6500,hydration=5500};
             Check(!CityLife.World.StarfallSurvivalAutonomy.BerryRelevant(exhausted),
                 "known depleted berry stock does not lure repeated approach");

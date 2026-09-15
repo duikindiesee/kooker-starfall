@@ -38,9 +38,9 @@ namespace Starfall.Food
             // A maintained freshwater seep occupies a separate dry rocky-foot
             // shelf north of the activity bank. It is outside initial 12 m
             // perception; no model prompt receives this authored coordinate.
-            SpringPosition = new Vector3(121, CoastalTerrain.Height(121, -58) + .18f, -58);
+            SpringPosition = new Vector3(121, CoastalTerrain.Height(121, -58), -58);
             Berry = BerryBush(BerryPosition, worldRoot, worldId);
-            Spring = Target("Food / maintained freshwater spring", "spring-food", SpringPosition, worldRoot, worldId, new Color(.05f, .72f, .86f));
+            Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId);
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
@@ -140,7 +140,9 @@ namespace Starfall.Food
             Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
             root.layer=11;
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
-            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place; item.Approach=root.transform; return item;
+            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
+            item.Approach=ApproachPoint(root.transform,position,1.55f);
+            return item;
         }
         static float MeasureRockClearance(Vector3 position)
         {
@@ -187,19 +189,104 @@ namespace Starfall.Food
                 if(crown!=null)crown.gameObject.SetActive(ripe);
             }
         }
-        static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, string worldId, Color colour)
+        static NpcInteractable FreshwaterSeep(Vector3 position, Transform parent, string worldId)
         {
-            var target = GameObject.CreatePrimitive(PrimitiveType.Sphere); target.name = name; target.transform.SetParent(parent);
-            target.transform.position = position;
-            target.transform.localScale = id.StartsWith("berry") ? new Vector3(1.2f, .9f, 1.2f) : new Vector3(1.8f, .25f, 1.8f);
-            target.layer=11;
+            const int sectors=16;
+            const float outerRadius=1.05f, waterRadius=.66f;
+            var target=new GameObject("Food / terrain-fitted freshwater seep");
+            target.transform.SetParent(parent); target.transform.position=position; target.layer=11;
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var material = new Material(shader) { name = name + " material", color = colour };
-            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", colour);
-            target.GetComponent<Renderer>().sharedMaterial = material;
-            target.GetComponent<Collider>().isTrigger=true;
-            var item = target.AddComponent<NpcInteractable>(); item.StableId = id; item.WorldId = worldId; item.Kind = NpcObjectKind.Place;
+            Material Make(string name,Color colour,float smoothness)
+            {
+                var m=new Material(shader){name=name,color=colour};
+                if(m.HasProperty("_BaseColor"))m.SetColor("_BaseColor",colour);
+                if(m.HasProperty("_Smoothness"))m.SetFloat("_Smoothness",smoothness);
+                if(m.HasProperty("_Metallic"))m.SetFloat("_Metallic",0);
+                return m;
+            }
+            var stone=Make("Seep fractured dark stone",new Color(.17f,.19f,.18f),.11f);
+            var water=Make("Seep clear shallow freshwater",new Color(.12f,.48f,.54f),.56f);
+            // Each bottom vertex follows the actual terrain footprint. The rim is
+            // a shallow fractured rock pocket, not a hovering flattened sphere.
+            var bottom=new Vector3[sectors]; var rim=new Vector3[sectors];
+            var wet=new Vector3[sectors];
+            float lowest=0,highest=0;
+            for(int i=0;i<sectors;i++)
+            {
+                float a=i*Mathf.PI*2f/sectors;
+                float radius=outerRadius*(.91f+.07f*Mathf.Sin(i*3.71f));
+                float x=Mathf.Cos(a)*radius,z=Mathf.Sin(a)*radius;
+                float ground=CoastalTerrain.Height(position.x+x,position.z+z)-position.y;
+                lowest=Mathf.Min(lowest,ground);highest=Mathf.Max(highest,ground);
+                bottom[i]=new Vector3(x,ground-.045f,z);
+                float innerGround=CoastalTerrain.Height(position.x+Mathf.Cos(a)*waterRadius,position.z+Mathf.Sin(a)*waterRadius)-position.y;
+                highest=Mathf.Max(highest,innerGround);
+                wet[i]=new Vector3(Mathf.Cos(a)*waterRadius,0,Mathf.Sin(a)*waterRadius);
+            }
+            if(highest-lowest>.62f || position.y+lowest<=CoastalWater.Level+1f)
+                throw new System.InvalidOperationException("Freshwater seep footprint requires a dry walkable rock pocket.");
+            // A level pool sits just above its highest sampled patch. The
+            // fractured stone rim rises above it and its lower skirt embeds in
+            // the real slope; a fitted dark basin hides any exposed terrain gap.
+            float waterY=highest+.045f;
+            for(int i=0;i<sectors;i++)
+            {
+                float a=i*Mathf.PI*2f/sectors;
+                rim[i]=new Vector3(Mathf.Cos(a)*outerRadius*.83f,
+                    Mathf.Max(bottom[i].y+.18f,waterY+.105f)+(i%4)*.025f,
+                    Mathf.Sin(a)*outerRadius*.83f);
+                wet[i].y=waterY;
+            }
+            var rockVertices=new Vector3[sectors*3+1];
+            var rockTriangles=new int[sectors*12+sectors*3];
+            rockVertices[sectors*3]=new Vector3(0,waterY-.075f,0);
+            for(int i=0;i<sectors;i++)
+            {
+                int next=(i+1)%sectors;
+                int b=i*3,n=next*3,t=i*12;
+                rockVertices[b]=bottom[i];rockVertices[b+1]=rim[i];
+                rockVertices[b+2]=new Vector3(wet[i].x,waterY-.075f,wet[i].z);
+                rockTriangles[t]=b;rockTriangles[t+1]=n;rockTriangles[t+2]=b+1;
+                rockTriangles[t+3]=b+1;rockTriangles[t+4]=n;rockTriangles[t+5]=n+1;
+                rockTriangles[t+6]=b+1;rockTriangles[t+7]=n+1;rockTriangles[t+8]=b+2;
+                rockTriangles[t+9]=b+2;rockTriangles[t+10]=n+1;rockTriangles[t+11]=n+2;
+                int floor=sectors*12+i*3;
+                rockTriangles[floor]=sectors*3;rockTriangles[floor+1]=n+2;rockTriangles[floor+2]=b+2;
+            }
+            void Visual(string name,Vector3[] vertices,int[] triangles,Material material)
+            {
+                var part=new GameObject(name);part.transform.SetParent(target.transform,false);
+                var mesh=new Mesh{name=name};mesh.vertices=vertices;mesh.triangles=triangles;
+                mesh.RecalculateNormals();mesh.RecalculateBounds();
+                part.AddComponent<MeshFilter>().sharedMesh=mesh;
+                part.AddComponent<MeshRenderer>().sharedMaterial=material;
+            }
+            Visual("Grounded fractured seep rock rim",rockVertices,rockTriangles,stone);
+            var waterVertices=new Vector3[sectors+1];var waterTriangles=new int[sectors*3];
+            waterVertices[0]=new Vector3(0,waterY,0);
+            for(int i=0;i<sectors;i++)
+            {
+                waterVertices[i+1]=wet[i];
+                int t=i*3;waterTriangles[t]=0;waterTriangles[t+1]=(i+1)%sectors+1;waterTriangles[t+2]=i+1;
+            }
+            Visual("Terrain-following shallow seep water",waterVertices,waterTriangles,water);
+            // The target's trigger is deliberately independent of visual meshes:
+            // no hidden primitive collider can obstruct walking beside the seep.
+            var trigger=target.AddComponent<SphereCollider>();trigger.radius=.94f;trigger.isTrigger=true;
+            var item = target.AddComponent<NpcInteractable>(); item.StableId = "spring-food"; item.WorldId = worldId; item.Kind = NpcObjectKind.Place;
+            item.Approach=ApproachPoint(target.transform,position,1.42f);
             return item;
+        }
+        static Transform ApproachPoint(Transform source,Vector3 position,float offset)
+        {
+            // A grounded stop outside the resource mesh prevents the body from
+            // walking through fruit leaves or the spring's rock lip. It is only
+            // exposed to the planner after a live scoped visual observation.
+            var marker=new GameObject("Grounded observed-resource approach");
+            marker.transform.SetParent(source,false);
+            float x=position.x+offset,z=position.z;
+            marker.transform.position=new Vector3(x,CoastalTerrain.Height(x,z),z);
+            return marker.transform;
         }
         public FoodAccess Inspect(string target)
         {
