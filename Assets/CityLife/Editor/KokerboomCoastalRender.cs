@@ -137,31 +137,34 @@ namespace CityLife.World.Editor
         }
         private static readonly List<string> filmSiteEvidence = new List<string>();
         private static List<Shot> BuildFilmSiteShots() => new List<Shot> {
-            new Shot{Id="01-film-near-south",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(128,-100),new Vector2(120,-96),new Vector2(116,-94)},"near-south")},
-            new Shot{Id="02-film-high-south",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(128,-112),new Vector2(120,-105),new Vector2(110,-101)},"high-south")},
-            new Shot{Id="03-film-east-oblique",Purpose="Diagnostic actor-proxy camera; ray-measured dry site and clear sight required.",Height=width*9/16,Configure=()=>FilmSiteCamera(new []{new Vector2(145,-110),new Vector2(135,-100),new Vector2(128,-94)},"east-oblique")}
+            new Shot{Id="01-film-follow-yaw-0",Purpose="Diagnostic genuine follow-camera orbit at grounded actor proxy; not gameplay footage.",Height=width*9/16,Configure=()=>FilmSiteCamera(0,"yaw-0")},
+            new Shot{Id="02-film-follow-yaw-minus-45",Purpose="Diagnostic genuine follow-camera orbit at grounded actor proxy; not gameplay footage.",Height=width*9/16,Configure=()=>FilmSiteCamera(-45,"yaw-minus-45")},
+            new Shot{Id="03-film-follow-yaw-minus-80",Purpose="Diagnostic genuine follow-camera orbit at grounded actor proxy; not gameplay footage.",Height=width*9/16,Configure=()=>FilmSiteCamera(-80,"yaw-minus-80")}
         };
-        private static void FilmSiteCamera(Vector2[] candidates,string label)
+        private static void FilmSiteCamera(float yaw,string label)
         {
-            Coastal();Physics.SyncTransforms();
-            Vector3 actor=new Vector3(CoastalTerrain.ActivityCentre.x-4,4.02f,CoastalTerrain.ActivityCentre.y-5);
-            Vector3 target=actor+Vector3.up*1.05f;
+            CoastalCamera(new Vector3(128,7,-87),new Vector3(128,4,-80));
+            Physics.SyncTransforms();
             const int solid=(1<<8)|(1<<10);
-            foreach(var site in candidates)
+            if(!Physics.Raycast(new Vector3(128,300,-80),Vector3.down,out var floor,400,solid,QueryTriggerInteraction.Ignore) ||
+                floor.point.y<=CoastalWater.Level+1f)throw new InvalidOperationException("Grounded follow proxy has no dry floor");
+            var proxy=new GameObject("Editor grounded actor camera proxy; not rendered NPC");
+            proxy.transform.position=floor.point+Vector3.up*.06f;
+            var follow=camera.gameObject.AddComponent<CharacterPreviewCamera>();
+            follow.Target=proxy.transform;follow.SuppressInput=true;follow.Yaw=yaw;follow.Pitch=12;follow.Distance=5.8f;
+            follow.Follow();camera.fieldOfView=60;
+            if(follow.ActualDistance<2.3f || Physics.CheckSphere(camera.transform.position,.2f,solid,QueryTriggerInteraction.Ignore) ||
+               camera.transform.position.y<=CoastalWater.Level+1f)
             {
-                if(!Physics.Raycast(new Vector3(site.x,300,site.y),Vector3.down,out var floor,400,solid,QueryTriggerInteraction.Ignore))
-                {filmSiteEvidence.Add(label+" candidate "+site+": no solid floor");continue;}
-                var eye=new Vector3(site.x,floor.point.y+4f,site.y);
-                if(floor.point.y<=CoastalWater.Level+1f || Physics.CheckSphere(eye,.7f,solid,QueryTriggerInteraction.Ignore) ||
-                   Physics.Linecast(eye,target,solid,QueryTriggerInteraction.Ignore))
-                {filmSiteEvidence.Add(label+" candidate "+site+": rejected floor="+floor.point+" eye="+eye+" dry/sight/clear guard");continue;}
-                filmSiteEvidence.Add(label+": camera="+eye+"; actorProxy="+actor+"; floor="+floor.point+
-                    "; floorFreeboard="+(floor.point.y-CoastalWater.Level)+"; FOV=60; not ordinary player capture");
+                filmSiteEvidence.Add(label+": rejected follow position="+camera.transform.position+" distance="+follow.ActualDistance+
+                    " occluded="+follow.Occluded+" actorFloor="+floor.point);
                 File.WriteAllLines(Path.Combine(outputDirectory,"film-site-selection.txt"),filmSiteEvidence);
-                CoastalCamera(eye,target);camera.fieldOfView=60;return;
+                throw new InvalidOperationException("Follow film camera clipped or wet at "+label);
             }
+            filmSiteEvidence.Add(label+": actualFollowCamera="+camera.transform.position+"; actorProxy="+proxy.transform.position+
+                "; actorFloor="+floor.point+"; yaw="+yaw+"; pitch=12; distance="+follow.ActualDistance+
+                "; occluded="+follow.Occluded+"; FOV=60; no ordinary actor or HUD in Editor shot");
             File.WriteAllLines(Path.Combine(outputDirectory,"film-site-selection.txt"),filmSiteEvidence);
-            throw new InvalidOperationException("No dry, clear film camera for "+label+" from bounded measured candidates");
         }
 
         private static void BuildCoastalGalaxy()

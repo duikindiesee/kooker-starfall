@@ -30,16 +30,23 @@ def main():
             connection = http.client.HTTPConnection('127.0.0.1', 1234, timeout=10)
             start = time.perf_counter()
             try:
+                connection.connect()
+                row['loopbackConnectMilliseconds'] = (time.perf_counter() - start) * 1000
+                row['peer'] = '127.0.0.1:1234 (local LM Studio API; linked model may execute on another host)'
                 connection.request('GET', '/api/v0/models')
                 inventory_response = connection.getresponse()
+                row['inventoryHeadersMilliseconds'] = (time.perf_counter() - start) * 1000
                 inventory = json.loads(inventory_response.read())
                 if inventory_response.status != 200 or not any(x.get('id') == model and x.get('state') == 'loaded' for x in inventory.get('data', [])):
                     raise RuntimeError('Exact instance not already loaded; no autoload')
                 row['inventoryMilliseconds'] = (time.perf_counter() - start) * 1000
                 connection.request('POST', '/v1/chat/completions', json.dumps(request), {'Content-Type': 'application/json'})
+                row['completionRequestIssuedMilliseconds'] = (time.perf_counter() - start) * 1000
                 response = connection.getresponse()
+                row['completionHeadersMilliseconds'] = (time.perf_counter() - start) * 1000
                 body = json.loads(response.read())
                 row['milliseconds'] = (time.perf_counter() - start) * 1000
+                row['completionBodyMilliseconds'] = row['milliseconds']
                 row['response'] = body
                 choice = body.get('choices', [{}])[0]
                 text = choice.get('message', {}).get('content', '')
@@ -52,7 +59,7 @@ def main():
             rows.append(row)
             print(json.dumps({k: v for k, v in row.items() if k not in ('request', 'response')}), flush=True)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps({'scope': 'Off-game synthetic event; token-budget variant is NOT game code; idle gap is deliberate; true cold state unknown; no deadline policy change', 'models': args.models, 'attempts': args.attempts, 'gapSeconds': args.gap_seconds, 'maxTokens': args.max_tokens, 'rows': rows}, indent=2), encoding='utf-8')
+    args.output.write_text(json.dumps({'scope': 'Off-game synthetic event; local loopback connection/header/body stages only, NOT linked-host server queue/inference telemetry. Token-budget variant is NOT game code; idle gap is deliberate; true cold state unknown; no deadline policy change', 'models': args.models, 'attempts': args.attempts, 'gapSeconds': args.gap_seconds, 'maxTokens': args.max_tokens, 'rows': rows}, indent=2), encoding='utf-8')
 
 
 if __name__ == '__main__':
