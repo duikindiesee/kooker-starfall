@@ -19,7 +19,9 @@ namespace CityLife.World
         public Starfall.Refuge.RefugeRuntime Refuge;
         public bool Enabled { get; private set; }
         public string Status { get; private set; }="Survival mind off";
-        public int AcceptedDecisions { get; private set; }, FoodOutcomes { get; private set; }, ExploredMetres { get; private set; };
+        public int AcceptedDecisions { get; private set; }
+        public int FoodOutcomes { get; private set; }
+        public int ExploredMetres { get; private set; }
         private string endpoint,model,evidenceDirectory,savePath;
         private Task<StarfallSurvivalThought.Result> pending;
         private CancellationTokenSource cancellation;
