@@ -1,0 +1,20 @@
+{
+  "schema": "starfall.offgame-outcome-context.v1",
+  "sourceCommit": "dd094a1",
+  "modelInstance": "starfall-local-e4b",
+  "deviceObservedByLmsPs": "Local Windows GGUF, distinct from linked Mac MLX and Nano instances",
+  "deadlineMilliseconds": 5000,
+  "trialMethod": "Warm loopback non-stream chat completions, temperature zero, final content and finish_reason inspected; manually constructed measured-context prompts. No game state or resource coordinates injected.",
+  "comparisons": [
+    {"context": "measured need, gather berry versus explore west, no prior route", "trials": 5, "stopFinal": 5, "chosen": "explore west", "chosenCount": 5},
+    {"context": "truthful gather-as-experiment affordance, no prior route", "trials": 5, "stopFinal": 5, "chosen": "explore west", "chosenCount": 5},
+    {"context": "same affordance with eligible order reversed", "trials": 5, "stopFinal": 5, "chosen": "explore west", "chosenCount": 5},
+    {"context": "experiment-focused goal and affordance, no prior route", "trials": 5, "stopFinal": 5, "chosen": "explore west", "chosenCount": 5},
+    {"context": "verified approach berry reached; gather stores observed fruit with unknown meal benefit", "trials": 5, "stopFinal": 5, "chosen": "gather berry", "chosenCount": 5, "maxMilliseconds": 3253},
+    {"context": "verified gather berry succeeded; one fruit carried, meal effect unobserved", "trials": 5, "stopFinal": 5, "chosen": "eat fruit", "chosenCount": 5, "maxMilliseconds": 2780},
+    {"context": "verified approach spring reached; severe measured low hydration; inspect versus explore", "trials": 3, "stopFinal": 3, "chosen": "inspect spring", "chosenCount": 3, "maxMilliseconds": 3492},
+    {"context": "verified inspected maintained freshwater seep; severe measured low hydration; drink versus explore", "trials": 3, "stopFinal": 3, "chosen": "drink spring", "chosenCount": 3, "maxMilliseconds": 2625}
+  ],
+  "status": "OFFGAME_ONLY",
+  "remainingGap": "A compiled ordinary player must actually reach each source, admit the exact choice, execute a positive finite meal and drink effect, and preserve state through restart/death. These probes cannot establish that behavior; raw completion hashes were not collected here."
+}
