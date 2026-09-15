@@ -107,7 +107,6 @@ Shader "CityLife/CoastalTerrain"
                 albedo=lerp(albedo,submergedBed,submerged*.62);
                 float causticLines=CausticNetwork(p.xz,_Time.y);
                 float opticalDepth=max(0,_SeaLevel-p.y);
-                albedo+=float3(.035,.12,.115)*causticLines*submerged*exp(-opticalDepth*.30);
                 // Centimetre-scale weathering relief affects light, not the collider.
                 float relief=((weather-.5)*.028+(grain-.5)*.004-cracks*.017)*cliff;
                 float3 dpdx=ddx(p),dpdy=ddy(p),r1=cross(dpdy,n),r2=cross(n,dpdx);
@@ -119,7 +118,16 @@ Shader "CityLife/CoastalTerrain"
                 input.bakedGI=SampleSH(n);input.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);input.shadowMask=1;
                 SurfaceData surface=(SurfaceData)0;surface.albedo=albedo*_BaseColor.rgb;surface.alpha=1;
                 surface.smoothness=lerp(.12,.22,damp);surface.metallic=0;surface.occlusion=1;surface.normalTS=float3(0,0,1);
-                half4 color=UniversalFragmentPBR(input,surface);color.rgb=MixFog(color.rgb,i.fog);return color;
+                half4 color=UniversalFragmentPBR(input,surface);
+                // Refracted sun is concentrated light, not another brown/green bed
+                // pigment. Add it after PBR shading, only to truly submerged upward
+                // facing terrain, and attenuate with measured physical water depth.
+                Light sun=GetMainLight();
+                float sunEnergy=min(1.4,max(sun.color.r,max(sun.color.g,sun.color.b)));
+                float sunFacing=saturate(dot(n,sun.direction))*.55+.45;
+                float causticLight=causticLines*submerged*exp(-opticalDepth*.36)*sunEnergy*sunFacing;
+                color.rgb+=half3(.20,.33,.31)*causticLight;
+                color.rgb=MixFog(color.rgb,i.fog);return color;
             }
             ENDHLSL
         }

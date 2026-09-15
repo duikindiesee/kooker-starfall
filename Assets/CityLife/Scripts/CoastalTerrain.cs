@@ -138,9 +138,17 @@ namespace CityLife.World
             float benchBlend = .42f + Smooth(.18f,.72f,erosion)*.20f;
             body = Mathf.Lerp(body,bench,benchBlend);
             float talus = Smooth(-.41f,-.16f,shoulder)*(1f-Smooth(-.02f,.27f,shoulder))*height*.095f;
+            // Continuous eroded foothill ribs grow from the mesa shoulder into the
+            // outwash apron. They belong to the same render/collision heightfield,
+            // unlike the rejected detached boulders in rounds 165-167. Broad radial
+            // noise varies the ribs; a smooth outer taper avoids isolated spikes.
+            float apron = Smooth(-.34f,-.12f,shoulder)*(1f-Smooth(.04f,.24f,shoulder));
+            float ribPhase = nx*9.4f+nz*7.1f+Noise(x*.035f+salt,z*.035f)*2.4f;
+            float ribs = Mathf.Pow(Mathf.Max(0,Mathf.Sin(ribPhase)),3f);
+            float footRidges = apron*ribs*height*.055f;
             float gully = Smooth(.10f,.65f,erosion)*Smooth(-.19f,.04f,shoulder)*(1f-Smooth(.27f,.48f,shoulder))*2.4f;
             float top = height + Noise(x*.078f+salt,z*.078f)*2.2f + Noise(x*.24f,z*.24f+salt)*.22f;
-            return Mathf.Max(0,body*top + talus - gully);
+            return Mathf.Max(0,body*top + talus + footRidges - gully);
         }
 
         private static float Smooth(float low,float high,float value)
