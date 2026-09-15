@@ -149,6 +149,19 @@ namespace CityLife.World
             CheckThat("forage-decoration-does-not-block-navigation", decorativePlantColliders == 0,
                 "enabled or disabled primitive colliders below the forage root=" + decorativePlantColliders +
                 "; root trigger remains the intended interaction sensor");
+            Vector3 seepApproach=Food != null && Food.Spring != null && Food.Spring.Approach != null
+                ? Food.Spring.Approach.position : Vector3.zero;
+            bool seepFootprint=Food != null && Food.Spring != null &&
+                Mathf.Abs(Food.SpringPosition.y-CoastalTerrain.Height(Food.SpringPosition.x,Food.SpringPosition.z))<.05f &&
+                Food.SpringPosition.y>CoastalWater.Level+1f &&
+                Vector3.Distance(Food.SpringPosition,seepApproach)>1.05f &&
+                Vector3.Distance(Food.SpringPosition,seepApproach)<2.2f &&
+                Mathf.Abs(seepApproach.y-CoastalTerrain.Height(seepApproach.x,seepApproach.z))<.05f;
+            var seepPath=seepFootprint ? Brain.TerrainNavigation.Plan(Food.Berry.Approach.position,seepApproach) : null;
+            CheckThat("freshwater-seep-dry-grounded-approach-route", seepFootprint && seepPath!=null && seepPath.Count>0,
+                Food==null ? "food adapter missing" : "site="+Food.SpringPosition+"; externalApproach="+seepApproach+
+                "; berryToSeepWaypoints="+(seepPath==null?0:seepPath.Count)+
+                "; authored footprint/path check only; live LOS, discovery, model choice and drinking require ordinary play");
             yield return Capture("01-default-coastal-inhabitant");
             Controls.View.ExternalView = true; Controls.SuppressView = true;
             Controls.View.transform.SetPositionAndRotation(new Vector3(-250, 170, -360),
@@ -202,6 +215,11 @@ namespace CityLife.World
                 Controls.View.transform.SetPositionAndRotation(berryView,
                     Quaternion.LookRotation(Food.BerryPosition + Vector3.up*.42f - berryView));
                 yield return CaptureWorld("01c-readable-berry-bush");
+                Vector3 seepView=Food.SpringPosition+new Vector3(-3f,1.45f,-3.6f);
+                seepView.y=Mathf.Max(seepView.y,CoastalTerrain.Height(seepView.x,seepView.z)+1.3f);
+                Controls.View.transform.SetPositionAndRotation(seepView,
+                    Quaternion.LookRotation(Food.SpringPosition+Vector3.up*.25f-seepView));
+                yield return CaptureWorld("01d-terrain-fitted-freshwater-seep");
             }
             var shallowCamera=new Vector3(-11,3.2f,20); var shallowTarget=new Vector3(-2,-2.25f,34);
             Controls.View.transform.SetPositionAndRotation(shallowCamera,Quaternion.LookRotation(shallowTarget-shallowCamera));

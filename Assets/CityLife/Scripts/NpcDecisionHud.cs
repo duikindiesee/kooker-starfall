@@ -74,6 +74,21 @@ namespace CityLife.World
                     "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
                     "\n\nActions use deterministic checks. No learning.";
                 if (!string.IsNullOrEmpty(LivingMemoryText)) thoughts.text = LivingMemoryText;
+                if(thoughtsBackground!=null && !string.IsNullOrEmpty(LivingMemoryText))
+                {
+                    // The optional planner needs a long card. Ordinary memory
+                    // status is normally only a few lines: size to its visible
+                    // content so it does not mask the canyon/giant during play.
+                    int lines=LivingMemoryText.Split('\n').Length;
+                    float height=Mathf.Clamp(43f+lines*27f,125f,245f);
+                    thoughtsBackground.GetComponent<RectTransform>().sizeDelta=new Vector2(550f,height);
+                    thoughts.rectTransform.sizeDelta=new Vector2(510f,height-25f);
+                }
+                else if(thoughtsBackground!=null)
+                {
+                    thoughtsBackground.GetComponent<RectTransform>().sizeDelta=new Vector2(550f,430f);
+                    thoughts.rectTransform.sizeDelta=new Vector2(510f,390f);
+                }
                 footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Planner " + (planner.EnabledByUser ? "on" : "off") +
                     (!string.IsNullOrEmpty(LivingMemoryText) ? " · memory status shown" : "");
             }
