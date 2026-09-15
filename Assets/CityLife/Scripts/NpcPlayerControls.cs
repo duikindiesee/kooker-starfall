@@ -31,10 +31,11 @@ namespace CityLife.World
         public bool Looking { get; private set; }
         public bool ExitRequested { get; private set; }
         public bool FreeSpectator { get; private set; }
+        public bool ScriptedScenicCapture { get; set; }
         public bool DisplayShortcutActive { get; private set; }
         private float shortcutTimeScale;
         private bool shortcutPaused;
-        public string Mode => Brain.Possessed ? "Possession" : FreeSpectator ? "Spectator / free camera" : "Autonomous NPC / follow";
+        public string Mode => ScriptedScenicCapture ? "Scripted scenic observer / actor autonomous" : Brain.Possessed ? "Possession" : FreeSpectator ? "Spectator / free camera" : "Autonomous NPC / follow";
         public Text PageTitle, PageBody;
         public Vector3 SpectatorPosition => freePosition;
         private GameObject overlay;

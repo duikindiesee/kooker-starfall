@@ -12,6 +12,7 @@ param(
     [string]$FrameEvidence,
     [ValidateRange(10,120)][int]$FrameSeconds=60,
     [ValidateRange(0,50000)][int]$FrameStartTick=0,
+    [switch]$ScenicFilm,
     [switch]$DeathDiagnostic,
     [string]$DeathEvidence,
     [string]$Python
@@ -46,6 +47,9 @@ if($DeathDiagnostic -and (-not $Survival -or -not $DeathEvidence)){
 }
 if($FrameEvidence -and (-not $Survival -or $DeathDiagnostic)){
     throw 'Game-only frame capture is opt-in ordinary survival play, not a death diagnostic.'
+}
+if($ScenicFilm -and (-not $FrameEvidence -or $FrameSeconds -lt 80)){
+    throw 'Scripted scenic cutaway requires normal survival game frames of at least 80 seconds.'
 }
 if($Survival){
     $playModelUri=[Uri]$ModelEndpoint
@@ -129,6 +133,7 @@ try{
                 $playArgs+=@('-npcSurvivalCaptureFrames',$playFrameEvidence,
                     '-npcSurvivalCaptureSeconds',[string]$FrameSeconds,
                     '-npcSurvivalCaptureAfterTick',[string]$FrameStartTick)
+                if($ScenicFilm){$playArgs+='-npcSurvivalCaptureScenic'}
             }
             if($DeathDiagnostic){
                 $playDeathEvidence=[IO.Path]::GetFullPath($DeathEvidence)

@@ -50,3 +50,15 @@ uses the existing actual follow camera, a compact filmed HUD, and an opt-in
 real-frame capture delayed to a recorded autonomous tick; it does not steer
 the actor or pregrant discovery. Ordinary play/video precedes the unchanged
 immediate-reflection smoke, with 211 retained as verified fallback.
+
+Round 222 exact follow-orbit diagnostic at the grounded activity proxy
+demonstrated that yaw 0/-45/-80 all remain blocked by the nearby mesa. A
+short-range actor-follow shot cannot simultaneously show the distant giant
+from that terrace. The next bounded optical filming source adds a 20-second
+**scripted scenic observer** cutaway from the already dry/clear bank site,
+between ordinary actor-follow footage, with explicit per-frame mode labels and
+return to follow unless the player overrides it. This observer viewpoint is
+NOT actor discovery, actor position, or autonomous exploration evidence; the
+actor/model timeline must remain uninterrupted. It is supplemental composition
+evidence only and cannot substitute ordinary survival, death/return, or user
+visual acceptance. The terrain/art repair for too much plain sand remains open.

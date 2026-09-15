@@ -16,13 +16,14 @@ namespace CityLife.World
         {
             public int frame, unityTick, width, height;
             public long utcElapsedMs;
-            public string sourceCamera, readbackStatus;
+            public string sourceCamera, cameraMode, readbackStatus;
         }
         [Serializable] sealed class FinalRow
         {
-            public string schema="starfall.game-frames.v1", status, build, sourceCamera, boundary;
+            public string schema="starfall.game-frames.v1", status, build, sourceCamera, boundary, scenicSiteEvidence;
             public int frameCount, droppedCount, skippedSamples, width, height, requestedSeconds, requestedStartTick, actualStartTick;
             public long firstElapsedMs, lastElapsedMs, captureEndMs;
+            public bool scenicRequested, scenicAvailable, scenicRendered;
         }
         public NpcAutonomy Brain;
         public Camera View;
@@ -30,7 +31,11 @@ namespace CityLife.World
         string directory, framesPath, finalPath, build;
         int seconds, width, height, frameCount, dropped, skipped, requestedStartTick, actualStartTick;
         long firstMs=-1, lastMs=-1, filmedEndMs;
-        bool inFlight, finalized, failed;
+        bool inFlight, finalized, failed, scenicRequested, scenicAvailable, scenicActive, scenicRendered;
+        Vector3 scenicEye;
+        string scenicSiteEvidence;
+        CharacterPreviewCamera follow;
+        NpcPlayerControls controls;
         Stopwatch clock;
 
         static string Flag(string name)
@@ -67,10 +72,20 @@ namespace CityLife.World
             // both requested and observed start ticks.
             while(Brain.Tick<requestedStartTick)yield return null;
             actualStartTick=Brain.Tick;
+            scenicRequested=HasFlag("-npcSurvivalCaptureScenic");
+            if(scenicRequested && seconds>=80)
+            {
+                follow=View.GetComponent<CharacterPreviewCamera>();
+                controls=View.GetComponent<NpcPlayerControls>();
+                scenicAvailable=follow!=null && controls!=null && !follow.ExternalView && !Brain.Possessed &&
+                    CoastalSkyViewSites.TryDryEyeNear(-52,-55,View.nearClipPlane,out scenicEye,out scenicSiteEvidence);
+                if(!scenicAvailable)scenicSiteEvidence="Scenic observer refused: missing follow/controls, possession/external view, or no dry clear PhysX bank site.";
+            }
             clock=Stopwatch.StartNew();
             long nextSampleMs=0;
             while(!failed)
             {
+                if(scenicAvailable)SetScenic(clock.ElapsedMilliseconds>=40000 && clock.ElapsedMilliseconds<60000);
                 yield return new WaitForEndOfFrame();
                 if(Screen.width!=width||Screen.height!=height){failed=true;break;}
                 long elapsed=clock.ElapsedMilliseconds;
@@ -79,19 +94,22 @@ namespace CityLife.World
                 nextSampleMs=elapsed+IntervalMs;
                 if(inFlight){skipped++;continue;}
                 int capturedTick=Brain.Tick;
+                string capturedMode=controls!=null&&controls.FreeSpectator?"player-free-spectator":
+                    scenicActive?"scripted-scenic-observer; actor-autonomous":"ordinary-actor-follow";
                 var texture=new RenderTexture(width,height,0,RenderTextureFormat.ARGB32);
                 texture.Create();inFlight=true;
                 try
                 {
                     ScreenCapture.CaptureScreenshotIntoRenderTexture(texture);
                     AsyncGPUReadback.Request(texture,0,TextureFormat.RGBA32,
-                        request=>Completed(request,texture,elapsed,capturedTick));
+                        request=>Completed(request,texture,elapsed,capturedTick,capturedMode));
                 }
                 catch(Exception)
                 {
                     Destroy(texture);inFlight=false;dropped++;failed=true;
                 }
             }
+            SetScenic(false);
             filmedEndMs=clock.ElapsedMilliseconds;
             long waitFrom=clock.ElapsedMilliseconds;
             while(inFlight&&clock.ElapsedMilliseconds-waitFrom<2000)
@@ -99,7 +117,7 @@ namespace CityLife.World
             if(inFlight){dropped++;failed=true;}
             Finish(failed?"FAILED_OR_INCOMPLETE":"CAPTURED_REAL_GAME_FRAMES");
         }
-        void Completed(AsyncGPUReadbackRequest request,RenderTexture source,long elapsed,int tick)
+        void Completed(AsyncGPUReadbackRequest request,RenderTexture source,long elapsed,int tick,string cameraMode)
         {
             try
             {
@@ -127,8 +145,9 @@ namespace CityLife.World
                     string path=Path.Combine(directory,"frame-"+number.ToString("D6")+".png");
                     File.WriteAllBytes(path,image.EncodeToPNG());
                     var row=new FrameRow{frame=number,utcElapsedMs=elapsed,unityTick=tick,
-                        width=width,height=height,sourceCamera=View.name,readbackStatus="ok"};
+                        width=width,height=height,sourceCamera=View.name,cameraMode=cameraMode,readbackStatus="ok"};
                     File.AppendAllText(framesPath,JsonUtility.ToJson(row)+"\n");
+                    if(cameraMode.StartsWith("scripted",StringComparison.Ordinal))scenicRendered=true;
                     frameCount=number;if(firstMs<0)firstMs=elapsed;lastMs=elapsed;
                 }
                 finally{Destroy(image);}
@@ -142,12 +161,36 @@ namespace CityLife.World
             finalized=true;
             var row=new FinalRow{status=status,build=build,sourceCamera=View==null?"unknown":View.name,
                 frameCount=frameCount,droppedCount=dropped,skippedSamples=skipped,width=width,height=height,
+                scenicRequested=scenicRequested,scenicAvailable=scenicAvailable,scenicRendered=scenicRendered,
+                scenicSiteEvidence=scenicSiteEvidence,
                 requestedSeconds=seconds,requestedStartTick=requestedStartTick,actualStartTick=actualStartTick,
                 firstElapsedMs=firstMs,lastElapsedMs=lastMs,
                 captureEndMs=filmedEndMs>0?filmedEndMs:clock==null?0:clock.ElapsedMilliseconds,
-                boundary="Actual game framebuffer and compact HUD only; optional start waits for ordinary autonomous tick without pausing simulation. Real elapsed samples. Skipped are busy capture slots, dropped are readback/write errors. Gaps hold prior image; no desktop capture or simulated pacing."};
+                boundary="Actual game framebuffer and compact HUD only; optional start waits for ordinary autonomous tick without pausing simulation. Scenic interval 40-60s, if requested/available, is a SCRIPTED observer camera from a dry PhysX bank; the actor keeps autonomous decisions but is not seen in the scenic shot. Camera returns to follow unless the player selected free spectator. Real elapsed samples; skipped busy slots/dropped readback errors. No desktop capture or simulated pacing."};
             try{File.WriteAllText(finalPath,JsonUtility.ToJson(row,true));}catch(Exception){}
         }
-        void OnApplicationQuit(){Finish("PLAYER_EXITED_BEFORE_CAPTURE_COMPLETE");}
+        void OnApplicationQuit(){SetScenic(false);Finish("PLAYER_EXITED_BEFORE_CAPTURE_COMPLETE");}
+        void OnDisable(){SetScenic(false);}
+        void SetScenic(bool on)
+        {
+            if(!scenicAvailable||follow==null||controls==null||View==null||scenicActive==on)return;
+            if(on && (follow.ExternalView||Brain.Possessed||controls.FreeSpectator))
+            {
+                scenicAvailable=false;
+                scenicSiteEvidence="Scenic observer refused: player changed camera or possessed actor before the scripted interval.";
+                return;
+            }
+            scenicActive=on;
+            controls.ScriptedScenicCapture=on;
+            if(!on && controls.FreeSpectator)return;
+            follow.ExternalView=on;
+            if(on)
+            {
+                follow.ReleasePointer();
+                View.transform.position=scenicEye;
+                View.transform.rotation=Quaternion.LookRotation(new Vector3(.04f,.07f,1).normalized);
+            }
+            else follow.Follow();
+        }
     }
 }
