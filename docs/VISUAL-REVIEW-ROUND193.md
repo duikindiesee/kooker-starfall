@@ -23,3 +23,27 @@ blocky submerged rocks, sparse/unconvincing aquatic plants and a pale horizon
 transition. Check distant-sea continuity after the changed scattering weight,
 plus the existing actual-reflection and moving-caustic regression in the next
 compiled player. No 7.3/10 score or user acceptance is awarded.
+
+## Additional canyon and offshore review
+
+Independently inspected `2026-09-15-04-canyon-opening.png` and
+`2026-09-15-07-offshore-islands-sea-vista.png` in this same round. In the canyon
+view, the right cliff and smaller sea-stack visibly occlude the giant: this
+specific retained view does not show a planet rendered in front of those rocks.
+Its low, strongly defined circular edge still makes it read close to the canyon
+mouth. This is a composition concern even when the source sphere is distant.
+The user's screenshot has a different apparent planet elevation; its build
+identity is unverified. Do not dismiss it or claim current-player acceptance
+from this older Editor view.
+
+The offshore view exposes conspicuous parallel/checker-like wave repetition,
+a pale flat horizon, and isolated rounded cliff blocks without convincing
+shoreline breakup. It does not yet match the reference's richly layered rocky
+coast. The canyon floor is largely bare and the underwater plants appear as
+widely separated repeated rosettes rather than clustered reef growth.
+
+Next visual iteration priority: current-player sky occlusion and angular scale
+from three viewpoints; suppress repetitive water bands while retaining actual
+bed visibility; add believable rock/shore transitions and planted clusters.
+Do not replace traversal, depth or actual reflections with a reference billboard.
+These are observed gaps, not an additional completed visual milestone.
