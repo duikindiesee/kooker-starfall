@@ -47,6 +47,14 @@ The newly wired automatic lifecycle branches have syntax validation but still
 require a fresh end-to-end candidate run; do not report that integration as tested.
 # Survival promotion boundary (15 September follow-up)
 
+Verifier regression: `python tools/test_survival_promotion.py` passed twelve
+synthetic cases on 15 September: complete contract, missing drink, old process
+schema, mismatched content, diagnostic disguised as ordinary play, short soak,
+cross-actor events, unmatched food provenance, missing reload, wrong incarnation,
+missing post-run death hash and evidence path escape. The fixture contains only
+nonexecutable dummy bytes in a temporary directory, never invokes retention,
+and is not gameplay or positive real-build promotion evidence.
+
 The legacy regression runner promoted round185 before survival was tested and
 removed the previous 050306 and 060513 binary copies. Their source and evidence
 remain, but those exact executable folders are no longer retained. This was a
