@@ -1574,14 +1574,20 @@ ENDHLSL
 
         private const string StarShader = @"
 Shader ""Hidden/CityLife/KokerboomStarsInspection"" {
-SubShader { Tags { ""RenderPipeline""=""UniversalPipeline"" ""RenderType""=""Opaque"" }
-Pass { Tags { ""LightMode""=""SRPDefaultUnlit"" } Cull Off ZWrite On
+SubShader { Tags { ""RenderPipeline""=""UniversalPipeline"" ""RenderType""=""Opaque"" ""Queue""=""Background+1"" }
+Pass { Tags { ""LightMode""=""SRPDefaultUnlit"" } Cull Off ZWrite Off
 HLSLPROGRAM
 #pragma vertex Vert
 #pragma fragment Frag
 #include ""Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl""
 struct A { float4 p:POSITION; float4 c:COLOR; }; struct V { float4 p:SV_POSITION; float4 c:COLOR; };
-V Vert(A i) { V o; o.p=TransformObjectToHClip(i.p.xyz); o.c=i.c; return o; }
+V Vert(A i) { V o; o.p=TransformObjectToHClip(i.p.xyz);
+#if UNITY_REVERSED_Z
+o.p.z=0;
+#else
+o.p.z=o.p.w;
+#endif
+o.c=i.c; return o; }
 half4 Frag(V i):SV_Target { return i.c; }
 ENDHLSL
 } } }";
