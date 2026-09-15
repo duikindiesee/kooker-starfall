@@ -7,6 +7,7 @@ namespace CityLife.World
     [Serializable] public sealed class NpcObservation
     {
         public string id;
+        public string observedType;
         public NpcObjectKind kind;
         public bool permission, available;
         public int distanceMillimetres;
@@ -34,6 +35,7 @@ namespace CityLife.World
                 { OccludedCount++; continue; }
                 if (seen.ContainsKey(item.StableId)) throw new InvalidOperationException("Duplicate visible object id: " + item.StableId);
                 seen.Add(item.StableId, new NpcObservation { id = item.StableId, kind = item.Kind,
+                    observedType=item.ObservedType,
                     permission = item.Permission, available = item.Available, position = item.SightPoint,
                     approach = item.Approach != null ? item.Approach.position : item.transform.position,
                     distanceMillimetres = Mathf.RoundToInt(Vector3.Distance(transform.position, item.SightPoint) * 1000), seenAtTick = tick });

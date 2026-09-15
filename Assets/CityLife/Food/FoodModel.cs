@@ -25,6 +25,10 @@ namespace Starfall.Food
         public List<EdenEvent> ecologyEvents=new List<EdenEvent>();
         public FoodBody body=new FoodBody();public int incarnation=1;public bool seenBed,knowsMealBenefit;
         public List<FoodDeath> deaths=new List<FoodDeath>();public List<RecoveryBag> bags=new List<RecoveryBag>();
+        // Additive scoped knowledge. Older food.v1 snapshots omit these fields;
+        // Restore installs empty lists only after validating the old payload.
+        public List<PlaceCell> exploredCells=new List<PlaceCell>();
+        public List<PlaceObservationEvent> observedPlaces=new List<PlaceObservationEvent>();
     }
     [Serializable] public sealed class FoodReceipt
     {
@@ -177,13 +181,17 @@ namespace Starfall.Food
                 s.knowsMealBenefit&&!s.lastMealEvidence.StartsWith(generation+".ate.",StringComparison.Ordinal))return false;
             if(!string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&
                 s.survivalAuthorityEvidence!=SurvivalAuthorityEvidence(s))return false;
+            if(!PlaceLedger.Valid(s))return false;
             var p=s.actorPosition;return Finite(p.x)&&Finite(p.y)&&Finite(p.z)&&p.magnitude<10000;
         }
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);
         public bool Restore(string json,string world,string generation)
         {
-            if(json==null||json.Length>128000)return false;
-            try{var candidate=JsonUtility.FromJson<FoodState>(json);if(!Valid(candidate,world,generation)||candidate.seed!=State.seed||candidate.actorId!=State.actorId)return false;State=candidate;return true;}catch{return false;}
+            if(json==null||json.Length>512000)return false;
+            try{var candidate=JsonUtility.FromJson<FoodState>(json);if(!Valid(candidate,world,generation)||candidate.seed!=State.seed||candidate.actorId!=State.actorId)return false;
+                if(candidate.exploredCells==null)candidate.exploredCells=new List<PlaceCell>();
+                if(candidate.observedPlaces==null)candidate.observedPlaces=new List<PlaceObservationEvent>();
+                State=candidate;return true;}catch{return false;}
         }
         [Serializable] sealed class SaveEnvelope{public string schema="starfall.food-save.v1",payload,sha256;}
         [Serializable] sealed class SavePointer{public string schema="starfall.food-pointer.v1",snapshot;}
@@ -204,9 +212,113 @@ namespace Starfall.Food
             {
                 if(new FileInfo(path).Length>160000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
                 if(pointer!=null&&pointer.schema=="starfall.food-pointer.v1")
-                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>160000)return false;text=File.ReadAllText(snapshot);}
+                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>600000)return false;text=File.ReadAllText(snapshot);}
                 var e=JsonUtility.FromJson<SaveEnvelope>(text);return e!=null&&e.schema=="starfall.food-save.v1"&&e.payload!=null&&e.sha256==Hash(e.payload)&&Restore(e.payload,world,generation);
             }catch{return false;}
+        }
+    }
+    [Serializable] public sealed class PlaceCell
+    {
+        public string world,generation,actor;
+        public int x,z,firstFoodTick,lastFoodTick,visits;
+    }
+    [Serializable] public sealed class PlaceObservationEvent
+    {
+        public string world,generation,actor,id,kind,objectKind,observedType,source,previousHash="",hash="";
+        public int foodTick,brainTick,sequence;
+        public bool available,permitted;
+        public Vector3 position;
+    }
+    // All inputs are measured actor cells or current LOS observations supplied
+    // by Unity. This ledger never consults the authored resource registry.
+    public static class PlaceLedger
+    {
+        public const int MaximumCells=512,MaximumEvents=256;
+        static bool Finite(float value)=>!float.IsNaN(value)&&!float.IsInfinity(value);
+        public static PlaceCell Cell(FoodState s,int x,int z)=>s?.exploredCells?.Find(c=>c.x==x&&c.z==z);
+        public static PlaceObservationEvent LastSeen(FoodState s,string id)
+        {
+            if(s?.observedPlaces==null)return null;
+            for(int i=s.observedPlaces.Count-1;i>=0;i--)if(s.observedPlaces[i].id==id)return s.observedPlaces[i];
+            return null;
+        }
+        public static bool Occupy(FoodState s,int x,int z,int foodTick)
+        {
+            if(s==null||s.exploredCells==null||foodTick<0||foodTick>s.tick||x< -3334||x>3334||z< -3334||z>3334)return false;
+            var cell=Cell(s,x,z);
+            if(cell==null)
+            {
+                if(s.exploredCells.Count>=MaximumCells)return false;
+                s.exploredCells.Add(new PlaceCell{world=s.world,generation=s.generation,actor=s.actorId,
+                    x=x,z=z,firstFoodTick=foodTick,lastFoodTick=foodTick,visits=1});
+            }
+            else
+            {
+                if(foodTick<cell.lastFoodTick||cell.visits==int.MaxValue)return false;
+                cell.visits++;cell.lastFoodTick=foodTick;
+            }
+            return true;
+        }
+        public static bool Observe(FoodState s,string id,string objectKind,string observedType,
+            Vector3 position,bool available,bool permitted,
+            int foodTick,int brainTick,bool revisit)
+        {
+            if(s==null||s.observedPlaces==null||!FoodModel.Id(id)||objectKind!="Place"||
+                !string.IsNullOrEmpty(observedType)&&!FoodModel.Id(observedType)||
+                foodTick<0||foodTick>s.tick||brainTick<0||
+                !Finite(position.x)||!Finite(position.y)||!Finite(position.z)||position.magnitude>=10000)return false;
+            var prior=LastSeen(s,id);
+            // Food tick persists; Brain.Tick restarts at zero on a new Unity
+            // process and is session-local evidence, not a global clock.
+            if(prior!=null&&foodTick<prior.foodTick)return false;
+            if(s.observedPlaces.Count>0)
+            {var tail=s.observedPlaces[s.observedPlaces.Count-1];if(foodTick<tail.foodTick)return false;}
+            bool changed=prior!=null&&(prior.available!=available||prior.permitted!=permitted||
+                prior.observedType!=(observedType??"")||
+                Vector3.Distance(prior.position,position)>.25f);
+            if(prior!=null&&!changed&&(!revisit||foodTick<=prior.foodTick))return true;
+            if(s.observedPlaces.Count>=MaximumEvents)return false;
+            var e=new PlaceObservationEvent{world=s.world,generation=s.generation,actor=s.actorId,id=id,
+                objectKind=objectKind,observedType=observedType??"",source="scoped-npc-los-perception",
+                kind=prior==null?"first-seen":changed?"changed":"revisit",position=position,
+                available=available,permitted=permitted,foodTick=foodTick,brainTick=brainTick,
+                sequence=s.observedPlaces.Count+1,previousHash=s.observedPlaces.Count==0?"":
+                    s.observedPlaces[s.observedPlaces.Count-1].hash};
+            e.hash=FoodModel.Hash(JsonUtility.ToJson(e));s.observedPlaces.Add(e);return true;
+        }
+        public static bool Valid(FoodState s)
+        {
+            if(s==null)return false;
+            // Unity's JsonUtility omits newly added fields in old snapshots.
+            if(s.exploredCells==null||s.observedPlaces==null)
+                return s.exploredCells==null&&s.observedPlaces==null;
+            if(s.exploredCells.Count>MaximumCells||s.observedPlaces.Count>MaximumEvents)return false;
+            var cells=new HashSet<string>();
+            foreach(var c in s.exploredCells)
+                if(c==null||c.world!=s.world||c.generation!=s.generation||c.actor!=s.actorId||
+                    c.x< -3334||c.x>3334||c.z< -3334||c.z>3334||!cells.Add(c.x+":"+c.z)||c.visits<1||
+                    c.firstFoodTick<0||c.lastFoodTick<c.firstFoodTick||c.lastFoodTick>s.tick)return false;
+            string previous="";var first=new HashSet<string>();
+            for(int i=0;i<s.observedPlaces.Count;i++)
+            {
+                var e=s.observedPlaces[i];
+                if(e==null||e.world!=s.world||e.generation!=s.generation||e.actor!=s.actorId||
+                    !FoodModel.Id(e.id)||e.objectKind!="Place"||
+                    !string.IsNullOrEmpty(e.observedType)&&!FoodModel.Id(e.observedType)||
+                    e.source!="scoped-npc-los-perception"||
+                    e.sequence!=i+1||e.previousHash!=previous||
+                    e.foodTick<0||e.foodTick>s.tick||e.brainTick<0||
+                    i>0&&e.foodTick<s.observedPlaces[i-1].foodTick||
+                    !Finite(e.position.x)||!Finite(e.position.y)||!Finite(e.position.z)||
+                    e.position.magnitude>=10000||
+                    (e.kind!="first-seen"&&e.kind!="changed"&&e.kind!="revisit")||
+                    e.kind=="first-seen"&&!first.Add(e.id)||
+                    e.kind!="first-seen"&&!first.Contains(e.id))return false;
+                string hash=e.hash;var copy=JsonUtility.FromJson<PlaceObservationEvent>(JsonUtility.ToJson(e));
+                copy.hash="";if(hash!=FoodModel.Hash(JsonUtility.ToJson(copy)))return false;
+                previous=hash;
+            }
+            return true;
         }
     }
 }

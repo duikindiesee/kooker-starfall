@@ -6,6 +6,9 @@ namespace CityLife.World
     public sealed class NpcInteractable : MonoBehaviour
     {
         public string StableId;
+        // A scoped visual category emitted only with a live LOS observation.
+        // It is not a registry lookup or a nutrition/safety conclusion.
+        public string ObservedType="";
         public string WorldId = "starfall.npc-courtyard.v1";
         public NpcObjectKind Kind;
         public bool Permission = true;

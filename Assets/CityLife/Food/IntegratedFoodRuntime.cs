@@ -187,7 +187,7 @@ namespace Starfall.Food
             Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
             root.layer=11;
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
-            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
+            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.ObservedType="fruiting-succulent"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
             item.Approach=ApproachPoint(root.transform,position,1.55f);
             return item;
         }
@@ -332,7 +332,7 @@ namespace Starfall.Food
             // The target's trigger is deliberately independent of visual meshes:
             // no hidden primitive collider can obstruct walking beside the seep.
             var trigger=target.AddComponent<SphereCollider>();trigger.radius=.94f;trigger.isTrigger=true;
-            var item = target.AddComponent<NpcInteractable>(); item.StableId = "spring-food"; item.WorldId = worldId; item.Kind = NpcObjectKind.Place;
+            var item = target.AddComponent<NpcInteractable>(); item.StableId = "spring-food"; item.ObservedType="freshwater-seep"; item.WorldId = worldId; item.Kind = NpcObjectKind.Place;
             item.Approach=ApproachPoint(target.transform,position,1.42f);
             return item;
         }

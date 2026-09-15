@@ -19,6 +19,16 @@ namespace Starfall.Food.Editor
             EditorApplication.ExecuteMenuItem("Window/General/Game");
             Debug.Log("FOOD_EDITOR_FIXTURE_READY: native Play Mode visual/input gate; not standalone acceptance.");
         }
+        // Bounded deterministic component checks without building another
+        // player or changing the verified integrated-build retention set.
+        public static void RunChecksOnly()
+        {
+            string folder="evidence/local/editor-food-checks-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            var checks=FoodChecks.Run(folder);
+            File.WriteAllLines(Path.Combine(folder,"passed.txt"),checks);
+            Debug.Log("FOOD_CHECKS_ONLY_PASS "+checks.Count+" folder="+folder+
+                "; compiled component tests, not actual-player acceptance");
+        }
         public static void Run()
         {
             Directory.CreateDirectory("evidence/local");string checkFolder="evidence/local/editor-food-checks-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");var checks=FoodChecks.Run(checkFolder);File.WriteAllLines(checkFolder+"/passed.txt",checks);

@@ -18,6 +18,104 @@ namespace Starfall.Food
             var a=new Access();var m=new FoodModel("test-a","generation-a",4242);
             FoodReceipt Do(FoodAction action,string target)=>m.Execute(m.State.world,m.State.generation,m.State.lastRequest+1,action,target,a);
             void Advance(int seconds){for(int i=0;i<seconds*50;i++)m.FixedStep(false);}
+            var placeModel=new FoodModel("place-a","place-gen",4242);
+            var place=placeModel.State;
+            Check(PlaceLedger.LastSeen(place,"spring-food")==null&&place.exploredCells.Count==0,
+                "unknown places and cells begin unknown without authored registry coordinates");
+            var springLabelModel=new FoodModel("label-world","label-gen",4242);
+            springLabelModel.State.tick=1;
+            Check(PlaceLedger.Observe(springLabelModel.State,"spring-food","Place","freshwater-seep",
+                    new Vector3(9,4,12),true,true,1,5,false)&&
+                PlaceLedger.LastSeen(springLabelModel.State,"spring-food").observedType=="freshwater-seep"&&
+                PlaceLedger.LastSeen(place,"spring-food")==null,
+                "observed spring carries visual resource category without granting it to another inhabitant");
+            Check(PlaceLedger.Occupy(place,2,3,0)&&PlaceLedger.Cell(place,2,3).visits==1&&
+                PlaceLedger.Cell(place,90,90)==null,
+                "only an occupied cell enters explored memory");
+            place.tick=1;
+            Check(PlaceLedger.Observe(place,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),true,true,1,50,false)&&
+                PlaceLedger.LastSeen(place,"berry-food").kind=="first-seen"&&
+                PlaceLedger.LastSeen(place,"berry-food").observedType=="fruiting-succulent"&&
+                PlaceLedger.LastSeen(place,"spring-food")==null,
+                "only scoped sensed fruit enters observed-place history");
+            place.tick=2;
+            Check(PlaceLedger.Observe(place,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),false,true,2,100,true)&&
+                place.observedPlaces.Count==2&&place.observedPlaces[0].available&&
+                !PlaceLedger.LastSeen(place,"berry-food").available&&
+                PlaceLedger.LastSeen(place,"berry-food").kind=="changed",
+                "revisit change revises last-seen belief but retains first observation");
+            Check(!PlaceLedger.Observe(place,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),true,true,1,90,true)&&
+                PlaceLedger.LastSeen(place,"berry-food").foodTick==2,
+                "older observation cannot regress latest belief time");
+            Check(!PlaceLedger.Occupy(place,int.MinValue,3,2)&&
+                !PlaceLedger.Observe(place,"spring-food","Place","freshwater-seep",new Vector3(float.NaN,4,9),true,true,2,101,true),
+                "malformed coordinates fail closed without overflow or nonfinite location");
+            string placePath=Path.Combine(folder,"place-ledger-save.json");
+            Check(FoodModel.Valid(place,"place-a","place-gen"),"observed-place event chain and scoped cells validate");
+            placeModel.Save(placePath);
+            var reopenedPlace=new FoodModel("place-a","place-gen",4242);
+            Check(reopenedPlace.Load(placePath,"place-a","place-gen")&&
+                reopenedPlace.State.observedPlaces.Count==2&&
+                PlaceLedger.LastSeen(reopenedPlace.State,"berry-food").available==false&&
+                PlaceLedger.LastSeen(reopenedPlace.State,"spring-food")==null&&
+                PlaceLedger.Cell(reopenedPlace.State,2,3).visits==1,
+                "scoped explored cells and revisable observed belief survive save reload");
+            reopenedPlace.State.tick=3;
+            Check(PlaceLedger.Observe(reopenedPlace.State,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),
+                true,true,3,2,true)&&reopenedPlace.State.observedPlaces.Count==3&&
+                reopenedPlace.State.observedPlaces[2].brainTick==2&&
+                PlaceLedger.LastSeen(reopenedPlace.State,"berry-food").available,
+                "restarted local brain tick may reset while persisted food time advances and revises belief");
+            reopenedPlace.State.tick=4;
+            Check(PlaceLedger.Observe(reopenedPlace.State,"berry-food","Place","fruiting-succulent",new Vector3(6,4,9),
+                true,true,4,4,true)&&reopenedPlace.State.observedPlaces.Count==4&&
+                PlaceLedger.LastSeen(reopenedPlace.State,"berry-food").kind=="revisit"&&
+                reopenedPlace.State.observedPlaces[0].kind=="first-seen"&&
+                reopenedPlace.State.observedPlaces[1].kind=="changed",
+                "unchanged return records a revisit while old and revised observations remain inspectable");
+            var foreign=JsonUtility.FromJson<FoodState>(placeModel.Json());
+            foreign.observedPlaces[0].world="other-world";
+            Check(!FoodModel.Valid(foreign,"place-a","place-gen")&&
+                !new FoodModel("other-world","place-gen",4242).Restore(placeModel.Json(),"other-world","place-gen"),
+                "foreign event and foreign world cannot inherit observed places");
+            var wrongActor=JsonUtility.FromJson<FoodState>(placeModel.Json());
+            wrongActor.observedPlaces[0].actor="different-inhabitant";
+            var wrongGeneration=JsonUtility.FromJson<FoodState>(placeModel.Json());
+            wrongGeneration.exploredCells[0].generation="different-generation";
+            Check(!FoodModel.Valid(wrongActor,"place-a","place-gen")&&
+                !FoodModel.Valid(wrongGeneration,"place-a","place-gen")&&
+                !new FoodModel("place-a","place-gen",4242).Restore(
+                    JsonUtility.ToJson(new FoodState{world="place-a",generation="place-gen",seed=4242,
+                        actorId="different-inhabitant"}),"place-a","place-gen"),
+                "inhabitant and generation mismatches refuse place-memory joins");
+            var resetWorld=new FoodModel("place-new-world","place-new-gen",4242);
+            string resetPath=Path.Combine(folder,"place-ledger-reset-world.json");resetWorld.Save(resetPath);
+            Check(File.Exists(placePath)&&File.Exists(resetPath)&&
+                PlaceLedger.LastSeen(resetWorld.State,"berry-food")==null&&
+                new FoodModel("place-a","place-gen",4242).Load(placePath,"place-a","place-gen"),
+                "fresh world starts unknown while prior scoped save remains recoverable");
+            var oldModel=new FoodModel("old-place","old-gen",4242);
+            string oldPayload=oldModel.Json();
+            oldPayload=System.Text.RegularExpressions.Regex.Replace(oldPayload,",?\"exploredCells\":\\[\\]","");
+            oldPayload=System.Text.RegularExpressions.Regex.Replace(oldPayload,",?\"observedPlaces\":\\[\\]","");
+            var oldReload=new FoodModel("old-place","old-gen",4242);
+            Check(oldReload.Restore(oldPayload,"old-place","old-gen")&&
+                oldReload.State.exploredCells!=null&&oldReload.State.observedPlaces!=null&&
+                oldReload.State.exploredCells.Count==0&&oldReload.State.observedPlaces.Count==0,
+                "additive place ledger restores old food snapshot without inventing knowledge");
+            var capacity=new FoodModel("large-place","large-gen",4242);capacity.State.tick=512;
+            for(int i=0;i<PlaceLedger.MaximumCells;i++)
+                if(!PlaceLedger.Occupy(capacity.State,i,0,512))throw new Exception("capacity cell fixture failed");
+            for(int i=0;i<PlaceLedger.MaximumEvents;i++)
+                if(!PlaceLedger.Observe(capacity.State,"site-"+i,"Place","observed-site",new Vector3(i,4,0),true,true,i+1,i+1,false))
+                    throw new Exception("capacity event fixture failed");
+            string capacityPath=Path.Combine(folder,"place-ledger-capacity-save.json");
+            capacity.Save(capacityPath);var capacityReload=new FoodModel("large-place","large-gen",4242);
+            Check(capacityReload.Load(capacityPath,"large-place","large-gen")&&
+                capacityReload.State.exploredCells.Count==PlaceLedger.MaximumCells&&
+                capacityReload.State.observedPlaces.Count==PlaceLedger.MaximumEvents&&
+                !PlaceLedger.Occupy(capacityReload.State,600,0,512),
+                "maximum bounded place payload reloads and capacity surfaces refusal rather than dropping knowledge");
             Check(!Do(FoodAction.Gather,"berry").success,"unknown berry not edible/gatherable");
             var exactModel=new Dictionary<string,object>{{"model","starfall-local-e4b"}};
             Check(CityLife.World.NpcBoundedJson.ExactCompletionModel(exactModel,"starfall-local-e4b")&&
