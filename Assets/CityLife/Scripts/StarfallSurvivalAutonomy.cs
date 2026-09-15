@@ -310,7 +310,8 @@ namespace CityLife.World
             offered=Eligible();
             if(offered.Count==0){Record("model","no-current-walkable-or-observed-options",null,null);nextRequestTick=Brain.Tick+100;return true;}
             cancellation=new CancellationTokenSource();
-            pending=StarfallSurvivalThought.Request(endpoint,model,s.satiety,s.hydration,offered,cancellation.Token);
+            pending=StarfallSurvivalThought.Request(endpoint,model,s.satiety,s.hydration,offered,cancellation.Token,
+                s.carriedFruit,s.knowsMealBenefit&&!string.IsNullOrEmpty(s.lastMealEvidence));
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
         }

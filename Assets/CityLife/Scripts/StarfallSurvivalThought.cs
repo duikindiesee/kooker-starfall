@@ -33,21 +33,27 @@ namespace CityLife.World
                 if(string.Equals(token,candidate,StringComparison.Ordinal)) { action=token; return true; }
             return false;
         }
-        public static string BuildRequest(string model, int hunger, int thirst, IReadOnlyCollection<string> eligible)
+        public static string BuildRequest(string model, int hunger, int thirst, IReadOnlyCollection<string> eligible,
+            int carriedFruit=0, bool mealOutcomeVerified=false)
         {
             if(eligible==null||eligible.Count==0||eligible.Count>8)throw new ArgumentException("bounded eligible actions required");
             return NpcBoundedJson.Encode(new Dictionary<string,object> {
                 ["model"]=model,["stream"]=false,["temperature"]=0,["max_tokens"]=128,["reasoning_effort"]="none",
                 ["messages"]=new object[] {
                     new Dictionary<string,object>{["role"]="system",["content"]="Choose exactly one listed two-word action. No explanation, JSON, coordinates, facts, or extra words. Sight and outcomes are checked by the game."},
-                    new Dictionary<string,object>{["role"]="user",["content"]="Energy="+hunger+"; hydration="+thirst+". Eligible actions: "+string.Join(", ",eligible)+"."}
+                    new Dictionary<string,object>{["role"]="user",["content"]="Energy="+hunger+"/10000 "+(hunger<8500?"below replenish target":"at replenish target")+
+                        "; water="+thirst+"/10000 "+(thirst<8500?"below replenish target":"at replenish target")+
+                        "; carried fruit="+carriedFruit+
+                        "; eaten fruit outcome="+(mealOutcomeVerified?"previously helped":"not observed")+
+                        ". Eligible: "+string.Join(", ",eligible)+"."}
                 }
             });
         }
         public static async Task<Result> Request(string endpoint,string model,int hunger,int thirst,
-            IReadOnlyCollection<string> eligible,CancellationToken cancellation)
+            IReadOnlyCollection<string> eligible,CancellationToken cancellation,
+            int carriedFruit=0,bool mealOutcomeVerified=false)
         {
-            var result=new Result{model=model,requestJson=BuildRequest(model,hunger,thirst,eligible)};
+            var result=new Result{model=model,requestJson=BuildRequest(model,hunger,thirst,eligible,carriedFruit,mealOutcomeVerified)};
             Uri origin=StarfallLivingMemoryClient.Loopback(endpoint);
             using(var http=new HttpClient(new HttpClientHandler{AllowAutoRedirect=false,UseProxy=false}){Timeout=Timeout.InfiniteTimeSpan})
             using(var local=CancellationTokenSource.CreateLinkedTokenSource(cancellation))

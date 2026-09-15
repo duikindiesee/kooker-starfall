@@ -27,6 +27,16 @@ namespace Starfall.Food
             string scopedPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,sensedChoices);
             Check(scopedPrompt.Contains("inspect berry")&&!scopedPrompt.Contains("126")&&!scopedPrompt.Contains("spring"),
                 "survival prompt contains eligible observed action but no authored berry coordinate or unseen spring");
+            string heldPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",6500,5500,
+                new List<string>{"eat fruit","explore south"},1,false);
+            Check(heldPrompt.Contains("6500/10000 below replenish target")&&heldPrompt.Contains("5500/10000 below replenish target")&&
+                heldPrompt.Contains("carried fruit=1")&&heldPrompt.Contains("not observed")&&
+                !heldPrompt.Contains("previously helped")&&!heldPrompt.Contains("spring")&&!heldPrompt.Contains("126"),
+                "survival prompt states measured need and carried fruit without inventing a meal outcome or resource");
+            string learnedPrompt=CityLife.World.StarfallSurvivalThought.BuildRequest("local-e4b",7700,5900,
+                new List<string>{"eat fruit","explore south"},1,true);
+            Check(learnedPrompt.Contains("previously helped")&&!learnedPrompt.Contains("not observed"),
+                "meal outcome enters model context only after verified eating");
             m.State.satiety=0;Check(!Do(FoodAction.Eat,"inventory").success,"starvation does not grant food knowledge");m.State.satiety=6500;
             Check(Do(FoodAction.Inspect,"berry").success&&m.State.berryEvidence.Contains("observed-fruit")&&!m.State.knowsMealBenefit,"observed fruit does not grant a meal outcome");
             a.visible=false;Check(!Do(FoodAction.Gather,"berry").success,"occlusion blocks action");a.visible=true;
