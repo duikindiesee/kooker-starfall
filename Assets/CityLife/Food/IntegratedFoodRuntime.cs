@@ -13,6 +13,7 @@ namespace Starfall.Food
         public Vector3 BerryPosition, SpringPosition;
         [field: SerializeField] public float MinimumRockClearance { get; private set; }
         public int RockColliderCount { get; private set; }
+        int shownFruitStock=-1;
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
         void EnsureModel()
@@ -163,6 +164,23 @@ namespace Starfall.Food
                 if (collider.gameObject != Berry.gameObject) count++;
             return count;
         }
+        public void SyncFruitVisual()
+        {
+            if(Berry==null||Model==null||shownFruitStock==Model.State.fruitStock)return;
+            shownFruitStock=Model.State.fruitStock;
+            // Four original fruit clusters depict two finite harvest units;
+            // a depleted plant retains its foliage but no ripe fruit. This
+            // visual follows the authoritative model, never predicts stock.
+            for(int visual=0;visual<4;visual++)
+            {
+                int named=visual*2;
+                bool ripe=visual<Model.State.fruitStock*2;
+                var berry=Berry.transform.Find("Visible ripe sourfig fruit "+named);
+                var crown=Berry.transform.Find("Sourfig fruit crown "+named);
+                if(berry!=null)berry.gameObject.SetActive(ripe);
+                if(crown!=null)crown.gameObject.SetActive(ripe);
+            }
+        }
         static NpcInteractable Target(string name, string id, Vector3 position, Transform parent, string worldId, Color colour)
         {
             var target = GameObject.CreatePrimitive(PrimitiveType.Sphere); target.name = name; target.transform.SetParent(parent);
@@ -212,6 +230,6 @@ namespace Starfall.Food
             finally { acceptanceAccess = false; }
         }
         void FixedUpdate() { EnsureModel(); if (Actor != null) { bool paused=Brain!=null&&Brain.MenuPaused;
-            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused); } }
+            if(!paused) Model.State.actorPosition=Actor.position; Model.FixedStep(paused); SyncFruitVisual(); } }
     }
 }

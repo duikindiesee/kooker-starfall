@@ -80,6 +80,21 @@ namespace CityLife.World
                 "\nGoal: " + (Brain.GoalId.Length > 0 ? Brain.GoalId : "observe / wait") +
                 "\nCargo: " + (Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
                 "\nResult: " + Brain.LastResult;
+            if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
+            {
+                var food=Brain.Survival.Food.Model.State;
+                Summary.text=mode+" survivor | Tick "+Brain.Tick+
+                    "\nEnergy "+food.satiety+" / water "+food.hydration+" / fruit "+food.carriedFruit+
+                    "\nModel chose: "+Brain.Survival.LastChoice+
+                    "\nOutcome: "+Brain.Survival.LastOutcome;
+                if(food.body.dead)
+                    Summary.text=mode+" survivor | Tick "+Brain.Tick+
+                        "\nBODY DEAD: "+food.body.cause+
+                        "\nWorld and death record retained"
+                        +"\nAwaiting verified safe return";
+                footer.text="P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nPlanner "+
+                    (Brain.OptionalPlanner.EnabledByUser?"on":"off")+" · Survival model on";
+            }
             var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
             foreach (var x in Brain.Perception.Current)
                 perceived.Append(x.id).Append("  ").Append(x.distanceMillimetres / 1000f).Append("m  ")

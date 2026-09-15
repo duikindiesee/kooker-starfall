@@ -9,6 +9,8 @@ param(
     [string]$Evidence,
     [switch]$Survival,
     [string]$SurvivalEvidence,
+    [switch]$DeathDiagnostic,
+    [string]$DeathEvidence,
     [string]$Python
 )
 $ErrorActionPreference='Stop'
@@ -35,6 +37,9 @@ if(-not(Test-Path -LiteralPath $playConfig)){
 $playServiceConfig=Get-Content -LiteralPath $playConfig -Raw | ConvertFrom-Json
 if($Survival -and (-not $ModelEndpoint -or -not $Model -or -not $SurvivalModel -or -not $SurvivalEvidence)){
     throw 'Survival normal play requires a local endpoint, memory model, separate survival model and empty evidence directory.'
+}
+if($DeathDiagnostic -and (-not $Survival -or -not $DeathEvidence)){
+    throw 'Compiled death diagnostic requires survival opt-in and a separate empty evidence directory.'
 }
 if($Survival){
     $playModelUri=[Uri]$ModelEndpoint
@@ -106,6 +111,13 @@ try{
             }else{$null=New-Item -ItemType Directory -Path $playSurvivalEvidence}
             $playArgs+=@('-npcSurvivalRuntime','-npcSurvivalModel',$SurvivalModel,
                 '-npcSurvivalSave',$playSurvivalSave,'-npcSurvivalEvidence',$playSurvivalEvidence)
+            if($DeathDiagnostic){
+                $playDeathEvidence=[IO.Path]::GetFullPath($DeathEvidence)
+                if(Test-Path -LiteralPath $playDeathEvidence){
+                    if((Get-ChildItem -LiteralPath $playDeathEvidence -Force|Select-Object -First 1)){throw 'Death diagnostic evidence directory must be empty.'}
+                }else{$null=New-Item -ItemType Directory -Path $playDeathEvidence}
+                $playArgs+=@('-npcSurvivalDeathAcceptance','-npcSurvivalDeathEvidence',$playDeathEvidence)
+            }
         }
     }else{
         if($Survival){throw 'Survival launch requires the scoped living-memory service to be ready.'}

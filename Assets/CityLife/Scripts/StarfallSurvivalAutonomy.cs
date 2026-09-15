@@ -19,6 +19,8 @@ namespace CityLife.World
         public Starfall.Refuge.RefugeRuntime Refuge;
         public bool Enabled { get; private set; }
         public string Status { get; private set; }="Survival mind off";
+        public string LastChoice { get; private set; }="waiting for discovery";
+        public string LastOutcome { get; private set; }="no survival outcome yet";
         public int AcceptedDecisions { get; private set; }
         public int FoodOutcomes { get; private set; }
         public int ExploredMetres { get; private set; }
@@ -140,6 +142,7 @@ namespace CityLife.World
             if(route.Count==0)
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
+                LastOutcome="Walked to model-chosen place";
                 Record("route","reached",null,null);nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
             if(Brain.Tick-routeStartTick>1000)
@@ -166,10 +169,27 @@ namespace CityLife.World
                 FoodReceipt returned=Food.Model.Execute(s.world,s.generation,++request,FoodAction.Return,"inventory",Food);
                 if(!returned.success)return false;
                 Brain.Actor.Place(safe);s.actorPosition=safe;Record("return","safe-refuge-world-preserved",null,null,returned);
+                LastChoice="safe return";LastOutcome="Returned after "+s.deaths[s.deaths.Count-1].cause;
                 Persist();
                 return true;
             }
             return false;
+        }
+        public bool DiagnosticSafeReturn()
+        {
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-npcSurvivalDeathAcceptance")<0)
+                throw new InvalidOperationException("Only the explicit compiled death diagnostic may invoke this entry point.");
+            if(Food==null||!Food.Model.State.body.dead)return false;
+            return TrySafeReturn();
+        }
+        public bool DiagnosticVerifyReload()
+        {
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-npcSurvivalDeathAcceptance")<0||
+                string.IsNullOrEmpty(savePath)||!File.Exists(savePath))return false;
+            var s=Food.Model.State;
+            var reopened=new FoodModel(s.world,s.generation,s.seed);
+            reopened.State.actorId=s.actorId;
+            return reopened.Load(savePath,s.world,s.generation)&&reopened.Json()==Food.Model.Json();
         }
         private void Persist()
         {
@@ -190,6 +210,7 @@ namespace CityLife.World
             if(!StarfallSurvivalThought.Parse(action,live,out string accepted))
             {Record("decision","stale-or-ineligible",action,result);nextRequestTick=Brain.Tick+50;return;}
             AcceptedDecisions++;Record("decision","live-admitted",accepted,result);
+            LastChoice=accepted;Status="Nano model choice admitted after live validation";
             if(accepted.StartsWith("explore ",StringComparison.Ordinal))
             {
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:
@@ -210,7 +231,10 @@ namespace CityLife.World
                 string target=accepted.EndsWith("berry")?"berry":accepted.EndsWith("spring")?"spring":"inventory";
                 var s=Food.Model.State;FoodReceipt receipt=Food.Model.Execute(s.world,s.generation,++request,kind,target,Food);
                 Record("food",receipt.code,accepted,result,receipt);
-                if(receipt.success){FoodOutcomes++;Persist();}
+                LastOutcome=receipt.success&&kind==FoodAction.Eat?"Meal +"+receipt.foodDelta+" energy / +"+receipt.waterDelta+" water":
+                    receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
+                    receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
+                if(receipt.success){FoodOutcomes++;Food.SyncFruitVisual();Persist();}
             }
             nextRequestTick=Brain.Tick+25;
         }

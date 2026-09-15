@@ -156,6 +156,8 @@ namespace CityLife.World.Editor
             food.Attach(brain.transform, ground.transform, brain.InstanceWorldId);
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
+            var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();
+            deathDiagnostic.Brain=brain;deathDiagnostic.Survival=survival;deathDiagnostic.Food=food;deathDiagnostic.View=camera;
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
