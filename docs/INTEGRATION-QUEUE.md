@@ -20,6 +20,15 @@ merge from GitHub state alone. The old component table below is historical:
 club and model code have since been integrated locally but are not certified
 by the older excluded/OFF statements.
 
+Local fix verification: `tools/check-package.py` already contains the `.sqlite3`
+suffix guard and lower-cased `.env` name check, introduced by
+`96fdb0f76700d6d0d4a129b55375fa79e8562ec2`. Running its `--self-test` on
+15 September passed the temporary synthetic private-file and archive canaries.
+That is local regression evidence, not proof PR1's reviewed head contains the
+fix or that any final ZIP is clean. Deliberately map the fix onto the owning
+foundation branch and obtain exact-head rereview through the protected workflow;
+do not merge the entire combined branch merely to deliver this small fix.
+
 ## Historical 14 September component queue
 
 Verified 14 September 2026. This is a local implementation queue, not the authoritative Kooker review queue. No epic/task/workstream identifiers or Live Brief receipt have been supplied for these heads; Codex task IDs below identify conversation work only. No mainline merge, release or deployment is authorized by this record.
