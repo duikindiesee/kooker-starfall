@@ -8,6 +8,47 @@ namespace CityLife.World
     public static class CoastalRocks
     {
         public const int Seed = 4242;
+        private static readonly Vector2[] ShoreGroups = { new Vector2(19,21), new Vector2(-24,37), new Vector2(21,47), new Vector2(-27,60) };
+
+        public static void ProbeFittedSites()
+        {
+            // Read-only Unity terrain sampling before an expensive scene render.
+            for(int group=0;group<ShoreGroups.Length;group++)
+            {
+                int id=200+group*7;
+                Vector2 original=ShoreGroups[group]+new Vector2(Lerp(-2.5f,2.5f,id,1),Lerp(-3,3,id,2));
+                float width=Lerp(4.4f,5.8f,id,3),height=Lerp(2.2f,3.0f,id,4);
+                Vector2 fitted=FindDryFittedSite(original,width,height,id);
+                Debug.Log("FIT_SITE id="+id+" original="+original+" fitted="+fitted+
+                    " terrainY="+CoastalTerrain.Height(fitted.x,fitted.y)+" width="+width+" height="+height);
+            }
+        }
+
+        private static Vector2 FindDryFittedSite(Vector2 original,float width,float height,int id)
+        {
+            float side=original.x>=0?1f:-1f;
+            for(int step=0;step<11;step++)
+            for(int dzIndex=0;dzIndex<13;dzIndex++)
+            {
+                float candidateX=original.x+side*(14f+step*8f);
+                float zOffset=dzIndex==0?0:((dzIndex+1)/2)*8f*(dzIndex%2==1?-1f:1f);
+                float candidateZ=original.y+zOffset;
+                float floor=CoastalTerrain.Height(candidateX,candidateZ);
+                float low=floor,high=floor;
+                foreach(float dx in new[]{-width,width})
+                    foreach(float dz in new[]{-width*.75f,width*.75f})
+                    {
+                        float edge=CoastalTerrain.Height(candidateX+dx,candidateZ+dz);
+                        low=Mathf.Min(low,edge);high=Mathf.Max(high,edge);
+                    }
+                var site=new Vector2(candidateX,candidateZ);
+                if(low>CoastalWater.Level+1f && high-low<height*.85f &&
+                    site.magnitude>26f && Vector2.Distance(site,CoastalTerrain.ActivityCentre)>60f &&
+                    Vector2.Distance(site,CoastalTerrain.RefugeCentre)>60f)return site;
+            }
+            throw new InvalidOperationException("No dry low-slope bank footprint for fitted outcrop "+id+
+                " original="+original+" searched x to "+(original.x+side*94f)+" and z +/-48m");
+        }
 
         public static GameObject Create(Transform parent)
         {
@@ -51,14 +92,19 @@ namespace CityLife.World
                     width * Lerp(.45f,.95f,i,14), 100+i);
             }
             // A few grouped shore outcrops repeat the geology farther down the river, at different scales.
-            var shore = new[] { new Vector2(19,21), new Vector2(-24,37), new Vector2(21,47), new Vector2(-27,60) };
-            for (int group = 0; group < shore.Length; group++)
+            for (int group = 0; group < ShoreGroups.Length; group++)
             for (int i = 0; i < 4; i++)
             {
                 int id = 200 + group * 7 + i;
-                Vector2 p = shore[group] + new Vector2(Lerp(-2.5f,2.5f,id,1),Lerp(-3,3,id,2));
-                float width = Lerp(1.2f,3.2f,id,3);
-                AddRock(root.transform,rock,p.x,p.y,width,Lerp(.8f,2.6f,id,4),width*.65f,id);
+                Vector2 p = ShoreGroups[group] + new Vector2(Lerp(-2.5f,2.5f,id,1),Lerp(-3,3,id,2));
+                float width = i==0 ? Lerp(4.4f,5.8f,id,3) : Lerp(1.2f,3.2f,id,3);
+                float height = i==0 ? Lerp(2.2f,3.0f,id,4) : Lerp(.8f,2.6f,id,4);
+                if(i==0)
+                {
+                    p=FindDryFittedSite(p,width,height,id);
+                    AddTerrainFittedRock(root.transform,rock,p.x,p.y,width,height,width*.75f,id);
+                }
+                else AddRock(root.transform,rock,p.x,p.y,width,height,width*.65f,id);
             }
 
             var flora = new MeshData();
@@ -182,7 +228,61 @@ namespace CityLife.World
             go.transform.localRotation = Quaternion.Euler(0,Lerp(-180,180,id,90),0);
         }
 
+        static void AddTerrainFittedRock(Transform parent,Material material,float x,float z,float width,float height,float depth,int id)
+        {
+            // Four existing outcrop IDs become angular terrain-fitted shelves;
+            // the total remains 84 real render/collision rock meshes. Do not
+            // approximate their downslope footprint from centre Height alone.
+            var ground=GameObject.Find("Coastal terrain "+CoastalTerrain.DefinitionId+" seed "+CoastalTerrain.Seed)?.GetComponent<MeshCollider>();
+            if(ground==null)throw new InvalidOperationException("Terrain collider missing for fitted outcrop "+id);
+            float centreY=CoastalTerrain.Height(x,z);
+            if(centreY<CoastalWater.Level+1f || Vector2.Distance(new Vector2(x,z),CoastalTerrain.ActivityCentre)<60f ||
+                Vector2.Distance(new Vector2(x,z),CoastalTerrain.RefugeCentre)<60f)
+                throw new InvalidOperationException("Unsafe fitted outcrop site "+id+" at "+new Vector2(x,z)+
+                    " terrainY="+centreY+" activityDistance="+Vector2.Distance(new Vector2(x,z),CoastalTerrain.ActivityCentre)+
+                    " refugeDistance="+Vector2.Distance(new Vector2(x,z),CoastalTerrain.RefugeCentre));
+            var mesh=RockMesh(width,height,depth,id,out var bottomRing,out var bottomCentre);
+            var go=MeshObject("Stratified shore rock "+id+" terrain-fitted shelf",mesh,material,parent,true);
+            go.transform.localPosition=new Vector3(x,centreY,z);
+            go.transform.localRotation=Quaternion.Euler(0,Lerp(-180,180,id,90),0);
+            var vertices=mesh.vertices;
+            float low=float.MaxValue,high=float.MinValue; int bottom=0;
+            var distinctBottom=new System.Collections.Generic.HashSet<Vector2Int>();
+            for(int v=0;v<vertices.Length;v++)
+            {
+                // Use authored topology, not height/radius guesses: leaning
+                // narrow sectors can be closer to the axis than the fan centre
+                // exclusion threshold. MeshData preserves these exact positions.
+                bool perimeter=bottomRing.Contains(vertices[v]);
+                if(!perimeter && !vertices[v].Equals(bottomCentre))continue;
+                if(perimeter)
+                    distinctBottom.Add(new Vector2Int(Mathf.RoundToInt(vertices[v].x*1000),Mathf.RoundToInt(vertices[v].z*1000)));
+                var footprint=go.transform.TransformPoint(vertices[v]);
+                if(!ground.Raycast(new Ray(new Vector3(footprint.x,180,footprint.z),Vector3.down),out RaycastHit hit,300))
+                    throw new InvalidOperationException("Fitted outcrop footprint misses terrain mesh: "+id);
+                if(hit.point.y<CoastalWater.Level+1f)
+                    throw new InvalidOperationException("Fitted outcrop rotated perimeter enters water: "+id+
+                        " groundY="+hit.point.y+" at "+new Vector2(footprint.x,footprint.z));
+                low=Mathf.Min(low,hit.point.y);high=Mathf.Max(high,hit.point.y);
+                vertices[v].y=hit.point.y-centreY-.30f;
+                bottom++;
+            }
+            int expectedSectors=7+(int)(Hash(id,50)*4);
+            if(distinctBottom.Count!=expectedSectors || high-low>height*.95f)
+                throw new InvalidOperationException("Fitted outcrop lacks all safe embedded footprint sectors: "+id+
+                    " unique="+distinctBottom.Count+" expected="+expectedSectors+" duplicated vertices="+bottom+" slope="+(high-low));
+            mesh.vertices=vertices;mesh.RecalculateNormals();mesh.RecalculateBounds();
+            // The authored fitted vertices are shared by the visible mesh and PhysX.
+            var collider=go.GetComponent<MeshCollider>(); collider.sharedMesh=null; collider.sharedMesh=mesh;
+        }
+
         static Mesh RockMesh(float width,float height,float depth,int id)
+        {
+            return RockMesh(width,height,depth,id,out _,out _);
+        }
+
+        static Mesh RockMesh(float width,float height,float depth,int id,
+            out HashSet<Vector3> bottomRing,out Vector3 bottomCentre)
         {
             int sides = 7 + (int)(Hash(id,50)*4), rings = 5;
             var p = new Vector3[rings,sides];
@@ -213,6 +313,9 @@ namespace CityLife.World
             }
             Vector3 top=Vector3.zero,bottom=Vector3.zero;
             for(int side=0;side<sides;side++){top+=p[rings-1,side]/sides;bottom+=p[0,side]/sides;}
+            bottomRing=new HashSet<Vector3>();
+            for(int side=0;side<sides;side++)bottomRing.Add(p[0,side]);
+            bottomCentre=bottom;
             top.y += height*.018f;
             for(int side=0;side<sides;side++)
             {
