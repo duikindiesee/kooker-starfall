@@ -15,6 +15,9 @@ if ((Test-Path -LiteralPath $targetPath) -or (Test-Path -LiteralPath $receiptPat
 }
 $narration = [IO.File]::ReadAllText($sourcePath)
 if ([string]::IsNullOrWhiteSpace($narration)) { throw 'Narration text is empty.' }
+if ($narration -match '(?im)^\s*#{1,6}\s|\[(?:Insert|Name)\b|conditional on final|not release acceptance') {
+    throw 'Narration still contains draft headings or unresolved acceptance placeholders. Supply reviewed spoken text only.'
+}
 $targetDirectory = [IO.Path]::GetDirectoryName($targetPath)
 if (-not (Test-Path -LiteralPath $targetDirectory -PathType Container)) {
     throw 'Create the intended output directory first.'
