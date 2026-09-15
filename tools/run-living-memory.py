@@ -197,6 +197,14 @@ def main():
     print(json.dumps({'checkpoint': 'player-finished', 'exit_code': exit_code, 'persisted_events': checkpoint['events']}), flush=True)
     if exit_code:
         raise SystemExit(exit_code)
+    if args.integrated and not args.editor:
+        # Promote only after the compiled runtime, isolation and restart checks.
+        # The retention helper independently rechecks every required runtime gate
+        # and the complete build bytes; packaging is not required for cleanup.
+        subprocess.check_call(['pwsh', '-NoProfile', '-File',
+            str(ROOT / 'tools/retain-current-integrated-build.ps1'),
+            '-BuildManifest', str(build_manifest), '-RuntimeDirectory', str(output),
+            '-Execute'], cwd=ROOT)
 
 
 if __name__ == '__main__':

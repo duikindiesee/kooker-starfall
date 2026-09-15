@@ -23,7 +23,7 @@ $processes=Get-CimInstance Win32_Process
 if (@($processes | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith($target+'\',[StringComparison]::OrdinalIgnoreCase) }).Count) { throw 'A process is using this build.' }
 $items=@(Get-Item -LiteralPath $buildRoot)+@(Get-Item -LiteralPath $target)+@(Get-ChildItem -LiteralPath $target -Recurse -Force)
 if (@($items | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }).Count) { throw 'Reparse points are not eligible for cleanup.' }
-if (@($items | Where-Object { $_.Name -match '(?i)(save|memory|ledger|\.sqlite|\.db$)' }).Count) { throw 'Possible user state detected; manual review required.' }
+if (@($items | Where-Object { ($_.PSIsContainer -and $_.Name -match '^(?i:saves?|memory|ledger)$') -or $_.Name -match '(?i)\.(sqlite|sqlite3|db|jsonl)$' }).Count) { throw 'Possible user state detected; manual review required.' }
 $files=@($items | Where-Object { !$_.PSIsContainer })
 $bytes=($files | Measure-Object Length -Sum).Sum
 $result=[ordered]@{status='DRY_RUN';target=$target;manifest=$receiptSource;buildId=$m.buildId;sourceCommit=$m.sourceCommit;bytes=$bytes;fileCount=$files.Count;freeBefore=(Get-PSDrive C).Free;utc=[DateTime]::UtcNow.ToString('o')}

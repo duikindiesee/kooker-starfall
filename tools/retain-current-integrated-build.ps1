@@ -16,6 +16,8 @@ $targets=@();$skipped=@()
 foreach($dir in Get-ChildItem -LiteralPath $builds -Directory) {
     if($dir.Name -eq $keep.buildId -or $dir.Name -eq 'Download') { continue }
     if($dir.Name -notmatch '^KookerStarfallIntegrated-0\.0\.[0-9]+-[a-z]+\.[0-9]+-[0-9]{8}-[0-9]{6}$' -or !$known.ContainsKey($dir.Name)) { $skipped+=$dir.FullName;continue }
+    # A newer temporary candidate is not superseded by promoting an older receipt.
+    if($dir.Name.Substring($dir.Name.Length-15) -gt $keep.buildId.Substring($keep.buildId.Length-15)) { $skipped+=$dir.FullName;continue }
     if([IO.Path]::GetDirectoryName($dir.FullName) -ne $builds) { throw 'Outside direct build directory.' }
     if(@($processes|Where-Object {$_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir.FullName+'\',[StringComparison]::OrdinalIgnoreCase)}).Count){throw 'Old build is active; defer cleanup.'}
     $items=@($dir)+@(Get-ChildItem -LiteralPath $dir.FullName -Recurse -Force)
@@ -29,6 +31,7 @@ if(Test-Path -LiteralPath $download){
     foreach($zip in Get-ChildItem -LiteralPath $download -Filter '*-Windows.zip' -File){
         $id=$zip.Name -replace '-Windows.zip$',''
         if($id -eq $keep.buildId -or !$known.ContainsKey($id)){continue}
+        if($id.Substring($id.Length-15) -gt $keep.buildId.Substring($keep.buildId.Length-15)){continue}
         if($zip.Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Linked ZIP rejected.'}
         $targets += [pscustomobject]@{path=$zip.FullName;bytes=$zip.Length;manifest=$known[$id]}
     }
