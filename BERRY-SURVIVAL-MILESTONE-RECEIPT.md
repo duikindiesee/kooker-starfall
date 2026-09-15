@@ -1,6 +1,20 @@
 # Playable berry-survival checkpoint — not final acceptance
 
-## Latest verified update — round211 fallback, round212 temporary
+## Current status — round211 sole fallback; newer failed builds preserved as evidence only
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Retained playable version | Round211 sole verified fallback, not final acceptance | Build115223, full hash `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c2236bfcebcc` | Spring-loop repair and newer camera changes are not accepted in this fallback |
+| Round216 ordinary survival/spring repair | Narrow ordinary proof | Run26 `ordinary-exit.json`:425.507s lower bound,65 admissions,48 routes,7 meals,1 drink,8 high-hydration menus with no spring actions; clean exit/same184-file hash | Broad216 regression failed; binary removed; no combined latest-build acceptance |
+| Round221 ordinary behavior | Narrow ordinary proof with failures visible | Run27 `ordinary-exit.json` and JSONL:64 admissions,53 routes,5 meals,18 timeouts,0 spring,1 pending request at close; exit0/same hash | Spring coverage absent in this build/run; reliability unresolved |
+| Historical round221 WIP film | Encode/decode passed, visual showcase not accepted | Run27 `starfall-round221-WIP-ordinary-survival.mp4`,120s; SHA256 `472932d7cd83257f7ce2bcf9dd2ef615f69d40809724b41fea0195ff82b1988c` | Dark slope/large HUD; no spring or broad-world visual claim |
+| Round221 broad regression | FAIL | Runtime221 `living-memory.json`:1503ms timeout/no raw answer; failed-build-cleanup build135604 receipt141455 removes binary | Immediate1500ms reliability unresolved; deadlines unchanged |
+
+Final queue: same-combined-build ordinary local-model exploration/food/water, scoped restart and grounded death-lesson continuity; genuinely viewable current gameplay; broader panorama/user acceptance and deliverables. Accelerated death remains diagnostic, not natural mortality or proven beneficial learning. Current camera trials are not accepted. Authoritative Task API epic/workstream IDs remain unverified; durable linkage cannot be claimed without that source.
+
+Actionable latency investigation: isolate inventory, HTTP connection/queue and completion timings with monotonic timestamps and correlated server logs; compare direct versus linked endpoint only after verifying authorized endpoint identity. Existing idle/rendered small samples establish intermittent lateness, not its cause. Missing server-stage telemetry/access is a concrete diagnostic gap. No identical-build timing rerolls or deadline weakening.
+
+## Historical update — round211 fallback, round212 temporary (superseded)
 
 This section supersedes historical open-spring and retention rows below; those rows describe earlier inspections, not current status.
 

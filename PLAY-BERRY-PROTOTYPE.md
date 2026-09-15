@@ -1,6 +1,6 @@
 # Play the berry-survival prototype
 
-Current reviewable candidate: round211, source `f27ae2484709396ff6d90b8312c2d1287d9723da`.
+Sole retained verified playable fallback: round211, source `f27ae2484709396ff6d90b8312c2d1287d9723da`. This is not final user acceptance.
 Executable: `C:\bots\reflection\work\starfall-combined-today\Builds\KookerStarfallIntegrated-0.0.11-survival.1-20260915-115223\KookerStarfallIntegrated.exe`.
 Full184-file fingerprint: `addc6532b7e665f36e6a349a5f1c75f1d4c16119e25eb327ad01c2236bfcebcc`.
 
@@ -36,8 +36,10 @@ Runs23/24 prove real gathered fruit persisted and became a fresh model-chosen me
 
 Round211 run25 now proves ordinary freshwater discovery, inspection and drinking as well as meals over357.904seconds. The strict technical survival verifier passed against its scoped receipt and the separately accelerated run22 diagnostic. Repeated spring approaches while already hydrated remain a behavior defect, not complete survival-policy acceptance.
 
-Round212 (`20260915-123435`, source `af8caadb058650370d56079c36e3f4bf20ed6820`) is a newly compiled temporary candidate for that fix, not yet runtime-verified. Keep using the round211 launch instructions above until new evidence supports replacement. Automatic cleanup preserved211 and212 and removed only superseded209; receipt `evidence/local/build-retention/reconcile-20260915-123605/reconciliation.json`.
+Newer rounds212/215/216/221 failed broad regression and their temporary binaries were removed; keep using round211 above. Round216 run26 separately proved seven meals, one spring drink and eight full-hydration menus without spring actions. Round221 run27 proved five meals and53 completed routes, but18 model timeouts and no spring discovery. Do not combine these different builds into one acceptance claim.
 
 The panorama-level giant/water/terrain visuals, final human play/club review, full-world saving, protected review, ZIP and final watchable narrated walkthrough remain open. Detailed evidence is in `BERRY-SURVIVAL-MILESTONE-RECEIPT.md`.
 
-Existing silent WIP gameplay video (older round206, not this build): `evidence/local/normal-survival/run-14/starfall-round206-WIP-first-meal.mp4`. Keep its version label; it is not the final narrated before/after.
+Latest silent historical WIP video: `evidence/local/normal-survival/run-27/starfall-round221-WIP-ordinary-survival.mp4`,120seconds, SHA256 `472932d7cd83257f7ce2bcf9dd2ef615f69d40809724b41fea0195ff82b1988c`. Encoding/full-decode passed; source frames show the actor and berry/exploration activity, mostly against dark slopes. Round221 later failed its immediate-thought gate at1503ms and was deleted. The video remains valid historical evidence, not a current accepted player or final narrated showcase.
+
+Remaining: one same-build combined survival/restart/grounded death-lesson demonstration with viewable gameplay; panorama visual/user acceptance; reliable immediate1500ms model response (separate from5000ms survival choices); full-world saving and final deliverables. Camera improvements remain unaccepted. Authoritative Task API epic/workstream IDs have not been verified, so linkage remains unresolved rather than invented.
