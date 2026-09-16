@@ -1,4 +1,20 @@
 # Starfall system architecture and installation state
+## Physical item component checkpoint — 16 September 2026
+
+Task `4279edae-3f78-4c74-843a-c67489749451` remains in progress.
+
+```mermaid
+flowchart LR
+  Checks["Pinned Unity Editor: 58 component checks"] --> Model["ItemModel: mass, ownership, containers, replay"]
+  Model -. "runtime integration pending" .-> Adapter["Guarded NPC actions and Rigidbody adapter"]
+  Adapter -. "not yet validated" .-> Save["Physical item persistence"]
+```
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Physical item model | Component tested; not live-wired | Unity 6000.6.0f1 run02, exit0, PHYSICAL_ITEM_CHECKS_PASS 58; passed.txt SHA256 D6AEDFD3EC6D25B1DCE16FD0230423C89DDA7DBF111AFD2B001D35819A05932F; five source hashes unchanged | Guarded runtime integration, actual physics and persistence |
+| Installation in normal player | Not installed or accepted | No player build made for this component checkpoint | Compiled-player handling, settling, reload and user review |
+
 
 ## New authorized direction: spatial memory and agent access
 
@@ -283,3 +299,4 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 
 
 Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.
+
