@@ -206,7 +206,8 @@ namespace CityLife.Items
 
             var rb = go.AddComponent<Rigidbody>();
             rb.mass = DemonstrationItemMassKg;
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            // Speculative continuous collision detection anticipates both linear and angular motion to mitigate contact tunneling on rotating items
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
             var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             visual.name = "Visual";

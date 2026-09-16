@@ -600,7 +600,7 @@ namespace CityLife.Items.Editor
                     woodPhys.CarriedHand == null && dropUnitLossyScale && dropBoxSizePreserved &&
                     !woodPhys.Body.isKinematic && woodPhys.Body.useGravity &&
                     !woodPhys.ItemCollider.isTrigger && woodPhys.ItemCollider.enabled &&
-                    woodPhys.Body.collisionDetectionMode == CollisionDetectionMode.ContinuousDynamic,
+                    woodPhys.Body.collisionDetectionMode == CollisionDetectionMode.ContinuousSpeculative,
                     "physical-drop-releases-to-physics-dynamic");
 
 

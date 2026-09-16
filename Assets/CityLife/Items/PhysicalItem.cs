@@ -73,7 +73,8 @@ namespace CityLife.Items
                     Body.isKinematic = false;
                     Body.useGravity = true;
                 }
-                Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+                // Speculative continuous collision detection anticipates both linear and angular motion to mitigate contact tunneling on rotating items
+                Body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 Body.linearDamping = 0.05f;
                 Body.angularDamping = 0.05f;
             }
@@ -252,7 +253,8 @@ namespace CityLife.Items
             }
             if (Body != null)
             {
-                Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+                // Speculative continuous collision detection anticipates both linear and angular motion to mitigate contact tunneling on rotating items
+                Body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
 
             IsCarried = false;
