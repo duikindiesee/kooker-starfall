@@ -170,6 +170,10 @@ namespace CityLife.World.Editor
             var gameCapture=camera.gameObject.AddComponent<StarfallSurvivalGameCapture>();
             gameCapture.Brain=brain;gameCapture.View=camera;
 
+            // Physical item foundation integration: bind authoritative ItemModel, PhysicalAuthority, and physical demonstration item to the canyon inhabitant
+            var physicalBootstrap = actorObject.AddComponent<CityLife.Items.PhysicalItemBootstrap>();
+            physicalBootstrap.Brain = brain; brain.PhysicalItems = physicalBootstrap;
+
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
             IntegratedCelestial.PlaceDistantGiant(giant.transform,camera);

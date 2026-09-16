@@ -33,11 +33,6 @@ namespace CityLife.Items
             if (ItemCollider == null) ItemCollider = GetComponent<Collider>();
         }
 
-        private void FixedUpdate()
-        {
-            SyncToModel();
-        }
-
         /// <summary>
         /// Explicit setup creating or configuring components prior to runtime actions.
         /// Does NOT silently clamp mass.

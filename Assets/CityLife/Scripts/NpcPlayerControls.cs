@@ -84,6 +84,7 @@ namespace CityLife.World
             }
             if (key.rKey.wasPressedThisFrame) Brain.ToggleAutonomy();
             if (key.lKey.wasPressedThisFrame) Hud.Detailed = !Hud.Detailed;
+            if (key.gKey.wasPressedThisFrame) InteractPhysicalItem();
             if (mouse != null)
             {
                 if (mouse.rightButton.wasPressedThisFrame || (PersistentMouseCapture && mouse.leftButton.wasPressedThisFrame &&
@@ -137,6 +138,29 @@ namespace CityLife.World
                 pitch = View.transform.eulerAngles.x; if (pitch > 180) pitch -= 360;
             }
             if (MenuOpen && Page == "Controls") ShowPage("Controls");
+        }
+        public void InteractPhysicalItem()
+        {
+            if (Brain == null || Brain.Actions == null || !Brain.Possessed) return;
+            if (Brain.Actions.Held != null)
+            {
+                if (Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null)
+                {
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                }
+            }
+            else
+            {
+                var candidate = Brain.PhysicalItems != null ? Brain.PhysicalItems.DemonstrationInteractable : null;
+                if (candidate != null && candidate.isActiveAndEnabled && candidate.Permission && candidate.Approach != null)
+                {
+                    float dist = Vector3.Distance(Brain.transform.position, candidate.Approach.position);
+                    if (dist <= 0.65f)
+                    {
+                        Brain.ExecutePlayerAction(NpcActionKind.Pickup, candidate.StableId);
+                    }
+                }
+            }
         }
         public void OpenMenu()
         {
@@ -262,7 +286,7 @@ namespace CityLife.World
                     "\nSpectator: WASD or arrows move the camera; Q/E down/up. NPC autonomy continues." +
                     "\nPossession: WASD or arrows move the NPC. Autonomy is suspended." +
                     "\nHold right mouse: look. R: pause/resume autonomy in observation modes." +
-                    "\nL: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
+                    "\nG: pick up or drop physical item. L: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
                 if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
                 if (PersistentMouseCapture) Option("Mouse look sensitivity", () => ShowPage("Mouse"));

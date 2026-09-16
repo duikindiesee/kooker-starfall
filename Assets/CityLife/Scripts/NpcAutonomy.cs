@@ -33,6 +33,7 @@ namespace CityLife.World
         public List<string> ChosenGoals = new List<string>();
         public StarfallMemoryExport MemoryExport;
         public string MemoryExportFailure { get; private set; } = "";
+        public CityLife.Items.PhysicalItemBootstrap PhysicalItems;
         private NpcObservation goal;
         private readonly Dictionary<string, int> retryAfter = new Dictionary<string, int>(StringComparer.Ordinal);
         private Queue<Vector3> route;
@@ -43,20 +44,43 @@ namespace CityLife.World
         private void Start()
         {
             foreach (var item in Registry) item.RememberInitial();
+            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
+                PhysicalItems.DemonstrationInteractable.RememberInitial();
             ResetState(); Ready = true;
         }
+        public IEnumerable<NpcInteractable> AllInteractables =>
+            PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null
+                ? Registry.Concat(new[] { PhysicalItems.DemonstrationInteractable })
+                : (IEnumerable<NpcInteractable>)Registry;
+
         public void ResetState()
         {
             if (OptionalPlanner != null) OptionalPlanner.ResetSession();
             if (Survival != null) Survival.Cancel("world-reset");
             foreach (var item in Registry) item.RestoreInitial();
+            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
+                PhysicalItems.DemonstrationInteractable.RestoreInitial();
             Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
             goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
             perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
             Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
             Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
-            Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), Registry);
+            Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), AllInteractables);
+            if (PhysicalItems != null) PhysicalItems.OnActionsCreated(Actions);
             Physics.SyncTransforms();
+        }
+        public NpcActionResult ExecutePlayerAction(NpcActionKind kind, string targetId)
+        {
+            if (Actions == null) return new NpcActionResult { success = false, code = "actions-uninitialized" };
+            int req = ++requestId;
+            var result = Actions.Execute(req, kind, targetId);
+            if (Log != null)
+            {
+                Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), targetId ?? "", kind.ToString(), result.code,
+                    result.success ? "player-directed action completed" : "player-directed action rejected: " + result.code);
+            }
+            LastResult = result.code;
+            return result;
         }
         private void FixedUpdate() { if (Ready && !ManualSimulation) StepTick(); }
         public void SetPossession(bool possessed)
@@ -116,7 +140,7 @@ namespace CityLife.World
                 // reconstructed world. Never override a currently held item.
                 (Survival.VerifiedScopedContinuation && Actions.Held == null) ||
                 (goal == null && Actions.Held == null && Actions.Deliveries >= 3 &&
-                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission).All(x => x.DeliveredTo.Length > 0))))
+                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0))))
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }

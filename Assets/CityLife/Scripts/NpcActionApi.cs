@@ -23,6 +23,7 @@ namespace CityLife.World
         public ItemModel PhysicalModel { get; set; }
         public IItemActionAuthority PhysicalAuthority { get; set; }
         public int ClearanceMask = (1 << 0) | (1 << 8) | (1 << 10);
+        public Transform HandTransform => hand;
 
         public NpcActionApi(string agentId, string worldId, Transform actor, Transform hand, IEnumerable<NpcInteractable> registry)
         {
@@ -300,14 +301,25 @@ namespace CityLife.World
             Vector3 eye = actor.position + Vector3.up * 1.6f, delta = target.SightPoint - eye;
             var actorScene = actor.gameObject.scene;
             var actorPs = actorScene.GetPhysicsScene();
-            bool losBlocked;
+            RaycastHit losHit;
+            bool hitSomething;
             if (actorPs.IsValid())
             {
-                losBlocked = actorPs.Raycast(eye, delta.normalized, out _, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+                hitSomething = actorPs.Raycast(eye, delta.normalized, out losHit, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
             }
             else
             {
-                losBlocked = Physics.Raycast(eye, delta.normalized, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+                hitSomething = Physics.Raycast(eye, delta.normalized, out losHit, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+            }
+            bool losBlocked = false;
+            if (hitSomething && losHit.collider != null)
+            {
+                Transform hitTransform = losHit.collider.transform;
+                if (hitTransform != target.transform && !hitTransform.IsChildOf(target.transform) &&
+                    hitTransform != actor && !hitTransform.IsChildOf(actor))
+                {
+                    losBlocked = true;
+                }
             }
             if (losBlocked)
                 return Finish(Deny("line-of-sight-blocked"));

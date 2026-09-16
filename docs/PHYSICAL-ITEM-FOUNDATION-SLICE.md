@@ -211,3 +211,39 @@ flowchart LR
 
 The suite uses synchronous simulation and explicit synchronization calls; it does not prove natural FixedUpdate scheduling. Earlier run03 edit-mode failure, run04 cancelled Editor callback session and run05 unreachable fixture failure are retained as diagnostics. No thresholds were increased to pass the fixture. This checkpoint is not a release or user acceptance.
 
+---
+
+## 6. Live In-World Foundation Integration
+
+### Architectural Summary
+- **Bootstrap Component (`Assets/CityLife/Items/PhysicalItemBootstrap.cs`)**:
+  - Attached to the canyon inhabitant in `IntegratedCoastalBuild.Attach` via minimal 2-line wiring with an explicit integration note.
+  - Instantiates authoritative `ItemModel` and `BasicItemActionAuthority` upon `Awake()`, configuring `ItemDefinition` via declared field initializers.
+  - Re-binds `PhysicalModel` and `PhysicalAuthority` whenever `NpcAutonomy.ResetState()` recreates `Actions = new NpcActionApi(...)`.
+  - Continuous synchronization in `FixedUpdate()`: `PhysicalItem.FixedUpdate` removed to eliminate duplicate or arbitrary sync; single trusted normal-frame path in `PhysicalItemBootstrap.FixedUpdate()` validates reference equality (`DemonstrationItem.gameObject == DemonstrationInteractable.gameObject`), scene validity, actor scene match, and world scope, delegating to `Brain.Actions.SyncFreeTransform(DemonstrationItemId)`.
+- **Dedicated Movable Demonstration Item (`canyon-artifact-01`)**:
+  - Authored within natural reach ($0.42\text{ m}$ ahead of inhabitant spawn) with stable type `"canyon-stone"`, mass $2.5\text{ kg}$, dimensions $(0.25\times 0.25\times 0.25\text{ m})$.
+  - Configured with single `BoxCollider`, unit lossy scale ($1.0, 1.0, 1.0$), and continuous dynamic `Rigidbody`.
+  - Layer 0 (Default) isolation: excluded from courier perception (Layer 11) and LOS raycast (Layers 8|10). Additionally, `NpcActionApi` explicitly distinguishes target/actor colliders from genuine occluders, preventing self-occlusion.
+  - **Registry Separation**: The demonstration item is NOT appended to `Brain.Registry`, keeping legacy courier delivery prerequisites completely intact for `NpcAutonomy` and `StarfallSurvivalAutonomy`. `NpcAutonomy` exposes `AllInteractables` to supply both `Registry` and `DemonstrationInteractable` to `NpcActionApi`.
+- **In-World Diagnostic Coroutine (`RunInWorldDiagnostic`)**:
+  - Opt-in command-line arguments: `-physicalInWorldDiagnostic`, `-physicalEvidence <dir>`.
+  - Runs in the live canyon world using ordinary Unity `FixedUpdate` scheduling (zero manual `PhysicsScene.Simulate`, zero manual `SyncToModel` in proof).
+  - Waits boundedly (up to 100 ticks) for inhabitant readiness, then captures `wasRunning = Brain.Running` and pauses autonomy so the inhabitant remains at its authored spawn point, restoring `wasRunning` in `finally`.
+  - Verifies reach ($\le 0.65\text{ m}$) honestly without repositioning or teleportation.
+  - Mints monotonic action sequence IDs via `Brain.ExecutePlayerAction(NpcActionKind.Pickup / Drop, ...)`.
+  - Settling budget: $\le 5.0\text{ s}$ (250 ticks). Enforces exact foundation thresholds: linear speed $\le 0.03\text{ m/s}$ and angular speed $\le 3.0^\circ/\text{s}$ ($0.05236\text{ rad/s}$) held continuously for 10 ticks.
+  - Post-settle drift observation: $\le 0.02\text{ m}$ over $2.0\text{ s}$ (100 ticks).
+  - Emits stage progression and writes `summary.json` / `passed.txt` without swallowing file system exceptions.
+- **Player Controls (`Assets/CityLife/Scripts/NpcPlayerControls.cs`)**:
+  - Bound to `G` key: gated strictly to `Brain.Possessed` and physical item scope (never drops legacy courier cargo).
+  - If holding a physical item: calls `Brain.ExecutePlayerAction(NpcActionKind.Drop, Held.StableId)`.
+  - If hands are free: checks candidate physical interactable reach ($\le 0.65\text{ m}$) and calls `Brain.ExecutePlayerAction(NpcActionKind.Pickup, candidate.StableId)`.
+  - Fully documented in the in-game Controls pause menu.
+- **Preserved Boundaries**:
+  - All 104 isolated checks (58 component in `ItemChecks.cs` + 46 runtime in `PhysicalItemRuntimeChecks.cs`) remain untouched.
+  - `HunterClubCarry` and hunter outfit remain completely unaffected on the left hand.
+  - Food model, survival autonomy, terrain streaming, and memory export sources remain untouched.
+  - Deferred scope: multi-item inventory storage, crafting, and cross-session persistence remain separate subsequent work.
+
+
