@@ -240,8 +240,15 @@ The suite uses synchronous simulation and explicit synchronization calls; it doe
   - If holding a physical item: calls `Brain.ExecutePlayerAction(NpcActionKind.Drop, Held.StableId)`.
   - If hands are free: checks candidate physical interactable reach ($\le 0.65\text{ m}$) and calls `Brain.ExecutePlayerAction(NpcActionKind.Pickup, candidate.StableId)`.
   - Fully documented in the in-game Controls pause menu.
+- **Scale-Neutral Kinematic Grip Follower (`PhysicalItem.cs`)**:
+  - Implements scale-neutral kinematic carry tracking: unparents the item to root level (`transform.SetParent(null, true); transform.localScale = Vector3.one;`), holding reference to `CarriedHand = hand;`.
+  - Solves non-uniform avatar scale inheritance (`1.15, 1.0, 1.08` plus animated bone rotation shear on the hunter rig), guaranteeing exact unit world scale (`lossyScale == Vector3.one`) throughout carry and release without weakening `IsValid()`.
+  - Snaps grip pose via `UpdateGripPose()` (`hand.TransformPoint(GripLocalOffset)` and `hand.rotation * GripLocalRotation`) in `AttachToHand()`, `LateUpdate()`, `FixedUpdate()`, and immediately before drop clearance validation.
+  - Release to dynamic physics (`ReleaseToPhysics`) preserves unit scale and declared metre collider dimensions without any scale jump.
+  - Authoritative attachment contract: `woodPhys.CarriedHand == handGo.transform && woodPhys.IsCarried` (unparented from hand). Legacy non-physical cargo parenting (`cargo.transform.parent == hand`) remains completely intact.
+  - Concise diagnostic reporting: `GetDiagnosticMeasurements()` captures `(lossyScale, bodyMass, colliderBounds)` on failure in `NpcActionApi` and `PhysicalItemBootstrap`.
 - **Preserved Boundaries**:
-  - All 104 isolated checks (58 component in `ItemChecks.cs` + 46 runtime in `PhysicalItemRuntimeChecks.cs`) remain untouched.
+  - All 104 isolated checks (58 component in `ItemChecks.cs` + 46 runtime in `PhysicalItemRuntimeChecks.cs`) remain untouched in count and intent, updated to verify scale-neutral follower and dimensional conservation under the non-uniform animated hunter rig hierarchy.
   - `HunterClubCarry` and hunter outfit remain completely unaffected on the left hand.
   - Food model, survival autonomy, terrain streaming, and memory export sources remain untouched.
   - Deferred scope: multi-item inventory storage, crafting, and cross-session persistence remain separate subsequent work.

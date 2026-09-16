@@ -24,6 +24,7 @@ namespace CityLife.World
         public IItemActionAuthority PhysicalAuthority { get; set; }
         public int ClearanceMask = (1 << 0) | (1 << 8) | (1 << 10);
         public Transform HandTransform => hand;
+        public string LastPhysicalDiagnostic { get; private set; }
 
         public NpcActionApi(string agentId, string worldId, Transform actor, Transform hand, IEnumerable<NpcInteractable> registry)
         {
@@ -60,6 +61,7 @@ namespace CityLife.World
             if (phys == null || !phys.IsValid())
             {
                 denyCode = "physical-item-invalid";
+                if (phys != null) LastPhysicalDiagnostic = phys.GetDiagnosticMeasurements();
                 return false;
             }
             if (!phys.IsBoundTo(PhysicalModel, worldId, PhysicalModel.GenerationId))
@@ -115,7 +117,9 @@ namespace CityLife.World
             {
                 if (Held == null) return Finish(Deny("cargo-ownership-mismatch"));
                 if (!Held.isActiveAndEnabled) return Finish(Deny("target-unavailable"));
-                if (Held.HeldBy != agentId || Held.transform.parent != hand)
+                var phys = Held.GetComponent<PhysicalItem>();
+                bool isCarriedByHand = phys != null ? (phys.CarriedHand == hand && phys.IsCarried) : (Held.transform.parent == hand);
+                if (Held.HeldBy != agentId || !isCarriedByHand)
                     return Finish(Deny("cargo-ownership-mismatch"));
                 if (!objects.TryGetValue(Held.StableId, out var regHeld) || regHeld != Held)
                     return Finish(Deny("cargo-ownership-mismatch"));
@@ -128,9 +132,9 @@ namespace CityLife.World
                 if (Held.WorldId != worldId || Held.gameObject.scene != actor.gameObject.scene || hand.gameObject.scene != actor.gameObject.scene)
                     return Finish(Deny("world-mismatch"));
 
-                var phys = Held.GetComponent<PhysicalItem>();
                 if (phys != null)
                 {
+                    phys.UpdateGripPose();
                     if (PhysicalModel == null)
                         return Finish(Deny("physical-model-required"));
                     if (!ValidatePhysicalMetadata(phys, Held, out string metaDeny))
@@ -365,10 +369,12 @@ namespace CityLife.World
             }
 
             if (target.Kind != NpcObjectKind.Destination) return Finish(Deny("wrong-target-kind"));
-            if (Held == null || Held.HeldBy != agentId || Held.transform.parent != hand)
+            var heldPhys = Held != null ? Held.GetComponent<PhysicalItem>() : null;
+            bool isDeliveredByHand = heldPhys != null ? (heldPhys.CarriedHand == hand && heldPhys.IsCarried) : (Held != null && Held.transform.parent == hand);
+            if (Held == null || Held.HeldBy != agentId || !isDeliveredByHand)
                 return Finish(Deny("cargo-ownership-mismatch"));
 
-            if (Held.GetComponent<PhysicalItem>() != null)
+            if (heldPhys != null)
                 return Finish(Deny("physical-delivery-not-supported-in-slice"));
 
             if (!target.Available || target.Socket == null) return Finish(Deny("destination-full-or-invalid"));

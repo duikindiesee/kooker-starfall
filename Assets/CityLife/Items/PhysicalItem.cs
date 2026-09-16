@@ -21,6 +21,9 @@ namespace CityLife.Items
         public Collider ItemCollider;
 
         public bool IsCarried { get; private set; }
+        public Transform CarriedHand { get; private set; }
+        public Vector3 GripLocalOffset = new Vector3(0.06f, 0.04f, 0f);
+        public Quaternion GripLocalRotation = Quaternion.identity;
 
         public ItemModel BoundModel { get; private set; }
         public string BoundWorldId { get; private set; }
@@ -152,26 +155,62 @@ namespace CityLife.Items
 
         /// <summary>
         /// Sets velocities to zero while still dynamic, then switches to kinematic carry
-        /// with trigger collider parented to actor hand.
+        /// with trigger collider following actor hand via scale-neutral kinematic follower.
+        /// Unparents to root level to avoid inheriting non-uniform scale or bone rotation shear
+        /// from the animated avatar rig, preserving declared metre dimensions.
         /// </summary>
         public void AttachToHand(Transform hand)
         {
-            // Set velocities while dynamic
-            Body.linearVelocity = Vector3.zero;
-            Body.angularVelocity = Vector3.zero;
+            CarriedHand = hand;
 
-            // Switch carried kinematic
-            Body.isKinematic = true;
-            Body.useGravity = false;
+            // Set velocities while dynamic
+            if (Body != null)
+            {
+                Body.linearVelocity = Vector3.zero;
+                Body.angularVelocity = Vector3.zero;
+                Body.isKinematic = true;
+                Body.useGravity = false;
+            }
 
             // Configure trigger collider
-            ItemCollider.isTrigger = true;
+            if (ItemCollider != null)
+            {
+                ItemCollider.isTrigger = true;
+            }
 
-            // Parent to hand
-            transform.SetParent(hand, false);
-            transform.localPosition = new Vector3(0.06f, 0.04f, 0f);
-            transform.localRotation = Quaternion.identity;
+            // Scale-neutral kinematic follower: unparent to root level to guarantee lossyScale == Vector3.one
+            transform.SetParent(null, true);
+            transform.localScale = Vector3.one;
             IsCarried = true;
+            UpdateGripPose();
+        }
+
+        /// <summary>
+        /// Updates the world transform of this carried item to match the hand's grip pose
+        /// while strictly maintaining unit world scale (no scale inheritance or shear).
+        /// </summary>
+        public void UpdateGripPose()
+        {
+            if (!IsCarried || CarriedHand == null) return;
+            transform.position = CarriedHand.TransformPoint(GripLocalOffset);
+            transform.rotation = CarriedHand.rotation * GripLocalRotation;
+            transform.localScale = Vector3.one;
+        }
+
+        private void LateUpdate()
+        {
+            if (IsCarried && CarriedHand != null)
+            {
+                UpdateGripPose();
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            if (IsCarried && CarriedHand != null)
+            {
+                UpdateGripPose();
+            }
         }
 
         /// <summary>
@@ -180,31 +219,62 @@ namespace CityLife.Items
         /// </summary>
         public void ReleaseToPhysics(Vector3 releasePosition, Quaternion releaseRotation)
         {
+            CarriedHand = null;
             transform.SetParent(null, true);
+            transform.localScale = Vector3.one;
             transform.SetPositionAndRotation(releasePosition, releaseRotation);
             Physics.SyncTransforms();
 
             // Restore dynamic before velocity operations on release
             if (isAnchored)
             {
-                Body.isKinematic = true;
-                Body.useGravity = false;
+                if (Body != null)
+                {
+                    Body.isKinematic = true;
+                    Body.useGravity = false;
+                }
             }
             else
             {
-                Body.isKinematic = false;
-                Body.useGravity = true;
-                Body.linearVelocity = Vector3.zero;
-                Body.angularVelocity = Vector3.zero;
+                if (Body != null)
+                {
+                    Body.isKinematic = false;
+                    Body.useGravity = true;
+                    Body.linearVelocity = Vector3.zero;
+                    Body.angularVelocity = Vector3.zero;
+                }
             }
 
-            ItemCollider.isTrigger = false;
-            ItemCollider.enabled = true;
-            Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            if (ItemCollider != null)
+            {
+                ItemCollider.isTrigger = false;
+                ItemCollider.enabled = true;
+            }
+            if (Body != null)
+            {
+                Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            }
 
             IsCarried = false;
             Physics.SyncTransforms();
         }
+
+        /// <summary>
+        /// Returns concise diagnostic measurements (lossyScale, bodyMass, colliderBounds).
+        /// </summary>
+        public string GetDiagnosticMeasurements()
+        {
+            Vector3 scale = transform.lossyScale;
+            float mass = Body != null ? Body.mass : float.NaN;
+            string boundsStr = "none";
+            if (ItemCollider != null)
+            {
+                var b = ItemCollider.bounds;
+                boundsStr = $"center=({b.center.x:F3},{b.center.y:F3},{b.center.z:F3}),size=({b.size.x:F3},{b.size.y:F3},{b.size.z:F3})";
+            }
+            return $"lossyScale=({scale.x:F4},{scale.y:F4},{scale.z:F4}), bodyMass={mass:F4}kg, colliderBounds=[{boundsStr}]";
+        }
+
 
         /// <summary>
         /// Synchronizes this free, dynamic body's world transform to the authoritative ItemModel.

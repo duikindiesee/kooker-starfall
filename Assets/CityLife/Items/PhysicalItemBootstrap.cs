@@ -234,7 +234,8 @@ namespace CityLife.Items
                 var pickupRes = Brain.ExecutePlayerAction(NpcActionKind.Pickup, DemonstrationItemId);
                 if (!pickupRes.success)
                 {
-                    RecordStage("in-world-pickup-failed-" + pickupRes.code);
+                    string diag = DemonstrationItem != null ? (" (" + DemonstrationItem.GetDiagnosticMeasurements() + ")") : "";
+                    RecordStage("in-world-pickup-failed-" + pickupRes.code + diag);
                     yield break;
                 }
                 RecordStage("in-world-pickup-passed");
@@ -249,7 +250,8 @@ namespace CityLife.Items
                 var dropRes = Brain.ExecutePlayerAction(NpcActionKind.Drop, DemonstrationItemId);
                 if (!dropRes.success)
                 {
-                    RecordStage("in-world-drop-failed-" + dropRes.code);
+                    string diag = DemonstrationItem != null ? (" (" + DemonstrationItem.GetDiagnosticMeasurements() + ")") : "";
+                    RecordStage("in-world-drop-failed-" + dropRes.code + diag);
                     yield break;
                 }
                 RecordStage("in-world-drop-passed");

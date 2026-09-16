@@ -60,15 +60,16 @@ namespace CityLife.Items.Editor
                 floor.transform.localScale = new Vector3(100f, 1f, 100f);
                 var floorCollider = floor.AddComponent<BoxCollider>();
 
-                // Setup actor and hand
+                // Setup actor and hand with realistic animated hunter rig hierarchy (non-unit scale and bone rotation)
                 var actorGo = CreateGo("test-actor");
                 actorGo.transform.position = new Vector3(0, 0, 0);
                 actorGo.transform.rotation = Quaternion.identity;
+                actorGo.transform.localScale = new Vector3(1.15f, 1.0f, 1.08f);
 
                 var handGo = CreateGo("test-hand");
                 handGo.transform.SetParent(actorGo.transform, false);
                 handGo.transform.localPosition = new Vector3(0.3f, 1.0f, 0.4f);
-                handGo.transform.localRotation = Quaternion.identity;
+                handGo.transform.localRotation = Quaternion.Euler(15f, 25f, 0f);
 
                 // Diagnostics-aware assertion helpers:
                 void Check(bool condition, string name, string diagnostic = null)
@@ -457,12 +458,24 @@ namespace CityLife.Items.Editor
                     woodNi.Approach, woodNi.SightPoint);
                 woodNi.Permission = true;
 
-                // Check: Valid physical pickup transitions to kinematic carry
+                // Check: Valid physical pickup transitions to kinematic carry via scale-neutral root follower
                 var pickupRes = api.Execute(12, NpcActionKind.Pickup, "phys-wood");
+                Vector3 expectedHandPose = handGo.transform.TransformPoint(woodPhys.GripLocalOffset);
+                Quaternion expectedHandRot = handGo.transform.rotation * woodPhys.GripLocalRotation;
+                bool handPoseMatches = Vector3.Distance(woodNi.transform.position, expectedHandPose) <= 0.001f &&
+                    Quaternion.Angle(woodNi.transform.rotation, expectedHandRot) <= 0.1f;
+                bool unitLossyScale = Mathf.Abs(woodPhys.transform.lossyScale.x - 1f) <= 0.001f &&
+                    Mathf.Abs(woodPhys.transform.lossyScale.y - 1f) <= 0.001f &&
+                    Mathf.Abs(woodPhys.transform.lossyScale.z - 1f) <= 0.001f;
+                bool declaredBoxSizePreserved = woodPhys.ItemCollider is BoxCollider woodBox &&
+                    Mathf.Abs(woodBox.size.x * woodPhys.transform.lossyScale.x - 0.2f) <= 0.001f &&
+                    Mathf.Abs(woodBox.size.y * woodPhys.transform.lossyScale.y - 0.2f) <= 0.001f &&
+                    Mathf.Abs(woodBox.size.z * woodPhys.transform.lossyScale.z - 0.2f) <= 0.001f;
+
                 CheckAction(pickupRes, "picked-up", true,
-                    api.Held == woodNi && woodNi.transform.parent == handGo.transform &&
-                    woodPhys.IsCarried && woodPhys.Body.isKinematic && !woodPhys.Body.useGravity &&
-                    woodPhys.ItemCollider.isTrigger,
+                    api.Held == woodNi && woodPhys.IsCarried && woodPhys.CarriedHand == handGo.transform &&
+                    woodNi.transform.parent == null && unitLossyScale && handPoseMatches && declaredBoxSizePreserved &&
+                    woodPhys.Body.isKinematic && !woodPhys.Body.useGravity && woodPhys.ItemCollider.isTrigger,
                     "physical-pickup-attaches-to-hand-kinematic",
                     woodNi.Approach, woodNi.SightPoint);
 
@@ -520,10 +533,11 @@ namespace CityLife.Items.Editor
                 Vector3 expectedReleasePos = handGo.transform.position + handGo.transform.forward * 0.25f;
 
                 // Check: Full-shape edge clearance denial (wall edge intersects item bound even though center is clear)
-                // Wood dimensions: 0.2m x 0.2m x 0.2m (half-extents 0.1m). Place obstacle at offset (0.12, 0, 0)
+                // Wood dimensions: 0.2m x 0.2m x 0.2m (half-extents 0.1m). Place obstacle at offset along hand right axis
                 var edgeObstacle = CreateGo("edge-obstacle");
                 edgeObstacle.layer = 8;
-                edgeObstacle.transform.position = expectedReleasePos + new Vector3(0.12f, 0f, 0f);
+                edgeObstacle.transform.position = expectedReleasePos + handGo.transform.right * 0.12f;
+                edgeObstacle.transform.rotation = handGo.transform.rotation;
                 edgeObstacle.transform.localScale = new Vector3(0.1f, 0.4f, 0.4f);
                 edgeObstacle.AddComponent<BoxCollider>();
                 Physics.SyncTransforms();
@@ -542,6 +556,7 @@ namespace CityLife.Items.Editor
                 var sweepObstacle = CreateGo("sweep-obstacle");
                 sweepObstacle.layer = 8;
                 sweepObstacle.transform.position = midSweepPoint;
+                sweepObstacle.transform.rotation = handGo.transform.rotation;
                 sweepObstacle.transform.localScale = new Vector3(0.4f, 0.4f, 0.05f);
                 sweepObstacle.AddComponent<BoxCollider>();
                 Physics.SyncTransforms();
@@ -572,12 +587,22 @@ namespace CityLife.Items.Editor
                 // 6. Successful dynamic Drop & physics restoration (Finding 5)
                 // -------------------------------------------------------------
                 var dropRes = api.Execute(21, NpcActionKind.Drop, "phys-wood");
+                bool dropUnitLossyScale = Mathf.Abs(woodPhys.transform.lossyScale.x - 1f) <= 0.001f &&
+                    Mathf.Abs(woodPhys.transform.lossyScale.y - 1f) <= 0.001f &&
+                    Mathf.Abs(woodPhys.transform.lossyScale.z - 1f) <= 0.001f;
+                bool dropBoxSizePreserved = woodPhys.ItemCollider is BoxCollider woodBoxDrop &&
+                    Mathf.Abs(woodBoxDrop.size.x * woodPhys.transform.lossyScale.x - 0.2f) <= 0.001f &&
+                    Mathf.Abs(woodBoxDrop.size.y * woodPhys.transform.lossyScale.y - 0.2f) <= 0.001f &&
+                    Mathf.Abs(woodBoxDrop.size.z * woodPhys.transform.lossyScale.z - 0.2f) <= 0.001f;
+
                 CheckAction(dropRes, "dropped", true,
                     api.Held == null && woodNi.transform.parent == null && !woodPhys.IsCarried &&
+                    woodPhys.CarriedHand == null && dropUnitLossyScale && dropBoxSizePreserved &&
                     !woodPhys.Body.isKinematic && woodPhys.Body.useGravity &&
                     !woodPhys.ItemCollider.isTrigger && woodPhys.ItemCollider.enabled &&
                     woodPhys.Body.collisionDetectionMode == CollisionDetectionMode.ContinuousDynamic,
                     "physical-drop-releases-to-physics-dynamic");
+
 
                 Check(Vector3.Distance(physWoodGo.transform.position, expectedReleasePos) <= 0.001f,
                     "physical-drop-position-at-hand-release-pose",
@@ -715,7 +740,7 @@ namespace CityLife.Items.Editor
 
                 var repickRes = api.Execute(22, NpcActionKind.Pickup, "phys-wood");
                 CheckAction(repickRes, "picked-up", true,
-                    api.Held == woodNi && woodPhys.IsCarried,
+                    api.Held == woodNi && woodPhys.IsCarried && woodPhys.CarriedHand == handGo.transform && woodNi.transform.parent == null,
                     "re-pickup-of-settled-physical-item",
                     woodNi.Approach, woodNi.SightPoint);
 
