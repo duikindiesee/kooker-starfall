@@ -24,7 +24,18 @@ namespace CityLife.World
         public IItemActionAuthority PhysicalAuthority { get; set; }
         public int ClearanceMask = (1 << 0) | (1 << 8) | (1 << 10);
         public Transform HandTransform => hand;
+        public Transform ActorTransform => actor;
         public string LastPhysicalDiagnostic { get; private set; }
+        public string AgentId => agentId;
+        public string WorldId => worldId;
+
+        public bool IsObjectRegistered(string stableId, NpcInteractable interactable)
+        {
+            return !string.IsNullOrEmpty(stableId) &&
+                   interactable != null &&
+                   objects.TryGetValue(stableId, out var reg) &&
+                   reg == interactable;
+        }
 
         public NpcActionApi(string agentId, string worldId, Transform actor, Transform hand, IEnumerable<NpcInteractable> registry)
         {
@@ -48,6 +59,44 @@ namespace CityLife.World
             if (phys == null || !phys.IsBoundTo(PhysicalModel, worldId, PhysicalModel.GenerationId))
                 return false;
             return phys.SyncToModel();
+        }
+
+        /// <summary>
+        /// Trusted restore API for scoped persistence restoration.
+        /// Restores authoritative hand ownership of a registered interactable when validated
+        /// against the authoritative PhysicalModel, world scope, hand existence, and kinematic carry state.
+        /// Does NOT bypass physical validation or permit arbitrary transform assignments.
+        /// </summary>
+        public bool RestoreHeld(NpcInteractable interactable)
+        {
+            if (interactable == null)
+            {
+                Held = null;
+                return true;
+            }
+
+            if (interactable.Kind != NpcObjectKind.Item) return false;
+            if (!objects.TryGetValue(interactable.StableId, out var reg) || reg != interactable) return false;
+            if (interactable.WorldId != worldId || interactable.gameObject.scene != actor.gameObject.scene) return false;
+            if (hand == null || hand.gameObject.scene != actor.gameObject.scene) return false;
+            if (interactable.HeldBy != agentId) return false;
+
+            var phys = interactable.GetComponent<PhysicalItem>();
+            if (phys != null)
+            {
+                if (PhysicalModel == null) return false;
+                if (!phys.IsBoundTo(PhysicalModel, worldId, PhysicalModel.GenerationId)) return false;
+                if (!PhysicalModel.TryGetItem(interactable.StableId, out var snap)) return false;
+                if (snap.location != ItemLocationKind.Carried || !string.Equals(snap.holderActorId, agentId, StringComparison.Ordinal)) return false;
+                if (!phys.IsCarried || phys.CarriedHand != hand) return false;
+            }
+            else
+            {
+                if (interactable.transform.parent != hand) return false;
+            }
+
+            Held = interactable;
+            return true;
         }
 
         private bool ValidatePhysicalMetadata(PhysicalItem phys, NpcInteractable target, out string denyCode)

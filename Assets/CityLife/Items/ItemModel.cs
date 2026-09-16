@@ -477,6 +477,170 @@ namespace CityLife.Items
             return true;
         }
 
+        public List<ItemStateSnapshot> GetAllItemSnapshots()
+        {
+            var list = new List<ItemStateSnapshot>(items.Count);
+            foreach (var kvp in items)
+            {
+                list.Add(kvp.Value.Clone());
+            }
+            return list;
+        }
+
+        public List<(int requestId, string signature, ItemReceipt receipt)> GetAllReceiptRecords()
+        {
+            var list = new List<(int, string, ItemReceipt)>(receipts.Count);
+            foreach (var kvp in receipts)
+            {
+                list.Add((kvp.Key, kvp.Value.signature, kvp.Value.receipt));
+            }
+            return list;
+        }
+
+        public bool CanRestoreSnapshot(PhysicalSavePayload payload)
+        {
+            if (payload == null) return false;
+            if (!string.Equals(payload.worldId, WorldId, StringComparison.Ordinal) ||
+                !string.Equals(payload.generationId, GenerationId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+            if (!IsValidId(payload.actorId)) return false;
+            if (payload.tick < 0) return false;
+            if (payload.items == null) return false;
+
+            var seenItemIds = new HashSet<string>(StringComparer.Ordinal);
+            int carriedCount = 0;
+            float carriedMass = 0f;
+
+            foreach (var rec in payload.items)
+            {
+                if (rec == null) return false;
+                if (!IsValidId(rec.itemId) || !seenItemIds.Add(rec.itemId)) return false;
+                if (!IsValidId(rec.itemTypeId)) return false;
+
+                if (!definitions.TryGetValue(rec.itemTypeId, out var liveDef)) return false;
+                if (liveDef.isAnchored) return false;
+
+                // Finite positive mass and exact match
+                if (!ItemDefinition.Finite(rec.massKg) || rec.massKg <= 0f || Mathf.Abs(rec.massKg - liveDef.massKg) > 0.0001f)
+                    return false;
+
+                // Finite positive dimensions and exact match
+                if (!ItemDefinition.Finite(rec.dimensions.width) || rec.dimensions.width <= 0f ||
+                    !ItemDefinition.Finite(rec.dimensions.height) || rec.dimensions.height <= 0f ||
+                    !ItemDefinition.Finite(rec.dimensions.depth) || rec.dimensions.depth <= 0f)
+                {
+                    return false;
+                }
+                if (Mathf.Abs(rec.dimensions.width - liveDef.dimensions.width) > 0.0001f ||
+                    Mathf.Abs(rec.dimensions.height - liveDef.dimensions.height) > 0.0001f ||
+                    Mathf.Abs(rec.dimensions.depth - liveDef.dimensions.depth) > 0.0001f)
+                {
+                    return false;
+                }
+
+                if (!ItemDefinition.Finite(rec.position.x) || !ItemDefinition.Finite(rec.position.y) || !ItemDefinition.Finite(rec.position.z))
+                    return false;
+                if (!ItemDefinition.TryCanonicalizeRotation(rec.rotation, out _))
+                    return false;
+
+                // Reject negative or future lastUpdatedTick instead of silently substituting payload.tick
+                if (rec.lastUpdatedTick < 0 || rec.lastUpdatedTick > payload.tick)
+                    return false;
+
+                if (rec.location == ItemLocationKind.Free)
+                {
+                    if (!string.IsNullOrEmpty(rec.holderActorId)) return false;
+                }
+                else if (rec.location == ItemLocationKind.Carried)
+                {
+                    if (!string.Equals(rec.holderActorId, payload.actorId, StringComparison.Ordinal)) return false;
+                    carriedCount++;
+                    carriedMass += rec.massKg;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            var limits = GetActorCarryLimits(payload.actorId);
+            if (carriedCount > limits.maxCarriedItems) return false;
+            if (carriedMass > limits.maxCarryMassKg) return false;
+
+            if (payload.receipts != null)
+            {
+                if (payload.receipts.Count > MaxReceiptLedgerSize) return false;
+                var seenRequestIds = new HashSet<int>();
+                foreach (var r in payload.receipts)
+                {
+                    if (r == null || r.requestId <= 0 || string.IsNullOrEmpty(r.signature)) return false;
+                    if (!seenRequestIds.Add(r.requestId)) return false;
+                    if (r.receipt.requestId != r.requestId) return false;
+                    if (!string.Equals(r.receipt.worldId, WorldId, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(r.receipt.generationId, GenerationId, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(r.receipt.actorId, payload.actorId, StringComparison.Ordinal)) return false;
+                    if (!ItemDefinition.Finite(r.receipt.totalCarriedMassKg) || r.receipt.totalCarriedMassKg < 0f) return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool RestoreSnapshot(PhysicalSavePayload payload)
+        {
+            if (!CanRestoreSnapshot(payload)) return false;
+
+            var newItems = new Dictionary<string, ItemStateSnapshot>(StringComparer.Ordinal);
+            foreach (var rec in payload.items)
+            {
+                ItemDefinition.TryCanonicalizeRotation(rec.rotation, out var canonicalRot);
+                var snap = new ItemStateSnapshot
+                {
+                    itemId = rec.itemId,
+                    itemTypeId = rec.itemTypeId,
+                    location = rec.location,
+                    holderActorId = rec.holderActorId,
+                    containerItemId = null,
+                    placedSupportId = null,
+                    position = rec.position,
+                    rotation = canonicalRot,
+                    lastUpdatedTick = rec.lastUpdatedTick
+                };
+                newItems.Add(rec.itemId, snap);
+            }
+
+            var newReceipts = new Dictionary<int, ReceiptRecord>();
+            if (payload.receipts != null)
+            {
+                foreach (var r in payload.receipts)
+                {
+                    newReceipts.Add(r.requestId, new ReceiptRecord { signature = r.signature, receipt = r.receipt });
+                }
+            }
+
+            // Apply atomically
+            items.Clear();
+            foreach (var kvp in newItems)
+            {
+                items.Add(kvp.Key, kvp.Value);
+            }
+
+            receipts.Clear();
+            foreach (var kvp in newReceipts)
+            {
+                receipts.Add(kvp.Key, kvp.Value);
+            }
+
+            if (payload.tick > Tick)
+            {
+                Tick = payload.tick;
+            }
+
+            return true;
+        }
+
         public static string BuildRequestSignature(ItemActionRequest req, Quaternion canonicalRotation)
         {
             var sb = new StringBuilder(128);

@@ -251,6 +251,90 @@ The suite uses synchronous simulation and explicit synchronization calls; it doe
   - All 104 isolated checks (58 component in `ItemChecks.cs` + 46 runtime in `PhysicalItemRuntimeChecks.cs`) remain untouched in count and intent, updated to verify scale-neutral follower and dimensional conservation under the non-uniform animated hunter rig hierarchy.
   - `HunterClubCarry` and hunter outfit remain completely unaffected on the left hand.
   - Food model, survival autonomy, terrain streaming, and memory export sources remain untouched.
-  - Deferred scope: multi-item inventory storage, crafting, and cross-session persistence remain separate subsequent work.
+  - Deferred scope: multi-item inventory storage, crafting, and general container hierarchies remain separate subsequent work.
+
+---
+
+## 7. Restart Persistence Architecture & Separate-Process Protocol
+
+### Architectural Summary
+- **Envelope & Integrity (`Assets/CityLife/Items/ItemPersistence.cs`)**:
+  - Schema: `starfall.physical-save.v1`.
+  - SHA-256 payload integrity hash computed over normalized JSON content.
+  - Bounded envelope budget $\le 1\text{ MB}$ (`MaxFileSizeBytes = 1048576`).
+  - Scoped strictly to `(worldId, generationId, actorId, tick)`.
+- **Durable Atomic Write (`SaveAtomic`)**:
+  - Enforces explicit absolute paths (`Path.IsPathRooted`).
+  - Pre-validates bounded payload before serialization (valid identifiers, tick $\ge 0$, items $\le 1000$, receipts $\le 512$).
+  - Writes to temporary sibling file (`path + ".tmp-" + Guid`), calls `FileStream.Flush(true)` (`fsync`), and atomically replaces via `File.Replace(tmp, path, path + ".bak")` or `File.Move(tmp, path)`.
+  - Retains prior save file in `.bak`; never corrupts existing saves on failure.
+- **Strict Atomic Rejection (`TryLoad`)**:
+  - Missing file returns `false` cleanly without throwing (fresh start behavior).
+  - Malformed/truncated JSON or SHA-256 mismatch rejects without mutating runtime.
+  - Foreign `worldId`, `generationId`, or `actorId` rejects atomically.
+  - Non-finite mass or non-positive/NaN dimensions reject atomically without bypassing `Mathf.Abs` comparisons.
+  - Negative or future `lastUpdatedTick` (`lastUpdatedTick < 0 || lastUpdatedTick > payload.tick`) rejects atomically without silent substitution.
+  - Unregistered item types, live definition mismatches, or anchored items reject atomically.
+  - Unsupported locations (`Stored`, `Placed`, `Anchored`) reject atomically in this slice.
+  - Actor carry limits (both count and mass capacity) strictly enforced on restored carried items.
+  - Receipt ledger bounded to $\le 512$ (`MaxReceiptLedgerSize`), validating request ID, signature, world, gen, actor, and finite non-negative `totalCarriedMassKg`.
+  - Non-destructive rejected load: if an existing file fails `TryLoad`, `PhysicalItemBootstrap.SaveRejected = true` locks out saving, ensuring malformed/foreign files on disk are NEVER overwritten.
+- **Preflighted Runtime Restoration (`RestoreRuntime`)**:
+  - Preflights all guards before ANY model or transform mutation:
+    1. Exactly one item in payload matching the supported live demonstration instance (`canyon-artifact-01`).
+    2. Live GameObject reference equality, scene validity, and actor scene matching.
+    3. Registry confirmation (`NpcActionApi.IsObjectRegistered`).
+    4. Physical validity (`PhysicalItem.IsValid()`) and model binding (`IsBoundTo`).
+    5. Hand transform existence, actor scene match, and empty hands if restoring carried.
+    6. Model validation without mutation via `ItemModel.CanRestoreSnapshot(payload)`.
+  - Applies state only after all preflights succeed:
+    - If `Carried`: attaches kinematically to hand (`AttachToHand`), marks `HeldBy = actorId`, restores authoritative hand in API (`RestoreHeld`), preserving unit world scale (`lossyScale == Vector3.one`).
+    - If `Free`: releases to dynamic physics (`ReleaseToPhysics`), clears `HeldBy`, clears API held (`RestoreHeld(null)`), enabling continuous dynamic collision and normal gravity.
+- **Replay Safety**:
+  - Action receipts preserved across save/restore cycles.
+  - Re-executing a restored request ID with identical parameters returns idempotent duplicate receipt (`duplicate = true`).
+  - Re-executing a restored request ID with conflicting parameters returns `"request-id-conflict"`.
+
+### Exact CLI Arguments & Diagnostic Protocol
+The compiled canyon player executable accepts the following command-line flags:
+- `-physicalSave <absolute-path>`: Path to physical save file.
+- `-physicalDiagnosticMode <mode>` (or `-physicalSaveMode <mode>`): Specifies automated diagnostic flow (`save-carried`, `load-carried`, `drop-save-free`, `load-free`, `in-world`).
+- `-physicalEvidence <absolute-directory>` (or `-physicalItemEvidence <dir>`): Directory for `stages.txt`, `summary.json`, `passed.txt`, and `failed.txt`.
+
+#### Coordinator Execution Sequence (4 Separate Processes)
+Each step runs as an independent player process using real inhabitant autonomy and normal `FixedUpdate` scheduling:
+
+1. **Process 1: `save-carried`**
+   ```powershell
+   StarfallCanyon.exe -physicalSave C:\starfall-evidence\saves\carried.json `
+     -physicalDiagnosticMode save-carried `
+     -physicalEvidence C:\starfall-evidence\proc1-save-carried
+   ```
+   - Flow: Inhabitant waits for readiness, pauses autonomy, picks up demonstration item within reach ($\le 0.65\text{ m}$), holds for 20 ticks ($0.4\text{ s}$), verifies unit scale (`lossyScale == Vector3.one`), saves atomic snapshot to `carried.json`, verifies file on disk, flushes `save-carried-passed`, and exits with code 0.
+
+2. **Process 2: `load-carried`**
+   ```powershell
+   StarfallCanyon.exe -physicalSave C:\starfall-evidence\saves\carried.json `
+     -physicalDiagnosticMode load-carried `
+     -physicalEvidence C:\starfall-evidence\proc2-load-carried
+   ```
+   - Flow: Loads `carried.json` at startup, restores item into hand, verifies `IsCarried`, unit scale, and hand attachment, tracks hand for 20 ticks, executes drop action, restores dynamic physics/gravity, waits for settlement ($\le 5.0\text{ s}$, speed $\le 0.03\text{ m/s}$), verifies resting drift $\le 0.02\text{ m}$ over 100 ticks ($2.0\text{ s}$), flushes `load-carried-passed`, and exits with code 0.
+
+3. **Process 3: `drop-save-free`**
+   ```powershell
+   StarfallCanyon.exe -physicalSave C:\starfall-evidence\saves\free.json `
+     -physicalDiagnosticMode drop-save-free `
+     -physicalEvidence C:\starfall-evidence\proc3-drop-save-free
+   ```
+   - Flow: Fresh startup, picks up demonstration item, holds for 20 ticks, drops item, waits for natural settlement ($\le 5.0\text{ s}$), observes resting stability (drift $\le 0.02\text{ m}$ over 100 ticks), saves atomic snapshot to `free.json`, verifies file on disk, flushes `drop-save-free-passed`, and exits with code 0.
+
+4. **Process 4: `load-free`**
+   ```powershell
+   StarfallCanyon.exe -physicalSave C:\starfall-evidence\saves\free.json `
+     -physicalDiagnosticMode load-free `
+     -physicalEvidence C:\starfall-evidence\proc4-load-free
+   ```
+   - Flow: Loads `free.json` at startup, restores item at settled coordinates with dynamic physics and normal gravity, observes stable rest over 50 ticks (drift $\le 0.02\text{ m}$), steps within reach ($\le 0.65\text{ m}$) if needed using normal locomotion, picks up the restored item, verifies transition to carried with unit scale, flushes `load-free-passed`, and exits with code 0.
+
 
 

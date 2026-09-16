@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using CityLife.World;
 
 namespace CityLife.Items
 {
@@ -682,7 +684,394 @@ namespace CityLife.Items
                 Check(snapshot2.position == Vector3.zero, "item-state-egress-clone-protects-position");
             }
 
+            // -------------------------------------------------------------
+            // 12. Restart Persistence, Scope Validation, and Corruption Rejection
+            // -------------------------------------------------------------
+            {
+                string persistWorld = "starfall.persist-test.v1";
+                string persistGen = "gen-persist-01";
+                string persistActor = "actor-persist-01";
+                string tempDir = Path.Combine(Application.temporaryCachePath, "persist-checks-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDir);
+                string saveFile = Path.Combine(tempDir, "test-save.json");
+
+                try
+                {
+                    var liveModel = new ItemModel(persistWorld, persistGen);
+                    liveModel.RegisterDefinition(new ItemDefinition
+                    {
+                        itemTypeId = "stone-tool",
+                        dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                        massKg = 1.5f,
+                        isAnchored = false
+                    });
+                    liveModel.RegisterDefinition(new ItemDefinition
+                    {
+                        itemTypeId = "flint-core",
+                        dimensions = new PhysicalDimensions(0.3f, 0.3f, 0.2f),
+                        massKg = 3.0f,
+                        isAnchored = false
+                    });
+
+                    // Item 1: Free
+                    liveModel.RegisterItem("tool-01", "stone-tool", ItemLocationKind.Free, new Vector3(1f, 2f, 3f), Quaternion.identity);
+
+                    // Item 2: Carried by actor
+                    liveModel.RegisterItem("core-01", "flint-core", ItemLocationKind.Free, new Vector3(0f, 1f, 0f), Quaternion.identity);
+                    var persistAuthority = new BasicItemActionAuthority();
+                    var pickupReceipt = liveModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                    {
+                        requestId = 101,
+                        action = ItemActionKind.Pickup,
+                        actorId = persistActor,
+                        itemId = "core-01"
+                    }, persistAuthority);
+                    Check(pickupReceipt.success, "persistence-setup-pickup-succeeds");
+
+                    // 12.1 Atomic save roundtrip
+                    var snapshotPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    Check(snapshotPayload != null && snapshotPayload.items.Count == 2 && snapshotPayload.receipts.Count >= 1,
+                        "persistence-create-snapshot-captures-free-and-carried");
+
+                    bool saveSuccess = ItemPersistence.SaveAtomic(saveFile, snapshotPayload);
+                    Check(saveSuccess && File.Exists(saveFile), "persistence-save-atomic-creates-file");
+
+                    // 12.2 Atomic load into separate restored model
+                    var restoredModel = new ItemModel(persistWorld, persistGen);
+                    restoredModel.RegisterDefinition(new ItemDefinition
+                    {
+                        itemTypeId = "stone-tool",
+                        dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                        massKg = 1.5f,
+                        isAnchored = false
+                    });
+                    restoredModel.RegisterDefinition(new ItemDefinition
+                    {
+                        itemTypeId = "flint-core",
+                        dimensions = new PhysicalDimensions(0.3f, 0.3f, 0.2f),
+                        massKg = 3.0f,
+                        isAnchored = false
+                    });
+
+                    bool loadOk = ItemPersistence.TryLoad(saveFile, persistWorld, persistGen, persistActor, restoredModel, out var loadedPayload);
+                    Check(loadOk && loadedPayload != null, "persistence-try-load-valid-envelope");
+
+                    bool restoreOk = restoredModel.RestoreSnapshot(loadedPayload);
+                    Check(restoreOk, "persistence-restore-snapshot-into-model");
+
+                    // Verify state fidelity
+                    Check(restoredModel.TryGetItem("tool-01", out var toolSnap) &&
+                          toolSnap.location == ItemLocationKind.Free &&
+                          string.IsNullOrEmpty(toolSnap.holderActorId) &&
+                          Vector3.Distance(toolSnap.position, new Vector3(1f, 2f, 3f)) <= 0.001f,
+                          "persistence-restored-free-item-matches-pose");
+
+                    Check(restoredModel.TryGetItem("core-01", out var coreSnap) &&
+                          coreSnap.location == ItemLocationKind.Carried &&
+                          coreSnap.holderActorId == persistActor,
+                          "persistence-restored-carried-item-matches-holder");
+
+                    // 12.3 Receipt sequence and replay safety across restore
+                    var replayReceipt = restoredModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                    {
+                        requestId = 101,
+                        action = ItemActionKind.Pickup,
+                        actorId = persistActor,
+                        itemId = "core-01"
+                    }, persistAuthority);
+                    Check(replayReceipt.success && replayReceipt.duplicate,
+                        "persistence-replay-retained-receipt-returns-duplicate");
+
+                    var conflictReceipt = restoredModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                    {
+                        requestId = 101,
+                        action = ItemActionKind.Drop,
+                        actorId = persistActor,
+                        itemId = "core-01",
+                        position = Vector3.zero,
+                        rotation = Quaternion.identity
+                    }, persistAuthority);
+                    Check(!conflictReceipt.success && conflictReceipt.code == "request-id-conflict",
+                        "persistence-replay-conflict-rejected-across-restore");
+                    Check(restoredModel.TryGetItem("core-01", out var postConflictSnap) &&
+                          postConflictSnap.location == ItemLocationKind.Carried &&
+                          postConflictSnap.holderActorId == persistActor,
+                        "persistence-replay-conflict-leaves-state-unchanged");
+
+                    // 12.4 Missing save starts fresh without throwing
+                    bool missingOk = ItemPersistence.TryLoad(Path.Combine(tempDir, "nonexistent-save.json"), persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!missingOk, "persistence-missing-save-returns-false-fresh-start");
+
+                    // 12.5 Malformed / corrupt JSON rejection
+                    string corruptFile = Path.Combine(tempDir, "corrupt.json");
+                    File.WriteAllText(corruptFile, "{ schema: malformed json! [[[");
+                    bool corruptOk = ItemPersistence.TryLoad(corruptFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!corruptOk, "persistence-rejects-malformed-json-atomically");
+
+                    // 12.6 Truncated / tampered SHA-256 checksum mismatch rejection
+                    string tamperedFile = Path.Combine(tempDir, "tampered.json");
+                    string goodJson = File.ReadAllText(saveFile);
+                    string tamperedJson = goodJson.Replace("stone-tool", "alien-tool");
+                    File.WriteAllText(tamperedFile, tamperedJson);
+                    bool tamperedOk = ItemPersistence.TryLoad(tamperedFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!tamperedOk, "persistence-rejects-tampered-payload-checksum-mismatch");
+
+                    // 12.7 Foreign world rejection
+                    bool foreignWorldOk = ItemPersistence.TryLoad(saveFile, "alien-world-99", persistGen, persistActor, liveModel, out _);
+                    Check(!foreignWorldOk, "persistence-rejects-foreign-world-atomically");
+
+                    // 12.8 Foreign generation rejection
+                    bool foreignGenOk = ItemPersistence.TryLoad(saveFile, persistWorld, "foreign-gen-99", persistActor, liveModel, out _);
+                    Check(!foreignGenOk, "persistence-rejects-foreign-generation-atomically");
+
+                    // 12.9 Foreign actor rejection
+                    bool foreignActorOk = ItemPersistence.TryLoad(saveFile, persistWorld, persistGen, "foreign-actor-99", liveModel, out _);
+                    Check(!foreignActorOk, "persistence-rejects-foreign-actor-atomically");
+
+                    // 12.10 Duplicate item ID rejection
+                    var dupPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    dupPayload.items.Add(new SavedItemRecord
+                    {
+                        itemId = "tool-01",
+                        itemTypeId = "stone-tool",
+                        location = ItemLocationKind.Free,
+                        massKg = 1.5f,
+                        dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                        position = Vector3.up,
+                        rotation = Quaternion.identity
+                    });
+                    string dupFile = Path.Combine(tempDir, "duplicate.json");
+                    ItemPersistence.SaveAtomic(dupFile, dupPayload);
+                    bool dupOk = ItemPersistence.TryLoad(dupFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!dupOk, "persistence-rejects-duplicate-item-ids-atomically");
+
+                    // 12.11 Non-finite coordinate rejection
+                    var nanPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    nanPayload.items[0].position = new Vector3(float.NaN, 0, 0);
+                    string nanFile = Path.Combine(tempDir, "nan.json");
+                    ItemPersistence.SaveAtomic(nanFile, nanPayload);
+                    bool nanOk = ItemPersistence.TryLoad(nanFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!nanOk, "persistence-rejects-nan-coordinates-atomically");
+
+                    // 12.12 Unsupported location state rejection (no stored/placed in this slice)
+                    var unsuppPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    unsuppPayload.items[0].location = ItemLocationKind.Stored;
+                    string unsuppFile = Path.Combine(tempDir, "unsupported-state.json");
+                    ItemPersistence.SaveAtomic(unsuppFile, unsuppPayload);
+                    bool unsuppOk = ItemPersistence.TryLoad(unsuppFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!unsuppOk, "persistence-rejects-unsupported-stored-placed-states");
+
+                    // 12.13 Live definition mismatch rejection
+                    var mismatchPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    mismatchPayload.items[0].massKg = 999.0f;
+                    string mismatchFile = Path.Combine(tempDir, "mismatch.json");
+                    ItemPersistence.SaveAtomic(mismatchFile, mismatchPayload);
+                    bool mismatchOk = ItemPersistence.TryLoad(mismatchFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!mismatchOk, "persistence-rejects-live-definition-mass-mismatch");
+
+                    // 12.14 Dimension NaN rejection (cannot bypass finite check)
+                    var dimNanPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    dimNanPayload.items[0].dimensions = new PhysicalDimensions(float.NaN, 0.15f, 0.1f);
+                    string dimNanFile = Path.Combine(tempDir, "dim-nan.json");
+                    ItemPersistence.SaveAtomic(dimNanFile, dimNanPayload);
+                    bool dimNanOk = ItemPersistence.TryLoad(dimNanFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!dimNanOk, "persistence-rejects-nan-dimensions-atomically");
+
+                    // 12.15 Dimension non-positive rejection
+                    var dimZeroPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    dimZeroPayload.items[0].dimensions = new PhysicalDimensions(0f, 0.15f, 0.1f);
+                    string dimZeroFile = Path.Combine(tempDir, "dim-zero.json");
+                    ItemPersistence.SaveAtomic(dimZeroFile, dimZeroPayload);
+                    bool dimZeroOk = ItemPersistence.TryLoad(dimZeroFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!dimZeroOk, "persistence-rejects-nonpositive-dimensions-atomically");
+
+                    // 12.16 Negative lastUpdatedTick rejection
+                    var negTickPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    negTickPayload.items[0].lastUpdatedTick = -1;
+                    string negTickFile = Path.Combine(tempDir, "neg-tick.json");
+                    ItemPersistence.SaveAtomic(negTickFile, negTickPayload);
+                    bool negTickOk = ItemPersistence.TryLoad(negTickFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!negTickOk, "persistence-rejects-negative-last-updated-tick");
+
+                    // 12.17 Future lastUpdatedTick rejection
+                    var futureTickPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    futureTickPayload.items[0].lastUpdatedTick = futureTickPayload.tick + 100;
+                    string futureTickFile = Path.Combine(tempDir, "future-tick.json");
+                    ItemPersistence.SaveAtomic(futureTickFile, futureTickPayload);
+                    bool futureTickOk = ItemPersistence.TryLoad(futureTickFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!futureTickOk, "persistence-rejects-future-last-updated-tick");
+
+                    // 12.18 MaxReceiptLedgerSize bounded receipt rejection
+                    var ledgerOverflowPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    for (int i = 0; i < ItemModel.MaxReceiptLedgerSize + 5; i++)
+                    {
+                        ledgerOverflowPayload.receipts.Add(new SavedReceiptRecord
+                        {
+                            requestId = 2000 + i,
+                            signature = "sig-" + i,
+                            receipt = new ItemReceipt
+                            {
+                                requestId = 2000 + i,
+                                worldId = persistWorld,
+                                generationId = persistGen,
+                                actorId = persistActor,
+                                action = ItemActionKind.Pickup,
+                                itemId = "tool-01",
+                                success = true,
+                                totalCarriedMassKg = 1.5f
+                            }
+                        });
+                    }
+                    string ledgerFile = Path.Combine(tempDir, "ledger-overflow.json");
+                    ItemPersistence.SaveAtomic(ledgerFile, ledgerOverflowPayload);
+                    bool ledgerOk = ItemPersistence.TryLoad(ledgerFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!ledgerOk, "persistence-rejects-ledger-size-overflow-atomically");
+
+                    // 12.19 Foreign receipt scope rejection
+                    var foreignReceiptPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    foreignReceiptPayload.receipts[0].receipt.worldId = "foreign-world-scope";
+                    string foreignRecFile = Path.Combine(tempDir, "foreign-receipt.json");
+                    ItemPersistence.SaveAtomic(foreignRecFile, foreignReceiptPayload);
+                    bool foreignRecOk = ItemPersistence.TryLoad(foreignRecFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!foreignRecOk, "persistence-rejects-foreign-receipt-scope-atomically");
+
+                    // 12.20 Non-finite receipt carried mass rejection
+                    var nanRecMassPayload = ItemPersistence.CreateSnapshot(liveModel, persistActor);
+                    nanRecMassPayload.receipts[0].receipt.totalCarriedMassKg = float.NaN;
+                    string nanRecMassFile = Path.Combine(tempDir, "nan-rec-mass.json");
+                    ItemPersistence.SaveAtomic(nanRecMassFile, nanRecMassPayload);
+                    bool nanRecMassOk = ItemPersistence.TryLoad(nanRecMassFile, persistWorld, persistGen, persistActor, liveModel, out _);
+                    Check(!nanRecMassOk, "persistence-rejects-nonfinite-receipt-carried-mass");
+
+                    // 12.21 Absolute path requirement for SaveAtomic
+                    bool relativeSaveOk = ItemPersistence.SaveAtomic("relative/test/path.json", snapshotPayload);
+                    Check(!relativeSaveOk, "persistence-save-atomic-requires-explicit-absolute-path");
+
+                    // 12.22-12.26 RestoreRuntime preflight guards and state preservation
+                    var testActorGo = new GameObject("test-actor-restore");
+                    var testHandGo = new GameObject("test-hand-restore");
+                    testHandGo.transform.SetParent(testActorGo.transform, false);
+                    var testItemGo = new GameObject("test-item-restore");
+                    var testInteractable = testItemGo.AddComponent<NpcInteractable>();
+                    testInteractable.StableId = "tool-01";
+                    testInteractable.WorldId = persistWorld;
+                    testInteractable.Kind = NpcObjectKind.Item;
+                    testInteractable.Permission = true;
+
+                    var testPhys = testItemGo.AddComponent<PhysicalItem>();
+                    testPhys.itemId = "tool-01";
+                    testPhys.itemTypeId = "stone-tool";
+                    testPhys.massKg = 1.5f;
+                    testPhys.dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f);
+                    testPhys.ConfigureComponents();
+                    testPhys.Bind(liveModel, persistWorld, persistGen);
+
+                    var testActions = new CityLife.World.NpcActionApi(persistActor, persistWorld, testActorGo.transform, testHandGo.transform, new[] { testInteractable });
+                    testActions.PhysicalModel = liveModel;
+                    testActions.PhysicalAuthority = persistAuthority;
+
+                    var singleItemPayload = new PhysicalSavePayload
+                    {
+                        worldId = persistWorld,
+                        generationId = persistGen,
+                        actorId = persistActor,
+                        tick = 10,
+                        items = new List<SavedItemRecord>
+                        {
+                            new SavedItemRecord
+                            {
+                                itemId = "tool-01",
+                                itemTypeId = "stone-tool",
+                                location = ItemLocationKind.Free,
+                                massKg = 1.5f,
+                                dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                                position = new Vector3(5f, 0.5f, 5f),
+                                rotation = Quaternion.identity,
+                                lastUpdatedTick = 10
+                            }
+                        }
+                    };
+
+                    try
+                    {
+                        var foreignModel = new ItemModel(persistWorld, persistGen);
+                        foreignModel.RegisterDefinition(new ItemDefinition
+                        {
+                            itemTypeId = "stone-tool",
+                            dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                            massKg = 1.5f
+                        });
+                        foreignModel.RegisterItem("tool-01", "stone-tool", ItemLocationKind.Free, Vector3.zero, Quaternion.identity);
+
+                        // 12.22 actions.PhysicalModel != model rejection
+                        bool mismatchModelRes = ItemPersistence.RestoreRuntime(singleItemPayload, foreignModel, testActions, testPhys, testInteractable);
+                        Check(!mismatchModelRes, "persistence-restore-rejects-actions-model-mismatch");
+                        Check(foreignModel.TryGetItem("tool-01", out var postMismatchSnap) && postMismatchSnap.position == Vector3.zero,
+                            "persistence-restore-mismatch-model-leaves-state-unchanged");
+
+                        // 12.23 actions.WorldId != payload.worldId rejection
+                        var wrongWorldActions = new CityLife.World.NpcActionApi(persistActor, "wrong-world-99", testActorGo.transform, testHandGo.transform, new[] { testInteractable });
+                        wrongWorldActions.PhysicalModel = foreignModel;
+                        bool mismatchWorldRes = ItemPersistence.RestoreRuntime(singleItemPayload, foreignModel, wrongWorldActions, testPhys, testInteractable);
+                        Check(!mismatchWorldRes, "persistence-restore-rejects-actions-world-mismatch");
+
+                        // 12.24 actions.AgentId != payload.actorId rejection
+                        var wrongActorActions = new CityLife.World.NpcActionApi("wrong-actor-99", persistWorld, testActorGo.transform, testHandGo.transform, new[] { testInteractable });
+                        wrongActorActions.PhysicalModel = foreignModel;
+                        bool mismatchActorRes = ItemPersistence.RestoreRuntime(singleItemPayload, foreignModel, wrongActorActions, testPhys, testInteractable);
+                        Check(!mismatchActorRes, "persistence-restore-rejects-actions-actor-mismatch");
+
+                        // 12.25 ensure supported single-item live model set before clearing state
+                        // liveModel has 2 items (tool-01 and core-01); restoring singleItemPayload must reject without clearing liveModel
+                        bool multiItemLiveRes = ItemPersistence.RestoreRuntime(singleItemPayload, liveModel, testActions, testPhys, testInteractable);
+                        Check(!multiItemLiveRes, "persistence-restore-rejects-multi-item-live-model-set");
+                        Check(liveModel.ItemCount == 2 && liveModel.TryGetItem("core-01", out _),
+                            "persistence-restore-rejected-preserves-live-model-set");
+
+                        // 12.26 reject unrelated actions.Held for Free as well as Carried
+                        var unrelatedGo = new GameObject("unrelated-held");
+                        try
+                        {
+                            var unrelatedInteractable = unrelatedGo.AddComponent<NpcInteractable>();
+                            unrelatedInteractable.StableId = "unrelated-01";
+                            unrelatedInteractable.WorldId = persistWorld;
+                            unrelatedInteractable.Kind = NpcObjectKind.Item;
+                            var actionsWithHeld = new CityLife.World.NpcActionApi(persistActor, persistWorld, testActorGo.transform, testHandGo.transform, new[] { testInteractable, unrelatedInteractable });
+                            actionsWithHeld.PhysicalModel = foreignModel;
+                            unrelatedGo.transform.SetParent(testHandGo.transform, false);
+                            unrelatedInteractable.HeldBy = persistActor;
+                            actionsWithHeld.RestoreHeld(unrelatedInteractable);
+
+                            bool heldForFreeRes = ItemPersistence.RestoreRuntime(singleItemPayload, foreignModel, actionsWithHeld, testPhys, testInteractable);
+                            Check(!heldForFreeRes, "persistence-restore-rejects-unrelated-held-for-free");
+                            Check(actionsWithHeld.Held == unrelatedInteractable, "persistence-restore-rejected-held-remains-unchanged");
+                        }
+                        finally
+                        {
+                            UnityEngine.Object.DestroyImmediate(unrelatedGo);
+                        }
+                    }
+                    finally
+                    {
+                        UnityEngine.Object.DestroyImmediate(testItemGo);
+                        UnityEngine.Object.DestroyImmediate(testActorGo);
+                    }
+                }
+                finally
+                {
+                    try
+                    {
+                        if (Directory.Exists(tempDir))
+                        {
+                            Directory.Delete(tempDir, true);
+                        }
+                    }
+                    catch { }
+                }
+            }
+
             return passed;
         }
     }
 }
+
