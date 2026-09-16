@@ -96,6 +96,16 @@ namespace CityLife.Items
         private bool currentInContact;
         private float currentPen;
 
+        private bool observeWalkAnimation;
+        private readonly StringBuilder walkAnimCsv = new StringBuilder();
+        private Transform leftThighBone;
+        private Transform leftShinBone;
+        private Transform leftFootBone;
+        private Transform rightThighBone;
+        private Transform rightShinBone;
+        private Transform rightFootBone;
+        private bool bonesResolved;
+
         private struct SlopeCandidate
         {
             public int dirIndex;
@@ -259,6 +269,161 @@ namespace CityLife.Items
             {
                 autoSyncFailures++;
             }
+        }
+
+        private void ResolveBones(Animator anim)
+        {
+            if (anim == null) return;
+            if (anim.isHuman)
+            {
+                leftThighBone = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+                leftShinBone = anim.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+                leftFootBone = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+                rightThighBone = anim.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+                rightShinBone = anim.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+                rightFootBone = anim.GetBoneTransform(HumanBodyBones.RightFoot);
+                if (leftThighBone != null && leftShinBone != null && leftFootBone != null &&
+                    rightThighBone != null && rightShinBone != null && rightFootBone != null)
+                {
+                    bonesResolved = true;
+                }
+            }
+        }
+
+        private static void AppendBone(StringBuilder sb, Transform bone, Transform actorRoot)
+        {
+            Quaternion rot = bone != null ? bone.localRotation : Quaternion.identity;
+            Vector3 pos = bone != null ? (actorRoot != null ? actorRoot.InverseTransformPoint(bone.position) : bone.localPosition) : Vector3.zero;
+            sb.Append(',').Append(rot.x.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(rot.y.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(rot.z.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(rot.w.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(pos.x.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(pos.y.ToString("F4", CultureInfo.InvariantCulture))
+              .Append(',').Append(pos.z.ToString("F4", CultureInfo.InvariantCulture));
+        }
+
+        private void InitWalkAnimationCsv()
+        {
+            walkAnimCsv.Clear();
+            walkAnimCsv.AppendLine(
+                "frame,time_s,actor_pos_x,actor_pos_y,actor_pos_z,actual_speed," +
+                "anim_enabled,anim_speed,anim_update_mode," +
+                "state_hash,normalized_time,loop,clip_name,clip_len," +
+                "in_transition,trans_norm_time,trans_duration,next_state_hash," +
+                "l_thigh_rot_x,l_thigh_rot_y,l_thigh_rot_z,l_thigh_rot_w,l_thigh_pos_x,l_thigh_pos_y,l_thigh_pos_z," +
+                "l_shin_rot_x,l_shin_rot_y,l_shin_rot_z,l_shin_rot_w,l_shin_pos_x,l_shin_pos_y,l_shin_pos_z," +
+                "l_foot_rot_x,l_foot_rot_y,l_foot_rot_z,l_foot_rot_w,l_foot_pos_x,l_foot_pos_y,l_foot_pos_z," +
+                "r_thigh_rot_x,r_thigh_rot_y,r_thigh_rot_z,r_thigh_rot_w,r_thigh_pos_x,r_thigh_pos_y,r_thigh_pos_z," +
+                "r_shin_rot_x,r_shin_rot_y,r_shin_rot_z,r_shin_rot_w,r_shin_pos_x,r_shin_pos_y,r_shin_pos_z," +
+                "r_foot_rot_x,r_foot_rot_y,r_foot_rot_z,r_foot_rot_w,r_foot_pos_x,r_foot_pos_y,r_foot_pos_z");
+        }
+
+        private void FlushWalkAnimationCsv()
+        {
+            if (string.IsNullOrEmpty(EvidenceDirectory) || walkAnimCsv.Length == 0)
+                return;
+
+            try
+            {
+                Directory.CreateDirectory(EvidenceDirectory);
+                string path = Path.Combine(EvidenceDirectory, "carried_walk_animation.csv");
+                File.WriteAllText(path, walkAnimCsv.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[PhysicalCanyonDropDiagnostic] Failed writing carried_walk_animation.csv: {ex.Message}");
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (!observeWalkAnimation || bootstrap == null || bootstrap.Brain == null)
+                return;
+
+            var actor = bootstrap.Brain.Actor;
+            if (actor == null) return;
+
+            var anim = actor.Animator;
+            if (anim == null) return;
+
+            if (!bonesResolved)
+            {
+                ResolveBones(anim);
+            }
+
+            int stateHash = 0;
+            float normTime = 0f;
+            int isLoop = 0;
+            float stateLen = 0f;
+            if (anim.layerCount > 0)
+            {
+                var stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+                stateHash = stateInfo.shortNameHash;
+                normTime = stateInfo.normalizedTime;
+                isLoop = stateInfo.loop ? 1 : 0;
+                stateLen = stateInfo.length;
+            }
+
+            string clipName = "none";
+            float clipLen = stateLen;
+            if (anim.layerCount > 0)
+            {
+                var clipInfos = anim.GetCurrentAnimatorClipInfo(0);
+                if (clipInfos != null && clipInfos.Length > 0 && clipInfos[0].clip != null)
+                {
+                    clipName = clipInfos[0].clip.name.Replace(',', '_').Replace('"', '_');
+                    clipLen = clipInfos[0].clip.length;
+                }
+            }
+
+            int inTransition = 0;
+            float transNormTime = 0f;
+            float transDuration = 0f;
+            int nextStateHash = 0;
+            if (anim.layerCount > 0 && anim.IsInTransition(0))
+            {
+                inTransition = 1;
+                var transInfo = anim.GetAnimatorTransitionInfo(0);
+                transNormTime = transInfo.normalizedTime;
+                transDuration = transInfo.duration;
+                var nextState = anim.GetNextAnimatorStateInfo(0);
+                nextStateHash = nextState.shortNameHash;
+            }
+
+            Vector3 pos = actor.transform.position;
+            walkAnimCsv.Append(Time.frameCount).Append(',')
+              .Append(Time.time.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(pos.x.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(pos.y.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(pos.z.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(actor.ActualSpeed.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(anim.enabled ? 1 : 0).Append(',')
+              .Append(anim.speed.ToString("F3", CultureInfo.InvariantCulture)).Append(',')
+              .Append(anim.updateMode.ToString()).Append(',')
+              .Append(stateHash).Append(',')
+              .Append(normTime.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(isLoop).Append(',')
+              .Append(clipName).Append(',')
+              .Append(clipLen.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(inTransition).Append(',')
+              .Append(transNormTime.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(transDuration.ToString("F4", CultureInfo.InvariantCulture)).Append(',')
+              .Append(nextStateHash);
+
+            AppendBone(walkAnimCsv, leftThighBone, actor.transform);
+            AppendBone(walkAnimCsv, leftShinBone, actor.transform);
+            AppendBone(walkAnimCsv, leftFootBone, actor.transform);
+            AppendBone(walkAnimCsv, rightThighBone, actor.transform);
+            AppendBone(walkAnimCsv, rightShinBone, actor.transform);
+            AppendBone(walkAnimCsv, rightFootBone, actor.transform);
+            walkAnimCsv.AppendLine();
+        }
+
+        private void OnDisable()
+        {
+            observeWalkAnimation = false;
+            FlushWalkAnimationCsv();
         }
 
         private IEnumerator Start()
@@ -503,6 +668,12 @@ namespace CityLife.Items
 
             // 4. Walk existing route (bounded 50s)
             diagnosticState = "Walking to slope";
+            InitWalkAnimationCsv();
+            if (bootstrap.Brain != null && bootstrap.Brain.Actor != null)
+            {
+                ResolveBones(bootstrap.Brain.Actor.Animator);
+            }
+            observeWalkAnimation = true;
             bootstrap.Brain.SetPossession(true);
             float walkStartTime = Time.time;
             bool walkFailed = false;
@@ -552,6 +723,9 @@ namespace CityLife.Items
                     break;
                 }
             }
+
+            observeWalkAnimation = false;
+            FlushWalkAnimationCsv();
 
             // Stop input and motion before arrival check
             bootstrap.Brain.ManualDirection = Vector3.zero;
@@ -898,6 +1072,9 @@ namespace CityLife.Items
 
         private IEnumerator FinalizeExit(CanyonDropSummary summary, string radialCsv, string fixedCsv)
         {
+            observeWalkAnimation = false;
+            FlushWalkAnimationCsv();
+
             if (summary != null)
             {
                 summary.status = diagnosticStatus;
