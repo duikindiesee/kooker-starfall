@@ -13,6 +13,8 @@ namespace CityLife.Items
     /// Standalone opt-in compiled-player contact diagnostic validating physical settling,
     /// dynamic friction, penetration limits, and rest drift across 6 sequential cube/ramp cases.
     /// Runs strictly on normal fixed-step simulation (never Physics.Simulate or timeScale modification).
+    /// Supports discriminating comparison between baseline raw Rigidbody initialization and
+    /// production PhysicalItem component initialization via opt-in -physicalContactProduction flag.
     /// Instruments failures honestly without widening thresholds, discarding impact samples, or tuning settings.
     /// </summary>
     [DisallowMultipleComponent]
@@ -48,14 +50,34 @@ namespace CityLife.Items
             public int totalSteps;
             public string firstContactScreenshot;
             public string caseEndScreenshot;
+
+            // Production component & model sync comparison telemetry
+            public bool productionComponentMode;
+            public bool physicalItemValid;
+            public bool physicalItemMassMatch;
+            public bool physicalItemDimensionsMatch;
+            public int modelSyncCount;
+            public int modelSyncFailures;
+            public float maxModelPosErrorM;
+            public float maxModelRotErrorDeg;
+            public float actualBodyMassKg;
+            public bool actualBodyIsKinematic;
+            public bool actualBodyUseGravity;
+            public string actualCollisionDetectionMode;
+            public bool actualColliderEnabled;
+            public bool actualColliderIsTrigger;
         }
 
         [Serializable]
         public sealed class DiagnosticSummary
         {
-            public string schema = "starfall.physical-contact-diagnostic.v1";
+            public string schema = "starfall.physical-contact-diagnostic.v2";
             public string status;
-            public string scope = "Isolated staged physics fixture contact diagnostic; separate from normal human play acceptance";
+            public string scope;
+            public bool productionComponentMode;
+            public string initializationMode;
+            public string diagnosticWorldId;
+            public string diagnosticGenerationId;
             public string applicationVersion;
             public string hardwareProcessor;
             public string hardwareGpu;
@@ -194,6 +216,10 @@ namespace CityLife.Items
         }
 
         public string EvidenceDirectory { get; set; }
+        public bool ProductionComponentMode { get; set; }
+
+        private const string DiagnosticWorldId = "starfall.diagnostic-contact.v1";
+        private const string DiagnosticGenerationId = "gen-diag-01";
 
         private readonly Vector3 fixtureOrigin = new Vector3(1500f, 300f, 1500f);
         private readonly Vector3 rampSize = new Vector3(8.0f, 1.0f, 16.0f);
@@ -228,6 +254,8 @@ namespace CityLife.Items
         private float currentPenetration;
         private float currentRbPenetration;
         private float currentDisplacement;
+        private float currentModelPosError;
+        private int currentModelSyncCount;
 
         private bool suiteCompleted;
         private bool suiteAllPassed;
@@ -278,6 +306,7 @@ namespace CityLife.Items
             host.hideFlags = HideFlags.DontSave;
             var diagnostic = host.AddComponent<PhysicalContactDiagnostic>();
             diagnostic.EvidenceDirectory = evidenceDir;
+            diagnostic.ProductionComponentMode = HasCommandLineArg("-physicalContactProduction");
         }
 
         private static string GetCommandLineArg(string name)
@@ -291,6 +320,19 @@ namespace CityLife.Items
                 }
             }
             return null;
+        }
+
+        private static bool HasCommandLineArg(string name)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private IEnumerator Start()
@@ -321,7 +363,8 @@ namespace CityLife.Items
                 "col_impulse_x,col_impulse_y,col_impulse_z," +
                 "col_body_pos_x,col_body_pos_y,col_body_pos_z," +
                 "col_body_rot_x,col_body_rot_y,col_body_rot_z,col_body_rot_w," +
-                "col_exit_count,col_is_sleeping,col_is_stale");
+                "col_exit_count,col_is_sleeping,col_is_stale," +
+                "production_mode,sync_result,model_pos_error_m");
 
             // Setup camera targeting
             targetCamera = Camera.main;
@@ -428,7 +471,8 @@ namespace CityLife.Items
                             normalClearanceM = 1.0f,
                             actualInitialVerticalClearanceM = -1f,
                             impactSanityBoundReferenceM = 1.0f,
-                            impactSanityBoundMPerS = 2.0f * Mathf.Sqrt(2.0f * Mathf.Abs(Physics.gravity.y) * 1.0f) + 0.25f
+                            impactSanityBoundMPerS = 2.0f * Mathf.Sqrt(2.0f * Mathf.Abs(Physics.gravity.y) * 1.0f) + 0.25f,
+                            productionComponentMode = ProductionComponentMode
                         });
                         suiteAllPassed = false;
                     }
@@ -512,6 +556,8 @@ namespace CityLife.Items
             currentPenetration = 0f;
             currentRbPenetration = 0f;
             currentDisplacement = 0f;
+            currentModelPosError = 0f;
+            currentModelSyncCount = 0;
             currentCaseState = "Setup";
 
             // Create anchored ramp for this case
@@ -573,29 +619,101 @@ namespace CityLife.Items
             cubeGo.transform.rotation = dropRot;
             cubeGo.transform.localScale = Vector3.one;
 
-            var cubeCol = cubeGo.AddComponent<BoxCollider>();
-            cubeCol.size = Vector3.one * cubeSize;
-            cubeCol.center = Vector3.zero;
-            cubeCol.sharedMaterial = diagnosticFrictionMaterial;
+            BoxCollider cubeCol = null;
+            Rigidbody cubeRb = null;
+            PhysicalItem physItem = null;
+            ItemModel caseModel = null;
 
-            var cubeRb = cubeGo.AddComponent<Rigidbody>();
-            cubeRb.mass = massKg;
-            cubeRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            cubeRb.linearDamping = 0.05f;
-            cubeRb.angularDamping = 0.05f;
-            cubeRb.useGravity = true;
-            cubeRb.isKinematic = false;
-            cubeRb.linearVelocity = Vector3.zero;
-            cubeRb.angularVelocity = Vector3.zero;
+            string itemId = $"diagnostic-cube-{caseIndex}";
+            string itemTypeId = $"diagnostic-type-{caseIndex}";
+
+            bool physValid = false;
+            bool massMatch = false;
+            bool dimsMatch = false;
+            string failureReason = null;
+
+            if (ProductionComponentMode)
+            {
+                // Real existing PhysicalItem component initialization bound to separate diagnostic-only ItemModel
+                caseModel = new ItemModel(DiagnosticWorldId, DiagnosticGenerationId);
+                var def = new ItemDefinition
+                {
+                    itemTypeId = itemTypeId,
+                    massKg = massKg,
+                    dimensions = new PhysicalDimensions(cubeSize, cubeSize, cubeSize),
+                    isContainer = false,
+                    isAnchored = false,
+                    requiresSupportToPlace = false
+                };
+                caseModel.RegisterDefinition(def);
+                caseModel.RegisterItem(itemId, itemTypeId, ItemLocationKind.Free, dropPos, dropRot);
+
+                physItem = cubeGo.AddComponent<PhysicalItem>();
+                physItem.itemId = itemId;
+                physItem.itemTypeId = itemTypeId;
+                physItem.massKg = massKg;
+                physItem.dimensions = new PhysicalDimensions(cubeSize, cubeSize, cubeSize);
+                physItem.isAnchored = false;
+
+                // Use existing PhysicalItem class ConfigureComponents() without reimplementation
+                physItem.ConfigureComponents();
+                physItem.Bind(caseModel, DiagnosticWorldId, DiagnosticGenerationId);
+
+                cubeCol = physItem.ItemCollider as BoxCollider;
+                cubeRb = physItem.Body;
+
+                // Validate production PhysicalItem
+                physValid = physItem.IsValid();
+                massMatch = Mathf.Abs(physItem.massKg - massKg) <= 0.0001f &&
+                            cubeRb != null && Mathf.Abs(cubeRb.mass - massKg) <= 0.0001f;
+                dimsMatch = Mathf.Abs(physItem.dimensions.width - cubeSize) <= 0.0001f &&
+                            Mathf.Abs(physItem.dimensions.height - cubeSize) <= 0.0001f &&
+                            Mathf.Abs(physItem.dimensions.depth - cubeSize) <= 0.0001f &&
+                            cubeCol != null &&
+                            Mathf.Abs(cubeCol.size.x - cubeSize) <= 0.0001f &&
+                            Mathf.Abs(cubeCol.size.y - cubeSize) <= 0.0001f &&
+                            Mathf.Abs(cubeCol.size.z - cubeSize) <= 0.0001f;
+
+                if (!physValid || !massMatch || !dimsMatch)
+                {
+                    failureReason = $"Production PhysicalItem invalid (valid={physValid}, massMatch={massMatch}, dimsMatch={dimsMatch})";
+                }
+            }
+            else
+            {
+                // Raw Rigidbody initialization (baseline)
+                cubeCol = cubeGo.AddComponent<BoxCollider>();
+                cubeCol.size = Vector3.one * cubeSize;
+                cubeCol.center = Vector3.zero;
+
+                cubeRb = cubeGo.AddComponent<Rigidbody>();
+                cubeRb.mass = massKg;
+                cubeRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+                cubeRb.linearDamping = 0.05f;
+                cubeRb.angularDamping = 0.05f;
+                cubeRb.useGravity = true;
+                cubeRb.isKinematic = false;
+                cubeRb.linearVelocity = Vector3.zero;
+                cubeRb.angularVelocity = Vector3.zero;
+            }
+
+            // Keep friction assigned unchanged
+            if (cubeCol != null) cubeCol.sharedMaterial = diagnosticFrictionMaterial;
 
             // Sample actual Rigidbody and Collider parameters for logging
-            sampledCollisionDetectionMode = cubeRb.collisionDetectionMode.ToString();
-            sampledInterpolation = cubeRb.interpolation.ToString();
-            sampledSolverIterations = cubeRb.solverIterations;
-            sampledSolverVelocityIterations = cubeRb.solverVelocityIterations;
-            sampledSleepThreshold = cubeRb.sleepThreshold;
-            sampledMaxDepenetrationVelocity = cubeRb.maxDepenetrationVelocity;
-            sampledContactOffset = cubeCol.contactOffset;
+            if (cubeRb != null)
+            {
+                sampledCollisionDetectionMode = cubeRb.collisionDetectionMode.ToString();
+                sampledInterpolation = cubeRb.interpolation.ToString();
+                sampledSolverIterations = cubeRb.solverIterations;
+                sampledSolverVelocityIterations = cubeRb.solverVelocityIterations;
+                sampledSleepThreshold = cubeRb.sleepThreshold;
+                sampledMaxDepenetrationVelocity = cubeRb.maxDepenetrationVelocity;
+            }
+            if (cubeCol != null)
+            {
+                sampledContactOffset = cubeCol.contactOffset;
+            }
 
             var cubeVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubeVisual.name = "Visual";
@@ -635,10 +753,14 @@ namespace CityLife.Items
             float maxRbPenetration = 0f;
             float maxObsDisplacement = 0f;
 
+            int modelSyncCount = 0;
+            int modelSyncFailures = 0;
+            float maxModelPosError = 0f;
+            float maxModelRotError = 0f;
+
             bool penetrationExceeded = false;
             bool displacementExceeded = false;
             bool sanitySpeedExceeded = false;
-            string failureReason = null;
 
             bool firstContactScreenshotRequested = false;
             string firstContactScreenshotName = $"case_{caseIndex + 1}_{caseName}_firstcontact.png";
@@ -656,8 +778,8 @@ namespace CityLife.Items
                 stepIndex++;
 
                 Vector3 pos = cubeGo.transform.position;
-                Vector3 vel = cubeRb.linearVelocity;
-                Vector3 angVel = cubeRb.angularVelocity;
+                Vector3 vel = cubeRb != null ? cubeRb.linearVelocity : Vector3.zero;
+                Vector3 angVel = cubeRb != null ? cubeRb.angularVelocity : Vector3.zero;
                 float linSpeed = vel.magnitude;
                 float angSpeedDeg = angVel.magnitude * Mathf.Rad2Deg;
 
@@ -685,8 +807,8 @@ namespace CityLife.Items
                 currentPenetration = penetration;
 
                 // Also compute penetration using Rigidbody pose for independent comparison
-                Vector3 rbPos = cubeRb.position;
-                Quaternion rbRot = cubeRb.rotation;
+                Vector3 rbPos = cubeRb != null ? cubeRb.position : pos;
+                Quaternion rbRot = cubeRb != null ? cubeRb.rotation : cubeGo.transform.rotation;
                 Vector3 tfPos = cubeGo.transform.position;
                 Quaternion tfRot = cubeGo.transform.rotation;
                 float poseDeltaPos = Vector3.Distance(rbPos, tfPos);
@@ -721,8 +843,49 @@ namespace CityLife.Items
                 Vector3 colBodyPos = tracker.LastCallbackBodyPos;
                 Quaternion colBodyRot = tracker.LastCallbackBodyRot;
                 int exitCount = tracker.ExitCount;
-                bool isSleeping = cubeRb.IsSleeping();
+                bool isSleeping = cubeRb != null && cubeRb.IsSleeping();
                 bool isStale = !tracker.HasReceivedCollision || callbackAge > (dt * 1.5f);
+
+                // Production component ItemModel synchronization & snapshot verification
+                int syncResult = 0;
+                float modelPosError = 0f;
+
+                if (ProductionComponentMode && physItem != null && caseModel != null)
+                {
+                    bool synced = physItem.SyncToModel();
+                    if (synced)
+                    {
+                        modelSyncCount++;
+                        if (caseModel.TryGetItem(itemId, out var snap) &&
+                            snap.location == ItemLocationKind.Free &&
+                            string.Equals(snap.itemId, itemId, StringComparison.Ordinal) &&
+                            string.Equals(snap.itemTypeId, itemTypeId, StringComparison.Ordinal))
+                        {
+                            modelPosError = Vector3.Distance(snap.position, cubeGo.transform.position);
+                            float modelRotError = Quaternion.Angle(snap.rotation, cubeGo.transform.rotation);
+                            maxModelPosError = Mathf.Max(maxModelPosError, modelPosError);
+                            maxModelRotError = Mathf.Max(maxModelRotError, modelRotError);
+                            syncResult = (modelPosError <= 0.001f && modelRotError <= 0.01f) ? 1 : 0;
+                            if (syncResult == 0)
+                            {
+                                modelSyncFailures++;
+                            }
+                        }
+                        else
+                        {
+                            modelSyncFailures++;
+                            syncResult = 0;
+                        }
+                    }
+                    else
+                    {
+                        modelSyncFailures++;
+                        syncResult = 0;
+                    }
+                }
+
+                currentModelPosError = modelPosError;
+                currentModelSyncCount = modelSyncCount;
 
                 // Append CSV row with original columns followed by new telemetry columns
                 csvBuilder.Append(string.Format(CultureInfo.InvariantCulture,
@@ -738,7 +901,8 @@ namespace CityLife.Items
                     "{47:F4},{48:F4},{49:F4}," +
                     "{50:F4},{51:F4},{52:F4}," +
                     "{53:F4},{54:F4},{55:F4},{56:F4}," +
-                    "{57},{58},{59}\n",
+                    "{57},{58},{59}," +
+                    "{60},{61},{62:F5}\n",
                     caseIndex, caseName, stepIndex, caseElapsed,
                     pos.x, pos.y, pos.z,
                     vel.x, vel.y, vel.z, linSpeed,
@@ -760,7 +924,11 @@ namespace CityLife.Items
                     impulse.x, impulse.y, impulse.z,
                     colBodyPos.x, colBodyPos.y, colBodyPos.z,
                     colBodyRot.x, colBodyRot.y, colBodyRot.z, colBodyRot.w,
-                    exitCount, isSleeping ? 1 : 0, isStale ? 1 : 0));
+                    exitCount, isSleeping ? 1 : 0, isStale ? 1 : 0,
+                    // Production component and model sync
+                    ProductionComponentMode ? 1 : 0,
+                    syncResult,
+                    modelPosError));
 
                 // State progression
                 if (!firstContactAchieved)
@@ -863,6 +1031,20 @@ namespace CityLife.Items
             else if (!observationCompleted && failureReason == null)
                 failureReason = "Observation phase incomplete before case ended";
 
+            if (ProductionComponentMode)
+            {
+                if (!physValid || !massMatch || !dimsMatch || modelSyncCount != stepIndex || modelSyncFailures != 0)
+                {
+                    if (failureReason == null)
+                    {
+                        if (!physValid || !massMatch || !dimsMatch)
+                            failureReason = $"Production PhysicalItem invalid (valid={physValid}, massMatch={massMatch}, dimsMatch={dimsMatch})";
+                        else
+                            failureReason = $"Model sync failure (count={modelSyncCount}/{stepIndex}, failures={modelSyncFailures}, maxPosErr={maxModelPosError:F5}m, maxRotErr={maxModelRotError:F3}deg)";
+                    }
+                }
+            }
+
             bool passed = firstContactAchieved && settled && observationCompleted &&
                           !penetrationExceeded && !displacementExceeded && !sanitySpeedExceeded &&
                           !obsContactLost && failureReason == null;
@@ -881,6 +1063,13 @@ namespace CityLife.Items
 
                 yield return new WaitForEndOfFrame();
             }
+
+            float actualBodyMass = cubeRb != null ? cubeRb.mass : -1f;
+            bool actualBodyKinematic = cubeRb != null && cubeRb.isKinematic;
+            bool actualBodyGravity = cubeRb != null && cubeRb.useGravity;
+            string actualCcd = cubeRb != null ? cubeRb.collisionDetectionMode.ToString() : "none";
+            bool actualColEnabled = cubeCol != null && cubeCol.enabled;
+            bool actualColTrigger = cubeCol != null && cubeCol.isTrigger;
 
             var summary = new CaseSummary
             {
@@ -910,7 +1099,23 @@ namespace CityLife.Items
                 contactAchieved = firstContactAchieved,
                 totalSteps = stepIndex,
                 firstContactScreenshot = firstContactScreenshotRequested ? firstContactScreenshotName : "none",
-                caseEndScreenshot = caseEndScreenshotName
+                caseEndScreenshot = caseEndScreenshotName,
+
+                // Production component and model sync results
+                productionComponentMode = ProductionComponentMode,
+                physicalItemValid = physValid,
+                physicalItemMassMatch = massMatch,
+                physicalItemDimensionsMatch = dimsMatch,
+                modelSyncCount = modelSyncCount,
+                modelSyncFailures = modelSyncFailures,
+                maxModelPosErrorM = maxModelPosError,
+                maxModelRotErrorDeg = maxModelRotError,
+                actualBodyMassKg = actualBodyMass,
+                actualBodyIsKinematic = actualBodyKinematic,
+                actualBodyUseGravity = actualBodyGravity,
+                actualCollisionDetectionMode = actualCcd,
+                actualColliderEnabled = actualColEnabled,
+                actualColliderIsTrigger = actualColTrigger
             };
 
             Debug.Log($"[PhysicalContactDiagnostic] Case {caseIndex + 1}/6: {caseName} => {summary.status}");
@@ -934,10 +1139,24 @@ namespace CityLife.Items
                 // Write per-fixed-step CSV
                 File.WriteAllText(Path.Combine(EvidenceDirectory, "fixed_steps.csv"), csvBuilder.ToString());
 
+                string scopeText = ProductionComponentMode
+                    ? "STAGED PRODUCTION COMPONENT CONTACT; NOT guarded inhabitant pickup/drop, which cannot occur at isolatedfixture1500,300,1500 without teleport"
+                    : "Isolated staged physics fixture contact diagnostic; separate from normal human play acceptance";
+
+                string initMode = ProductionComponentMode
+                    ? "Production PhysicalItem (ConfigureComponents + ItemModel sync)"
+                    : "Raw Rigidbody baseline";
+
                 // Build summary JSON with full physical telemetry and settings
                 var summary = new DiagnosticSummary
                 {
+                    schema = "starfall.physical-contact-diagnostic.v2",
                     status = suiteAllPassed ? "PASS" : "FAIL",
+                    scope = scopeText,
+                    productionComponentMode = ProductionComponentMode,
+                    initializationMode = initMode,
+                    diagnosticWorldId = DiagnosticWorldId,
+                    diagnosticGenerationId = DiagnosticGenerationId,
                     applicationVersion = Application.version,
                     hardwareProcessor = SystemInfo.processorType,
                     hardwareGpu = SystemInfo.graphicsDeviceName,
@@ -988,15 +1207,16 @@ namespace CityLife.Items
                 string json = JsonUtility.ToJson(summary, true);
                 File.WriteAllText(Path.Combine(EvidenceDirectory, "summary.json"), json);
 
+                string modeTag = ProductionComponentMode ? "[PRODUCTION COMPONENT MODE]" : "[BASELINE MODE]";
                 if (suiteAllPassed)
                 {
                     File.WriteAllText(Path.Combine(EvidenceDirectory, "passed.txt"),
-                        $"PHYSICAL CONTACT DIAGNOSTIC PASS ({suitePassedCount}/{results.Count} cases)\nTotal duration: {totalDuration:F2}s\n");
+                        $"PHYSICAL CONTACT DIAGNOSTIC PASS {modeTag} ({suitePassedCount}/{results.Count} cases)\nTotal duration: {totalDuration:F2}s\n");
                 }
                 else
                 {
                     File.WriteAllText(Path.Combine(EvidenceDirectory, "failed.txt"),
-                        $"PHYSICAL CONTACT DIAGNOSTIC FAIL ({suitePassedCount}/{results.Count} passed)\nTotal duration: {totalDuration:F2}s\n");
+                        $"PHYSICAL CONTACT DIAGNOSTIC FAIL {modeTag} ({suitePassedCount}/{results.Count} passed)\nTotal duration: {totalDuration:F2}s\n");
                 }
 
                 Debug.Log($"[PhysicalContactDiagnostic] Evidence written to '{EvidenceDirectory}'.");
@@ -1024,31 +1244,38 @@ namespace CityLife.Items
 
             var boxStyle = new GUIStyle(GUI.skin.box);
             // Positioned cleanly below the upper-left decision panel (which ends at y=310-330)
-            GUILayout.BeginArea(new Rect(20, 340, 520, 270), boxStyle);
+            GUILayout.BeginArea(new Rect(20, 340, 540, 280), boxStyle);
             GUILayout.Space(4);
 
             var titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = 13,
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.cyan }
             };
-            GUILayout.Label("PHYSICAL CONTACT DIAGNOSTIC [STAGED FIXTURE]", titleStyle);
+            string headerText = ProductionComponentMode
+                ? "PHYSICAL CONTACT DIAGNOSTIC [STAGED PRODUCTION COMPONENT CONTACT]"
+                : "PHYSICAL CONTACT DIAGNOSTIC [STAGED FIXTURE]";
+            GUILayout.Label(headerText, titleStyle);
 
             var textStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 12,
+                fontSize = 11,
                 normal = { textColor = Color.white }
             };
 
             if (isRunning)
             {
-                GUILayout.Label($"Case {currentCaseIndex + 1}/6: {currentCaseName}", textStyle);
+                GUILayout.Label($"Case {currentCaseIndex + 1}/6: {currentCaseName} ({(ProductionComponentMode ? "Production PhysicalItem" : "Raw Rigidbody")})", textStyle);
                 GUILayout.Label($"State: {currentCaseState} | Elapsed: {currentCaseElapsed:F2}s / 10.0s", textStyle);
                 GUILayout.Label($"Linear Speed: {currentLinearSpeed:F4} m/s (settle/obs <= 0.03)", textStyle);
                 GUILayout.Label($"Angular Speed: {currentAngularSpeedDeg:F2} deg/s (settle/obs <= 3.0)", textStyle);
                 GUILayout.Label($"Penetration (Tf/Rb): {currentPenetration:F4}m / {currentRbPenetration:F4}m (limit <= 0.01)", textStyle);
                 GUILayout.Label($"Observation Disp: {currentDisplacement:F4} m (limit <= 0.02)", textStyle);
+                if (ProductionComponentMode)
+                {
+                    GUILayout.Label($"Model Sync: count={currentModelSyncCount}, posError={currentModelPosError:F5}m", textStyle);
+                }
             }
             else if (suiteCompleted)
             {
