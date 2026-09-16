@@ -13,6 +13,7 @@ namespace CityLife.Items
     /// Standalone opt-in compiled-player contact diagnostic validating physical settling,
     /// dynamic friction, penetration limits, and rest drift across 6 sequential cube/ramp cases.
     /// Runs strictly on normal fixed-step simulation (never Physics.Simulate or timeScale modification).
+    /// Instruments failures honestly without widening thresholds, discarding impact samples, or tuning settings.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PhysicalContactDiagnostic : MonoBehaviour
@@ -29,6 +30,9 @@ namespace CityLife.Items
             public string status;
             public float normalClearanceM;
             public float actualInitialVerticalClearanceM;
+            public float dropPositionX;
+            public float dropPositionY;
+            public float dropPositionZ;
             public float settleDurationSeconds;
             public float observationDisplacementM;
             public float maxLinearSpeedMPerS;
@@ -37,10 +41,13 @@ namespace CityLife.Items
             public float maxObservationAngularSpeedDegPerS;
             public bool observationContactLost;
             public float maxPenetrationM;
+            public float maxRbPenetrationM;
             public float impactSanityBoundReferenceM;
             public float impactSanityBoundMPerS;
             public bool contactAchieved;
             public int totalSteps;
+            public string firstContactScreenshot;
+            public string caseEndScreenshot;
         }
 
         [Serializable]
@@ -67,10 +74,32 @@ namespace CityLife.Items
             public float rampThickness;
             public float rampLength;
             public float impactSanityBoundReferenceM;
+
+            // Rigidbody and collider physical runtime instrumentation
+            public string rigidbodyCollisionDetectionMode;
+            public string rigidbodyInterpolation;
+            public int rigidbodySolverIterations;
+            public int rigidbodySolverVelocityIterations;
+            public float rigidbodySleepThreshold;
+            public float rigidbodyMaxDepenetrationVelocity;
+            public float colliderContactOffset;
+
+            // Global physics engine settings
+            public int globalDefaultSolverIterations;
+            public int globalDefaultSolverVelocityIterations;
+            public bool globalAutoSyncTransforms;
+            public string globalSimulationMode;
+
+            // Staged fixture origin coordinates
+            public float fixtureOriginX;
+            public float fixtureOriginY;
+            public float fixtureOriginZ;
+
             public float totalDurationSeconds;
             public int totalCases;
             public int passedCases;
             public int failedCases;
+            public string terminalScreenshot;
             public CaseSummary[] cases;
         }
 
@@ -78,23 +107,89 @@ namespace CityLife.Items
         {
             public bool InContact { get; private set; }
             public Collider ExpectedCollider;
+            public Rigidbody TargetBody;
+
+            public int ExitCount { get; private set; }
+            public float LastCallbackFixedTime { get; private set; } = -1f;
+            public int LastContactCount { get; private set; }
+            public float LastMinSeparation { get; private set; }
+            public Vector3 LastNormal { get; private set; }
+            public Vector3 LastPoint { get; private set; }
+            public Vector3 LastRelativeVelocity { get; private set; }
+            public Vector3 LastImpulse { get; private set; }
+            public Vector3 LastCallbackBodyPos { get; private set; }
+            public Quaternion LastCallbackBodyRot { get; private set; } = Quaternion.identity;
+            public bool HasReceivedCollision { get; private set; }
+
+            private void UpdateCollision(Collision collision)
+            {
+                if (ExpectedCollider != null && collision.collider != ExpectedCollider)
+                    return;
+
+                InContact = true;
+                HasReceivedCollision = true;
+                LastCallbackFixedTime = Time.fixedTime;
+                LastContactCount = collision.contactCount;
+                LastRelativeVelocity = collision.relativeVelocity;
+                LastImpulse = collision.impulse;
+
+                if (TargetBody != null)
+                {
+                    LastCallbackBodyPos = TargetBody.position;
+                    LastCallbackBodyRot = TargetBody.rotation;
+                }
+                else
+                {
+                    LastCallbackBodyPos = transform.position;
+                    LastCallbackBodyRot = transform.rotation;
+                }
+
+                float minSep = float.MaxValue;
+                Vector3 minNormal = Vector3.zero;
+                Vector3 minPoint = Vector3.zero;
+
+                for (int i = 0; i < collision.contactCount; i++)
+                {
+                    ContactPoint cp = collision.GetContact(i);
+                    if (cp.separation < minSep)
+                    {
+                        minSep = cp.separation;
+                        minNormal = cp.normal;
+                        minPoint = cp.point;
+                    }
+                }
+
+                if (collision.contactCount > 0)
+                {
+                    LastMinSeparation = minSep;
+                    LastNormal = minNormal;
+                    LastPoint = minPoint;
+                }
+                else
+                {
+                    LastMinSeparation = 0f;
+                    LastNormal = Vector3.zero;
+                    LastPoint = Vector3.zero;
+                }
+            }
 
             private void OnCollisionEnter(Collision collision)
             {
-                if (ExpectedCollider == null || collision.collider == ExpectedCollider)
-                    InContact = true;
+                UpdateCollision(collision);
             }
 
             private void OnCollisionStay(Collision collision)
             {
-                if (ExpectedCollider == null || collision.collider == ExpectedCollider)
-                    InContact = true;
+                UpdateCollision(collision);
             }
 
             private void OnCollisionExit(Collision collision)
             {
                 if (ExpectedCollider == null || collision.collider == ExpectedCollider)
+                {
                     InContact = false;
+                    ExitCount++;
+                }
             }
         }
 
@@ -114,6 +209,15 @@ namespace CityLife.Items
         private Material sharedVisualMaterial;
         private PhysicsMaterial diagnosticFrictionMaterial;
 
+        // Captured actual parameters for summary logging
+        private string sampledCollisionDetectionMode = "ContinuousDynamic";
+        private string sampledInterpolation = "None";
+        private int sampledSolverIterations = 6;
+        private int sampledSolverVelocityIterations = 1;
+        private float sampledSleepThreshold = 0.005f;
+        private float sampledMaxDepenetrationVelocity = 10f;
+        private float sampledContactOffset = 0.01f;
+
         private bool isRunning;
         private int currentCaseIndex;
         private string currentCaseName = "initializing";
@@ -122,6 +226,7 @@ namespace CityLife.Items
         private float currentLinearSpeed;
         private float currentAngularSpeedDeg;
         private float currentPenetration;
+        private float currentRbPenetration;
         private float currentDisplacement;
 
         private bool suiteCompleted;
@@ -130,7 +235,7 @@ namespace CityLife.Items
         private float suiteTotalTime;
         private float autoQuitCountdown = -1f;
 
-        private readonly StringBuilder csvBuilder = new StringBuilder(65536);
+        private readonly StringBuilder csvBuilder = new StringBuilder(131072);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void OnSceneLoaded()
@@ -202,8 +307,21 @@ namespace CityLife.Items
             isRunning = true;
             float suiteStartTime = Time.realtimeSinceStartup;
 
-            // Initialize CSV header
-            csvBuilder.AppendLine("case_index,case_name,step_index,time_s,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,vel_mag,ang_vel_x,ang_vel_y,ang_vel_z,ang_vel_deg,in_contact,penetration_m");
+            // Initialize CSV header with original columns followed by new telemetry columns
+            csvBuilder.AppendLine(
+                "case_index,case_name,step_index,time_s,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,vel_mag,ang_vel_x,ang_vel_y,ang_vel_z,ang_vel_deg,in_contact,penetration_m," +
+                "rb_pos_x,rb_pos_y,rb_pos_z,rb_rot_x,rb_rot_y,rb_rot_z,rb_rot_w," +
+                "tf_pos_x,tf_pos_y,tf_pos_z,tf_rot_x,tf_rot_y,tf_rot_z,tf_rot_w," +
+                "pose_delta_pos_m,pose_delta_rot_deg," +
+                "rb_penetration_m," +
+                "col_callback_time_s,col_callback_age_s,col_contact_count,col_min_separation_m," +
+                "col_normal_x,col_normal_y,col_normal_z," +
+                "col_point_x,col_point_y,col_point_z," +
+                "col_rel_vel_x,col_rel_vel_y,col_rel_vel_z," +
+                "col_impulse_x,col_impulse_y,col_impulse_z," +
+                "col_body_pos_x,col_body_pos_y,col_body_pos_z," +
+                "col_body_rot_x,col_body_rot_y,col_body_rot_z,col_body_rot_w," +
+                "col_exit_count,col_is_sleeping,col_is_stale");
 
             // Setup camera targeting
             targetCamera = Camera.main;
@@ -241,10 +359,10 @@ namespace CityLife.Items
             var lightGo = new GameObject("PHYSICAL CONTACT DIAGNOSTIC - Light");
             lightGo.hideFlags = HideFlags.DontSave;
             lightGo.transform.SetParent(fixtureRoot.transform, false);
-            lightGo.transform.localPosition = new Vector3(-3f, 8f, -4f);
+            lightGo.transform.localPosition = new Vector3(-3f, 10f, -6f);
             var ptLight = lightGo.AddComponent<Light>();
             ptLight.type = LightType.Point;
-            ptLight.range = 35f;
+            ptLight.range = 45f;
             ptLight.intensity = 2.5f;
             ptLight.color = Color.white;
 
@@ -341,8 +459,22 @@ namespace CityLife.Items
             suiteCompleted = true;
             isRunning = false;
 
-            // Write output evidence
-            WriteEvidence(results, suiteTotalTime);
+            // Capture rendered terminal status screenshot after all cases complete
+            string terminalScreenshotName = "terminal_status.png";
+            if (!string.IsNullOrEmpty(EvidenceDirectory))
+            {
+                try
+                {
+                    string terminalScreenshotPath = Path.Combine(EvidenceDirectory, terminalScreenshotName);
+                    ScreenCapture.CaptureScreenshot(terminalScreenshotPath);
+                }
+                catch { }
+
+                yield return new WaitForEndOfFrame();
+            }
+
+            // Write output evidence files
+            WriteEvidence(results, suiteTotalTime, terminalScreenshotName);
 
             // Don't autoquit until 5s after final evidence
             for (float t = 5.0f; t > 0f; t -= Time.unscaledDeltaTime)
@@ -378,6 +510,7 @@ namespace CityLife.Items
             currentLinearSpeed = 0f;
             currentAngularSpeedDeg = 0f;
             currentPenetration = 0f;
+            currentRbPenetration = 0f;
             currentDisplacement = 0f;
             currentCaseState = "Setup";
 
@@ -455,6 +588,15 @@ namespace CityLife.Items
             cubeRb.linearVelocity = Vector3.zero;
             cubeRb.angularVelocity = Vector3.zero;
 
+            // Sample actual Rigidbody and Collider parameters for logging
+            sampledCollisionDetectionMode = cubeRb.collisionDetectionMode.ToString();
+            sampledInterpolation = cubeRb.interpolation.ToString();
+            sampledSolverIterations = cubeRb.solverIterations;
+            sampledSolverVelocityIterations = cubeRb.solverVelocityIterations;
+            sampledSleepThreshold = cubeRb.sleepThreshold;
+            sampledMaxDepenetrationVelocity = cubeRb.maxDepenetrationVelocity;
+            sampledContactOffset = cubeCol.contactOffset;
+
             var cubeVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubeVisual.name = "Visual";
             var cvCol = cubeVisual.GetComponent<Collider>();
@@ -468,6 +610,7 @@ namespace CityLife.Items
 
             var tracker = cubeGo.AddComponent<ContactTracker>();
             tracker.ExpectedCollider = rampCol;
+            tracker.TargetBody = cubeRb;
 
             // Conservative impact sanity bound: 2 * sqrt(2 * abs(gravity.y) * dropHeightRef) + 0.25
             const float sanityBoundReferenceHeight = 1.0f;
@@ -489,12 +632,17 @@ namespace CityLife.Items
             float maxObsAngularSpeedDeg = 0f;
             bool obsContactLost = false;
             float maxPenetration = 0f;
+            float maxRbPenetration = 0f;
             float maxObsDisplacement = 0f;
 
             bool penetrationExceeded = false;
             bool displacementExceeded = false;
             bool sanitySpeedExceeded = false;
             string failureReason = null;
+
+            bool firstContactScreenshotRequested = false;
+            string firstContactScreenshotName = $"case_{caseIndex + 1}_{caseName}_firstcontact.png";
+            string caseEndScreenshotName = $"case_{caseIndex + 1}_{caseName}_end.png";
 
             currentCaseState = "Falling";
 
@@ -527,7 +675,7 @@ namespace CityLife.Items
                         failureReason = $"Linear speed {linSpeed:F3} m/s exceeded impact sanity bound {impactSanityBound:F3} m/s";
                 }
 
-                // Check penetration via Physics.ComputePenetration each sample
+                // Check penetration via Physics.ComputePenetration each sample using Transform pose (original)
                 bool overlap = Physics.ComputePenetration(
                     cubeCol, pos, cubeGo.transform.rotation,
                     rampCol, rampGo.transform.position, rampGo.transform.rotation,
@@ -535,6 +683,22 @@ namespace CityLife.Items
                 float penetration = overlap ? penDist : 0.0f;
                 maxPenetration = Mathf.Max(maxPenetration, penetration);
                 currentPenetration = penetration;
+
+                // Also compute penetration using Rigidbody pose for independent comparison
+                Vector3 rbPos = cubeRb.position;
+                Quaternion rbRot = cubeRb.rotation;
+                Vector3 tfPos = cubeGo.transform.position;
+                Quaternion tfRot = cubeGo.transform.rotation;
+                float poseDeltaPos = Vector3.Distance(rbPos, tfPos);
+                float poseDeltaRot = Quaternion.Angle(rbRot, tfRot);
+
+                bool rbOverlap = Physics.ComputePenetration(
+                    cubeCol, rbPos, rbRot,
+                    rampCol, rampRb.position, rampRb.rotation,
+                    out Vector3 rbPenDir, out float rbPenDist);
+                float rbPenetration = rbOverlap ? rbPenDist : 0.0f;
+                maxRbPenetration = Mathf.Max(maxRbPenetration, rbPenetration);
+                currentRbPenetration = rbPenetration;
 
                 if (penetration > 0.01f)
                 {
@@ -545,14 +709,58 @@ namespace CityLife.Items
 
                 bool inContact = tracker.InContact || (overlap && penDist > 0.0001f);
 
-                // Append CSV row
+                // Collision callback details from tracker
+                float callbackTime = tracker.LastCallbackFixedTime;
+                float callbackAge = tracker.HasReceivedCollision ? (Time.fixedTime - tracker.LastCallbackFixedTime) : -1f;
+                int contactCount = tracker.LastContactCount;
+                float minSep = tracker.LastMinSeparation;
+                Vector3 norm = tracker.LastNormal;
+                Vector3 pt = tracker.LastPoint;
+                Vector3 relVel = tracker.LastRelativeVelocity;
+                Vector3 impulse = tracker.LastImpulse;
+                Vector3 colBodyPos = tracker.LastCallbackBodyPos;
+                Quaternion colBodyRot = tracker.LastCallbackBodyRot;
+                int exitCount = tracker.ExitCount;
+                bool isSleeping = cubeRb.IsSleeping();
+                bool isStale = !tracker.HasReceivedCollision || callbackAge > (dt * 1.5f);
+
+                // Append CSV row with original columns followed by new telemetry columns
                 csvBuilder.Append(string.Format(CultureInfo.InvariantCulture,
-                    "{0},{1},{2},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4},{13:F4},{14:F2},{15},{16:F5}\n",
+                    "{0},{1},{2},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4},{13:F4},{14:F2},{15},{16:F5}," +
+                    "{17:F4},{18:F4},{19:F4},{20:F4},{21:F4},{22:F4},{23:F4}," +
+                    "{24:F4},{25:F4},{26:F4},{27:F4},{28:F4},{29:F4},{30:F4}," +
+                    "{31:F5},{32:F3}," +
+                    "{33:F5}," +
+                    "{34:F4},{35:F4},{36},{37:F5}," +
+                    "{38:F4},{39:F4},{40:F4}," +
+                    "{41:F4},{42:F4},{43:F4}," +
+                    "{44:F4},{45:F4},{46:F4}," +
+                    "{47:F4},{48:F4},{49:F4}," +
+                    "{50:F4},{51:F4},{52:F4}," +
+                    "{53:F4},{54:F4},{55:F4},{56:F4}," +
+                    "{57},{58},{59}\n",
                     caseIndex, caseName, stepIndex, caseElapsed,
                     pos.x, pos.y, pos.z,
                     vel.x, vel.y, vel.z, linSpeed,
                     angVel.x, angVel.y, angVel.z, angSpeedDeg,
-                    inContact ? 1 : 0, penetration));
+                    inContact ? 1 : 0, penetration,
+                    // Rigidbody pose
+                    rbPos.x, rbPos.y, rbPos.z, rbRot.x, rbRot.y, rbRot.z, rbRot.w,
+                    // Transform pose
+                    tfPos.x, tfPos.y, tfPos.z, tfRot.x, tfRot.y, tfRot.z, tfRot.w,
+                    // Pose delta
+                    poseDeltaPos, poseDeltaRot,
+                    // Rigidbody penetration
+                    rbPenetration,
+                    // Callback contact details
+                    callbackTime, callbackAge, contactCount, minSep,
+                    norm.x, norm.y, norm.z,
+                    pt.x, pt.y, pt.z,
+                    relVel.x, relVel.y, relVel.z,
+                    impulse.x, impulse.y, impulse.z,
+                    colBodyPos.x, colBodyPos.y, colBodyPos.z,
+                    colBodyRot.x, colBodyRot.y, colBodyRot.z, colBodyRot.w,
+                    exitCount, isSleeping ? 1 : 0, isStale ? 1 : 0));
 
                 // State progression
                 if (!firstContactAchieved)
@@ -562,6 +770,18 @@ namespace CityLife.Items
                         firstContactAchieved = true;
                         firstContactTime = caseElapsed;
                         currentCaseState = "Settling (allow <=5s)";
+
+                        // Capture honest visual snapshot around first contact while objects are live
+                        if (!firstContactScreenshotRequested && !string.IsNullOrEmpty(EvidenceDirectory))
+                        {
+                            firstContactScreenshotRequested = true;
+                            try
+                            {
+                                string shotPath = Path.Combine(EvidenceDirectory, firstContactScreenshotName);
+                                ScreenCapture.CaptureScreenshot(shotPath);
+                            }
+                            catch { }
+                        }
                     }
                 }
                 else if (!settled)
@@ -649,6 +869,19 @@ namespace CityLife.Items
 
             float finalSettleDuration = settled ? (settledTime - firstContactTime) : -1f;
 
+            // Capture rendered end-of-case screenshot BEFORE destroying objects, waiting for frame render
+            if (!string.IsNullOrEmpty(EvidenceDirectory))
+            {
+                try
+                {
+                    string endShotPath = Path.Combine(EvidenceDirectory, caseEndScreenshotName);
+                    ScreenCapture.CaptureScreenshot(endShotPath);
+                }
+                catch { }
+
+                yield return new WaitForEndOfFrame();
+            }
+
             var summary = new CaseSummary
             {
                 caseIndex = caseIndex,
@@ -660,6 +893,9 @@ namespace CityLife.Items
                 status = passed ? "PASS" : ("FAIL: " + failureReason),
                 normalClearanceM = normalClearance,
                 actualInitialVerticalClearanceM = actualVerticalClearance,
+                dropPositionX = dropPos.x,
+                dropPositionY = dropPos.y,
+                dropPositionZ = dropPos.z,
                 settleDurationSeconds = finalSettleDuration,
                 observationDisplacementM = maxObsDisplacement,
                 maxLinearSpeedMPerS = maxLinearSpeed,
@@ -668,10 +904,13 @@ namespace CityLife.Items
                 maxObservationAngularSpeedDegPerS = maxObsAngularSpeedDeg,
                 observationContactLost = obsContactLost,
                 maxPenetrationM = maxPenetration,
+                maxRbPenetrationM = maxRbPenetration,
                 impactSanityBoundReferenceM = sanityBoundReferenceHeight,
                 impactSanityBoundMPerS = impactSanityBound,
                 contactAchieved = firstContactAchieved,
-                totalSteps = stepIndex
+                totalSteps = stepIndex,
+                firstContactScreenshot = firstContactScreenshotRequested ? firstContactScreenshotName : "none",
+                caseEndScreenshot = caseEndScreenshotName
             };
 
             Debug.Log($"[PhysicalContactDiagnostic] Case {caseIndex + 1}/6: {caseName} => {summary.status}");
@@ -683,7 +922,7 @@ namespace CityLife.Items
             onComplete(summary);
         }
 
-        private void WriteEvidence(List<CaseSummary> results, float totalDuration)
+        private void WriteEvidence(List<CaseSummary> results, float totalDuration, string terminalScreenshot)
         {
             if (string.IsNullOrEmpty(EvidenceDirectory))
                 return;
@@ -695,7 +934,7 @@ namespace CityLife.Items
                 // Write per-fixed-step CSV
                 File.WriteAllText(Path.Combine(EvidenceDirectory, "fixed_steps.csv"), csvBuilder.ToString());
 
-                // Build summary JSON
+                // Build summary JSON with full physical telemetry and settings
                 var summary = new DiagnosticSummary
                 {
                     status = suiteAllPassed ? "PASS" : "FAIL",
@@ -717,10 +956,32 @@ namespace CityLife.Items
                     rampThickness = rampSize.y,
                     rampLength = rampSize.z,
                     impactSanityBoundReferenceM = 1.0f,
+
+                    // Actual Rigidbody & Collider properties
+                    rigidbodyCollisionDetectionMode = sampledCollisionDetectionMode,
+                    rigidbodyInterpolation = sampledInterpolation,
+                    rigidbodySolverIterations = sampledSolverIterations,
+                    rigidbodySolverVelocityIterations = sampledSolverVelocityIterations,
+                    rigidbodySleepThreshold = sampledSleepThreshold,
+                    rigidbodyMaxDepenetrationVelocity = sampledMaxDepenetrationVelocity,
+                    colliderContactOffset = sampledContactOffset,
+
+                    // Global physics settings
+                    globalDefaultSolverIterations = Physics.defaultSolverIterations,
+                    globalDefaultSolverVelocityIterations = Physics.defaultSolverVelocityIterations,
+                    globalAutoSyncTransforms = Physics.autoSyncTransforms,
+                    globalSimulationMode = Physics.simulationMode.ToString(),
+
+                    // Staged fixture coordinates
+                    fixtureOriginX = fixtureOrigin.x,
+                    fixtureOriginY = fixtureOrigin.y,
+                    fixtureOriginZ = fixtureOrigin.z,
+
                     totalDurationSeconds = totalDuration,
                     totalCases = results.Count,
                     passedCases = suitePassedCount,
                     failedCases = results.Count - suitePassedCount,
+                    terminalScreenshot = terminalScreenshot,
                     cases = results.ToArray()
                 };
 
@@ -748,29 +1009,31 @@ namespace CityLife.Items
 
         private void LateUpdate()
         {
+            // Aim camera from high enough on the opposite slope (-Z side) to frame top face and impacting cube across all 6 cases
             if (aimCamera && targetCamera != null)
             {
-                targetCamera.transform.position = fixtureOrigin + new Vector3(-6f, 4.5f, -7f);
-                targetCamera.transform.LookAt(fixtureOrigin + new Vector3(0f, 1.2f, 0f));
+                targetCamera.transform.position = fixtureOrigin + new Vector3(-9f, 14f, -18f);
+                targetCamera.transform.LookAt(fixtureOrigin + new Vector3(0f, 1.5f, 0f));
             }
         }
 
         private void OnGUI()
         {
             Color oldBg = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.08f, 0.08f, 0.12f, 0.90f);
+            GUI.backgroundColor = new Color(0.04f, 0.05f, 0.08f, 0.98f);
 
             var boxStyle = new GUIStyle(GUI.skin.box);
-            GUILayout.BeginArea(new Rect(20, 20, 520, 240), boxStyle);
+            // Positioned cleanly below the upper-left decision panel (which ends at y=310-330)
+            GUILayout.BeginArea(new Rect(20, 340, 520, 270), boxStyle);
             GUILayout.Space(4);
 
             var titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 15,
+                fontSize = 14,
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.cyan }
             };
-            GUILayout.Label("PHYSICAL CONTACT DIAGNOSTIC", titleStyle);
+            GUILayout.Label("PHYSICAL CONTACT DIAGNOSTIC [STAGED FIXTURE]", titleStyle);
 
             var textStyle = new GUIStyle(GUI.skin.label)
             {
@@ -782,9 +1045,9 @@ namespace CityLife.Items
             {
                 GUILayout.Label($"Case {currentCaseIndex + 1}/6: {currentCaseName}", textStyle);
                 GUILayout.Label($"State: {currentCaseState} | Elapsed: {currentCaseElapsed:F2}s / 10.0s", textStyle);
-                GUILayout.Label($"Linear Speed: {currentLinearSpeed:F4} m/s (limit <= 0.03)", textStyle);
-                GUILayout.Label($"Angular Speed: {currentAngularSpeedDeg:F2} deg/s (limit <= 3.0)", textStyle);
-                GUILayout.Label($"Penetration: {currentPenetration:F4} m (limit <= 0.01)", textStyle);
+                GUILayout.Label($"Linear Speed: {currentLinearSpeed:F4} m/s (settle/obs <= 0.03)", textStyle);
+                GUILayout.Label($"Angular Speed: {currentAngularSpeedDeg:F2} deg/s (settle/obs <= 3.0)", textStyle);
+                GUILayout.Label($"Penetration (Tf/Rb): {currentPenetration:F4}m / {currentRbPenetration:F4}m (limit <= 0.01)", textStyle);
                 GUILayout.Label($"Observation Disp: {currentDisplacement:F4} m (limit <= 0.02)", textStyle);
             }
             else if (suiteCompleted)
