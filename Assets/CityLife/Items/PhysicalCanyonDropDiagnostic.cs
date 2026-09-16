@@ -106,6 +106,10 @@ namespace CityLife.Items
         private Transform rightFootBone;
         private bool bonesResolved;
 
+        private NpcPlayerControls playerControls;
+        private bool originalExternalMovementInput;
+        private bool originalControlsStateCaptured;
+
         private struct SlopeCandidate
         {
             public int dirIndex;
@@ -290,6 +294,33 @@ namespace CityLife.Items
             }
         }
 
+        private static NpcPlayerControls FindControlsForBrain(NpcAutonomy brain)
+        {
+            if (brain == null) return null;
+            var allControls = FindObjectsByType<NpcPlayerControls>(FindObjectsSortMode.None);
+            for (int i = 0; i < allControls.Length; i++)
+            {
+                if (allControls[i].Brain == brain)
+                    return allControls[i];
+            }
+            return null;
+        }
+
+        private void RestoreMovementInput()
+        {
+            if (!originalControlsStateCaptured) return;
+
+            if (bootstrap != null && bootstrap.Brain != null)
+            {
+                bootstrap.Brain.ManualDirection = Vector3.zero;
+            }
+            if (playerControls != null)
+            {
+                playerControls.ExternalMovementInput = originalExternalMovementInput;
+            }
+            originalControlsStateCaptured = false;
+        }
+
         private static void AppendBone(StringBuilder sb, Transform bone, Transform actorRoot)
         {
             Quaternion rot = bone != null ? bone.localRotation : Quaternion.identity;
@@ -424,6 +455,7 @@ namespace CityLife.Items
         {
             observeWalkAnimation = false;
             FlushWalkAnimationCsv();
+            RestoreMovementInput();
         }
 
         private IEnumerator Start()
@@ -673,6 +705,16 @@ namespace CityLife.Items
             {
                 ResolveBones(bootstrap.Brain.Actor.Animator);
             }
+            if (bootstrap.Brain != null && !originalControlsStateCaptured)
+            {
+                playerControls = FindControlsForBrain(bootstrap.Brain);
+                if (playerControls != null)
+                {
+                    originalExternalMovementInput = playerControls.ExternalMovementInput;
+                    originalControlsStateCaptured = true;
+                    playerControls.ExternalMovementInput = true;
+                }
+            }
             observeWalkAnimation = true;
             bootstrap.Brain.SetPossession(true);
             float walkStartTime = Time.time;
@@ -727,8 +769,10 @@ namespace CityLife.Items
             observeWalkAnimation = false;
             FlushWalkAnimationCsv();
 
+            // Clear scripted direction and restore external movement input before releasing possession
+            RestoreMovementInput();
+
             // Stop input and motion before arrival check
-            bootstrap.Brain.ManualDirection = Vector3.zero;
             bootstrap.Brain.SetPossession(false);
             bootstrap.Brain.Pause();
             if (bootstrap.Brain.Actor != null)
@@ -1119,7 +1163,8 @@ namespace CityLife.Items
 
             observeAutoSync = false;
 
-            // Graceful cleanup: restore original brain / control state
+            // Graceful cleanup: restore movement input and original brain state
+            RestoreMovementInput();
             if (bootstrap != null && bootstrap.Brain != null && originalBrainStateCaptured)
             {
                 bootstrap.Brain.SetPossession(originalBrainPossessed);

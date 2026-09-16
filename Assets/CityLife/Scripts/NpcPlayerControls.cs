@@ -20,6 +20,7 @@ namespace CityLife.World
         public bool SuppressInput;
         public bool SuppressView;
         public bool PersistentMouseCapture;
+        public bool ExternalMovementInput;
         [Range(.04f, .3f)] public float LookSensitivity = .12f;
         public Vector3 CameraMinimum = new Vector3(-22, .7f, -22), CameraMaximum = new Vector3(22, 18, 22);
         private bool resumeCapture;
@@ -56,7 +57,8 @@ namespace CityLife.World
         private void Update()
         {
             if (!initialized || !Brain.Ready) return;
-            Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
+            if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
+            cameraMotion = Vector3.zero;
             if (SuppressInput || DisplayShortcutActive) return;
             if (!Application.isFocused && !AllowUnfocusedTestInput) { ReleasePointer(); return; }
             var key = TestKeyboard ?? Keyboard.current; var mouse = TestMouse ?? Mouse.current;
@@ -103,7 +105,10 @@ namespace CityLife.World
             float z = ((key.wKey.isPressed || key.upArrowKey.isPressed) ? 1 : 0) -
                 ((key.sKey.isPressed || key.downArrowKey.isPressed) ? 1 : 0);
             Vector3 motion = Quaternion.Euler(0, yaw, 0) * new Vector3(x, 0, z);
-            if (Brain.Possessed) Brain.ManualDirection = Vector3.ClampMagnitude(motion, 1);
+            if (Brain.Possessed)
+            {
+                if (!ExternalMovementInput) Brain.ManualDirection = Vector3.ClampMagnitude(motion, 1);
+            }
             else if (FreeSpectator)
             {
                 motion.y = (key.eKey.isPressed ? 1 : 0) - (key.qKey.isPressed ? 1 : 0);
