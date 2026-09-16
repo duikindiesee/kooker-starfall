@@ -432,6 +432,51 @@ namespace CityLife.Items
 
         public void AdvanceTick() => Tick++;
 
+        /// <summary>
+        /// Authoritatively updates the position and rotation of an unconstrained Free item
+        /// from trusted physics settlement or movement observation.
+        /// Narrowed to trusted adapter access with strict world, generation, and identity validation.
+        /// Rejects items that are Carried, Stored, Placed, or Anchored, or non-finite/non-canonical transforms.
+        /// </summary>
+        public bool SyncFreeTransform(string worldId, string generationId, string itemId, Vector3 position, Quaternion rotation)
+        {
+            if (!string.Equals(worldId, WorldId, StringComparison.Ordinal) ||
+                !string.Equals(generationId, GenerationId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(itemId) || !items.TryGetValue(itemId, out var item))
+            {
+                return false;
+            }
+
+            if (item.location != ItemLocationKind.Free)
+            {
+                return false;
+            }
+
+            if (definitions.TryGetValue(item.itemTypeId, out var def) && def.isAnchored)
+            {
+                return false;
+            }
+
+            if (!ItemDefinition.Finite(position.x) || !ItemDefinition.Finite(position.y) || !ItemDefinition.Finite(position.z))
+            {
+                return false;
+            }
+
+            if (!ItemDefinition.TryCanonicalizeRotation(rotation, out var canonicalRot))
+            {
+                return false;
+            }
+
+            item.position = position;
+            item.rotation = canonicalRot;
+            item.lastUpdatedTick = Tick;
+            return true;
+        }
+
         public static string BuildRequestSignature(ItemActionRequest req, Quaternion canonicalRotation)
         {
             var sb = new StringBuilder(128);

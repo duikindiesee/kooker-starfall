@@ -1,4 +1,25 @@
 # Starfall system architecture and installation state
+## Verified isolated physical Play mode checkpoint — 16 September 2026
+
+Task4279 remains IN_PROGRESS. Pinned Unity6000.6.0f1 run06 exited0 with104 checks:58 model and46 local PhysicsScene assertions. Stages confirm actual Play mode; eight tested source hashes remained unchanged. passed.txt SHA256: `6D6D317A624E9A88BF44D075BDFDC9709B192728E4CE56E7FC391ED34116B2EF`.
+
+```mermaid
+flowchart LR
+  Guards["NpcActionApi guards"] --> Model["ItemModel exclusive state and mass"]
+  Model --> Body["PhysicalItem Rigidbody carry/drop"]
+  Body --> Probe["46 isolated Play mode assertions"]
+  Body -. "not yet proven over automatic frames" .-> Sync["Bound lifecycle pose synchronization"]
+  Sync -. "not implemented yet" .-> Persist["Physical item save/reload"]
+```
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Guarded pickup/drop, gravity, contact and settling | Isolated Play mode tested | run06:104 total,46 physics; full30s drift; request replay/denial cases | Automatic lifecycle binding, normal inhabitant/world demonstration |
+| Physical delivery/storage | Explicitly unsupported in current slice | Suite retains physical-delivery denial assertion | Supported placement/storage/retrieve and container integration |
+| Persistence and normal-player installation | Unverified/not delivered by this checkpoint | No player built for this physical source | Versioned item persistence, restart invariants and actual-player media |
+
+The suite uses synchronous simulation and explicit synchronization calls; it does not prove natural FixedUpdate scheduling. Earlier run03 edit-mode failure, run04 cancelled Editor callback session and run05 unreachable fixture failure are retained as diagnostics. No thresholds were increased to pass the fixture. This checkpoint is not a release or user acceptance.
+
 ## Physical item component checkpoint — 16 September 2026
 
 Task `4279edae-3f78-4c74-843a-c67489749451` remains in progress.
@@ -150,11 +171,13 @@ flowchart TB
         Brain["Inhabitant brain: identity, perception, goals and planning<br/>One courtyard NPC tested"]
         Gate["Bounded proposal validation and fallback<br/>Implemented and tested"]
         Authority["Deterministic action authority<br/>Navigation, physics, reach, ownership, capacity and permissions"]
+        PhysicalItems["Physical item foundation and action adapter<br/>ItemModel state machine, PhysicalItem Rigidbody/Collider, Drop & clearance gate, Free transform sync"]
         Export["Unity event export adapter<br/>Tested in fixture; not attached to player"]
         Client -->|control mode| Brain
         Brain -->|deterministic goal| Authority
         Gate -->|admitted goal or fallback| Brain
         Authority -->|observed results| Client
+        Authority -->|physical pickup, drop and clearance| PhysicalItems
         Authority -.->|live recording not connected| Export
     end
 
@@ -220,7 +243,7 @@ flowchart TB
     classDef planned fill:#edf0f5,stroke:#737f91,color:#253044,stroke-dasharray:5 5
     classDef unverified fill:#fbe5e5,stroke:#aa5757,color:#421b1b
     classDef excluded fill:#ffffff,stroke:#545b64,color:#353b43
-    class Operator,Client,Brain,Gate,Authority,Bridge,API,Private,Facts,Dream,DB tested
+    class Operator,Client,Brain,Gate,Authority,PhysicalItems,Bridge,API,Private,Facts,Dream,DB tested
     class Export,Volume unwired
     class Launcher,Comms,Save,Slots,Archived,Delete,Planet planned
     class Region unverified
@@ -239,6 +262,7 @@ The database stores both authoritative event evidence and separately typed deriv
 | Hunter clothing; club reopened | Original isolated clothing coverage/motion passed; club grip subsequently rejected | Integrated candidate retains garments and excludes the club. The earlier courtyard evidence does not override the later grip/orientation rejection. | [Component and evidence](HUNTER-CLOTHING.md), [candidate exclusions](INTEGRATED-CANDIDATE.md) | Corrected club requires a clean handoff and new visual acceptance; integrated clothing/native controls still need scoped review. |
 | Unity playable client and controls | Implemented and tested | Separate local Windows builds; recorded hybrid preview.2 executable exists in the build checkout. Player is launched manually. | [Hybrid build/release record](../evidence/verified/hybrid-diagnostic-release.json), [66-check actual-player run](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/npc-runtime.json) | Physical input, sustained performance and other devices remain separate acceptance; builds are not installed by a repository clone. |
 | Deterministic NPC/action authority | Implemented and tested | Runs inside Unity. Current action API owns pickup/delivery mutations and rechecks live permission, reach, sight, ownership and capacity. | [Action boundary](../Assets/CityLife/Scripts/NpcActionApi.cs), [26 action/perception checks](../evidence/milestones/starfall-memory/local-slice-v1/npc-validation.json) | More world actions require explicit authority contracts and checks. |
+| Physical item foundation & action adapter | Implemented in source; 58 component checks verified; runtime checks awaiting execution | Bounded vertical slice: ItemModel deterministic state machine, PhysicalItem runtime Rigidbody/Collider adapter, NpcActionApi Drop action, clearance gate, Free transform sync, legacy deliver denial. | [ItemModel](../Assets/CityLife/Items/ItemModel.cs), [PhysicalItem](../Assets/CityLife/Items/PhysicalItem.cs), [Action adapter](../Assets/CityLife/Scripts/NpcActionApi.cs), [Foundation note](PHYSICAL-ITEM-FOUNDATION-SLICE.md), [58-check Editor run](../Assets/CityLife/Items/ItemChecks.cs) | Persistence, food migration, and Windows player physical acceptance remain future work. |
 | Per-inhabitant brain | Implemented and tested for one courtyard NPC | Unity autonomy/planner components hold the current NPC's observations, goals and context. | [NPC autonomy](../Assets/CityLife/Scripts/NpcAutonomy.cs), [optional planner](../Assets/CityLife/Scripts/NpcOptionalPlanner.cs), [hybrid audit](HYBRID-NPC-AUDIT.md) | Multiple independent live NPC brains and lifecycle/identity assignment are planned. Two memory fixture identities do not establish that runtime. |
 | Optional local LLM adapter | Implemented and tested for bounded/fake/offline behavior | Optional Unity adapter; disabled by default. Endpoint/model are explicit and operator-managed. Normal deadline is 1500 ms. | [Provider/planner setup and limits](HYBRID-NPC.md), [48 focused diagnostic checks](../evidence/verified/hybrid-diagnostic-validation.json) | Successful real model proposal/dialogue/reflection remains unverified. No model is bundled or automatically loaded. |
 | LM Studio / real local inference | Unverified for a completed reply | Separate external runtime, not installed or managed by Starfall. Current running/model state is not polled by this document. | [Manual 30-second probe](../evidence/milestones/hybrid-npc/manual-real-30s-20260913/real-local-probe.json): inventory returned; one completion attempt timed out at 30003 ms; fallback delivered. | A completed reply must pass schema/live validation; reachability is not completed inference. |
@@ -299,4 +323,5 @@ Isolated source 45cac4a requires nonempty dialogue/reflection in both provider s
 
 
 Future design only: [knowledge progression, persistent death/return and resource transformation](WORLD-KNOWLEDGE-PROGRESSION.md) defines provenance, private-memory boundaries, inventory recovery and save/reload acceptance. These mechanics are not implemented by the current integrated preview.
+
 
