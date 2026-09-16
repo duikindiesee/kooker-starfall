@@ -641,25 +641,70 @@ namespace CityLife.Items
                     }
                     RecordStage("load-free-rest-stable");
 
-                    float dist = Vector3.Distance(Brain.transform.position, DemonstrationItem.transform.position);
+                    RecordStage("load-free-approach-start");
+                    Transform approachTarget = DemonstrationInteractable.Approach != null
+                        ? DemonstrationInteractable.Approach
+                        : DemonstrationItem.transform;
+
+                    Brain.SetPossession(true);
                     int stepTicks = 0;
-                    while (dist > 0.55f && stepTicks < 50)
+                    const int maxStepTicks = 100;
+
+                    float approachDist = Vector3.Distance(Brain.transform.position, approachTarget.position);
+                    float eyeDist = Vector3.Distance(Brain.transform.position + Vector3.up, DemonstrationInteractable.SightPoint);
+
+                    while ((approachDist > 0.50f || eyeDist > 1.50f) && stepTicks < maxStepTicks)
                     {
-                        Vector3 toItem = DemonstrationItem.transform.position - Brain.transform.position;
-                        toItem.y = 0;
-                        Brain.ManualDirection = toItem.normalized;
+                        Vector3 toApproach = approachTarget.position - Brain.transform.position;
+                        toApproach.y = 0f;
+                        Vector3 dir = toApproach.sqrMagnitude > 0.0001f ? toApproach.normalized : Vector3.zero;
+                        Brain.ManualDirection = dir;
+
+                        Vector3 prevPos = Brain.transform.position;
                         yield return new WaitForFixedUpdate();
-                        dist = Vector3.Distance(Brain.transform.position, DemonstrationItem.transform.position);
+
+                        // Fallback step if NpcAutonomy.FixedUpdate was not ticking in current context
+                        if (Vector3.Distance(Brain.transform.position, prevPos) < 0.0001f && Brain.Actor != null)
+                        {
+                            float dt = Time.fixedDeltaTime > 0f ? Time.fixedDeltaTime : 0.02f;
+                            Vector3 motion = Brain.TerrainNavigation != null
+                                ? Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position, dir, Brain.Actor.WalkSpeed * dt)
+                                : dir;
+                            Brain.Actor.Step(motion, dt);
+                        }
+
+                        approachDist = Vector3.Distance(Brain.transform.position, approachTarget.position);
+                        eyeDist = Vector3.Distance(Brain.transform.position + Vector3.up, DemonstrationInteractable.SightPoint);
                         stepTicks++;
                     }
-                    Brain.ManualDirection = Vector3.zero;
 
-                    if (dist > 0.65f)
+                    // Stop input and motion before guarded pickup
+                    Brain.ManualDirection = Vector3.zero;
+                    Brain.SetPossession(false);
+                    Brain.Pause();
+                    if (Brain.Actor != null)
+                    {
+                        Brain.Actor.CancelGesture();
+                        Brain.Actor.Step(Vector3.zero, Time.fixedDeltaTime > 0f ? Time.fixedDeltaTime : 0.02f);
+                    }
+                    Physics.SyncTransforms();
+
+                    // Settle for 5 fixed frames so any residual velocity is zero
+                    for (int i = 0; i < 5; i++)
+                    {
+                        yield return new WaitForFixedUpdate();
+                    }
+
+                    approachDist = Vector3.Distance(Brain.transform.position, approachTarget.position);
+                    eyeDist = Vector3.Distance(Brain.transform.position + Vector3.up, DemonstrationInteractable.SightPoint);
+
+                    if (approachDist > 0.65f || eyeDist > 1.7f)
                     {
                         RecordStage("load-free-pickup-out-of-reach");
-                        Fail("Restored item out of reach: " + dist);
+                        Fail($"Restored item out of reach: approach={approachDist:F4} (limit 0.65), eye={eyeDist:F4} (limit 1.7)");
                         yield break;
                     }
+                    RecordStage("load-free-approach-passed");
 
                     RecordStage("load-free-pickup-attempt");
                     var pickupRes = Brain.ExecutePlayerAction(NpcActionKind.Pickup, DemonstrationItemId);
