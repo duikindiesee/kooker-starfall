@@ -136,6 +136,28 @@ namespace CityLife.Items
 
         public int ItemCount => items.Count;
         public int DefinitionCount => definitions.Count;
+        public int HighestReceiptRequestId { get; private set; }
+
+        public bool ResumeRequestSequence(int persistedBound)
+        {
+            if (persistedBound < 0) return false;
+            if (persistedBound > HighestReceiptRequestId)
+            {
+                HighestReceiptRequestId = persistedBound;
+            }
+            return true;
+        }
+
+        public bool TryAllocateNextRequestId(out int nextRequestId)
+        {
+            if (HighestReceiptRequestId >= int.MaxValue)
+            {
+                nextRequestId = -1;
+                return false;
+            }
+            nextRequestId = HighestReceiptRequestId + 1;
+            return true;
+        }
 
         public ItemModel(string worldId, string generationId)
         {
@@ -611,12 +633,17 @@ namespace CityLife.Items
                 newItems.Add(rec.itemId, snap);
             }
 
+            int maxRestoredRequestId = 0;
             var newReceipts = new Dictionary<int, ReceiptRecord>();
             if (payload.receipts != null)
             {
                 foreach (var r in payload.receipts)
                 {
                     newReceipts.Add(r.requestId, new ReceiptRecord { signature = r.signature, receipt = r.receipt });
+                    if (r.requestId > maxRestoredRequestId)
+                    {
+                        maxRestoredRequestId = r.requestId;
+                    }
                 }
             }
 
@@ -632,6 +659,8 @@ namespace CityLife.Items
             {
                 receipts.Add(kvp.Key, kvp.Value);
             }
+
+            HighestReceiptRequestId = Math.Max(HighestReceiptRequestId, maxRestoredRequestId);
 
             if (payload.tick > Tick)
             {
@@ -743,6 +772,10 @@ namespace CityLife.Items
             ItemReceipt Finish(ItemReceipt receipt)
             {
                 receipts.Add(request.requestId, new ReceiptRecord { signature = signature, receipt = receipt });
+                if (request.requestId > HighestReceiptRequestId)
+                {
+                    HighestReceiptRequestId = request.requestId;
+                }
                 return receipt;
             }
 

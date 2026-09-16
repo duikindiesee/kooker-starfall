@@ -66,13 +66,56 @@ namespace CityLife.World
             Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
             Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
             Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), AllInteractables);
-            if (PhysicalItems != null) PhysicalItems.OnActionsCreated(Actions);
+            if (PhysicalItems != null)
+            {
+                PhysicalItems.OnActionsCreated(Actions);
+                if (PhysicalItems.Model != null && PhysicalItems.Model.HighestReceiptRequestId > requestId)
+                {
+                    requestId = PhysicalItems.Model.HighestReceiptRequestId;
+                }
+            }
             Physics.SyncTransforms();
         }
+
+        public int RequestId => requestId;
+
+        public bool ResumeRequestSequence(int persistedBound)
+        {
+            if (persistedBound < 0) return false;
+            if (persistedBound > requestId)
+            {
+                requestId = persistedBound;
+            }
+            return true;
+        }
+
+        public bool TryAllocateRequestId(out int allocatedId)
+        {
+            int floor = requestId;
+            var model = Actions != null && Actions.PhysicalModel != null
+                ? Actions.PhysicalModel
+                : (PhysicalItems != null ? PhysicalItems.Model : null);
+            if (model != null && model.HighestReceiptRequestId > floor)
+            {
+                floor = model.HighestReceiptRequestId;
+            }
+
+            if (floor >= int.MaxValue)
+            {
+                allocatedId = -1;
+                return false;
+            }
+
+            requestId = floor + 1;
+            allocatedId = requestId;
+            return true;
+        }
+
         public NpcActionResult ExecutePlayerAction(NpcActionKind kind, string targetId)
         {
             if (Actions == null) return new NpcActionResult { success = false, code = "actions-uninitialized" };
-            int req = ++requestId;
+            if (!TryAllocateRequestId(out int req))
+                return new NpcActionResult { success = false, code = "request-id-overflow" };
             var result = Actions.Execute(req, kind, targetId);
             if (Log != null)
             {
@@ -152,10 +195,16 @@ namespace CityLife.World
                 {
                     var kind = Actions.Held == null ? NpcActionKind.Pickup : NpcActionKind.Deliver;
                     string carriedItem = Actions.Held == null ? GoalId : Actions.Held.StableId;
-                    var result = Actions.Execute(++requestId, kind, GoalId);
+                    if (!TryAllocateRequestId(out int req))
+                    {
+                        Fail("request-id-overflow", true);
+                        Actor.Step(Vector3.zero, StepSeconds);
+                        return;
+                    }
+                    var result = Actions.Execute(req, kind, GoalId);
                     if (MemoryExport != null && result.success && !result.duplicate)
                     {
-                        try { MemoryExport.CompletedAction(AgentId, Tick, requestId, kind, GoalId, carriedItem, result); }
+                        try { MemoryExport.CompletedAction(AgentId, Tick, req, kind, GoalId, carriedItem, result); }
                         catch (Exception) { MemoryExportFailure = "memory-export-failed"; }
                     }
                     LastResult = result.code;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using CityLife.World;
 
@@ -797,6 +798,124 @@ namespace CityLife.Items
                           postConflictSnap.location == ItemLocationKind.Carried &&
                           postConflictSnap.holderActorId == persistActor,
                         "persistence-replay-conflict-leaves-state-unchanged");
+
+                    // 12.3b Monotonic sequence resumption, restored receipt 1 -> next action 2, repeated allocation, and intmax refusal
+                    {
+                        var seqModel = new ItemModel(persistWorld, persistGen);
+                        seqModel.RegisterDefinition(new ItemDefinition
+                        {
+                            itemTypeId = "stone-tool",
+                            dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                            massKg = 1.5f,
+                            isAnchored = false
+                        });
+                        seqModel.RegisterItem("tool-seq", "stone-tool", ItemLocationKind.Free, Vector3.zero, Quaternion.identity);
+
+                        // Execute receipt 1 (e.g. pickup)
+                        var r1 = seqModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                        {
+                            requestId = 1,
+                            action = ItemActionKind.Pickup,
+                            actorId = persistActor,
+                            itemId = "tool-seq"
+                        }, persistAuthority);
+                        Check(r1.success, "persistence-seq-pickup-receipt1-succeeds");
+                        Check(seqModel.HighestReceiptRequestId == 1, "persistence-seq-model-highest-is-1");
+
+                        // Save and restore into separate restored model
+                        var seqPayload = ItemPersistence.CreateSnapshot(seqModel, persistActor);
+                        string seqSaveFile = Path.Combine(tempDir, "seq-save.json");
+                        ItemPersistence.SaveAtomic(seqSaveFile, seqPayload);
+
+                        var restoredSeqModel = new ItemModel(persistWorld, persistGen);
+                        restoredSeqModel.RegisterDefinition(new ItemDefinition
+                        {
+                            itemTypeId = "stone-tool",
+                            dimensions = new PhysicalDimensions(0.2f, 0.15f, 0.1f),
+                            massKg = 1.5f,
+                            isAnchored = false
+                        });
+                        bool seqLoadOk = ItemPersistence.TryLoad(seqSaveFile, persistWorld, persistGen, persistActor, restoredSeqModel, out var loadedSeqPayload);
+                        Check(seqLoadOk, "persistence-seq-load-succeeds");
+                        restoredSeqModel.RestoreSnapshot(loadedSeqPayload);
+                        Check(restoredSeqModel.HighestReceiptRequestId == 1, "persistence-seq-restored-model-highest-is-1");
+
+                        // Old replay behavior preserved: replaying receipt 1 returns duplicate
+                        var replay1 = restoredSeqModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                        {
+                            requestId = 1,
+                            action = ItemActionKind.Pickup,
+                            actorId = persistActor,
+                            itemId = "tool-seq"
+                        }, persistAuthority);
+                        Check(replay1.success && replay1.duplicate, "persistence-seq-restored-receipt1-replays-duplicate");
+
+                        // Old replay behavior preserved: conflicting receipt 1 returns request-id-conflict
+                        var conflict1 = restoredSeqModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                        {
+                            requestId = 1,
+                            action = ItemActionKind.Drop,
+                            actorId = persistActor,
+                            itemId = "tool-seq",
+                            position = Vector3.zero,
+                            rotation = Quaternion.identity
+                        }, persistAuthority);
+                        Check(!conflict1.success && conflict1.code == "request-id-conflict", "persistence-seq-restored-receipt1-conflicts");
+
+                        // Actor allocation chooses above restored receipt 1 -> next action 2
+                        var seqActorGo = new GameObject("seq-actor");
+                        try
+                        {
+                            var autonomy = seqActorGo.AddComponent<CityLife.World.NpcAutonomy>();
+                            var actions = new CityLife.World.NpcActionApi(persistActor, persistWorld, seqActorGo.transform, seqActorGo.transform, Array.Empty<CityLife.World.NpcInteractable>());
+                            actions.PhysicalModel = restoredSeqModel;
+                            actions.PhysicalAuthority = persistAuthority;
+                            typeof(CityLife.World.NpcAutonomy)
+                                .GetProperty("Actions", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                                ?.SetValue(autonomy, actions, null);
+
+                            // Local requestId is 0; model has receipt 1 -> allocation must choose 2
+                            bool alloc2Ok = autonomy.TryAllocateRequestId(out int nextAct2);
+                            Check(alloc2Ok && nextAct2 == 2, "persistence-seq-allocates-above-restored-receipt1-to-2");
+
+                            // Next action 2 executed on model succeeds
+                            var drop2 = restoredSeqModel.Execute(persistWorld, persistGen, new ItemActionRequest
+                            {
+                                requestId = nextAct2,
+                                action = ItemActionKind.Drop,
+                                actorId = persistActor,
+                                itemId = "tool-seq",
+                                position = Vector3.zero,
+                                rotation = Quaternion.identity
+                            }, persistAuthority);
+                            Check(drop2.success && !drop2.duplicate, "persistence-seq-next-action2-succeeds-without-conflict");
+                            Check(restoredSeqModel.HighestReceiptRequestId == 2, "persistence-seq-model-highest-advanced-to-2");
+
+                            // Repeated allocation is strictly monotonic: allocates 3, 4
+                            bool alloc3Ok = autonomy.TryAllocateRequestId(out int nextAct3);
+                            Check(alloc3Ok && nextAct3 == 3, "persistence-seq-repeated-allocation-advances-to-3");
+                            bool alloc4Ok = autonomy.TryAllocateRequestId(out int nextAct4);
+                            Check(alloc4Ok && nextAct4 == 4, "persistence-seq-repeated-allocation-advances-to-4");
+
+                            // IntMax refusal: fails closed deterministically at int.MaxValue
+                            autonomy.ResumeRequestSequence(int.MaxValue);
+                            bool intMaxAlloc = autonomy.TryAllocateRequestId(out int overflowId);
+                            Check(!intMaxAlloc && overflowId == -1, "persistence-seq-autonomy-refuses-at-intmax-fail-closed");
+
+                            var overflowPlayerAction = autonomy.ExecutePlayerAction(CityLife.World.NpcActionKind.Drop, "tool-seq");
+                            Check(!overflowPlayerAction.success && overflowPlayerAction.code == "request-id-overflow",
+                                "persistence-seq-execute-player-action-fails-closed-on-overflow");
+
+                            // ItemModel allocator refusal at int.MaxValue
+                            restoredSeqModel.ResumeRequestSequence(int.MaxValue);
+                            bool modelIntMaxAlloc = restoredSeqModel.TryAllocateNextRequestId(out int modelOverflowId);
+                            Check(!modelIntMaxAlloc && modelOverflowId == -1, "persistence-seq-model-refuses-at-intmax-fail-closed");
+                        }
+                        finally
+                        {
+                            UnityEngine.Object.DestroyImmediate(seqActorGo);
+                        }
+                    }
 
                     // 12.4 Missing save starts fresh without throwing
                     bool missingOk = ItemPersistence.TryLoad(Path.Combine(tempDir, "nonexistent-save.json"), persistWorld, persistGen, persistActor, liveModel, out _);
