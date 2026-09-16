@@ -668,7 +668,8 @@ namespace CityLife.Items
                 "tf_pos_x,tf_pos_y,tf_pos_z,tf_rot_x,tf_rot_y,tf_rot_z,tf_rot_w," +
                 "vel_x,vel_y,vel_z,lin_speed,ang_vel_x,ang_vel_y,ang_vel_z,ang_speed_deg," +
                 "penetration_m,in_contact,col_normal_x,col_normal_y,col_normal_z,col_min_sep_m,col_age_s," +
-                "local_slope_deg,model_synced,model_pos_lag_m,model_rot_lag_deg");
+                "local_slope_deg,model_synced,model_pos_lag_m,model_rot_lag_deg," +
+                "pen_query_performed,pen_overlap,pen_raw_dist_m");
 
             float dropElapsed = 0f;
             int stepIndex = 0;
@@ -711,14 +712,21 @@ namespace CityLife.Items
                 bool inContact = observer.InContact;
                 currentInContact = inContact;
 
-                float penDist = 0f;
+                bool penQueryPerformed = false;
+                bool penOverlap = false;
+                float penRawDist = 0f;
+                Vector3 penDir = Vector3.zero;
+
                 if (bootstrap.DemonstrationItem.ItemCollider != null && terrainCollider != null)
                 {
-                    Physics.ComputePenetration(
+                    penQueryPerformed = true;
+                    penOverlap = Physics.ComputePenetration(
                         bootstrap.DemonstrationItem.ItemCollider, itemPos, tfRot,
                         terrainCollider, terrainCollider.transform.position, terrainCollider.transform.rotation,
-                        out Vector3 penDir, out penDist);
+                        out penDir, out penRawDist);
                 }
+
+                float penDist = (penQueryPerformed && penOverlap) ? penRawDist : 0f;
                 maxPenetration = Mathf.Max(maxPenetration, penDist);
                 currentPen = penDist;
 
@@ -758,14 +766,16 @@ namespace CityLife.Items
                     "{15:F4},{16:F4},{17:F4},{18:F4},{19:F4},{20:F4},{21:F4}," +
                     "{22:F4},{23:F4},{24:F4},{25:F4},{26:F4},{27:F4},{28:F4},{29:F2}," +
                     "{30:F5},{31},{32:F4},{33:F4},{34:F4},{35:F5},{36:F4}," +
-                    "{37:F2},{38},{39:F5},{40:F3}\n",
+                    "{37:F2},{38},{39:F5},{40:F3}," +
+                    "{41},{42},{43:F5}\n",
                     stepIndex, dropElapsed, itemPos.x, itemPos.y, itemPos.z, actorPos.x, actorPos.y, actorPos.z,
                     rbPos.x, rbPos.y, rbPos.z, rbRot.x, rbRot.y, rbRot.z, rbRot.w,
                     tfPos.x, tfPos.y, tfPos.z, tfRot.x, tfRot.y, tfRot.z, tfRot.w,
                     vel.x, vel.y, vel.z, linSpeed, angVel.x, angVel.y, angVel.z, angSpeedDeg,
                     penDist, inContact ? 1 : 0, observer.LastNormal.x, observer.LastNormal.y, observer.LastNormal.z,
                     observer.LastMinSeparation, colAge,
-                    localSlopeDeg, modelSynced, modelPosLag, modelRotLag);
+                    localSlopeDeg, modelSynced, modelPosLag, modelRotLag,
+                    penQueryPerformed ? 1 : 0, penOverlap ? 1 : 0, penRawDist);
 
                 if (!firstContactAchieved)
                 {
