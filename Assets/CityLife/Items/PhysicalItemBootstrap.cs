@@ -21,6 +21,10 @@ namespace CityLife.Items
         public IItemActionAuthority Authority { get; private set; }
         public PhysicalItem DemonstrationItem { get; private set; }
         public NpcInteractable DemonstrationInteractable { get; private set; }
+        public MeshRenderer DemonstrationRenderer { get; private set; }
+
+        [Tooltip("Serialized URP material asset for demonstration visual cube. Assigned during scene build generation.")]
+        public Material DemonstrationMaterial;
 
         public string DemonstrationItemId = "canyon-artifact-01";
         public string DemonstrationItemTypeId = "canyon-stone";
@@ -213,6 +217,26 @@ namespace CityLife.Items
             visual.transform.localRotation = Quaternion.identity;
             visual.transform.localScale = DemonstrationItemDimensions;
 
+            var renderer = visual.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                DemonstrationRenderer = renderer;
+                if (DemonstrationMaterial != null)
+                {
+                    renderer.sharedMaterial = DemonstrationMaterial;
+                }
+            }
+
+            string matDiag = GetVisualMaterialDiagnostic();
+            if (DemonstrationMaterial != null)
+            {
+                Debug.Log($"[PhysicalItemBootstrap] Demonstration visual material: {matDiag}");
+            }
+            else
+            {
+                Debug.LogWarning($"[PhysicalItemBootstrap] Demonstration visual material reference absent: {matDiag}");
+            }
+
             var interactable = go.AddComponent<NpcInteractable>();
             interactable.StableId = DemonstrationItemId;
             interactable.WorldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
@@ -237,6 +261,18 @@ namespace CityLife.Items
 
             Model.RegisterItem(DemonstrationItemId, DemonstrationItemTypeId, ItemLocationKind.Free, go.transform.position, go.transform.rotation);
             itemCreated = true;
+        }
+
+        public string GetVisualMaterialDiagnostic()
+        {
+            if (DemonstrationRenderer == null)
+                return "renderer=none";
+            var mat = DemonstrationRenderer.sharedMaterial;
+            if (mat == null)
+                return "material=none (unassigned)";
+            string sName = mat.shader != null ? mat.shader.name : "missing";
+            bool sup = mat.shader != null && mat.shader.isSupported;
+            return $"material={mat.name}; shader={sName}; supported={sup}";
         }
 
         public IEnumerator RunDiagnosticFlow(string mode, string evidenceDir, string savePath)
@@ -298,6 +334,17 @@ namespace CityLife.Items
             }
 
             RecordStage(mode + "-launch");
+            string matDiag = GetVisualMaterialDiagnostic();
+            Debug.Log($"[PhysicalItemDiagnostic] Visual material diagnostic: {matDiag}");
+            if (DemonstrationMaterial != null && DemonstrationMaterial.shader != null)
+            {
+                string sName = DemonstrationMaterial.shader.name.Replace('/', '-').Replace(' ', '_');
+                RecordStage($"{mode}-visual-{DemonstrationMaterial.name}-shader-{sName}-supported-{DemonstrationMaterial.shader.isSupported}");
+            }
+            else
+            {
+                RecordStage($"{mode}-visual-material-absent");
+            }
 
             // Bounded wait for inhabitant and action readiness (up to 100 fixed updates)
             int waitTicks = 0;

@@ -173,6 +173,10 @@ namespace CityLife.World.Editor
             // Physical item foundation integration: bind authoritative ItemModel, PhysicalAuthority, and physical demonstration item to the canyon inhabitant
             var physicalBootstrap = actorObject.AddComponent<CityLife.Items.PhysicalItemBootstrap>();
             physicalBootstrap.Brain = brain; brain.PhysicalItems = physicalBootstrap;
+            var demoMaterial = Material("Physical demonstration stone", new Color(0.56f, 0.54f, 0.52f));
+            if (demoMaterial == null || demoMaterial.shader == null || !demoMaterial.shader.isSupported)
+                throw new InvalidOperationException("Demonstration stone material requires a valid, supported Universal Render Pipeline/Lit shader.");
+            physicalBootstrap.DemonstrationMaterial = demoMaterial;
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
