@@ -173,7 +173,7 @@ namespace CityLife.World.Editor
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
             livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
             brain.SpawnPosition = new Vector3(activityOffset.x - 4, 4.02f, activityOffset.z - 5); actor.Place(brain.SpawnPosition);
-            var controls = camera.GetComponent<NpcPlayerControls>(); controls.PersistentMouseCapture = true;
+            controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
@@ -236,7 +236,7 @@ namespace CityLife.World.Editor
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
             var mapHud = camera.gameObject.AddComponent<StarfallMapHud>();
-            mapHud.Brain=brain;mapHud.Survival=survival;mapHud.Food=food;mapHud.View=camera;survival.MapHud=mapHud;
+            mapHud.Brain=brain;mapHud.Survival=survival;mapHud.Food=food;mapHud.View=camera;
             var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();
             deathDiagnostic.Brain=brain;deathDiagnostic.Survival=survival;deathDiagnostic.Food=food;deathDiagnostic.View=camera;
             var gameCapture=camera.gameObject.AddComponent<StarfallSurvivalGameCapture>();
@@ -455,9 +455,10 @@ namespace CityLife.World.Editor
             Vector3 caveHearthPos = new Vector3(CoastalTerrain.RefugeCentre.x + 2.5f, CoastalTerrain.Height(CoastalTerrain.RefugeCentre.x + 2.5f, CoastalTerrain.RefugeCentre.y - 1.0f), CoastalTerrain.RefugeCentre.y - 1.0f);
             caveHearthObj.transform.position = caveHearthPos;
             var caveHearthComp = caveHearthObj.AddComponent<StoneBuildingWorkstation>();
-            caveHearthComp.StructureType = CityLife.World.StoneBuildingWorkstation.TerraceStructureType.Hearth;
+            caveHearthComp.Brain = brain;
+            caveHearthComp.Bootstrap = physicalBootstrap;
             caveHearthComp.ConstructionSite = caveHearthPos;
-            caveHearthComp.Radius = 1.6f;
+            caveHearthComp.CurrentTarget = StoneStructureKind.HearthRing;
 
             // Spread-out Kokerboom tree distribution across canyon ridges, terraces, and riverbanks
             var treeGroup = new GameObject("Canyon Kokerboom trees");
