@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CityLife.Items
@@ -25,15 +26,81 @@ namespace CityLife.Items
         public Vector3 GripLocalOffset = new Vector3(0.06f, 0.04f, 0f);
         public Quaternion GripLocalRotation = Quaternion.identity;
 
+        public bool IsStored { get; private set; }
+        public string BoundContainerItemId { get; private set; }
+
         public ItemModel BoundModel { get; private set; }
         public string BoundWorldId { get; private set; }
         public string BoundGenerationId { get; private set; }
         public bool IsBound => BoundModel != null;
 
+        private readonly Dictionary<Renderer, bool> originalRendererStates = new Dictionary<Renderer, bool>();
+
         private void Awake()
         {
             if (Body == null) Body = GetComponent<Rigidbody>();
             if (ItemCollider == null) ItemCollider = GetComponent<Collider>();
+        }
+
+        public void RecordInitialRendererStates()
+        {
+            if (IsStored) return;
+            var list = new List<Renderer>();
+            GetOwnedRenderers(list);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var r = list[i];
+                if (r != null)
+                {
+                    originalRendererStates[r] = r.enabled;
+                }
+            }
+        }
+
+        public void GetOwnedRenderers(List<Renderer> result)
+        {
+            if (result == null) return;
+            result.Clear();
+            CollectOwnedRenderers(transform, result);
+        }
+
+        private void CollectOwnedRenderers(Transform current, List<Renderer> result)
+        {
+            if (current == null) return;
+            var r = current.GetComponent<Renderer>();
+            if (r != null)
+            {
+                result.Add(r);
+            }
+            for (int i = 0; i < current.childCount; i++)
+            {
+                var child = current.GetChild(i);
+                if (child != null && child.GetComponent<PhysicalItem>() == null)
+                {
+                    CollectOwnedRenderers(child, result);
+                }
+            }
+        }
+
+        private void RestoreOwnedRenderers()
+        {
+            var renderers = new List<Renderer>();
+            GetOwnedRenderers(renderers);
+            for (int i = 0; i < renderers.Count; i++)
+            {
+                var r = renderers[i];
+                if (r != null)
+                {
+                    if (originalRendererStates.TryGetValue(r, out bool orig))
+                    {
+                        r.enabled = orig;
+                    }
+                    else
+                    {
+                        r.enabled = true;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -68,6 +135,11 @@ namespace CityLife.Items
                     Body.isKinematic = true;
                     Body.useGravity = false;
                 }
+                else if (IsStored)
+                {
+                    Body.isKinematic = true;
+                    Body.useGravity = false;
+                }
                 else
                 {
                     Body.isKinematic = false;
@@ -77,6 +149,11 @@ namespace CityLife.Items
                 Body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 Body.linearDamping = 0.05f;
                 Body.angularDamping = 0.05f;
+            }
+
+            if (!IsStored)
+            {
+                RecordInitialRendererStates();
             }
         }
 
@@ -100,6 +177,7 @@ namespace CityLife.Items
 
         /// <summary>
         /// Read-only validation. Fails closed without mutating mass, colliders, or scale.
+        /// Accounts for Free, Carried, and Stored physics states without compromising strictness.
         /// </summary>
         public bool IsValid()
         {
@@ -109,16 +187,35 @@ namespace CityLife.Items
             if (!dimensions.IsValid()) return false;
 
             if (Body == null || ItemCollider == null) return false;
-            if (!ItemCollider.enabled) return false;
+            if (Body.gameObject != gameObject || ItemCollider.gameObject != gameObject) return false;
+            if (GetComponent<Rigidbody>() != Body) return false;
 
-            // Reject non-unit scale
+            // Stored items must have collider disabled; non-stored items must have collider enabled
+            if (IsStored)
+            {
+                if (ItemCollider.enabled) return false;
+            }
+            else
+            {
+                if (!ItemCollider.enabled) return false;
+            }
+
+            // Reject non-unit scale and non-finite scale
             Vector3 scale = transform.lossyScale;
+            if (!ItemDefinition.Finite(scale.x) || !ItemDefinition.Finite(scale.y) || !ItemDefinition.Finite(scale.z))
+                return false;
             if (Mathf.Abs(scale.x - 1f) > 0.001f || Mathf.Abs(scale.y - 1f) > 0.001f || Mathf.Abs(scale.z - 1f) > 0.001f)
+                return false;
+
+            // Reject non-finite world transforms
+            if (!ItemDefinition.Finite(transform.position.x) || !ItemDefinition.Finite(transform.position.y) || !ItemDefinition.Finite(transform.position.z))
+                return false;
+            if (!ItemDefinition.Finite(transform.rotation.x) || !ItemDefinition.Finite(transform.rotation.y) || !ItemDefinition.Finite(transform.rotation.z) || !ItemDefinition.Finite(transform.rotation.w))
                 return false;
 
             // Reject multiple/compound colliders on the same object in this slice
             var cols = GetComponents<Collider>();
-            if (cols.Length != 1) return false;
+            if (cols.Length != 1 || cols[0] != ItemCollider) return false;
 
             // Supported collider validation
             if (ItemCollider is BoxCollider box)
@@ -150,6 +247,18 @@ namespace CityLife.Items
             {
                 if (!Body.isKinematic || Body.useGravity) return false;
             }
+            else if (IsStored)
+            {
+                if (!Body.isKinematic || Body.useGravity) return false;
+            }
+            else if (IsCarried)
+            {
+                if (!Body.isKinematic || Body.useGravity || !ItemCollider.isTrigger) return false;
+            }
+            else
+            {
+                if (Body.isKinematic || !Body.useGravity || ItemCollider.isTrigger) return false;
+            }
 
             return true;
         }
@@ -159,10 +268,14 @@ namespace CityLife.Items
         /// with trigger collider following actor hand via scale-neutral kinematic follower.
         /// Unparents to root level to avoid inheriting non-uniform scale or bone rotation shear
         /// from the animated avatar rig, preserving declared metre dimensions.
+        /// Restores renderers if transitioning out of Stored state.
         /// </summary>
         public void AttachToHand(Transform hand)
         {
             CarriedHand = hand;
+            bool wasStored = IsStored;
+            IsStored = false;
+            BoundContainerItemId = null;
 
             // Set velocities while dynamic
             if (Body != null)
@@ -177,6 +290,13 @@ namespace CityLife.Items
             if (ItemCollider != null)
             {
                 ItemCollider.isTrigger = true;
+                ItemCollider.enabled = true;
+            }
+
+            // Restore renderers when transitioning out of Stored
+            if (wasStored)
+            {
+                RestoreOwnedRenderers();
             }
 
             // Scale-neutral kinematic follower: unparent to root level to guarantee lossyScale == Vector3.one
@@ -216,14 +336,24 @@ namespace CityLife.Items
 
         /// <summary>
         /// Unparents, restores dynamic physics before velocity operations on release,
-        /// and configures compatible continuous dynamic collision detection and solid collider.
+        /// configures compatible continuous dynamic collision detection and solid collider,
+        /// and restores renderers when transitioning out of Stored state.
         /// </summary>
         public void ReleaseToPhysics(Vector3 releasePosition, Quaternion releaseRotation)
         {
             CarriedHand = null;
+            IsCarried = false;
+            bool wasStored = IsStored;
+            IsStored = false;
+            BoundContainerItemId = null;
+
             transform.SetParent(null, true);
             transform.localScale = Vector3.one;
-            transform.SetPositionAndRotation(releasePosition, releaseRotation);
+            if (ItemDefinition.Finite(releasePosition.x) && ItemDefinition.Finite(releasePosition.y) && ItemDefinition.Finite(releasePosition.z) &&
+                ItemDefinition.Finite(releaseRotation.x) && ItemDefinition.Finite(releaseRotation.y) && ItemDefinition.Finite(releaseRotation.z) && ItemDefinition.Finite(releaseRotation.w))
+            {
+                transform.SetPositionAndRotation(releasePosition, releaseRotation);
+            }
             Physics.SyncTransforms();
 
             // Restore dynamic before velocity operations on release
@@ -257,7 +387,56 @@ namespace CityLife.Items
                 Body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
 
+            // Restore renderers when transitioning out of Stored
+            if (wasStored)
+            {
+                RestoreOwnedRenderers();
+            }
+
+            Physics.SyncTransforms();
+        }
+
+        /// <summary>
+        /// Applies Stored state to this physical item: sets kinematic non-dynamic rigidbody,
+        /// disables collider, disables renderers (hidden), and parents to container transform.
+        /// Does NOT spawn duplicate bodies.
+        /// </summary>
+        public void ApplyStored(Transform containerTransform, string containerItemId)
+        {
+            CarriedHand = null;
             IsCarried = false;
+            if (!IsStored)
+            {
+                RecordInitialRendererStates();
+            }
+            IsStored = true;
+            BoundContainerItemId = containerItemId;
+
+            if (Body != null)
+            {
+                Body.linearVelocity = Vector3.zero;
+                Body.angularVelocity = Vector3.zero;
+                Body.isKinematic = true;
+                Body.useGravity = false;
+            }
+
+            if (ItemCollider != null)
+            {
+                ItemCollider.enabled = false;
+            }
+
+            var renderers = new List<Renderer>();
+            GetOwnedRenderers(renderers);
+            for (int i = 0; i < renderers.Count; i++)
+            {
+                if (renderers[i] != null) renderers[i].enabled = false;
+            }
+
+            if (containerTransform != null)
+            {
+                transform.SetParent(containerTransform, true);
+            }
+
             Physics.SyncTransforms();
         }
 
@@ -274,7 +453,7 @@ namespace CityLife.Items
                 var b = ItemCollider.bounds;
                 boundsStr = $"center=({b.center.x:F3},{b.center.y:F3},{b.center.z:F3}),size=({b.size.x:F3},{b.size.y:F3},{b.size.z:F3})";
             }
-            return $"lossyScale=({scale.x:F4},{scale.y:F4},{scale.z:F4}), bodyMass={mass:F4}kg, colliderBounds=[{boundsStr}]";
+            return $"lossyScale=({scale.x:F4},{scale.y:F4},{scale.z:F4}), bodyMass={mass:F4}kg, colliderBounds=[{boundsStr}], isStored={IsStored}";
         }
 
 
@@ -285,6 +464,7 @@ namespace CityLife.Items
         {
             if (BoundModel == null) return false;
             if (IsCarried) return false;
+            if (IsStored) return false;
             if (isAnchored) return false;
             if (Body == null || Body.isKinematic) return false;
             if (!gameObject.scene.IsValid() || !isActiveAndEnabled) return false;
@@ -295,6 +475,150 @@ namespace CityLife.Items
                 itemId,
                 transform.position,
                 transform.rotation);
+        }
+
+        [Serializable]
+        public struct PhysicalRuntimeStateCapture
+        {
+            public bool isCarried;
+            public Transform carriedHand;
+            public bool isStored;
+            public string boundContainerItemId;
+            public Transform parent;
+            public Vector3 localPosition;
+            public Quaternion localRotation;
+            public Vector3 localScale;
+            public bool bodyKinematic;
+            public bool bodyUseGravity;
+            public Vector3 bodyLinearVelocity;
+            public Vector3 bodyAngularVelocity;
+            public CollisionDetectionMode bodyCollisionDetectionMode;
+            public bool colliderEnabled;
+            public bool colliderIsTrigger;
+            public List<KeyValuePair<Renderer, bool>> rendererStates;
+            public List<KeyValuePair<Renderer, bool>> originalRendererStates;
+        }
+
+        /// <summary>
+        /// Captures exact runtime physical, transform, body, collider, and renderer state
+        /// of this specific physical item for exact atomic transaction rollback.
+        /// Justified narrow helper because IsCarried, IsStored, CarriedHand, BoundContainerItemId,
+        /// and originalRendererStates have private setters and cannot be rolled back externally.
+        /// </summary>
+        public PhysicalRuntimeStateCapture CaptureRuntimeState()
+        {
+            var cap = new PhysicalRuntimeStateCapture
+            {
+                isCarried = IsCarried,
+                carriedHand = CarriedHand,
+                isStored = IsStored,
+                boundContainerItemId = BoundContainerItemId,
+                parent = transform.parent,
+                localPosition = transform.localPosition,
+                localRotation = transform.localRotation,
+                localScale = transform.localScale,
+                rendererStates = new List<KeyValuePair<Renderer, bool>>(),
+                originalRendererStates = new List<KeyValuePair<Renderer, bool>>()
+            };
+
+            if (Body != null)
+            {
+                cap.bodyKinematic = Body.isKinematic;
+                cap.bodyUseGravity = Body.useGravity;
+                cap.bodyLinearVelocity = Body.linearVelocity;
+                cap.bodyAngularVelocity = Body.angularVelocity;
+                cap.bodyCollisionDetectionMode = Body.collisionDetectionMode;
+            }
+
+            if (ItemCollider != null)
+            {
+                cap.colliderEnabled = ItemCollider.enabled;
+                cap.colliderIsTrigger = ItemCollider.isTrigger;
+            }
+
+            var renderers = new List<Renderer>();
+            GetOwnedRenderers(renderers);
+            for (int i = 0; i < renderers.Count; i++)
+            {
+                var r = renderers[i];
+                if (r != null)
+                {
+                    cap.rendererStates.Add(new KeyValuePair<Renderer, bool>(r, r.enabled));
+                }
+            }
+
+            foreach (var kvp in originalRendererStates)
+            {
+                cap.originalRendererStates.Add(kvp);
+            }
+
+            return cap;
+        }
+
+        /// <summary>
+        /// Atomically restores exact captured runtime physical state, reversing any uncommitted transaction.
+        /// </summary>
+        public void RestoreRuntimeState(PhysicalRuntimeStateCapture cap)
+        {
+            IsCarried = cap.isCarried;
+            CarriedHand = cap.carriedHand;
+            IsStored = cap.isStored;
+            BoundContainerItemId = cap.boundContainerItemId;
+
+            transform.SetParent(cap.parent, false);
+            transform.localPosition = cap.localPosition;
+            transform.localRotation = cap.localRotation;
+            transform.localScale = cap.localScale;
+
+            if (Body != null)
+            {
+                Body.isKinematic = cap.bodyKinematic;
+                Body.useGravity = cap.bodyUseGravity;
+                Body.collisionDetectionMode = cap.bodyCollisionDetectionMode;
+                if (!cap.bodyKinematic)
+                {
+                    Body.linearVelocity = cap.bodyLinearVelocity;
+                    Body.angularVelocity = cap.bodyAngularVelocity;
+                }
+                else
+                {
+                    Body.linearVelocity = Vector3.zero;
+                    Body.angularVelocity = Vector3.zero;
+                }
+            }
+
+            if (ItemCollider != null)
+            {
+                ItemCollider.enabled = cap.colliderEnabled;
+                ItemCollider.isTrigger = cap.colliderIsTrigger;
+            }
+
+            if (cap.rendererStates != null)
+            {
+                for (int i = 0; i < cap.rendererStates.Count; i++)
+                {
+                    var kvp = cap.rendererStates[i];
+                    if (kvp.Key != null)
+                    {
+                        kvp.Key.enabled = kvp.Value;
+                    }
+                }
+            }
+
+            originalRendererStates.Clear();
+            if (cap.originalRendererStates != null)
+            {
+                for (int i = 0; i < cap.originalRendererStates.Count; i++)
+                {
+                    var kvp = cap.originalRendererStates[i];
+                    if (kvp.Key != null)
+                    {
+                        originalRendererStates[kvp.Key] = kvp.Value;
+                    }
+                }
+            }
+
+            Physics.SyncTransforms();
         }
     }
 }

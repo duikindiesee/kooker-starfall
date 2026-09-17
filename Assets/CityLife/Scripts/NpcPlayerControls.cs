@@ -16,14 +16,20 @@ namespace CityLife.World
         public NpcDecisionHud Hud;
         public CharacterPreviewCamera View;
         public PreviewDisplayMode Display;
+        public PhysicalContainerPanel ContainerPanel;
         public bool AllowUnfocusedTestInput;
         public bool SuppressInput;
         public bool SuppressView;
         public bool PersistentMouseCapture;
         public bool ExternalMovementInput;
+        public NpcInteractable CurrentPickupTarget { get; private set; }
+        public string CurrentPickupTargetLabel { get; private set; }
+        public Text TargetPromptText;
         [Range(.04f, .3f)] public float LookSensitivity = .12f;
         public Vector3 CameraMinimum = new Vector3(-22, .7f, -22), CameraMaximum = new Vector3(22, 18, 22);
         private bool resumeCapture;
+        private bool resumeCaptureFromPanel;
+        private int cyclePickupIndex = -1;
         private int captureFrame = -10;
         [NonSerialized] public Keyboard TestKeyboard;
         [NonSerialized] public Mouse TestMouse;
@@ -47,16 +53,28 @@ namespace CityLife.World
         private float yaw, pitch, savedTimeScale = 1;
         private bool initialized;
 
+        public void EnsureInitialized()
+        {
+            if (initialized) return;
+            if (View != null)
+            {
+                View.ExternalView = true;
+                freePosition = View.transform.position; yaw = View.transform.eulerAngles.y;
+                pitch = View.transform.eulerAngles.x; if (pitch > 180) pitch -= 360;
+            }
+            BuildMenu();
+            initialized = true;
+        }
+
         private void Start()
         {
-            View.ExternalView = true;
-            freePosition = View.transform.position; yaw = View.transform.eulerAngles.y;
-            pitch = View.transform.eulerAngles.x; if (pitch > 180) pitch -= 360;
-            BuildMenu(); initialized = true;
+            EnsureInitialized();
         }
-        private void Update()
+
+        public void Update()
         {
-            if (!initialized || !Brain.Ready) return;
+            EnsureInitialized();
+            if (Brain == null || !Brain.Ready) return;
             if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
             cameraMotion = Vector3.zero;
             if (SuppressInput || DisplayShortcutActive) return;
@@ -67,15 +85,47 @@ namespace CityLife.World
             if (key.pKey.wasPressedThisFrame) { if (MenuOpen) Resume(); else OpenMenu(); }
             else if (key.escapeKey.wasPressedThisFrame)
             {
-                if (!MenuOpen) OpenMenu();
-                else if (Page != "Root") ShowPage("Root");
-                else Resume();
+                if (MenuOpen)
+                {
+                    if (Page != "Root") ShowPage("Root");
+                    else Resume();
+                    return;
+                }
+                if (ContainerPanel != null && ContainerPanel.IsOpen)
+                {
+                    ContainerPanel.Close();
+                    return;
+                }
+                OpenMenu();
+                return;
             }
             if (MenuOpen)
             {
                 if (key.downArrowKey.wasPressedThisFrame) Select((selected + 1) % actions.Count);
                 if (key.upArrowKey.wasPressedThisFrame) Select((selected + actions.Count - 1) % actions.Count);
                 if (key.enterKey.wasPressedThisFrame || key.numpadEnterKey.wasPressedThisFrame) actions[selected]();
+                return;
+            }
+            if (ContainerPanel != null && ContainerPanel.IsOpen)
+            {
+                if (key.cKey.wasPressedThisFrame)
+                {
+                    ContainerPanel.Close();
+                    return;
+                }
+                if (key.tabKey.wasPressedThisFrame)
+                {
+                    ContainerPanel.Close();
+                    TogglePossession();
+                    return;
+                }
+                if (key.tKey.wasPressedThisFrame)
+                {
+                    ContainerPanel.CycleSelection();
+                }
+                if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
+                cameraMotion = Vector3.zero;
+                ReleasePointer();
                 return;
             }
             if (key.tabKey.wasPressedThisFrame) TogglePossession();
@@ -86,6 +136,24 @@ namespace CityLife.World
             }
             if (key.rKey.wasPressedThisFrame) Brain.ToggleAutonomy();
             if (key.lKey.wasPressedThisFrame) Hud.Detailed = !Hud.Detailed;
+            if (key.cKey.wasPressedThisFrame && Brain.Possessed)
+            {
+                if (ContainerPanel != null)
+                {
+                    ContainerPanel.Open();
+                    if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
+                    cameraMotion = Vector3.zero;
+                    return;
+                }
+            }
+            if (key.tKey.wasPressedThisFrame && Brain.Possessed)
+            {
+                CyclePickupTarget();
+            }
+            if (Brain.Possessed)
+            {
+                RefreshPickupTarget();
+            }
             if (key.gKey.wasPressedThisFrame) InteractPhysicalItem();
             if (mouse != null)
             {
@@ -138,11 +206,159 @@ namespace CityLife.World
             if (Brain.Possessed) { yaw = View.Yaw; pitch = View.Pitch; }
             else
             {
+                if (ContainerPanel != null && ContainerPanel.IsOpen) ContainerPanel.Close();
+                CurrentPickupTarget = null;
+                UpdatePickupTargetLabel();
                 // Observe from the current following pose; do not reset or replace the inhabitant.
                 freePosition = View.transform.position; yaw = View.transform.eulerAngles.y;
                 pitch = View.transform.eulerAngles.x; if (pitch > 180) pitch -= 360;
             }
             if (MenuOpen && Page == "Controls") ShowPage("Controls");
+        }
+        public void OnContainerPanelOpened()
+        {
+            resumeCaptureFromPanel = PersistentMouseCapture && Looking;
+            ReleasePointer();
+            if (!ExternalMovementInput && Brain != null) Brain.ManualDirection = Vector3.zero;
+            cameraMotion = Vector3.zero;
+            if (TargetPromptText != null) TargetPromptText.gameObject.SetActive(false);
+        }
+        public void OnContainerPanelClosed()
+        {
+            if (resumeCaptureFromPanel && Brain != null && Brain.Possessed && (Application.isFocused || AllowUnfocusedTestInput))
+            {
+                CapturePointer();
+            }
+            resumeCaptureFromPanel = false;
+            RefreshPickupTarget();
+        }
+        public List<NpcInteractable> GetEligiblePickupTargets()
+        {
+            var list = new List<NpcInteractable>();
+            if (Brain == null || Brain.PhysicalItems == null) return list;
+
+            Vector3 actorPos = Brain.transform.position;
+            Vector3 sightPos = actorPos + Vector3.up;
+
+            foreach (var cand in Brain.PhysicalItems.AllInteractables)
+            {
+                if (cand == null || !cand.isActiveAndEnabled || !cand.Permission || cand.Approach == null) continue;
+                if (Brain.Actions != null && cand == Brain.Actions.Held) continue;
+
+                var phys = cand.GetComponent<CityLife.Items.PhysicalItem>();
+                if (phys == null || phys.IsStored) continue;
+
+                float distApproach = Vector3.Distance(actorPos, cand.Approach.position);
+                float distSight = Vector3.Distance(sightPos, cand.SightPoint);
+                if (distApproach > 0.65f || distSight > 1.7f) continue;
+
+                list.Add(cand);
+            }
+
+            list.Sort((a, b) => string.CompareOrdinal(a.StableId, b.StableId));
+            return list;
+        }
+        public void CyclePickupTarget()
+        {
+            var eligible = GetEligiblePickupTargets();
+            if (eligible.Count == 0)
+            {
+                CurrentPickupTarget = null;
+                cyclePickupIndex = -1;
+                UpdatePickupTargetLabel();
+                return;
+            }
+
+            int currentIdx = -1;
+            if (CurrentPickupTarget != null)
+            {
+                for (int i = 0; i < eligible.Count; i++)
+                {
+                    if (eligible[i] == CurrentPickupTarget)
+                    {
+                        currentIdx = i;
+                        break;
+                    }
+                }
+            }
+
+            cyclePickupIndex = (currentIdx + 1) % eligible.Count;
+            CurrentPickupTarget = eligible[cyclePickupIndex];
+            UpdatePickupTargetLabel();
+        }
+        public void RefreshPickupTarget()
+        {
+            var eligible = GetEligiblePickupTargets();
+            if (eligible.Count == 0)
+            {
+                CurrentPickupTarget = null;
+                cyclePickupIndex = -1;
+            }
+            else
+            {
+                if (CurrentPickupTarget == null || !eligible.Contains(CurrentPickupTarget))
+                {
+                    CurrentPickupTarget = GetBestNearbyPhysicalInteractable();
+                }
+            }
+            UpdatePickupTargetLabel();
+        }
+        public void UpdatePickupTargetLabel()
+        {
+            if (Brain != null && Brain.Actions != null && Brain.Actions.Held != null)
+            {
+                CurrentPickupTargetLabel = $"Held: {Brain.Actions.Held.StableId} [G: Drop]";
+            }
+            else if (CurrentPickupTarget != null)
+            {
+                CurrentPickupTargetLabel = $"Target: {CurrentPickupTarget.StableId} [G: Pick Up | T: Cycle]";
+            }
+            else
+            {
+                CurrentPickupTargetLabel = "";
+            }
+
+            if (TargetPromptText != null)
+            {
+                TargetPromptText.text = CurrentPickupTargetLabel;
+                TargetPromptText.gameObject.SetActive(!string.IsNullOrEmpty(CurrentPickupTargetLabel) && Brain != null && Brain.Possessed && (ContainerPanel == null || !ContainerPanel.IsOpen));
+            }
+        }
+        public NpcInteractable GetBestNearbyPhysicalInteractable()
+        {
+            if (Brain == null || Brain.PhysicalItems == null) return null;
+
+            NpcInteractable best = null;
+            float bestScore = float.MinValue;
+            Vector3 actorPos = Brain.transform.position;
+            Vector3 camPos = View != null ? View.transform.position : (Camera.main != null ? Camera.main.transform.position : actorPos);
+            Vector3 camFwd = View != null ? View.transform.forward : (Camera.main != null ? Camera.main.transform.forward : Brain.transform.forward);
+
+            foreach (var cand in Brain.PhysicalItems.AllInteractables)
+            {
+                if (cand == null || !cand.isActiveAndEnabled || !cand.Permission || cand.Approach == null) continue;
+                if (Brain.Actions != null && cand == Brain.Actions.Held) continue;
+
+                var phys = cand.GetComponent<CityLife.Items.PhysicalItem>();
+                if (phys == null || phys.IsStored) continue;
+
+                float distApproach = Vector3.Distance(actorPos, cand.Approach.position);
+                float distSight = Vector3.Distance(actorPos + Vector3.up, cand.SightPoint);
+                if (distApproach > 0.65f || distSight > 1.7f) continue;
+
+                Vector3 toCand = (cand.transform.position - camPos).normalized;
+                float dot = Vector3.Dot(camFwd, toCand);
+
+                // Deterministic score with distance penalty and StableId tie-break
+                float score = dot * 10f - distApproach;
+                if (best == null || score > bestScore || (Mathf.Abs(score - bestScore) < 0.001f && string.CompareOrdinal(cand.StableId, best.StableId) < 0))
+                {
+                    best = cand;
+                    bestScore = score;
+                }
+            }
+
+            return best;
         }
         public void InteractPhysicalItem()
         {
@@ -152,17 +368,43 @@ namespace CityLife.World
                 if (Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null)
                 {
                     Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    RefreshPickupTarget();
+                    if (ContainerPanel != null && ContainerPanel.IsOpen)
+                    {
+                        ContainerPanel.UpdateContent();
+                    }
                 }
             }
             else
             {
-                var candidate = Brain.PhysicalItems != null ? Brain.PhysicalItems.DemonstrationInteractable : null;
-                if (candidate != null && candidate.isActiveAndEnabled && candidate.Permission && candidate.Approach != null)
+                NpcInteractable candidate = CurrentPickupTarget;
+                if (candidate == null || !candidate.isActiveAndEnabled || !candidate.Permission || candidate.Approach == null)
                 {
-                    float dist = Vector3.Distance(Brain.transform.position, candidate.Approach.position);
-                    if (dist <= 0.65f)
+                    candidate = GetBestNearbyPhysicalInteractable();
+                }
+
+                if (candidate == null && Brain.PhysicalItems != null)
+                {
+                    var fallback = Brain.PhysicalItems.DemonstrationInteractable;
+                    if (fallback != null && fallback.isActiveAndEnabled && fallback.Permission && fallback.Approach != null)
+                    {
+                        float dist = Vector3.Distance(Brain.transform.position, fallback.Approach.position);
+                        if (dist <= 0.65f) candidate = fallback;
+                    }
+                }
+
+                if (candidate != null)
+                {
+                    float distApproach = Vector3.Distance(Brain.transform.position, candidate.Approach.position);
+                    float distSight = Vector3.Distance(Brain.transform.position + Vector3.up, candidate.SightPoint);
+                    if (distApproach <= 0.65f && distSight <= 1.7f)
                     {
                         Brain.ExecutePlayerAction(NpcActionKind.Pickup, candidate.StableId);
+                        RefreshPickupTarget();
+                        if (ContainerPanel != null && ContainerPanel.IsOpen)
+                        {
+                            ContainerPanel.UpdateContent();
+                        }
                     }
                 }
             }
@@ -170,6 +412,8 @@ namespace CityLife.World
         public void OpenMenu()
         {
             if (MenuOpen) return;
+            if (ContainerPanel != null && ContainerPanel.IsOpen) ContainerPanel.Close();
+            if (TargetPromptText != null) TargetPromptText.gameObject.SetActive(false);
             resumeCapture = PersistentMouseCapture && Looking;
             ReleasePointer(); savedTimeScale = Time.timeScale; Time.timeScale = 0;
             Brain.MenuPaused = true; Brain.ManualDirection = Vector3.zero; cameraMotion = Vector3.zero;
@@ -183,6 +427,7 @@ namespace CityLife.World
             Brain.MenuPaused = false; Time.timeScale = savedTimeScale;
             if (resumeCapture && (Application.isFocused || AllowUnfocusedTestInput)) CapturePointer();
             resumeCapture = false;
+            RefreshPickupTarget();
         }
         public void ReleasePointer()
         {
@@ -269,6 +514,25 @@ namespace CityLife.World
             var help = Label("Menu navigation", 785, 60, 20);
             help.text = "↑ / ↓ choose · Enter activate · Mouse click supported\nEscape: back, then resume · P: resume from any page";
             overlay.SetActive(false);
+
+            if (TargetPromptText == null && Hud != null && Hud.Canvas != null)
+            {
+                var promptObj = new GameObject("Pickup prompt label", typeof(RectTransform), typeof(Text));
+                var pRect = promptObj.GetComponent<RectTransform>();
+                pRect.SetParent(Hud.Canvas.transform, false);
+                pRect.anchorMin = new Vector2(0.5f, 0f);
+                pRect.anchorMax = new Vector2(0.5f, 0f);
+                pRect.pivot = new Vector2(0.5f, 0f);
+                pRect.anchoredPosition = new Vector2(0f, 30f);
+                pRect.sizeDelta = new Vector2(600f, 40f);
+                TargetPromptText = promptObj.GetComponent<Text>();
+                TargetPromptText.font = font;
+                TargetPromptText.fontSize = 18;
+                TargetPromptText.color = new Color(0.6f, 0.93f, 0.93f, 1f);
+                TargetPromptText.alignment = TextAnchor.MiddleCenter;
+                TargetPromptText.supportRichText = false;
+                promptObj.SetActive(false);
+            }
         }
         private void ShowPage(string page)
         {
@@ -291,7 +555,7 @@ namespace CityLife.World
                     "\nSpectator: WASD or arrows move the camera; Q/E down/up. NPC autonomy continues." +
                     "\nPossession: WASD or arrows move the NPC. Autonomy is suspended." +
                     "\nHold right mouse: look. R: pause/resume autonomy in observation modes." +
-                    "\nG: pick up or drop physical item. L: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
+                    "\nC: container panel. G: pick up or drop. T: cycle target (container in panel). L: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
                 if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
                 if (PersistentMouseCapture) Option("Mouse look sensitivity", () => ShowPage("Mouse"));

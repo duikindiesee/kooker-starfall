@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using CityLife.World;
@@ -8,8 +9,10 @@ namespace CityLife.Items
 {
     /// <summary>
     /// Bounded runtime bootstrap for physical item foundation integration in the live canyon world.
-    /// Explicitly authors and owns a movable demonstration physical item, binds authoritative ItemModel and
-    /// PhysicalAuthority to NpcActionApi, and synchronizes dynamic physics transforms in FixedUpdate.
+    /// Explicitly authors and owns authoritative item definitions via PhysicalItemCatalog, supports
+    /// multi-instance physical bootstrap and cold restore using the validated ItemPersistence list binder,
+    /// binds authoritative ItemModel and PhysicalAuthority to NpcActionApi, and synchronizes dynamic
+    /// physics transforms in FixedUpdate.
     /// Supports opt-in restart persistence via explicit absolute -physicalSave path, and 4 separate-process
     /// diagnostic flows: save-carried, load-carried, drop-save-free, and load-free under normal frames.
     /// </summary>
@@ -26,6 +29,16 @@ namespace CityLife.Items
         [Tooltip("Serialized URP material asset for demonstration visual cube. Assigned during scene build generation.")]
         public Material DemonstrationMaterial;
 
+        [Tooltip("Serialized URP material asset for woven basket visual. Assigned during scene build generation.")]
+        public Material BasketMaterial;
+
+        [Tooltip("Opt-in flag to populate starter canyon layout with basket and small physical objects on fresh start.")]
+        public bool OptInStarterLayout = false;
+
+        [Tooltip("Narrow serialized explicit rooted save override. Priority: explicit CLI -physicalSave > ExplicitSavePathOverride > integrated default (if opted in).")]
+        [SerializeField]
+        public string ExplicitSavePathOverride = string.Empty;
+
         public string DemonstrationItemId = "canyon-artifact-01";
         public string DemonstrationItemTypeId = "canyon-stone";
         public float DemonstrationItemMassKg = 2.5f;
@@ -37,26 +50,263 @@ namespace CityLife.Items
         public string EvidenceDirectory { get; private set; }
         public string PhysicalSavePath { get; private set; }
         public bool SaveRejected { get; private set; }
+        public bool SourceSaveRejected { get; private set; }
+        public string RejectedSourcePath { get; private set; }
+        public bool LastSaveFailed { get; private set; }
+        public string LastSaveError { get; private set; }
         public bool HasSavedPayload { get; private set; }
+        public static bool IsFullyQualifiedPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return false;
+            if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0) return false;
+
+            try
+            {
+                if (!Path.IsPathFullyQualified(path)) return false;
+            }
+            catch
+            {
+                return false;
+            }
+
+            // Reject Windows drive-relative paths (e.g. C:save.json)
+            if (path.Length >= 2 && path[1] == ':')
+            {
+                if (path.Length < 3 || (path[2] != '\\' && path[2] != '/') || !char.IsLetter(path[0]))
+                {
+                    return false;
+                }
+            }
+
+            // Reject Windows root-relative paths (e.g. \save.json or /save.json)
+            if ((path.StartsWith("\\") || path.StartsWith("/")) && !path.StartsWith("\\\\") && !path.StartsWith("//"))
+            {
+                return false;
+            }
+
+            // Reject malformed UNC paths (e.g. \\save.json without server and share)
+            if (path.StartsWith("\\\\") || path.StartsWith("//"))
+            {
+                string unc = path.Substring(2).TrimStart('\\', '/');
+                int sep = unc.IndexOfAny(new[] { '\\', '/' });
+                if (sep <= 0 || sep >= unc.Length - 1)
+                {
+                    return false;
+                }
+            }
+
+            try
+            {
+                string full = Path.GetFullPath(path);
+                if (string.IsNullOrEmpty(full)) return false;
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool ValidateCommandLineSaveArgs(string[] args, out string path, out string error)
+        {
+            path = null;
+            error = null;
+            if (args == null) return true;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (string.Equals(args[i], "-physicalSave", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1]))
+                    {
+                        error = "invalid-cli-save-path";
+                        return false;
+                    }
+
+                    string candidate = args[i + 1];
+                    if (!IsFullyQualifiedPath(candidate))
+                    {
+                        error = "invalid-cli-save-path";
+                        return false;
+                    }
+
+                    try
+                    {
+                        path = Path.GetFullPath(candidate);
+                        return true;
+                    }
+                    catch
+                    {
+                        error = "invalid-cli-save-path";
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public static string GetDefaultSavePath(string worldId = null)
+        {
+            string root = !string.IsNullOrEmpty(Application.persistentDataPath)
+                ? Application.persistentDataPath
+                : Directory.GetCurrentDirectory();
+            string fileName = !string.IsNullOrEmpty(worldId)
+                ? $"physical-{worldId.Replace(':', '-').Replace('/', '-').Replace('\\', '-')}-default.json"
+                : "physical-world-default.json";
+            return Path.GetFullPath(Path.Combine(root, "Saves", fileName));
+        }
+
+        private string activeRecoveryPath;
+
+        public string GetRecoverySavePath()
+        {
+            if (!string.IsNullOrEmpty(activeRecoveryPath))
+            {
+                return activeRecoveryPath;
+            }
+
+            string dir = !string.IsNullOrEmpty(RejectedSourcePath)
+                ? Path.GetDirectoryName(RejectedSourcePath)
+                : Path.Combine(!string.IsNullOrEmpty(Application.persistentDataPath) ? Application.persistentDataPath : Directory.GetCurrentDirectory(), "Saves");
+
+            string baseName;
+            if (!string.IsNullOrEmpty(RejectedSourcePath))
+            {
+                baseName = Path.GetFileNameWithoutExtension(RejectedSourcePath) + "-recovery";
+            }
+            else
+            {
+                string worldId = Brain != null ? Brain.InstanceWorldId : null;
+                baseName = !string.IsNullOrEmpty(worldId)
+                    ? $"physical-{worldId.Replace(':', '-').Replace('/', '-').Replace('\\', '-')}-recovery"
+                    : "physical-world-recovery";
+            }
+
+            string candidate = Path.GetFullPath(Path.Combine(dir, baseName + ".json"));
+            int counter = 1;
+            while (File.Exists(candidate))
+            {
+                candidate = Path.GetFullPath(Path.Combine(dir, $"{baseName}-{counter}.json"));
+                counter++;
+            }
+            return candidate;
+        }
+
+        public bool SaveRecoveryState(out string recoveryPath)
+        {
+            recoveryPath = GetRecoverySavePath();
+            return SaveCurrentState(recoveryPath, isRecoveryAction: true);
+        }
 
         private PhysicalSavePayload savedPayload;
         private bool restoreAttempted;
         private bool itemCreated;
+
+        public PhysicalItemCatalog Catalog { get; private set; }
+        private readonly List<PhysicalItemRuntimeBinding> bindings = new List<PhysicalItemRuntimeBinding>();
+        public IReadOnlyList<PhysicalItemRuntimeBinding> Bindings => bindings;
+
+        public void RegisterBinding(PhysicalItemRuntimeBinding binding)
+        {
+            if (binding != null && !bindings.Contains(binding))
+            {
+                bindings.Add(binding);
+            }
+        }
+
+        public IEnumerable<NpcInteractable> AllInteractables
+        {
+            get
+            {
+                if (bindings != null && bindings.Count > 0)
+                {
+                    for (int i = 0; i < bindings.Count; i++)
+                    {
+                        var b = bindings[i];
+                        if (b != null && b.interactable != null)
+                            yield return b.interactable;
+                    }
+                }
+                else if (DemonstrationInteractable != null)
+                {
+                    yield return DemonstrationInteractable;
+                }
+            }
+        }
+
+        public bool RegisterAuthoritativeDefinition(ItemDefinition def)
+        {
+            if (def == null || !def.IsValid())
+                return false;
+
+            if (Catalog == null) Catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+
+            if (Catalog.Contains(def.itemTypeId))
+                return false;
+
+            if (Model != null)
+            {
+                if (Model.TryGetDefinition(def.itemTypeId, out _))
+                    return false;
+
+                bool modelRegistered = Model.RegisterDefinition(def);
+                if (!modelRegistered)
+                    return false;
+
+                bool catalogRegistered = Catalog.Register(def);
+                if (!catalogRegistered)
+                    return false;
+
+                return true;
+            }
+
+            return Catalog.Register(def);
+        }
+
 
         private void Awake()
         {
             if (Brain == null) Brain = GetComponent<NpcAutonomy>();
             if (Brain != null && Brain.PhysicalItems == null) Brain.PhysicalItems = this;
 
+            string cliSavePath = null;
             string[] args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length; i++)
             {
-                if (string.Equals(args[i], "-physicalSave", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+                if (string.Equals(args[i], "-physicalSave", StringComparison.OrdinalIgnoreCase))
                 {
-                    string candidatePath = args[i + 1];
-                    if (!string.IsNullOrEmpty(candidatePath) && Path.IsPathRooted(candidatePath))
+                    if (i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1]))
                     {
-                        PhysicalSavePath = Path.GetFullPath(candidatePath);
+                        SaveRejected = true;
+                        LastSaveFailed = true;
+                        LastSaveError = "invalid-cli-save-path";
+                        Debug.LogError("[PhysicalItemBootstrap] CLI argument -physicalSave was supplied without a path. Halting save IO without fallback.");
+                        return;
+                    }
+
+                    string candidatePath = args[i + 1];
+                    if (!IsFullyQualifiedPath(candidatePath))
+                    {
+                        SaveRejected = true;
+                        LastSaveFailed = true;
+                        LastSaveError = "invalid-cli-save-path";
+                        Debug.LogError($"[PhysicalItemBootstrap] CLI argument -physicalSave path '{candidatePath}' is not fully qualified and absolute. Halting save IO without fallback.");
+                        return;
+                    }
+
+                    try
+                    {
+                        cliSavePath = Path.GetFullPath(candidatePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        SaveRejected = true;
+                        LastSaveFailed = true;
+                        LastSaveError = "invalid-cli-save-path";
+                        Debug.LogError($"[PhysicalItemBootstrap] CLI argument -physicalSave path '{candidatePath}' cannot be normalized: {ex.Message}. Halting save IO without fallback.");
+                        return;
                     }
                 }
                 else if ((string.Equals(args[i], "-physicalDiagnosticMode", StringComparison.OrdinalIgnoreCase) ||
@@ -80,10 +330,61 @@ namespace CityLife.Items
 
             string worldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
             string actorId = Brain != null ? NpcAutonomy.AgentId : "inhabitant-01";
-            Model = new ItemModel(worldId, "gen-01");
-            Authority = new BasicItemActionAuthority();
 
-            var def = new ItemDefinition
+            // Strict Save Path Precedence:
+            // 1. Explicit CLI -physicalSave highest
+            // 2. Serialized ExplicitSavePathOverride second (validated rooted/absolute before any IO)
+            // 3. Integrated default only if both absent and opted in
+            if (!string.IsNullOrEmpty(cliSavePath))
+            {
+                PhysicalSavePath = cliSavePath;
+            }
+            else if (!string.IsNullOrEmpty(ExplicitSavePathOverride))
+            {
+                if (!IsFullyQualifiedPath(ExplicitSavePathOverride))
+                {
+                    SaveRejected = true;
+                    LastSaveFailed = true;
+                    LastSaveError = "invalid-configured-save-path";
+                    Debug.LogError($"[PhysicalItemBootstrap] Explicit save path override '{ExplicitSavePathOverride}' is not fully qualified and absolute. Halting save IO without fallback to user default.");
+                    return;
+                }
+
+                try
+                {
+                    PhysicalSavePath = Path.GetFullPath(ExplicitSavePathOverride);
+                }
+                catch (Exception ex)
+                {
+                    SaveRejected = true;
+                    LastSaveFailed = true;
+                    LastSaveError = "invalid-configured-save-path";
+                    Debug.LogError($"[PhysicalItemBootstrap] Explicit save path override '{ExplicitSavePathOverride}' cannot be normalized: {ex.Message}. Halting save IO without fallback to user default.");
+                    return;
+                }
+            }
+            else if (OptInStarterLayout)
+            {
+                PhysicalSavePath = GetDefaultSavePath(worldId);
+            }
+
+            if (Catalog == null) Catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+
+            // Validate demonstration configuration before creating any objects or models
+            if (!ItemModel.IsValidId(DemonstrationItemId) ||
+                string.IsNullOrEmpty(DemonstrationItemTypeId) ||
+                !ItemModel.IsValidId(DemonstrationItemTypeId) ||
+                !ItemDefinition.Finite(DemonstrationItemMassKg) || DemonstrationItemMassKg <= 0f || DemonstrationItemMassKg > 10000f ||
+                DemonstrationItemDimensions.x <= 0f || DemonstrationItemDimensions.x > 20f || !ItemDefinition.Finite(DemonstrationItemDimensions.x) ||
+                DemonstrationItemDimensions.y <= 0f || DemonstrationItemDimensions.y > 20f || !ItemDefinition.Finite(DemonstrationItemDimensions.y) ||
+                DemonstrationItemDimensions.z <= 0f || DemonstrationItemDimensions.z > 20f || !ItemDefinition.Finite(DemonstrationItemDimensions.z))
+            {
+                SaveRejected = true;
+                Debug.LogError($"[PhysicalItemBootstrap] Invalid demonstration configuration: itemId='{DemonstrationItemId}', typeId='{DemonstrationItemTypeId}', mass={DemonstrationItemMassKg}, dimensions={DemonstrationItemDimensions}. Zero objects created.");
+                return;
+            }
+
+            var demoDef = new ItemDefinition
             {
                 itemTypeId = DemonstrationItemTypeId,
                 massKg = DemonstrationItemMassKg,
@@ -92,7 +393,26 @@ namespace CityLife.Items
                 isAnchored = false,
                 requiresSupportToPlace = false
             };
-            Model.RegisterDefinition(def);
+
+            if (!demoDef.IsValid())
+            {
+                SaveRejected = true;
+                Debug.LogError("[PhysicalItemBootstrap] Demonstration definition is not valid. Zero objects created.");
+                return;
+            }
+
+            // Explicit validated authoritative demo configuration updates catalog
+            bool registeredInCatalog = Catalog.RegisterOrUpdate(demoDef);
+            if (!registeredInCatalog)
+            {
+                SaveRejected = true;
+                Debug.LogError("[PhysicalItemBootstrap] Failed to register demonstration definition in authoritative catalog.");
+                return;
+            }
+
+            Model = new ItemModel(worldId, "gen-01");
+            Catalog.PopulateModel(Model);
+            Authority = new BasicItemActionAuthority();
 
             SetupDemonstrationItem();
 
@@ -100,15 +420,20 @@ namespace CityLife.Items
             {
                 if (File.Exists(PhysicalSavePath))
                 {
-                    bool loaded = ItemPersistence.TryLoad(PhysicalSavePath, worldId, "gen-01", actorId, Model, out savedPayload);
+                    bool loaded = LoadSavePayload(PhysicalSavePath);
                     if (!loaded)
                     {
                         SaveRejected = true;
+                        SourceSaveRejected = true;
+                        RejectedSourcePath = PhysicalSavePath;
                         Debug.LogWarning($"[PhysicalItemBootstrap] Rejected invalid/foreign save file at '{PhysicalSavePath}'. Prior file preserved untouched; fresh start initialized.");
                     }
                     else
                     {
                         HasSavedPayload = true;
+                        SaveRejected = false;
+                        SourceSaveRejected = false;
+                        RejectedSourcePath = null;
                         Debug.Log($"[PhysicalItemBootstrap] Valid physical save payload loaded from '{PhysicalSavePath}'.");
                     }
                 }
@@ -117,6 +442,412 @@ namespace CityLife.Items
                     Debug.Log($"[PhysicalItemBootstrap] Physical save path '{PhysicalSavePath}' not found on disk. Fresh start initialized.");
                 }
             }
+        }
+
+        public bool LoadSavePayload(string path)
+        {
+            SourceSaveRejected = true;
+            RejectedSourcePath = path;
+
+            // 1. Explicit unsupported live reload refusal BEFORE ANY mutation
+            if (Brain != null && Brain.Actions != null)
+            {
+                SaveRejected = true;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path) || !File.Exists(path))
+            {
+                SaveRejected = true;
+                return false;
+            }
+
+            string worldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
+            string actorId = Brain != null ? NpcAutonomy.AgentId : "inhabitant-01";
+            UnityEngine.SceneManagement.Scene targetScene = Brain != null && Brain.gameObject.scene.IsValid()
+                ? Brain.gameObject.scene
+                : UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+
+            if (Catalog == null) Catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+
+            var candidateModel = new ItemModel(worldId, "gen-01");
+            Catalog.PopulateModel(candidateModel);
+
+            var stagedObjects = new List<GameObject>();
+            var stagedBindings = new List<PhysicalItemRuntimeBinding>();
+
+            try
+            {
+                var fi = new FileInfo(path);
+                if (fi.Length > ItemPersistence.MaxFileSizeBytes)
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                string text = File.ReadAllText(path);
+                if (string.IsNullOrEmpty(text))
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                var envelope = JsonUtility.FromJson<PhysicalSaveEnvelope>(text);
+                if (envelope == null || envelope.schema != ItemPersistence.SchemaVersion ||
+                    string.IsNullOrEmpty(envelope.payload) || string.IsNullOrEmpty(envelope.sha256))
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                string computedSha = ItemPersistence.ComputeSha256(envelope.payload);
+                if (!string.Equals(computedSha, envelope.sha256, StringComparison.OrdinalIgnoreCase))
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                var candidate = JsonUtility.FromJson<PhysicalSavePayload>(envelope.payload);
+                if (candidate == null)
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                // Scope validation
+                if (!string.Equals(candidate.worldId, worldId, StringComparison.Ordinal) ||
+                    !string.Equals(candidate.generationId, "gen-01", StringComparison.Ordinal) ||
+                    !string.Equals(candidate.actorId, actorId, StringComparison.Ordinal) ||
+                    candidate.tick < 0 || candidate.items == null)
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                // Validate original nonphysical registry ID collisions
+                if (Brain != null && Brain.Registry != null)
+                {
+                    for (int i = 0; i < Brain.Registry.Length; i++)
+                    {
+                        var reg = Brain.Registry[i];
+                        if (reg != null && !string.IsNullOrEmpty(reg.StableId))
+                        {
+                            for (int j = 0; j < candidate.items.Count; j++)
+                            {
+                                var it = candidate.items[j];
+                                if (it != null && string.Equals(reg.StableId, it.itemId, StringComparison.Ordinal))
+                                {
+                                    SaveRejected = true;
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Strictly validate all items against authoritative catalog
+                var seenIds = new HashSet<string>(StringComparer.Ordinal);
+                SavedItemRecord carriedRecord = null;
+
+                foreach (var it in candidate.items)
+                {
+                    if (it == null || !ItemModel.IsValidId(it.itemId))
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+                    if (!seenIds.Add(it.itemId))
+                    {
+                        SaveRejected = true;
+                        return false; // Duplicate item ID
+                    }
+
+                    // Must exist in authoritative catalog (defensive copy returned)
+                    if (!Catalog.TryGet(it.itemTypeId, out var def))
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+                    if (def.isAnchored)
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+
+                    if (Mathf.Abs(it.massKg - def.massKg) > 0.0001f)
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+                    if (Mathf.Abs(it.dimensions.width - def.dimensions.width) > 0.0001f ||
+                        Mathf.Abs(it.dimensions.height - def.dimensions.height) > 0.0001f ||
+                        Mathf.Abs(it.dimensions.depth - def.dimensions.depth) > 0.0001f)
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+
+                    if (!ItemDefinition.Finite(it.position.x) || !ItemDefinition.Finite(it.position.y) || !ItemDefinition.Finite(it.position.z))
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+                    if (!ItemDefinition.TryCanonicalizeRotation(it.rotation, out var canonRot))
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+                    it.rotation = canonRot;
+
+                    if (it.lastUpdatedTick < 0 || it.lastUpdatedTick > candidate.tick)
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
+
+                    if (it.location == ItemLocationKind.Carried)
+                    {
+                        if (carriedRecord != null)
+                        {
+                            SaveRejected = true;
+                            return false; // Multiple carried roots
+                        }
+                        carriedRecord = it;
+                    }
+                }
+
+                // Check actor/animator/hand requirements
+                Transform hand = null;
+                if (carriedRecord != null)
+                {
+                    if (Brain == null || Brain.Actor == null || Brain.Actor.Animator == null)
+                    {
+                        SaveRejected = true;
+                        return false; // Required actor/animator absent
+                    }
+                    hand = Brain.Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand);
+                    if (hand == null || hand.gameObject.scene != targetScene)
+                    {
+                        SaveRejected = true;
+                        return false; // Required hand absent or wrong scene
+                    }
+                }
+
+                // Model graph preflight
+                if (!candidateModel.CanRestoreSnapshot(candidate))
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+
+                // Stage inactive GameObjects and candidate bindings
+                foreach (var rec in candidate.items)
+                {
+                    Catalog.TryGet(rec.itemTypeId, out var def);
+
+                    var go = new GameObject(rec.itemId);
+                    go.SetActive(false); // STAGED INACTIVE
+                    stagedObjects.Add(go);
+                    go.layer = 0;
+                    if (targetScene.IsValid())
+                    {
+                        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, targetScene);
+                    }
+
+                    go.transform.position = rec.position;
+                    go.transform.rotation = rec.rotation;
+                    go.transform.localScale = Vector3.one;
+
+                    var box = go.AddComponent<BoxCollider>();
+                    box.size = new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth);
+                    box.center = Vector3.zero;
+
+                    var rb = go.AddComponent<Rigidbody>();
+                    rb.mass = def.massKg;
+                    rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+                    CreateVisualForItem(go.transform, rec.itemTypeId, def);
+
+                    var approachObj = new GameObject(rec.itemId + " approach");
+                    approachObj.transform.SetParent(go.transform, false);
+                    approachObj.transform.localPosition = Vector3.zero;
+
+                    var interactable = go.AddComponent<NpcInteractable>();
+                    interactable.StableId = rec.itemId;
+                    interactable.WorldId = worldId;
+                    interactable.Kind = NpcObjectKind.Item;
+                    interactable.Permission = true;
+                    interactable.Approach = approachObj.transform;
+
+                    var phys = go.AddComponent<PhysicalItem>();
+                    phys.itemId = rec.itemId;
+                    phys.itemTypeId = rec.itemTypeId;
+                    phys.massKg = def.massKg;
+                    phys.dimensions = def.dimensions;
+                    phys.isAnchored = false;
+                    phys.ConfigureComponents();
+                    phys.Bind(candidateModel, worldId, candidateModel.GenerationId);
+                    phys.RecordInitialRendererStates();
+
+                    if (!phys.IsValid())
+                    {
+                        SaveRejected = true;
+                        DisposeStaged(stagedObjects);
+                        return false;
+                    }
+
+                    stagedBindings.Add(new PhysicalItemRuntimeBinding(rec.itemId, phys, interactable));
+                }
+
+                if (stagedBindings.Count != candidate.items.Count)
+                {
+                    SaveRejected = true;
+                    DisposeStaged(stagedObjects);
+                    return false;
+                }
+
+                // Validate actual list binder before publishing or destroying baseline
+                var candidateInteractables = new List<NpcInteractable>(stagedBindings.Count + (Brain != null && Brain.Registry != null ? Brain.Registry.Length : 0));
+                if (Brain != null && Brain.Registry != null)
+                {
+                    for (int i = 0; i < Brain.Registry.Length; i++)
+                    {
+                        if (Brain.Registry[i] != null) candidateInteractables.Add(Brain.Registry[i]);
+                    }
+                }
+                for (int i = 0; i < stagedBindings.Count; i++)
+                {
+                    if (stagedBindings[i].interactable != null) candidateInteractables.Add(stagedBindings[i].interactable);
+                }
+
+                Transform actorTransform = (Brain != null && Brain.Actor != null) ? Brain.Actor.transform : (Brain != null ? Brain.transform : (targetScene.rootCount > 0 ? targetScene.GetRootGameObjects()[0].transform : transform));
+                var candidateActions = new NpcActionApi(actorId, worldId, actorTransform, hand, candidateInteractables);
+                candidateActions.PhysicalModel = candidateModel;
+                candidateActions.PhysicalAuthority = Authority ?? new BasicItemActionAuthority();
+
+                bool binderValidated = ItemPersistence.RestoreRuntime(candidate, candidateModel, candidateActions, stagedBindings);
+                if (!binderValidated)
+                {
+                    SaveRejected = true;
+                    DisposeStaged(stagedObjects);
+                    return false;
+                }
+
+                // ALL FALLIBLE CHECKS & BINDER VALIDATION PASSED: IRREVERSIBLE COMMIT
+                // 1. Destroy previous baseline physical objects
+                ClearCommittedItems();
+
+                // 2. Activate staged candidate objects
+                foreach (var go in stagedObjects)
+                {
+                    if (go != null) go.SetActive(true);
+                }
+
+                // 3. Commit model, bindings, and save payload
+                Model = candidateModel;
+                bindings.Clear();
+                bindings.AddRange(stagedBindings);
+                savedPayload = candidate;
+                HasSavedPayload = true;
+                SaveRejected = false;
+                SourceSaveRejected = false;
+                RejectedSourcePath = null;
+                restoreAttempted = true; // Staged objects already restored by validated binder
+
+                // 4. Update demonstration references for backward compatibility
+                PhysicalItem demoPhys = null;
+                foreach (var b in bindings)
+                {
+                    if (string.Equals(b.itemId, DemonstrationItemId, StringComparison.Ordinal))
+                    {
+                        demoPhys = b.physicalItem;
+                        break;
+                    }
+                }
+                if (demoPhys == null && carriedRecord != null)
+                {
+                    foreach (var b in bindings)
+                    {
+                        if (string.Equals(b.itemId, carriedRecord.itemId, StringComparison.Ordinal))
+                        {
+                            demoPhys = b.physicalItem;
+                            break;
+                        }
+                    }
+                }
+                if (demoPhys == null && bindings.Count > 0)
+                {
+                    demoPhys = bindings[0].physicalItem;
+                }
+
+                if (demoPhys != null)
+                {
+                    DemonstrationItem = demoPhys;
+                    DemonstrationInteractable = demoPhys.GetComponent<NpcInteractable>();
+                    DemonstrationRenderer = demoPhys.GetComponentInChildren<MeshRenderer>();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[PhysicalItemBootstrap] Exception during save staging: {ex.Message}");
+                DisposeStaged(stagedObjects);
+                SaveRejected = true;
+                return false;
+            }
+        }
+
+        private void ClearCommittedItems()
+        {
+            if (bindings != null)
+            {
+                for (int i = 0; i < bindings.Count; i++)
+                {
+                    var b = bindings[i];
+                    if (b != null && b.physicalItem != null && b.physicalItem.gameObject != null)
+                    {
+                        b.physicalItem.transform.SetParent(null, false);
+                    }
+                }
+                for (int i = 0; i < bindings.Count; i++)
+                {
+                    var b = bindings[i];
+                    if (b != null && b.physicalItem != null && b.physicalItem.gameObject != null)
+                    {
+                        DestroyImmediate(b.physicalItem.gameObject);
+                    }
+                }
+                bindings.Clear();
+            }
+            if (DemonstrationItem != null && DemonstrationItem.gameObject != null)
+            {
+                DemonstrationItem.transform.SetParent(null, false);
+                DestroyImmediate(DemonstrationItem.gameObject);
+                DemonstrationItem = null;
+                DemonstrationInteractable = null;
+                DemonstrationRenderer = null;
+            }
+            itemCreated = false;
+        }
+
+        private void OnDestroy()
+        {
+            ClearCommittedItems();
+        }
+
+        private static void DisposeStaged(List<GameObject> stagedObjects)
+        {
+            if (stagedObjects == null) return;
+            for (int i = 0; i < stagedObjects.Count; i++)
+            {
+                var go = stagedObjects[i];
+                if (go != null)
+                {
+                    DestroyImmediate(go);
+                }
+            }
+            stagedObjects.Clear();
         }
 
         private void Start()
@@ -132,25 +863,79 @@ namespace CityLife.Items
             }
         }
 
-        public void OnActionsCreated(NpcActionApi actions)
+        public bool RebindActions(NpcActionApi actions)
         {
-            if (actions == null) return;
+            if (actions == null || Model == null) return false;
+
+            // Preflight candidate context before mutating actions or objects
+            string worldId = Brain != null ? Brain.InstanceWorldId : Model.WorldId;
+            string actorId = Brain != null ? NpcAutonomy.AgentId : actions.AgentId;
+
+            if (!string.Equals(actions.WorldId, Model.WorldId, StringComparison.Ordinal) ||
+                !string.Equals(actions.WorldId, worldId, StringComparison.Ordinal) ||
+                !string.Equals(actions.AgentId, actorId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (actions.ActorTransform == null || !actions.ActorTransform.gameObject.scene.IsValid())
+            {
+                return false;
+            }
+
+            // Create current state snapshot to reuse the validated ItemPersistence binder contract
+            var currentSnapshot = ItemPersistence.CreateSnapshot(Model, actions.AgentId);
+            if (currentSnapshot == null) return false;
+
+            var origModel = actions.PhysicalModel;
+            var origAuth = actions.PhysicalAuthority;
+
+            // Assign candidate context for binder preflight
             actions.PhysicalModel = Model;
-            actions.PhysicalAuthority = Authority;
+            actions.PhysicalAuthority = Authority ?? new BasicItemActionAuthority();
+
+            bool restored = ItemPersistence.RestoreRuntime(currentSnapshot, Model, actions, bindings);
+            if (!restored)
+            {
+                // Restore original context on failure with zero object mutations
+                actions.PhysicalModel = origModel;
+                actions.PhysicalAuthority = origAuth;
+                return false;
+            }
+
+            Authority = actions.PhysicalAuthority;
+            return true;
+        }
+
+        public bool OnActionsCreated(NpcActionApi actions)
+        {
+            if (actions == null || Model == null) return false;
 
             if (HasSavedPayload && savedPayload != null && !restoreAttempted)
             {
-                restoreAttempted = true;
-                bool restored = ItemPersistence.RestoreRuntime(savedPayload, Model, actions, DemonstrationItem, DemonstrationInteractable);
+                var origModel = actions.PhysicalModel;
+                var origAuth = actions.PhysicalAuthority;
+                actions.PhysicalModel = Model;
+                actions.PhysicalAuthority = Authority ?? new BasicItemActionAuthority();
+
+                bool restored = ItemPersistence.RestoreRuntime(savedPayload, Model, actions, bindings);
                 if (!restored)
                 {
+                    actions.PhysicalModel = origModel;
+                    actions.PhysicalAuthority = origAuth;
                     Debug.LogError("[PhysicalItemBootstrap] Failed to restore runtime state from save payload.");
+                    return false;
                 }
                 else
                 {
+                    restoreAttempted = true;
+                    Authority = actions.PhysicalAuthority;
                     Debug.Log("[PhysicalItemBootstrap] Successfully restored runtime physical state from save payload.");
+                    return true;
                 }
             }
+
+            return RebindActions(actions);
         }
 
         private void Update()
@@ -161,20 +946,41 @@ namespace CityLife.Items
             }
         }
 
-        private void FixedUpdate()
+        public void SyncFreeItems()
         {
-            if (Brain == null || Brain.Actions == null || Model == null || DemonstrationItem == null || DemonstrationInteractable == null)
-                return;
-            if (DemonstrationItem.gameObject != DemonstrationInteractable.gameObject)
-                return;
-            if (!DemonstrationItem.gameObject.scene.IsValid() || DemonstrationItem.gameObject.scene != Brain.gameObject.scene)
-                return;
-            if (DemonstrationInteractable.WorldId != Brain.InstanceWorldId)
-                return;
-            if (!DemonstrationItem.IsBoundTo(Model, Brain.InstanceWorldId, Model.GenerationId))
+            if (Brain == null || Brain.Actions == null || Model == null)
                 return;
 
-            Brain.Actions.SyncFreeTransform(DemonstrationItemId);
+            if (bindings != null && bindings.Count > 0)
+            {
+                for (int i = 0; i < bindings.Count; i++)
+                {
+                    var b = bindings[i];
+                    if (b == null || b.physicalItem == null || b.interactable == null) continue;
+                    if (b.physicalItem.gameObject != b.interactable.gameObject) continue;
+                    if (!b.physicalItem.gameObject.scene.IsValid() || b.physicalItem.gameObject.scene != Brain.gameObject.scene) continue;
+                    if (b.interactable.WorldId != Brain.InstanceWorldId) continue;
+                    if (!b.physicalItem.IsBoundTo(Model, Brain.InstanceWorldId, Model.GenerationId)) continue;
+                    if (!Model.TryGetItem(b.itemId, out var snap) || snap.location != ItemLocationKind.Free) continue;
+
+                    Brain.Actions.SyncFreeTransform(b.itemId);
+                }
+            }
+            else if (DemonstrationItem != null && DemonstrationInteractable != null)
+            {
+                if (DemonstrationItem.gameObject == DemonstrationInteractable.gameObject &&
+                    DemonstrationItem.gameObject.scene.IsValid() && DemonstrationItem.gameObject.scene == Brain.gameObject.scene &&
+                    DemonstrationInteractable.WorldId == Brain.InstanceWorldId &&
+                    DemonstrationItem.IsBoundTo(Model, Brain.InstanceWorldId, Model.GenerationId))
+                {
+                    Brain.Actions.SyncFreeTransform(DemonstrationItemId);
+                }
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            SyncFreeItems();
         }
 
         private void SetupDemonstrationItem()
@@ -209,24 +1015,14 @@ namespace CityLife.Items
             // Speculative continuous collision detection anticipates both linear and angular motion to mitigate contact tunneling on rotating items
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visual.name = "Visual";
-            var vCol = visual.GetComponent<Collider>();
-            if (vCol != null) DestroyImmediate(vCol);
-            visual.transform.SetParent(go.transform, false);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = DemonstrationItemDimensions;
-
-            var renderer = visual.GetComponent<MeshRenderer>();
-            if (renderer != null)
+            var demoDefForVisual = new ItemDefinition
             {
-                DemonstrationRenderer = renderer;
-                if (DemonstrationMaterial != null)
-                {
-                    renderer.sharedMaterial = DemonstrationMaterial;
-                }
-            }
+                itemTypeId = DemonstrationItemTypeId,
+                massKg = DemonstrationItemMassKg,
+                dimensions = new PhysicalDimensions(DemonstrationItemDimensions.x, DemonstrationItemDimensions.y, DemonstrationItemDimensions.z)
+            };
+            var visual = CreateVisualForItem(go.transform, DemonstrationItemTypeId, demoDefForVisual);
+            DemonstrationRenderer = visual.GetComponentInChildren<MeshRenderer>();
 
             string matDiag = GetVisualMaterialDiagnostic();
             if (DemonstrationMaterial != null)
@@ -258,10 +1054,36 @@ namespace CityLife.Items
             phys.isAnchored = false;
             phys.ConfigureComponents();
             phys.Bind(Model, interactable.WorldId, Model.GenerationId);
+            phys.RecordInitialRendererStates();
             DemonstrationItem = phys;
 
-            Model.RegisterItem(DemonstrationItemId, DemonstrationItemTypeId, ItemLocationKind.Free, go.transform.position, go.transform.rotation);
+            bool registered = Model.RegisterItem(DemonstrationItemId, DemonstrationItemTypeId, ItemLocationKind.Free, go.transform.position, go.transform.rotation);
+            if (!registered)
+            {
+                DestroyImmediate(go);
+                DemonstrationItem = null;
+                DemonstrationInteractable = null;
+                DemonstrationRenderer = null;
+                itemCreated = false;
+                Debug.LogError($"[PhysicalItemBootstrap] Failed to register demonstration item '{DemonstrationItemId}' in Model.");
+                return;
+            }
+            bindings.Clear();
+            bindings.Add(new PhysicalItemRuntimeBinding(DemonstrationItemId, phys, interactable));
             itemCreated = true;
+
+            if (OptInStarterLayout)
+            {
+                var targetScene = Brain != null && Brain.gameObject.scene.IsValid()
+                    ? Brain.gameObject.scene
+                    : UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+
+                CreateStarterPhysicalItem("canyon-basket-01", "container-basket", new Vector3(0.42f, 0.15f, 0.35f), targetScene);
+                CreateStarterPhysicalItem("canyon-ruby-01", "gem-ruby", new Vector3(-0.35f, 0.05f, 0.35f), targetScene);
+                CreateStarterPhysicalItem("canyon-ruby-02", "gem-ruby", new Vector3(-0.35f, 0.05f, 0.42f), targetScene);
+                CreateStarterPhysicalItem("canyon-chisel-01", "tool-chisel", new Vector3(-0.35f, 0.05f, 0.48f), targetScene);
+                CreateStarterPhysicalItem("canyon-chisel-02", "tool-chisel", new Vector3(-0.35f, 0.05f, 0.54f), targetScene);
+            }
         }
 
         public string GetVisualMaterialDiagnostic()
@@ -274,6 +1096,257 @@ namespace CityLife.Items
             string sName = mat.shader != null ? mat.shader.name : "missing";
             bool sup = mat.shader != null && mat.shader.isSupported;
             return $"material={mat.name}; shader={sName}; supported={sup}";
+        }
+
+        private GameObject CreateVisualForItem(Transform parent, string itemTypeId, ItemDefinition def)
+        {
+            if (string.Equals(itemTypeId, "container-basket", StringComparison.Ordinal))
+            {
+                var basketMat = BasketMaterial != null ? BasketMaterial : DemonstrationMaterial;
+                return WovenBasketVisual.CreateVisual(parent, basketMat, new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth));
+            }
+            else
+            {
+                var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visual.name = "Visual";
+                var vCol = visual.GetComponent<Collider>();
+                if (vCol != null) DestroyImmediate(vCol);
+                visual.transform.SetParent(parent, false);
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                visual.transform.localScale = new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth);
+
+                var renderer = visual.GetComponent<MeshRenderer>();
+                if (renderer != null && DemonstrationMaterial != null)
+                {
+                    renderer.sharedMaterial = DemonstrationMaterial;
+                }
+                return visual;
+            }
+        }
+
+        private void CreateStarterPhysicalItem(string itemId, string itemTypeId, Vector3 localOffset, UnityEngine.SceneManagement.Scene targetScene)
+        {
+            if (Catalog == null || !Catalog.TryGet(itemTypeId, out var def))
+            {
+                Debug.LogWarning($"[PhysicalItemBootstrap] Starter item {itemId} type {itemTypeId} not found in authoritative catalog.");
+                return;
+            }
+
+            Vector3 spawnPos = Brain != null ? Brain.SpawnPosition : Vector3.zero;
+            Vector3 itemPos = spawnPos + localOffset;
+            if (Physics.Raycast(itemPos + Vector3.up * 2f, Vector3.down, out var hit, 10f, (1 << 8) | (1 << 10)))
+            {
+                itemPos.y = hit.point.y + def.dimensions.height * 0.5f;
+            }
+
+            var go = new GameObject(itemId);
+            go.layer = 0;
+            if (targetScene.IsValid())
+            {
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, targetScene);
+            }
+
+            go.transform.position = itemPos;
+            go.transform.rotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            var box = go.AddComponent<BoxCollider>();
+            box.size = new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth);
+            box.center = Vector3.zero;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.mass = def.massKg;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            CreateVisualForItem(go.transform, itemTypeId, def);
+
+            var approachObj = new GameObject(itemId + " approach");
+            approachObj.transform.SetParent(go.transform, false);
+            approachObj.transform.localPosition = Vector3.zero;
+
+            var interactable = go.AddComponent<NpcInteractable>();
+            interactable.StableId = itemId;
+            interactable.WorldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
+            interactable.Kind = NpcObjectKind.Item;
+            interactable.Permission = true;
+            interactable.Approach = approachObj.transform;
+
+            var phys = go.AddComponent<PhysicalItem>();
+            phys.itemId = itemId;
+            phys.itemTypeId = itemTypeId;
+            phys.massKg = def.massKg;
+            phys.dimensions = def.dimensions;
+            phys.isAnchored = false;
+            phys.ConfigureComponents();
+            phys.Bind(Model, interactable.WorldId, Model.GenerationId);
+            phys.RecordInitialRendererStates();
+
+            bool registered = Model.RegisterItem(itemId, itemTypeId, ItemLocationKind.Free, go.transform.position, go.transform.rotation);
+            if (registered)
+            {
+                bindings.Add(new PhysicalItemRuntimeBinding(itemId, phys, interactable));
+            }
+            else
+            {
+                DestroyImmediate(go);
+            }
+        }
+
+        public bool SaveCurrentState(string savePath = null, bool isRecoveryAction = false)
+        {
+            string stagingPath = null;
+            try
+            {
+                string path = !string.IsNullOrEmpty(savePath) ? savePath : PhysicalSavePath;
+                if (string.IsNullOrEmpty(path))
+                {
+                    path = GetDefaultSavePath(Brain != null ? Brain.InstanceWorldId : null);
+                }
+
+                if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path))
+                {
+                    LastSaveFailed = true;
+                    LastSaveError = "invalid-or-non-rooted-path";
+                    Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState failed: invalid or non-fully-qualified path '{path}'.");
+                    return false;
+                }
+
+                string fullPath;
+                try
+                {
+                    fullPath = Path.GetFullPath(path);
+                }
+                catch (Exception ex)
+                {
+                    LastSaveFailed = true;
+                    LastSaveError = "invalid-or-non-rooted-path";
+                    Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState path normalization failed for '{path}': {ex.Message}");
+                    return false;
+                }
+
+                // Refuse overwriting rejected source file!
+                if (SourceSaveRejected && !string.IsNullOrEmpty(RejectedSourcePath))
+                {
+                    string rejFull = null;
+                    try { rejFull = Path.GetFullPath(RejectedSourcePath); } catch { }
+                    if (string.Equals(fullPath, rejFull, StringComparison.OrdinalIgnoreCase))
+                    {
+                        LastSaveFailed = true;
+                        LastSaveError = "refused-overwriting-rejected-source";
+                        Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState refused: destination '{path}' is the rejected source save file. Rejected source file preserved byte-for-byte.");
+                        return false;
+                    }
+                }
+
+                // Recovery action collision check: NEVER overwrite an unrelated existing sibling!
+                // Repeated overwrite allowed ONLY if destination matches the current deliberate activeRecoveryPath.
+                if (isRecoveryAction)
+                {
+                    if (File.Exists(fullPath))
+                    {
+                        bool isCurrentDeliberateTarget = !string.IsNullOrEmpty(activeRecoveryPath) &&
+                            string.Equals(fullPath, Path.GetFullPath(activeRecoveryPath), StringComparison.OrdinalIgnoreCase);
+                        if (!isCurrentDeliberateTarget)
+                        {
+                            LastSaveFailed = true;
+                            LastSaveError = "refused-overwriting-existing-sibling";
+                            Debug.LogWarning($"[PhysicalItemBootstrap] SaveRecoveryState refused: destination '{path}' already exists as an unrelated sibling file. Preservation enforced.");
+                            return false;
+                        }
+                    }
+                }
+
+                if (Model == null)
+                {
+                    LastSaveFailed = true;
+                    LastSaveError = "model-null";
+                    Debug.LogWarning("[PhysicalItemBootstrap] SaveCurrentState failed: Model is null.");
+                    return false;
+                }
+
+                string actorId = Brain != null ? NpcAutonomy.AgentId : "inhabitant-01";
+                var payload = ItemPersistence.CreateSnapshot(Model, actorId);
+                if (payload == null)
+                {
+                    LastSaveFailed = true;
+                    LastSaveError = "snapshot-failed";
+                    Debug.LogWarning("[PhysicalItemBootstrap] SaveCurrentState failed: snapshot creation failed.");
+                    return false;
+                }
+
+                // Perform atomic write using isolated staging path to ensure atomic no-clobber promotion
+                string dir = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                stagingPath = Path.Combine(dir ?? "", ".staging-" + Guid.NewGuid().ToString("N") + ".json");
+                bool staged = ItemPersistence.SaveAtomic(stagingPath, payload);
+                if (!staged)
+                {
+                    LastSaveFailed = true;
+                    LastSaveError = "atomic-save-failed";
+                    Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState failed: SaveAtomic failed on staging path '{stagingPath}'.");
+                    return false;
+                }
+
+                if (isRecoveryAction)
+                {
+                    bool isCurrentDeliberateTarget = !string.IsNullOrEmpty(activeRecoveryPath) &&
+                        string.Equals(fullPath, Path.GetFullPath(activeRecoveryPath), StringComparison.OrdinalIgnoreCase);
+                    if (File.Exists(fullPath))
+                    {
+                        if (!isCurrentDeliberateTarget)
+                        {
+                            try { File.Delete(stagingPath); } catch { }
+                            LastSaveFailed = true;
+                            LastSaveError = "refused-overwriting-existing-sibling";
+                            return false;
+                        }
+                        File.Replace(stagingPath, fullPath, fullPath + ".bak");
+                    }
+                    else
+                    {
+                        File.Move(stagingPath, fullPath);
+                    }
+                    activeRecoveryPath = fullPath;
+                }
+                else
+                {
+                    if (File.Exists(fullPath))
+                    {
+                        File.Replace(stagingPath, fullPath, fullPath + ".bak");
+                    }
+                    else
+                    {
+                        File.Move(stagingPath, fullPath);
+                    }
+                }
+
+                HasSavedPayload = true;
+                PhysicalSavePath = fullPath;
+                LastSaveFailed = false;
+                LastSaveError = null;
+                if (!SourceSaveRejected)
+                {
+                    SaveRejected = false;
+                }
+                Debug.Log($"[PhysicalItemBootstrap] Authoritative physical state successfully saved to '{fullPath}'.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (!string.IsNullOrEmpty(stagingPath))
+                {
+                    try { if (File.Exists(stagingPath)) File.Delete(stagingPath); } catch { }
+                }
+                LastSaveFailed = true;
+                LastSaveError = "save-preparation-failed";
+                Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState caught exception: {ex.Message}");
+                return false;
+            }
         }
 
         public IEnumerator RunDiagnosticFlow(string mode, string evidenceDir, string savePath)

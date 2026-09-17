@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace CityLife.Items
+{
+    /// <summary>
+    /// Authoritative catalog of immutable item definitions for the physical foundation.
+    /// Provides configured definition lookups and model population to ensure cold bootstrap
+    /// and save restoration validate strictly against known authoritative types rather than
+    /// fabricating definitions, capacities, or physical attributes from untrusted save payloads.
+    /// </summary>
+    public sealed class PhysicalItemCatalog
+    {
+        private readonly Dictionary<string, ItemDefinition> definitions =
+            new Dictionary<string, ItemDefinition>(StringComparer.Ordinal);
+
+        public int Count => definitions.Count;
+
+        public bool Register(ItemDefinition def)
+        {
+            if (def == null || !def.IsValid() || definitions.ContainsKey(def.itemTypeId))
+                return false;
+
+            // Store detached clone to prevent caller aliasing
+            definitions.Add(def.itemTypeId, def.Clone());
+            return true;
+        }
+
+        public bool RegisterOrUpdate(ItemDefinition def)
+        {
+            if (def == null || !def.IsValid())
+                return false;
+
+            // Store detached clone to prevent caller aliasing
+            definitions[def.itemTypeId] = def.Clone();
+            return true;
+        }
+
+        public bool TryGet(string itemTypeId, out ItemDefinition def)
+        {
+            if (string.IsNullOrEmpty(itemTypeId))
+            {
+                def = default;
+                return false;
+            }
+            if (definitions.TryGetValue(itemTypeId, out var stored))
+            {
+                def = stored.Clone();
+                return true;
+            }
+            def = default;
+            return false;
+        }
+
+        public bool Contains(string itemTypeId)
+        {
+            return !string.IsNullOrEmpty(itemTypeId) && definitions.ContainsKey(itemTypeId);
+        }
+
+        public IEnumerable<ItemDefinition> GetAll()
+        {
+            foreach (var def in definitions.Values)
+            {
+                yield return def.Clone();
+            }
+        }
+
+        public void PopulateModel(ItemModel model)
+        {
+            if (model == null) return;
+            foreach (var def in definitions.Values)
+            {
+                model.RegisterDefinition(def);
+            }
+        }
+
+        public static PhysicalItemCatalog CreateDefaultCatalog()
+        {
+            var catalog = new PhysicalItemCatalog();
+
+            // Demonstration canyon stone
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "canyon-stone",
+                massKg = 2.5f,
+                dimensions = new PhysicalDimensions(0.25f, 0.25f, 0.25f),
+                isContainer = false,
+                isAnchored = false,
+                requiresSupportToPlace = false
+            });
+
+            // Standard container items
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "container-chest",
+                dimensions = new PhysicalDimensions(0.5f, 0.4f, 0.4f),
+                massKg = 3.0f,
+                isContainer = true,
+                maxContainedSlots = 6,
+                maxContainedVolumeM3 = 0.5f,
+                maxContainedMassKg = 30.0f
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "container-basket",
+                dimensions = new PhysicalDimensions(0.3f, 0.3f, 0.3f),
+                massKg = 1.0f,
+                isContainer = true,
+                maxContainedSlots = 4,
+                maxContainedVolumeM3 = 0.1f,
+                maxContainedMassKg = 10.0f
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "container-pouch",
+                dimensions = new PhysicalDimensions(0.1f, 0.1f, 0.1f),
+                massKg = 0.2f,
+                isContainer = true,
+                maxContainedSlots = 2,
+                maxContainedVolumeM3 = 0.01f,
+                maxContainedMassKg = 2.0f
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "tool-chisel",
+                dimensions = new PhysicalDimensions(0.1f, 0.05f, 0.05f),
+                massKg = 0.5f,
+                isContainer = false
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "gem-ruby",
+                dimensions = new PhysicalDimensions(0.02f, 0.02f, 0.02f),
+                massKg = 0.1f,
+                isContainer = false
+            });
+
+            // Environment block types
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "type-wood-block",
+                dimensions = new PhysicalDimensions(0.2f, 0.2f, 0.2f),
+                massKg = 2.0f,
+                isContainer = false
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "type-boulder",
+                dimensions = new PhysicalDimensions(0.5f, 0.5f, 0.5f),
+                massKg = 30.0f,
+                isContainer = false
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "type-anvil",
+                dimensions = new PhysicalDimensions(0.4f, 0.3f, 0.4f),
+                massKg = 50.0f,
+                isAnchored = true
+            });
+
+            return catalog;
+        }
+    }
+}

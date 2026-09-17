@@ -20,6 +20,38 @@ namespace CityLife.World.Editor
             string foodChecksFolder=Path.Combine("evidence/local/food-checks","integrated-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
             var foodChecks=Starfall.Food.FoodChecks.Run(foodChecksFolder);
             File.WriteAllLines(Path.Combine(foodChecksFolder,"passed.txt"),foodChecks);
+
+            // AG1: Food ownership checkpoint & material transaction verification
+            var materialChecks = CityLife.Items.ItemMaterialTransactionChecks.Run();
+            string checkpointFolder = Path.Combine(Path.GetTempPath(), "sf-chk-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
+            if (Directory.Exists(checkpointFolder)) Directory.Delete(checkpointFolder, true);
+            Directory.CreateDirectory(checkpointFolder);
+            var checkpointChecks = Starfall.Food.FoodOwnershipCheckpointChecks.Run(checkpointFolder);
+
+            // AG2: Basket persistence & Spatial Memory verification
+            var basketPersistChecks = CityLife.Items.BasketPersistenceChecks.Run();
+            string caveFolder = Path.Combine(Path.GetTempPath(), "sf-cave-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
+            if (Directory.Exists(caveFolder)) Directory.Delete(caveFolder, true);
+            Directory.CreateDirectory(caveFolder);
+            var caveFoodChecks = Starfall.Food.CaveFoodMemoryChecks.Run(caveFolder);
+
+            // AG3: Natural stone supply procedural geometry verification
+            var stoneChecks = CityLife.Stones.Editor.StoneValidation.Run();
+
+            // AG4: Tinder dry brush procedural geometry & aggregation self-test verification
+            var tinderSelfTests = CityLife.Fire.TinderValidation.RunAggregationSelfTests();
+            var tinderValidation = CityLife.Fire.TinderValidation.RunValidation();
+            if (tinderSelfTests == null || tinderSelfTests.status != "PASSED" || !CityLife.Fire.TinderValidation.EvaluateAggregationDecision(tinderValidation, out int tinderExit) || tinderExit != 0)
+                throw new InvalidOperationException("Tinder dry brush validation failed.");
+
+            // AG5: Fallen wood procedural supply verification
+            var woodChecks = CityLife.Wood.FallenWoodChecks.Run();
+
+            int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
+                              basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
+                              woodChecks.Count;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes with zero errors.");
+
             KokerboomRender.BuildCoastalPlayableSlice();
         }
         public static void Attach(Camera camera, GameObject ground, string folder)
@@ -177,6 +209,76 @@ namespace CityLife.World.Editor
             if (demoMaterial == null || demoMaterial.shader == null || !demoMaterial.shader.isSupported)
                 throw new InvalidOperationException("Demonstration stone material requires a valid, supported Universal Render Pipeline/Lit shader.");
             physicalBootstrap.DemonstrationMaterial = demoMaterial;
+
+            // Basket foundation & player integration: serialized basket material, opt-in starter layout, and container panel wiring
+            var basketMaterial = Material("Woven basket material", new Color(0.62f, 0.46f, 0.28f));
+            if (basketMaterial == null || basketMaterial.shader == null || !basketMaterial.shader.isSupported)
+                throw new InvalidOperationException("Basket material requires a valid, supported Universal Render Pipeline/Lit shader.");
+            physicalBootstrap.BasketMaterial = basketMaterial;
+            physicalBootstrap.OptInStarterLayout = true;
+
+            var containerPanel = camera.gameObject.AddComponent<PhysicalContainerPanel>();
+            containerPanel.Controls = controls;
+            containerPanel.Bootstrap = physicalBootstrap;
+            controls.ContainerPanel = containerPanel;
+
+            // Natural Stone Supply (AG3): place procedural river cobbles and fieldstone on activity terrace
+            var stoneGroup = new GameObject("Natural stone supply points");
+            stoneGroup.transform.SetParent(ground.transform, false);
+            var stoneMat = Material("Natural coastal stone", new Color(0.55f, 0.52f, 0.48f));
+
+            var cobbleObj = new GameObject("Natural river cobble");
+            cobbleObj.transform.SetParent(stoneGroup.transform, false);
+            cobbleObj.transform.position = new Vector3(CoastalTerrain.ActivityCentre.x + 3.2f, CoastalTerrain.Height(CoastalTerrain.ActivityCentre.x + 3.2f, CoastalTerrain.ActivityCentre.y - 1.5f), CoastalTerrain.ActivityCentre.y - 1.5f);
+            var cobbleMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(CityLife.Stones.StoneShapeKind.RiverCobble, seed: 101, variantIndex: 0, uniformScale: 1.0f, flatShaded: true);
+            cobbleObj.AddComponent<MeshFilter>().sharedMesh = cobbleMesh;
+            cobbleObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
+            var cobbleCol = cobbleObj.AddComponent<MeshCollider>();
+            cobbleCol.sharedMesh = cobbleMesh;
+            cobbleObj.layer = 8;
+
+            var fieldObj = new GameObject("Natural fieldstone");
+            fieldObj.transform.SetParent(stoneGroup.transform, false);
+            fieldObj.transform.position = new Vector3(CoastalTerrain.ActivityCentre.x - 2.8f, CoastalTerrain.Height(CoastalTerrain.ActivityCentre.x - 2.8f, CoastalTerrain.ActivityCentre.y + 2.0f), CoastalTerrain.ActivityCentre.y + 2.0f);
+            var fieldMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(CityLife.Stones.StoneShapeKind.Fieldstone, seed: 202, variantIndex: 1, uniformScale: 1.2f, flatShaded: true);
+            fieldObj.AddComponent<MeshFilter>().sharedMesh = fieldMesh;
+            fieldObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
+            var fieldCol = fieldObj.AddComponent<MeshCollider>();
+            fieldCol.sharedMesh = fieldMesh;
+            fieldObj.layer = 8;
+
+            // Tinder & Night Fire (AG4): place procedural dry-brush tinder bundle near refuge hearth
+            var tinderParams = CityLife.Fire.TinderParameters.ForLod(0, 4217);
+            var tinderObj = new GameObject("Dry brush tinder bundle");
+            tinderObj.transform.SetParent(ground.transform, false);
+            Vector3 tinderPos = refugeRuntime.Hearth + new Vector3(0.6f, 0, 0.4f);
+            tinderPos.y = CoastalTerrain.Height(tinderPos.x, tinderPos.z);
+            tinderObj.transform.position = tinderPos;
+            var tinderMesh = CityLife.Fire.TinderGeometry.GenerateMesh(tinderParams);
+            tinderObj.AddComponent<MeshFilter>().sharedMesh = tinderMesh;
+            var tinderMat = Material("Tinder dry brush", new Color(0.48f, 0.38f, 0.22f));
+            tinderObj.AddComponent<MeshRenderer>().sharedMaterial = tinderMat;
+            var tinderCol = tinderObj.AddComponent<BoxCollider>();
+            tinderCol.size = CityLife.Fire.TinderMetadata.TargetDimensionsMetres;
+            tinderCol.center = new Vector3(0, CityLife.Fire.TinderMetadata.TargetDimensionsMetres.y * 0.5f, 0);
+            tinderObj.layer = 8;
+
+            // Fallen Wood Supply (AG5): place procedural fallen wood branches on terrace margin
+            var woodGroup = new GameObject("Fallen wood supply");
+            woodGroup.transform.SetParent(ground.transform, false);
+            var branchProfile = CityLife.Wood.FallenWoodProfile.CreateBranchPreset();
+            var branchMesh = CityLife.Wood.FallenWoodGenerator.GenerateMesh(branchProfile, 0x4A8C193Eu, out var branchMeta);
+            var woodObj = new GameObject("Fallen wood branch");
+            woodObj.transform.SetParent(woodGroup.transform, false);
+            Vector3 branchPos = new Vector3(CoastalTerrain.ActivityCentre.x + 4.5f, 0, CoastalTerrain.ActivityCentre.y + 3.0f);
+            branchPos.y = CoastalTerrain.Height(branchPos.x, branchPos.z);
+            woodObj.transform.position = branchPos;
+            woodObj.AddComponent<MeshFilter>().sharedMesh = branchMesh;
+            var woodMat = Material("Fallen wood bark", new Color(0.38f, 0.26f, 0.16f));
+            woodObj.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
+            var woodCol = woodObj.AddComponent<MeshCollider>();
+            woodCol.sharedMesh = branchMesh;
+            woodObj.layer = 8;
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");

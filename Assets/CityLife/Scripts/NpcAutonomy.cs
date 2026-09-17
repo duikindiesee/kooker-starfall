@@ -43,38 +43,70 @@ namespace CityLife.World
 
         private void Start()
         {
-            foreach (var item in Registry) item.RememberInitial();
-            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
-                PhysicalItems.DemonstrationInteractable.RememberInitial();
-            ResetState(); Ready = true;
-        }
-        public IEnumerable<NpcInteractable> AllInteractables =>
-            PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null
-                ? Registry.Concat(new[] { PhysicalItems.DemonstrationInteractable })
-                : (IEnumerable<NpcInteractable>)Registry;
-
-        public void ResetState()
-        {
-            if (OptionalPlanner != null) OptionalPlanner.ResetSession();
-            if (Survival != null) Survival.Cancel("world-reset");
-            foreach (var item in Registry) item.RestoreInitial();
-            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
-                PhysicalItems.DemonstrationInteractable.RestoreInitial();
-            Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
-            goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
-            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
-            Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
-            Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
-            Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), AllInteractables);
-            if (PhysicalItems != null)
+            if (Registry != null)
             {
-                PhysicalItems.OnActionsCreated(Actions);
-                if (PhysicalItems.Model != null && PhysicalItems.Model.HighestReceiptRequestId > requestId)
+                foreach (var item in Registry)
                 {
-                    requestId = PhysicalItems.Model.HighestReceiptRequestId;
+                    if (item != null) item.RememberInitial();
                 }
             }
+            Ready = ResetState();
+        }
+        public IEnumerable<NpcInteractable> AllInteractables =>
+            PhysicalItems != null && PhysicalItems.AllInteractables != null
+                ? (Registry != null ? Registry.Where(i => i != null).Concat(PhysicalItems.AllInteractables.Where(i => i != null)) : PhysicalItems.AllInteractables.Where(i => i != null))
+                : (IEnumerable<NpcInteractable>)(Registry ?? Array.Empty<NpcInteractable>());
+
+        public bool ResetState()
+        {
+            Transform hand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            NpcActionApi candidateActions;
+            try
+            {
+                candidateActions = new NpcActionApi(AgentId, InstanceWorldId, transform, hand, AllInteractables);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (PhysicalItems != null)
+            {
+                bool physicalSuccess = PhysicalItems.OnActionsCreated(candidateActions);
+                if (!physicalSuccess)
+                {
+                    return false;
+                }
+            }
+
+            // Physical transaction and candidate validation succeeded: proceed to nonphysical reset side effects
+            if (OptionalPlanner != null) OptionalPlanner.ResetSession();
+            if (Survival != null) Survival.Cancel("world-reset");
+            if (Registry != null)
+            {
+                foreach (var item in Registry)
+                {
+                    if (item != null) item.RestoreInitial();
+                }
+            }
+            Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
+            goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear();
+            if (Log != null) Log.ResetLog();
+            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
+            Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
+            if (Actor != null)
+            {
+                Actor.Place(SpawnPosition);
+                Actor.transform.rotation = Quaternion.identity;
+            }
+
+            Actions = candidateActions;
+            if (PhysicalItems != null && PhysicalItems.Model != null && PhysicalItems.Model.HighestReceiptRequestId > requestId)
+            {
+                requestId = PhysicalItems.Model.HighestReceiptRequestId;
+            }
             Physics.SyncTransforms();
+            return true;
         }
 
         public int RequestId => requestId;
@@ -120,6 +152,21 @@ namespace CityLife.World
             if (Log != null)
             {
                 Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), targetId ?? "", kind.ToString(), result.code,
+                    result.success ? "player-directed action completed" : "player-directed action rejected: " + result.code);
+            }
+            LastResult = result.code;
+            return result;
+        }
+
+        public NpcActionResult ExecutePlayerAction(NpcActionKind kind, string itemId, string containerId)
+        {
+            if (Actions == null) return new NpcActionResult { success = false, code = "actions-uninitialized" };
+            if (!TryAllocateRequestId(out int req))
+                return new NpcActionResult { success = false, code = "request-id-overflow" };
+            var result = Actions.Execute(req, kind, itemId, containerId);
+            if (Log != null)
+            {
+                Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), (itemId ?? "") + "->" + (containerId ?? ""), kind.ToString(), result.code,
                     result.success ? "player-directed action completed" : "player-directed action rejected: " + result.code);
             }
             LastResult = result.code;

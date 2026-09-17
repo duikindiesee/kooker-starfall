@@ -5,7 +5,7 @@ using CityLife.Items;
 
 namespace CityLife.World
 {
-    public enum NpcActionKind { Pickup, Deliver, Drop }
+    public enum NpcActionKind { Pickup, Deliver, Drop, Store, Retrieve }
     [Serializable] public struct NpcActionResult
     { public bool success, duplicate; public string code; }
 
@@ -28,6 +28,13 @@ namespace CityLife.World
         public string LastPhysicalDiagnostic { get; private set; }
         public string AgentId => agentId;
         public string WorldId => worldId;
+        internal bool FailAfterPhysicalApplyForTesting;
+#if UNITY_EDITOR
+        public void SetFailAfterPhysicalApplyForTesting(bool value)
+        {
+            FailAfterPhysicalApplyForTesting = value;
+        }
+#endif
 
         public bool IsObjectRegistered(string stableId, NpcInteractable interactable)
         {
@@ -148,6 +155,21 @@ namespace CityLife.World
 
         public NpcActionResult Execute(int requestId, NpcActionKind action, string targetId)
         {
+            if (action == NpcActionKind.Store)
+            {
+                string heldId = Held != null ? Held.StableId : "";
+                return Execute(requestId, action, heldId, targetId);
+            }
+            if (action == NpcActionKind.Retrieve)
+            {
+                string containerId = "";
+                if (PhysicalModel != null && PhysicalModel.TryGetItem(targetId ?? "", out var snap) && snap.location == ItemLocationKind.Stored)
+                {
+                    containerId = snap.containerItemId;
+                }
+                return Execute(requestId, action, targetId, containerId);
+            }
+
             string signature = action + ":" + (targetId ?? "");
             NpcActionResult Deny(string code) => new NpcActionResult { code = code, success = false };
             if (requestId <= 0) return Deny("invalid-request-id");
@@ -432,6 +454,254 @@ namespace CityLife.World
             target.Occupant = Held.StableId; Held.DeliveredTo = target.StableId; Held.HeldBy = "";
             Held = null; Deliveries++;
             return Finish(new NpcActionResult { success = true, code = "delivered" });
+        }
+
+        private NpcInteractable GetAccessibleRootInteractable(string targetId)
+        {
+            if (string.IsNullOrEmpty(targetId)) return null;
+            var visited = new HashSet<string>(StringComparer.Ordinal);
+            string currentId = targetId;
+            while (!string.IsNullOrEmpty(currentId) && visited.Add(currentId))
+            {
+                if (!objects.TryGetValue(currentId, out var currentInteractable) || currentInteractable == null)
+                    return null;
+
+                var phys = currentInteractable.GetComponent<PhysicalItem>();
+                if (phys != null && phys.IsStored && !string.IsNullOrEmpty(phys.BoundContainerItemId))
+                {
+                    currentId = phys.BoundContainerItemId;
+                    continue;
+                }
+
+                if (PhysicalModel != null && PhysicalModel.TryGetItem(currentId, out var snap) &&
+                    snap.location == ItemLocationKind.Stored && !string.IsNullOrEmpty(snap.containerItemId))
+                {
+                    currentId = snap.containerItemId;
+                    continue;
+                }
+
+                return currentInteractable;
+            }
+            return null;
+        }
+
+        public NpcActionResult Execute(int requestId, NpcActionKind action, string itemId, string containerId)
+        {
+            if (action == NpcActionKind.Pickup || action == NpcActionKind.Deliver || action == NpcActionKind.Drop)
+            {
+                return Execute(requestId, action, itemId);
+            }
+
+            NpcActionResult Deny(string code) => new NpcActionResult { code = code, success = false, duplicate = false };
+            if (requestId <= 0) return Deny("invalid-request-id");
+            if (action != NpcActionKind.Store && action != NpcActionKind.Retrieve)
+                return Deny("unsupported-action");
+
+            if (PhysicalModel == null) return Deny("physical-model-required");
+            if (string.IsNullOrEmpty(itemId) || string.IsNullOrEmpty(containerId)) return Deny("invalid-scope-id");
+
+            var modelReq = new ItemActionRequest
+            {
+                requestId = requestId,
+                action = (action == NpcActionKind.Store ? ItemActionKind.Store : ItemActionKind.Retrieve),
+                actorId = agentId,
+                itemId = itemId,
+                targetId = containerId
+            };
+
+            string canonicalSignature = ItemModel.BuildRequestSignature(modelReq, Quaternion.identity);
+            if (PhysicalModel.TryGetReceipt(requestId, out string priorSig, out var priorReceipt))
+            {
+                if (string.Equals(priorSig, canonicalSignature, StringComparison.Ordinal))
+                {
+                    return new NpcActionResult
+                    {
+                        success = priorReceipt.success,
+                        duplicate = true,
+                        code = priorReceipt.code
+                    };
+                }
+                return Deny("request-id-conflict");
+            }
+
+            NpcActionResult FailScoped(string code)
+            {
+                var receipt = PhysicalModel.RecordRejectionReceipt(worldId, PhysicalModel.GenerationId, modelReq, code);
+                return new NpcActionResult
+                {
+                    success = receipt.success,
+                    duplicate = receipt.duplicate,
+                    code = receipt.code
+                };
+            }
+
+            if (string.Equals(itemId, containerId, StringComparison.Ordinal)) return FailScoped("cannot-store-in-itself");
+
+            if (action == NpcActionKind.Store)
+            {
+                if (Held == null) return FailScoped("cargo-ownership-mismatch");
+                if (!string.Equals(Held.StableId, itemId, StringComparison.Ordinal) || Held.HeldBy != agentId)
+                    return FailScoped("cargo-ownership-mismatch");
+                if (!objects.TryGetValue(itemId, out var regHeld) || regHeld != Held)
+                    return FailScoped("cargo-ownership-mismatch");
+                var heldPhys = Held.GetComponent<PhysicalItem>();
+                if (heldPhys == null || !heldPhys.IsCarried || heldPhys.CarriedHand != hand)
+                    return FailScoped("cargo-ownership-mismatch");
+                if (hand == null) return FailScoped("item-unavailable");
+                if (hand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
+            }
+            else // Retrieve
+            {
+                if (Held != null) return FailScoped("hands-full");
+                if (hand == null) return FailScoped("item-unavailable");
+                if (hand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
+            }
+
+            NpcInteractable itemInteractable;
+            NpcInteractable containerInteractable;
+
+            if (action == NpcActionKind.Store)
+            {
+                itemInteractable = Held;
+                if (!objects.TryGetValue(containerId, out containerInteractable) || containerInteractable == null || !containerInteractable.isActiveAndEnabled)
+                    return FailScoped("target-unavailable");
+            }
+            else // Retrieve
+            {
+                if (!objects.TryGetValue(itemId, out itemInteractable) || itemInteractable == null || !itemInteractable.isActiveAndEnabled)
+                    return FailScoped("target-unavailable");
+                if (!objects.TryGetValue(containerId, out containerInteractable) || containerInteractable == null || !containerInteractable.isActiveAndEnabled)
+                    return FailScoped("target-unavailable");
+            }
+
+            if (itemInteractable.WorldId != worldId || itemInteractable.gameObject.scene != actor.gameObject.scene ||
+                containerInteractable.WorldId != worldId || containerInteractable.gameObject.scene != actor.gameObject.scene)
+            {
+                return FailScoped("world-mismatch");
+            }
+
+            var rootInteractable = GetAccessibleRootInteractable(containerId);
+            if (rootInteractable == null || !rootInteractable.isActiveAndEnabled)
+                return FailScoped("target-unavailable");
+            if (rootInteractable.WorldId != worldId || rootInteractable.gameObject.scene != actor.gameObject.scene)
+                return FailScoped("world-mismatch");
+            if (!itemInteractable.Permission || !containerInteractable.Permission || !rootInteractable.Permission)
+                return FailScoped("permission-denied");
+
+            bool containerHeldBySelf = (rootInteractable == Held || string.Equals(rootInteractable.HeldBy, agentId, StringComparison.Ordinal));
+            if (!containerHeldBySelf)
+            {
+                if (rootInteractable.Approach == null ||
+                    Vector3.Distance(actor.position, rootInteractable.Approach.position) > .65f ||
+                    Vector3.Distance(actor.position + Vector3.up, rootInteractable.SightPoint) > 1.7f)
+                {
+                    return FailScoped("out-of-reach");
+                }
+
+                Physics.SyncTransforms();
+                Vector3 eye = actor.position + Vector3.up * 1.6f, delta = rootInteractable.SightPoint - eye;
+                var actorScene = actor.gameObject.scene;
+                var actorPs = actorScene.GetPhysicsScene();
+                RaycastHit losHit;
+                bool hitSomething;
+                if (actorPs.IsValid())
+                {
+                    hitSomething = actorPs.Raycast(eye, delta.normalized, out losHit, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+                }
+                else
+                {
+                    hitSomething = Physics.Raycast(eye, delta.normalized, out losHit, delta.magnitude, (1 << 8) | (1 << 10), QueryTriggerInteraction.Ignore);
+                }
+                bool losBlocked = false;
+                if (hitSomething && losHit.collider != null)
+                {
+                    Transform hitTransform = losHit.collider.transform;
+                    if (hitTransform != rootInteractable.transform && !hitTransform.IsChildOf(rootInteractable.transform) &&
+                        hitTransform != actor && !hitTransform.IsChildOf(actor))
+                    {
+                        losBlocked = true;
+                    }
+                }
+                if (losBlocked)
+                    return FailScoped("line-of-sight-blocked");
+            }
+
+            var itemPhys = itemInteractable.GetComponent<PhysicalItem>();
+            string itemMetaDeny = null;
+            if (itemPhys == null || !ValidatePhysicalMetadata(itemPhys, itemInteractable, out itemMetaDeny))
+            {
+                return FailScoped(itemMetaDeny ?? "physical-item-invalid");
+            }
+
+            var containerPhys = containerInteractable.GetComponent<PhysicalItem>();
+            string containerMetaDeny = null;
+            if (containerPhys == null || !ValidatePhysicalMetadata(containerPhys, containerInteractable, out containerMetaDeny))
+            {
+                return FailScoped(containerMetaDeny ?? "physical-item-invalid");
+            }
+
+            if (action == NpcActionKind.Retrieve)
+            {
+                if (!itemPhys.IsStored || !string.Equals(itemPhys.BoundContainerItemId, containerId, StringComparison.Ordinal))
+                {
+                    return FailScoped("target-unavailable");
+                }
+            }
+
+            if (!PhysicalModel.TryPrepareTransition(worldId, PhysicalModel.GenerationId, modelReq, PhysicalAuthority, out var token, out string prepDeny))
+            {
+                return FailScoped(prepDeny);
+            }
+
+            var itemCapture = itemPhys.CaptureRuntimeState();
+            var oldHeld = Held;
+            var oldItemHeldBy = itemInteractable.HeldBy;
+
+            bool physicalSucceeded = false;
+            try
+            {
+                if (action == NpcActionKind.Store)
+                {
+                    itemPhys.ApplyStored(containerInteractable.transform, containerId);
+                    itemInteractable.HeldBy = "";
+                    Held = null;
+                }
+                else // Retrieve
+                {
+                    itemPhys.AttachToHand(hand);
+                    itemInteractable.HeldBy = agentId;
+                    Held = itemInteractable;
+                }
+
+                if (FailAfterPhysicalApplyForTesting)
+                {
+                    throw new InvalidOperationException("injected-test-failpoint-after-apply");
+                }
+                physicalSucceeded = true;
+            }
+            catch
+            {
+                physicalSucceeded = false;
+            }
+
+            if (!physicalSucceeded)
+            {
+                itemPhys.RestoreRuntimeState(itemCapture);
+                Held = oldHeld;
+                itemInteractable.HeldBy = oldItemHeldBy;
+                PhysicalModel.CancelPreparedTransition(token);
+                return FailScoped("physical-application-failed");
+            }
+
+            if (!PhysicalModel.TryCommitTransition(token, out var commitReceipt))
+            {
+                itemPhys.RestoreRuntimeState(itemCapture);
+                Held = oldHeld;
+                itemInteractable.HeldBy = oldItemHeldBy;
+                return FailScoped("commit-failed");
+            }
+
+            return new NpcActionResult { success = true, duplicate = false, code = commitReceipt.code };
         }
     }
 }
