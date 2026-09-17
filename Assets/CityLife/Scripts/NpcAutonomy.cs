@@ -279,6 +279,7 @@ namespace CityLife.World
                         if (Foraging != null && Foraging.StepAutonomousLiving(this, Actor, StepSeconds))
                         {
                             Phase = "Living / " + Foraging.Phase;
+                            LastResult = "Active living: " + Foraging.Phase;
                             return;
                         }
                     }

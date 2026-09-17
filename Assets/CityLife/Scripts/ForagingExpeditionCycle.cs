@@ -45,6 +45,7 @@ namespace CityLife.World
         private Vector3 targetDestination;
         private float gestureTimer = 0f;
         private float stallTimer = 0f;
+        private int stallCount = 0;
         private Vector3 lastPosition;
         private int lastLoggedTick = -1;
         private float fallbackTimer = 0f;
@@ -74,6 +75,7 @@ namespace CityLife.World
             currentRoute = null;
             gestureTimer = 0f;
             stallTimer = 0f;
+            stallCount = 0;
             targetDestination = Vector3.zero;
         }
 
@@ -123,16 +125,20 @@ namespace CityLife.World
                 PlanLegForCurrentPhase();
             }
 
+            // Check direct proximity to target destination
+            float distToTarget = FlatDistance(transform.position, targetDestination);
+
             // 3. Step along route waypoints
             if (currentRoute != null && currentRoute.Count > 0)
             {
-                while (currentRoute.Count > 0 && FlatDistance(transform.position, currentRoute.Peek()) < 0.28f)
+                while (currentRoute.Count > 0 && FlatDistance(transform.position, currentRoute.Peek()) < 0.45f)
                 {
                     currentRoute.Dequeue();
                 }
 
-                if (currentRoute.Count == 0)
+                if (currentRoute.Count == 0 || distToTarget < 1.35f)
                 {
+                    currentRoute?.Clear();
                     // Reached destination! Turn to face, play interact gesture
                     Vector3 diff = targetDestination - transform.position;
                     diff.y = 0;
@@ -141,6 +147,8 @@ namespace CityLife.World
 
                     actor.Gesture();
                     gestureTimer = 1.8f;
+                    stallTimer = 0f;
+                    stallCount = 0;
                     OnArrivedAtDestination();
                     actor.Step(Vector3.zero, dt);
                     return true;
@@ -150,7 +158,7 @@ namespace CityLife.World
                 Vector3 waypoint = currentRoute.Peek();
                 Vector3 difference = waypoint - transform.position;
                 difference.y = 0;
-                Vector3 direction = difference.normalized * Mathf.Min(1.0f, difference.magnitude / Mathf.Max(0.001f, actor.WalkSpeed * dt));
+                Vector3 direction = difference.sqrMagnitude > 0.001f ? difference.normalized : Vector3.zero;
                 actor.Step(direction, dt);
 
                 // Anti-stall check
@@ -158,15 +166,36 @@ namespace CityLife.World
                 if (moved < 0.0005f)
                 {
                     stallTimer += dt;
-                    if (stallTimer > 2.2f)
+                    if (stallTimer > 1.8f)
                     {
                         stallTimer = 0f;
-                        currentRoute = PlanRouteTo(targetDestination);
+                        stallCount++;
+                        if (stallCount >= 2 || distToTarget < 2.5f)
+                        {
+                            // Stalled or close enough: force arrival and advance
+                            currentRoute.Clear();
+                            Vector3 diff = targetDestination - transform.position;
+                            diff.y = 0;
+                            if (diff.sqrMagnitude > 0.01f)
+                                transform.rotation = Quaternion.LookRotation(diff);
+
+                            actor.Gesture();
+                            gestureTimer = 1.8f;
+                            stallCount = 0;
+                            OnArrivedAtDestination();
+                            actor.Step(Vector3.zero, dt);
+                            return true;
+                        }
+                        else
+                        {
+                            currentRoute = PlanRouteTo(targetDestination);
+                        }
                     }
                 }
                 else
                 {
                     stallTimer = 0f;
+                    stallCount = 0;
                 }
                 lastPosition = transform.position;
                 return true;
@@ -385,7 +414,7 @@ namespace CityLife.World
 
         private Vector3 GetResourceSupplyPosition(string resourceId)
         {
-            Vector3 pos = CoastalTerrain.ActivityCentre;
+            Vector3 pos = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
             if (resourceId.Contains("cobble") || resourceId.StartsWith("tool-"))
                 pos += new Vector3(3.2f, 0, -1.5f);
             else if (resourceId.Contains("fieldstone"))
@@ -393,7 +422,7 @@ namespace CityLife.World
             else if (resourceId.Contains("slab"))
                 pos += new Vector3(1.2f, 0, 3.5f);
             else if (resourceId.Contains("wood"))
-                pos += new Vector3(-3.5f, 0, -1.2f);
+                pos += new Vector3(4.5f, 0, 3.0f);
             else if (resourceId.Contains("tinder"))
                 pos += new Vector3(-1.5f, 0, 2.8f);
             else
@@ -420,17 +449,14 @@ namespace CityLife.World
                 return BuildingWorkstation.ConstructionSite != Vector3.zero ? BuildingWorkstation.ConstructionSite : BuildingWorkstation.transform.position;
             }
 
-            if (Refuge != null && (TargetResourceId.Contains("wood") || TargetResourceId.Contains("tinder")))
-            {
-                return Refuge.Hearth;
-            }
-
             if (BuildingWorkstation != null)
             {
                 return BuildingWorkstation.ConstructionSite != Vector3.zero ? BuildingWorkstation.ConstructionSite : BuildingWorkstation.transform.position;
             }
 
-            return transform.position;
+            Vector3 terracePos = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
+            terracePos.y = GroundHeight(terracePos);
+            return terracePos;
         }
 
         private Vector3 GetRestPosition()

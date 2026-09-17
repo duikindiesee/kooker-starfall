@@ -97,9 +97,11 @@ namespace CityLife.World
             footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -238);
             string mode = Brain.MenuPaused ? "PAUSED / " : "";
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
+            string currentGoal = Brain.GoalId.Length > 0 ? Brain.GoalId :
+                (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId) ? Brain.Foraging.TargetResourceId : "observe / wait");
             Summary.text = mode + "  |  " + (Brain.Possessed ? "Autonomy suspended" : Brain.Running ? "Autonomy on" : "Autonomy stopped") +
                 "\nTick " + Brain.Tick + "  |  " + Brain.Phase +
-                "\nGoal: " + (Brain.GoalId.Length > 0 ? Brain.GoalId : "observe / wait") +
+                "\nGoal: " + currentGoal +
                 "\nCargo: " + (Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
                 "\nResult: " + Brain.LastResult;
             if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
