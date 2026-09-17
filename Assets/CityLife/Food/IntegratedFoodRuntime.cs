@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcAutonomy Brain;
         public NpcInteractable Berry, Spring;
+        public System.Collections.Generic.List<NpcInteractable> AdditionalBerryBushes = new System.Collections.Generic.List<NpcInteractable>();
         public MeshRenderer SpringWaterRenderer;
         public Starfall.Refuge.RefugeRuntime Refuge;
         public Vector3 BerryPosition, SpringPosition;
@@ -40,8 +41,25 @@ namespace Starfall.Food
             // shelf north of the activity bank. It is outside initial 12 m
             // perception; no model prompt receives this authored coordinate.
             SpringPosition = FindDrySpringSite();
-            Berry = BerryBush(BerryPosition, worldRoot, worldId);
+            Berry = BerryBush(BerryPosition, worldRoot, worldId, "berry-food");
             Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId,out SpringWaterRenderer);
+
+            // Distributed botanical sourfig berry patches across the canyon
+            var distributedSites = new[]
+            {
+                new Vector3(26f, CoastalTerrain.Height(26f, -62f), -62f),    // Riverbank moist soil near driftwood
+                new Vector3(-15f, CoastalTerrain.Height(-15f, -10f), -10f),   // Across river crossing trail
+                new Vector3(-65f, CoastalTerrain.Height(-65f, 45f), 45f),     // West bank canyon floor
+                new Vector3(-152f, CoastalTerrain.Height(-152f, 110f), 110f), // Refuge Cave shelf outside entrance
+                new Vector3(122f, CoastalTerrain.Height(122f, -54f), -54f),   // Freshwater spring seep oasis
+                new Vector3(135f, CoastalTerrain.Height(135f, -95f), -95f),   // South canyon terrace trail
+                new Vector3(10f, CoastalTerrain.Height(10f, 60f), 60f)        // North river meander margin
+            };
+            for (int i = 0; i < distributedSites.Length; i++)
+            {
+                var bush = BerryBush(distributedSites[i], worldRoot, worldId, "berry-food-" + (i + 2));
+                AdditionalBerryBushes.Add(bush);
+            }
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
@@ -94,9 +112,9 @@ namespace Starfall.Food
                 throw new System.InvalidOperationException("Freshwater seep footprint is not grounded by solid terrain.");
             return hit.point.y;
         }
-        static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
+        static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId, string stableId = "berry-food")
         {
-            var root = new GameObject("Food / Starfall sourfig forage succulent"); root.transform.SetParent(parent); root.transform.position = position;
+            var root = new GameObject("Food / Starfall sourfig forage succulent " + stableId); root.transform.SetParent(parent); root.transform.position = position;
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             Material Make(string name, Color colour) { var m = new Material(shader) { name = name, color = colour }; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", colour); return m; }
             var wood = Make("Sourfig warm woody base", new Color(.25f,.12f,.055f));
@@ -187,7 +205,7 @@ namespace Starfall.Food
             Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
             root.layer=11;
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
-            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.ObservedType="fruiting-succulent"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
+            var item=root.AddComponent<NpcInteractable>(); item.StableId=stableId; item.ObservedType="fruiting-succulent"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
             item.Approach=ApproachPoint(root.transform,position,1.55f);
             return item;
         }

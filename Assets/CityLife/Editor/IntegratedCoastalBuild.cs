@@ -143,40 +143,32 @@ namespace CityLife.World.Editor
             // terrace toward the river, not straight into the nearby east mesa.
             // Mouse orbit remains fully player-controlled after startup.
             actor.View.Yaw = -25; actor.View.Pitch = 12; actor.View.Distance = 5.8f;
-            // Reuse the accepted interaction fixture's authority, not its old floor/courtyard.
-            new GameObject("Warm starlight").AddComponent<Light>().enabled = false;
-            NpcPreviewStage.Configure(actor, camera, folder);
-            Object.DestroyImmediate(camera.GetComponent<NpcPreviewSmoke>());
-            var brain = actorObject.GetComponent<NpcAutonomy>(); brain.InstanceWorldId = NpcTerrainNavigation.RegionId;
+            // Direct autonomous inhabitant configuration for the living world.
+            // Test harness items (crystals & depot plinths) remain solely in isolated unit test stages.
+            actor.ExternalDrive = true;
+            camera.fieldOfView = 60;
+            var brain = actorObject.AddComponent<NpcAutonomy>();
+            brain.Actor = actor;
+            brain.Perception = actorObject.AddComponent<NpcPerception>();
+            brain.Log = actorObject.AddComponent<NpcDecisionLog>();
+            brain.Registry = System.Array.Empty<NpcInteractable>();
+            var hud = camera.gameObject.AddComponent<NpcDecisionHud>();
+            hud.Brain = brain;
+            hud.View = camera;
+            var display = camera.gameObject.AddComponent<PreviewDisplayMode>();
+            display.MenuOnly = true;
+            var controls = camera.gameObject.AddComponent<NpcPlayerControls>();
+            controls.Brain = brain;
+            controls.Hud = hud;
+            controls.View = actor.View;
+            controls.Display = display;
+            hud.Controls = controls;
+            Time.fixedDeltaTime = NpcAutonomy.StepSeconds;
+
+            brain.InstanceWorldId = NpcTerrainNavigation.RegionId;
             brain.TerrainNavigation = actorObject.AddComponent<NpcTerrainNavigation>();
             brain.Perception.WorldId = brain.InstanceWorldId;
-            foreach (var item in brain.Registry) item.WorldId = brain.InstanceWorldId;
             var activityOffset = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
-            foreach (var item in brain.Registry)
-            {
-                Vector3 original = item.transform.position;
-                float floor = CoastalTerrain.Height(original.x + activityOffset.x, original.z + activityOffset.z);
-                item.transform.position = new Vector3(original.x + activityOffset.x, floor + original.y, original.z + activityOffset.z);
-                if (item.Approach != null)
-                    item.Approach.position = new Vector3(item.Approach.position.x + activityOffset.x, floor, item.Approach.position.z + activityOffset.z);
-                if (item.Socket != null)
-                    item.Socket.position = new Vector3(item.Socket.position.x + activityOffset.x, floor + 1.06f, item.Socket.position.z + activityOffset.z);
-                var plinth = GameObject.Find(item.Kind == NpcObjectKind.Item ? item.StableId + " plinth" : item.StableId);
-                if (plinth != null)
-                    plinth.transform.position = new Vector3(plinth.transform.position.x + activityOffset.x, floor + .43f, plinth.transform.position.z + activityOffset.z);
-            }
-            // In main gameplay, hide test crystal primitives & plinths from view while keeping colliders/logic for CI checks
-            foreach (var item in brain.Registry)
-            {
-                var r = item.GetComponent<Renderer>();
-                if (r != null) r.enabled = false;
-                var plinth = GameObject.Find(item.Kind == NpcObjectKind.Item ? item.StableId + " plinth" : item.StableId);
-                if (plinth != null)
-                {
-                    var pr = plinth.GetComponent<Renderer>();
-                    if (pr != null) pr.enabled = false;
-                }
-            }
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
             livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
@@ -466,6 +458,49 @@ namespace CityLife.World.Editor
             caveHearthComp.StructureType = CityLife.World.StoneBuildingWorkstation.TerraceStructureType.Hearth;
             caveHearthComp.ConstructionSite = caveHearthPos;
             caveHearthComp.Radius = 1.6f;
+
+            // Spread-out Kokerboom tree distribution across canyon ridges, terraces, and riverbanks
+            var treeGroup = new GameObject("Canyon Kokerboom trees");
+            treeGroup.transform.SetParent(ground.transform, false);
+            var treePlacements = new (float x, float z, float age, int seed)[]
+            {
+                // East Terrace Rim Overlooks
+                (142f, -62f, 0.95f, 4201),
+                (115f, -112f, 0.75f, 4202),
+                (92f, -38f, 0.85f, 4203),
+                (152f, -88f, 0.60f, 4204),
+                // Riverbank Foothills & Meanders
+                (36f, -44f, 0.80f, 4205),
+                (42f, 18f, 0.70f, 4206),
+                (-32f, 48f, 0.90f, 4207),
+                (-48f, 122f, 0.65f, 4208),
+                (24f, -125f, 0.75f, 4209),
+                // Refuge Cave Rock Shelves & Exterior Benches
+                (-138f, 132f, 0.90f, 4210),
+                (-178f, 96f, 0.80f, 4211),
+                (-122f, 145f, 0.55f, 4212),
+                // Canyon Floor & Wall Overlook Benches
+                (68f, -148f, 0.70f, 4213),
+                (-78f, -28f, 0.85f, 4214),
+                (76f, 98f, 0.65f, 4215),
+                (-98f, 192f, 0.90f, 4216),
+                // Southern Waterfall Approach
+                (18f, -172f, 0.80f, 4217),
+                (-22f, -215f, 0.75f, 4218),
+                (32f, -265f, 0.60f, 4219)
+            };
+            foreach (var tp in treePlacements)
+            {
+                float ty = CoastalTerrain.Height(tp.x, tp.z);
+                if (ty <= CoastalWater.Level + 1.2f) continue;
+                var tree = KokerboomGeometry.Create(tp.seed, tp.age, 0);
+                if (tree != null)
+                {
+                    tree.transform.SetParent(treeGroup.transform, false);
+                    tree.transform.position = new Vector3(tp.x, ty, tp.z);
+                    tree.transform.rotation = Quaternion.Euler(0, (tp.seed * 37) % 360, 0);
+                }
+            }
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
