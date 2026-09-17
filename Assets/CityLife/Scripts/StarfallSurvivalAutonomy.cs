@@ -17,7 +17,6 @@ namespace CityLife.World
         public NpcAutonomy Brain;
         public IntegratedFoodRuntime Food;
         public Starfall.Refuge.RefugeRuntime Refuge;
-        public StarfallMapHud MapHud;
         public bool Enabled { get; private set; }
         public string Status { get; private set; }="Survival mind off";
         public string LastChoice { get; private set; }="waiting for discovery";
@@ -39,25 +38,6 @@ namespace CityLife.World
         private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond;
         private string routePurpose, recentVerifiedOutcome;
         private Vector3 routeOrigin;
-        private bool mapAcceptanceRequested;
-        private string mapAcceptanceDirectory;
-        private enum MapDiagStage { Inactive, WaitingAuthority, Caching, Departing, DepartedExcluded, Returning, DonePass, DoneFail }
-        private MapDiagStage mapDiagStage=MapDiagStage.Inactive;
-        private int mapDiagStartTick, mapStageStartTick, initialFoodTick, initialPlacesCount;
-        private string initialLastHash="";
-        private Vector3 cachedBerryPos, cachedBerryApproach, mapInitialPos, mapFinalPos, departureDest;
-        private readonly List<string> mapStages=new List<string>();
-        [Serializable] private sealed class MapSummary
-        {
-            public string status, scope="Actual map revisit diagnostic in compiled integrated player; NOT LLM model choice";
-            public string world, generation, actor;
-            public int startTick, endTick, startFoodTick, endFoodTick;
-            public Vector3 initialPosition, finalPosition, cachedBerryPosition, cachedBerryApproach, departureDestination;
-            public int initialEventCount, finalEventCount;
-            public string initialLastHash, revisitHash, revisitPreviousHash, revisitKind;
-            public bool hashChainValid, genuineRevisitVerified;
-            public List<string> routeStages=new List<string>();
-        }
         [Serializable] private sealed class Row
         {
             public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash,offeredActions;
@@ -71,40 +51,20 @@ namespace CityLife.World
         private IEnumerator Start()
         {
             var args=Environment.GetCommandLineArgs();
-            int mapFlag=Array.IndexOf(args,"-starfallMapAcceptance");
-            mapAcceptanceRequested=mapFlag>=0;
-            if(Array.IndexOf(args,"-npcSurvivalRuntime")<0&&!mapAcceptanceRequested)yield break;
+            if(Array.IndexOf(args,"-npcSurvivalRuntime")<0)yield break;
             string Arg(string name){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:null;}
             endpoint=Arg("-npcLocalEndpoint");model=Arg("-npcSurvivalModel");
             evidenceDirectory=Arg("-npcSurvivalEvidence");savePath=Arg("-npcSurvivalSave");
-            if(mapAcceptanceRequested)
-            {
-                mapAcceptanceDirectory=Arg("-starfallMapAcceptance");
-                if(string.IsNullOrWhiteSpace(mapAcceptanceDirectory)||!Path.IsPathFullyQualified(mapAcceptanceDirectory)||
-                    (Directory.Exists(mapAcceptanceDirectory)&&Directory.GetFileSystemEntries(mapAcceptanceDirectory).Length!=0))
-                    throw new InvalidOperationException("starfall-map-acceptance-directory-invalid");
-                Directory.CreateDirectory(mapAcceptanceDirectory);
-                if(string.IsNullOrEmpty(evidenceDirectory))evidenceDirectory=mapAcceptanceDirectory;
-                if(string.IsNullOrEmpty(savePath))savePath=Path.Combine(mapAcceptanceDirectory,"starfall-map-save.json");
-            }
             if(Brain==null||Food==null){Status="Survival mind unavailable: missing world adapter";yield break;}
             while(!Brain.Ready)yield return null;
             try
             {
-                if(Brain==null||Food==null||Brain.InstanceWorldId!=Food.Model.State.world)
+                if(Brain==null||Food==null||Brain.InstanceWorldId!=Food.Model.State.world||
+                    string.IsNullOrWhiteSpace(model)||string.IsNullOrWhiteSpace(endpoint)||
+                    string.IsNullOrEmpty(evidenceDirectory)||!Path.IsPathFullyQualified(evidenceDirectory)||
+                    Directory.Exists(evidenceDirectory)&&Directory.GetFileSystemEntries(evidenceDirectory).Length!=0)
                     throw new InvalidOperationException("scoped-survival-configuration-incomplete");
-                if(!mapAcceptanceRequested)
-                {
-                    if(string.IsNullOrWhiteSpace(model)||string.IsNullOrWhiteSpace(endpoint)||
-                        string.IsNullOrEmpty(evidenceDirectory)||!Path.IsPathFullyQualified(evidenceDirectory)||
-                        Directory.Exists(evidenceDirectory)&&Directory.GetFileSystemEntries(evidenceDirectory).Length!=0)
-                        throw new InvalidOperationException("scoped-survival-configuration-incomplete");
-                    StarfallLivingMemoryClient.Loopback(endpoint);
-                }
-                else if(!string.IsNullOrWhiteSpace(endpoint))
-                {
-                    StarfallLivingMemoryClient.Loopback(endpoint);
-                }
+                StarfallLivingMemoryClient.Loopback(endpoint);
                 if(savePath!=null && !Path.IsPathFullyQualified(savePath))throw new InvalidOperationException("save-path-not-absolute");
                 Directory.CreateDirectory(evidenceDirectory);
                 bool prior=savePath!=null&&File.Exists(savePath);
@@ -144,14 +104,6 @@ namespace CityLife.World
                 lastCheckpointSecond=Food.Model.State.tick;
                 Record("startup",prior?(VerifiedScopedContinuation?"earned-survival-authority-reloaded":
                     "scoped-food-save-reloaded-without-authority"):"new-scoped-food-journey",null,null);
-                if(MapHud==null)MapHud=GetComponent<StarfallMapHud>()??GetComponentInParent<StarfallMapHud>();
-                if(MapHud!=null&&Food!=null)
-                {
-                    MapHud.Initialize(Food.Model,Brain!=null?Brain.InstanceWorldId:Food.Model.State.world,
-                        IntegratedFoodRuntime.Generation,NpcAutonomy.AgentId,
-                        ()=>Brain!=null?Brain.transform.position:Food.Model.State.actorPosition);
-                    if(mapAcceptanceRequested)MapHud.Expanded=true;
-                }
             }
             catch(Exception error){Enabled=false;Status="Survival mind unavailable: "+error.GetType().Name;}
         }
@@ -251,7 +203,6 @@ namespace CityLife.World
                     Record("place",s.observedPlaces[s.observedPlaces.Count-1].kind+"-"+observation.id,null,null);
             }
             visiblePlaceIds.Clear();foreach(string id in now)visiblePlaceIds.Add(id);
-            MapHud?.NotifyStateChanged();
             return true;
         }
         public static bool BerryRelevant(FoodState s)
@@ -349,8 +300,8 @@ namespace CityLife.World
             if(route.Count==0)
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
-                LastOutcome=mapAcceptanceRequested?"Walked to scripted diagnostic destination":"Walked to model-chosen place";
-                recentVerifiedOutcome=mapAcceptanceRequested?(routePurpose!=null?routePurpose+" reached":"scripted destination reached"):routePurpose+" reached";
+                LastOutcome="Walked to model-chosen place";
+                recentVerifiedOutcome=routePurpose+" reached";
                 Record("route","reached",routePurpose,null);routePurpose=null;
                 nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
@@ -414,7 +365,7 @@ namespace CityLife.World
         private void Persist()
         {
             if(savePath==null)return;
-            try{Food.Model.Save(savePath);MapHud?.NotifyStateChanged();}
+            try{Food.Model.Save(savePath);}
             catch(Exception error)
             {
                 Record("save","scoped-save-failed-"+error.GetType().Name,null,null);
@@ -509,10 +460,6 @@ namespace CityLife.World
                     if(returned)deathAtTick=-1;}
                 return true;
             }
-            if(mapAcceptanceRequested)
-            {
-                return StepMapAcceptanceDiagnostic();
-            }
             if(route.Count>0)return MoveRoute();
             if(pending!=null)
             {
@@ -543,257 +490,6 @@ namespace CityLife.World
                 requestJson,verifiedDeathCause);
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
-        }
-        private bool StepMapAcceptanceDiagnostic()
-        {
-            if(pending!=null)
-            {
-                cancellation.Cancel();cancellation.Dispose();cancellation=null;pending=null;offered=null;
-            }
-            LastChoiceByModel=false;
-            LastChoice="SCRIPTED_DIAGNOSTIC_NOT_MODEL";
-            if(LastOutcome=="Walked to model-chosen place")LastOutcome="Walked to scripted diagnostic destination";
-            if(recentVerifiedOutcome!=null&&recentVerifiedOutcome.Contains("model-chosen"))recentVerifiedOutcome="scripted destination reached";
-            if(MapHud!=null&&!MapHud.Expanded)MapHud.Expanded=true;
-
-            if(mapDiagStage==MapDiagStage.DonePass||mapDiagStage==MapDiagStage.DoneFail)
-            {
-                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-                return true;
-            }
-
-            var s=Food.Model.State;
-            if(string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&!VerifiedScopedContinuation)
-            {
-                Status="Diagnostic: waiting for survival authority";
-                return false;
-            }
-
-            if(mapDiagStage==MapDiagStage.Inactive)
-            {
-                mapDiagStage=MapDiagStage.Caching;
-                mapDiagStartTick=Brain.Tick;
-                mapStageStartTick=Brain.Tick;
-                mapStages.Add("started");
-                Status="Diagnostic: waiting to observe berry-food";
-            }
-
-            if(mapDiagStage==MapDiagStage.Caching)
-            {
-                if(Observed("berry-food",out var berryObs))
-                {
-                    cachedBerryPos=berryObs.position;
-                    cachedBerryApproach=berryObs.approach;
-                    mapInitialPos=Brain.transform.position;
-                    initialPlacesCount=s.observedPlaces.Count;
-                    initialLastHash=s.observedPlaces.Count>0?s.observedPlaces[s.observedPlaces.Count-1].hash:"";
-                    initialFoodTick=s.tick;
-                    mapStages.Add("cached-berry-observation");
-
-                    bool found=false;
-                    Vector3 depTarget=Vector3.zero;
-                    for(float dist=16f;dist<=24f&&!found;dist+=2f)
-                    {
-                        for(int angle=0;angle<360;angle+=20)
-                        {
-                            float rad=angle*Mathf.Deg2Rad;
-                            Vector3 cand=Brain.transform.position+new Vector3(Mathf.Cos(rad),0,Mathf.Sin(rad))*dist;
-                            float bDist=Vector2.Distance(new Vector2(cand.x,cand.z),new Vector2(cachedBerryPos.x,cachedBerryPos.z));
-                            if(bDist<15f)continue;
-                            if(!Brain.TerrainNavigation.Walkable(cand,out var floor))continue;
-                            var plan=Brain.TerrainNavigation.Plan(Brain.transform.position,floor);
-                            if(plan!=null&&plan.Count>0)
-                            {
-                                depTarget=floor;
-                                found=true;
-                                break;
-                            }
-                        }
-                    }
-                    if(!found)
-                    {
-                        FinishMapDiagnostic(false,"no-walkable-departure-route");
-                        return true;
-                    }
-                    departureDest=depTarget;
-                    routePurpose="departing from berry";
-                    if(!StartRoute(departureDest))
-                    {
-                        FinishMapDiagnostic(false,"start-departure-route-failed");
-                        return true;
-                    }
-                    mapStages.Add("departing");
-                    mapDiagStage=MapDiagStage.Departing;
-                    mapStageStartTick=Brain.Tick;
-                    Status="Diagnostic: departing from berry to clear LOS";
-                    return MoveRoute();
-                }
-                if(Brain.Tick-mapStageStartTick>500)
-                {
-                    FinishMapDiagnostic(false,"timeout-waiting-berry-observation");
-                    return true;
-                }
-                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-                return true;
-            }
-
-            if(mapDiagStage==MapDiagStage.Departing)
-            {
-                if(Brain.Tick-mapStageStartTick>1500)
-                {
-                    FinishMapDiagnostic(false,"timeout-during-departure");
-                    return true;
-                }
-                if(route.Count>0)return MoveRoute();
-
-                float d=Vector2.Distance(new Vector2(Brain.transform.position.x,Brain.transform.position.z),
-                    new Vector2(cachedBerryPos.x,cachedBerryPos.z));
-                if(d<14f)
-                {
-                    FinishMapDiagnostic(false,"departure-insufficient-distance-"+d.ToString("F1"));
-                    return true;
-                }
-                mapDiagStage=MapDiagStage.DepartedExcluded;
-                mapStageStartTick=Brain.Tick;
-                mapStages.Add("reached-departure-point");
-                Status="Diagnostic: waiting for LOS exclusion";
-                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-                return true;
-            }
-
-            if(mapDiagStage==MapDiagStage.DepartedExcluded)
-            {
-                if(Brain.Tick-mapStageStartTick>300)
-                {
-                    FinishMapDiagnostic(false,"timeout-waiting-los-exclusion");
-                    return true;
-                }
-                bool berrySeen=Observed("berry-food",out _);
-                bool inVisible=visiblePlaceIds.Contains("berry-food");
-                if(!berrySeen&&!inVisible&&s.tick>initialFoodTick)
-                {
-                    mapStages.Add("los-excluded-verified");
-                    routePurpose="returning to berry";
-                    if(!StartRoute(cachedBerryApproach))
-                    {
-                        bool planned=false;
-                        for(float dx=-1.5f;dx<=1.5f&&!planned;dx+=0.5f)
-                        for(float dz=-1.5f;dz<=1.5f&&!planned;dz+=0.5f)
-                        {
-                            Vector3 near=cachedBerryApproach+new Vector3(dx,0,dz);
-                            if(Brain.TerrainNavigation.Walkable(near,out var fl)&&StartRoute(fl))
-                                planned=true;
-                        }
-                        if(!planned)
-                        {
-                            FinishMapDiagnostic(false,"return-plan-failed");
-                            return true;
-                        }
-                    }
-                    mapStages.Add("returning");
-                    mapDiagStage=MapDiagStage.Returning;
-                    mapStageStartTick=Brain.Tick;
-                    Status="Diagnostic: returning to cached berry approach";
-                    return MoveRoute();
-                }
-                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-                return true;
-            }
-
-            if(mapDiagStage==MapDiagStage.Returning)
-            {
-                if(Brain.Tick-mapStageStartTick>1500)
-                {
-                    FinishMapDiagnostic(false,"timeout-during-return");
-                    return true;
-                }
-                if(route.Count>0)return MoveRoute();
-
-                PlaceObservationEvent revisit=null;
-                for(int i=s.observedPlaces.Count-1;i>=initialPlacesCount;i--)
-                {
-                    if(s.observedPlaces[i].id=="berry-food"&&s.observedPlaces[i].kind=="revisit")
-                    {
-                        revisit=s.observedPlaces[i];
-                        break;
-                    }
-                }
-                if(revisit!=null)
-                {
-                    bool chainValid=PlaceLedger.Valid(s);
-                    if(!chainValid)
-                    {
-                        FinishMapDiagnostic(false,"revisit-chain-invalid");
-                        return true;
-                    }
-                    mapFinalPos=Brain.transform.position;
-                    mapStages.Add("revisit-verified");
-                    FinishMapDiagnostic(true,null,revisit);
-                    return true;
-                }
-                if(Brain.Tick-mapStageStartTick>1200)
-                {
-                    FinishMapDiagnostic(false,"revisit-event-not-recorded");
-                    return true;
-                }
-                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-                return true;
-            }
-
-            Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
-            return true;
-        }
-        private void FinishMapDiagnostic(bool pass,string failReason,PlaceObservationEvent revisit=null)
-        {
-            var s=Food.Model.State;
-            Persist();
-            mapDiagStage=pass?MapDiagStage.DonePass:MapDiagStage.DoneFail;
-            if(pass)mapStages.Add("summaryPASS");
-            else mapStages.Add("failed-"+failReason);
-            Status=pass?"Diagnostic summaryPASS: genuine map revisit verified":"Diagnostic FAIL: "+failReason;
-            LastOutcome=Status;
-            recentVerifiedOutcome=pass?"scripted diagnostic revisit verified":"scripted diagnostic failed";
-            var summary=new MapSummary
-            {
-                status=pass?"summaryPASS":"FAIL",
-                world=s.world,
-                generation=s.generation,
-                actor=s.actorId,
-                startTick=mapDiagStartTick,
-                endTick=Brain.Tick,
-                startFoodTick=initialFoodTick,
-                endFoodTick=s.tick,
-                initialPosition=mapInitialPos,
-                finalPosition=mapFinalPos,
-                cachedBerryPosition=cachedBerryPos,
-                cachedBerryApproach=cachedBerryApproach,
-                departureDestination=departureDest,
-                initialEventCount=initialPlacesCount,
-                finalEventCount=s.observedPlaces.Count,
-                initialLastHash=initialLastHash,
-                revisitHash=revisit!=null?revisit.hash:"",
-                revisitPreviousHash=revisit!=null?revisit.previousHash:"",
-                revisitKind=revisit!=null?revisit.kind:"",
-                hashChainValid=PlaceLedger.Valid(s),
-                genuineRevisitVerified=pass,
-                routeStages=new List<string>(mapStages)
-            };
-            if(!string.IsNullOrEmpty(mapAcceptanceDirectory)&&Directory.Exists(mapAcceptanceDirectory))
-            {
-                string json=JsonUtility.ToJson(summary,true);
-                try
-                {
-                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"map-acceptance-summary.json"),json);
-                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"summary.json"),json);
-                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"summary.txt"),summary.status+"\n");
-                }
-                catch(Exception ex)
-                {
-                    Debug.LogError("Failed to write map diagnostic summary: "+ex.Message);
-                }
-            }
-            if(pass)Debug.Log($"STARFALL_MAP_ACCEPTANCE: summaryPASS world={summary.world} events={summary.finalEventCount} hash={summary.revisitHash}");
-            else Debug.LogError($"STARFALL_MAP_ACCEPTANCE: FAIL {failReason}");
         }
     }
 }
