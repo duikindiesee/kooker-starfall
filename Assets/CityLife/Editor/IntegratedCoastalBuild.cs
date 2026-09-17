@@ -231,6 +231,8 @@ namespace CityLife.World.Editor
                 throw new InvalidOperationException("Authored freshwater and regional water require a measured refuge freeboard.");
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
+            var mapHud = camera.gameObject.AddComponent<StarfallMapHud>();
+            mapHud.Brain=brain;mapHud.Survival=survival;mapHud.Food=food;mapHud.View=camera;survival.MapHud=mapHud;
             var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();
             deathDiagnostic.Brain=brain;deathDiagnostic.Survival=survival;deathDiagnostic.Food=food;deathDiagnostic.View=camera;
             var gameCapture=camera.gameObject.AddComponent<StarfallSurvivalGameCapture>();

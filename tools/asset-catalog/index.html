@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Starfall / CityLife — Asset Inventory &amp; Catalog</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">Starfall / CityLife <span class="brand-sub">· Local Asset Catalog</span></div>
+    <div style="font-size:12px; color:#c7dfd6;">Commit: <code id="stat-commit">ce1d467</code></div>
+  </header>
+
+  <main>
+    <div class="eyebrow">Local Source Inventory · Bound to 127.0.0.1</div>
+    <h1>Starfall Asset Catalog &amp; 3D Inspection</h1>
+    <p class="intro">
+      Truthful enumerated inventory of source files beneath <code>Assets/CityLife</code>.
+      All acceptance statuses default strictly to <b>UNVERIFIED</b>.
+      Procedural generators, imported external assets, textures, and runtime fixtures are explicitly distinguished.
+      Interactive 3D orbit/zoom and PNG snapshot export are supported for verified mesh formats;
+      proprietary FBX and Unity scenes display truthful unavailable states with source asset downloads.
+    </p>
+
+    <!-- Stats Ribbon -->
+    <section class="stats-ribbon" aria-label="Inventory Summary Metrics">
+      <div class="stat-box">
+        <span class="stat-num" id="stat-total">-</span>
+        <span class="stat-label">Enumerated Files</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="stat-imported">-</span>
+        <span class="stat-label">Imported Assets</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="stat-procedural">-</span>
+        <span class="stat-label">Procedural Systems</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="stat-previewable" style="color:var(--green);">-</span>
+        <span class="stat-label">Browser Previewable</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="stat-pending" style="color:var(--ochre);">-</span>
+        <span class="stat-label">Export Pending</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" style="font-size:16px; color:var(--muted); line-height:28px;">UNVERIFIED</span>
+        <span class="stat-label">Default Policy</span>
+      </div>
+    </section>
+
+    <!-- Controls / Filters -->
+    <section class="controls-panel" aria-label="Inventory Search and Filters">
+      <div class="search-row">
+        <input type="search" id="search-input" class="search-input" placeholder="Search by name, ID, path, category, or author..." aria-label="Search catalog">
+        <label class="fixture-toggle">
+          <input type="checkbox" id="exclude-fixtures-cb" checked>
+          <span>Exclude reference preview fixtures</span>
+        </label>
+      </div>
+
+      <div class="pill-group" id="category-pills">
+        <span class="group-label">Category:</span>
+        <button class="filter-btn active" data-category="ALL">All Categories</button>
+      </div>
+
+      <div class="pill-group" id="type-pills">
+        <span class="group-label">Type:</span>
+        <button class="filter-btn active" data-type="ALL">All Types</button>
+      </div>
+    </section>
+
+    <!-- Catalog Grid -->
+    <section id="catalog-grid" class="grid" aria-label="Catalog Items Grid">
+      <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted);">Loading asset inventory...</div>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close dialog">&times;</button>
+      
+      <div class="modal-header">
+        <div class="eyebrow" style="margin-bottom:2px;">Asset Detail &amp; Inspection</div>
+        <h2 class="modal-title" id="modal-title">Asset Name</h2>
+        <div class="modal-subtitle" id="modal-id">starfall.asset.id</div>
+      </div>
+
+      <!-- Preview Box (WebGL 3D / 2D Image / Truthful Unavailable) -->
+      <div id="modal-preview-area"></div>
+
+      <!-- Detailed Technical Metadata -->
+      <div id="modal-metadata-area"></div>
+    </div>
+  </div>
+
+  <script src="viewer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

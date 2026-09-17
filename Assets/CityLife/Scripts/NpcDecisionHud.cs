@@ -19,6 +19,12 @@ namespace CityLife.World
         private Text footer, thoughts;
         private GameObject thoughtsBackground;
         public string LivingMemoryText;
+        private GameObject panelGroup;
+        private Canvas decisionCanvas;
+        public Canvas DecisionCanvas => decisionCanvas;
+        public GameObject PanelGroup => panelGroup;
+        public bool IsDecisionActive => panelGroup != null && panelGroup.activeSelf;
+        public void StepLateUpdate() => LateUpdate();
         private void Awake()
         {
             var root = new GameObject("NPC decision panel", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -28,9 +34,17 @@ namespace CityLife.World
             var scaler = root.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1600, 900); scaler.matchWidthOrHeight = .5f;
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            panelGroup = new GameObject("Decision panel content", typeof(RectTransform), typeof(Canvas));
+            decisionCanvas = panelGroup.GetComponent<Canvas>();
+            var groupRt = panelGroup.GetComponent<RectTransform>();
+            groupRt.SetParent(root.transform, false);
+            groupRt.anchorMin = Vector2.zero; groupRt.anchorMax = Vector2.one;
+            groupRt.offsetMin = Vector2.zero; groupRt.offsetMax = Vector2.zero;
+
             RectTransform Rect(GameObject o, float x, float y, float w, float h)
             {
-                var rect = o.GetComponent<RectTransform>(); rect.SetParent(root.transform, false);
+                var rect = o.GetComponent<RectTransform>(); rect.SetParent(panelGroup.transform, false);
                 rect.anchorMin = rect.anchorMax = new Vector2(0, 1); rect.pivot = new Vector2(0, 1);
                 rect.anchoredPosition = new Vector2(x, -y); rect.sizeDelta = new Vector2(w, h); return rect;
             }
@@ -65,6 +79,13 @@ namespace CityLife.World
         private void LateUpdate() => Refresh();
         public void Refresh()
         {
+            bool modal = Brain != null && Brain.MenuPaused;
+            if (panelGroup != null && panelGroup.activeSelf == modal)
+            {
+                panelGroup.SetActive(!modal);
+                if (decisionCanvas != null) decisionCanvas.enabled = !modal;
+            }
+            if (modal) return;
             if (!Brain.Ready || Summary == null) return;
             if (thoughts != null)
             {
