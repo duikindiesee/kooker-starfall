@@ -39,6 +39,7 @@ namespace Starfall.Food
             string freshAscii = vm.GenerateAsciiGrid(2);
             Check(!freshAscii.Contains("B") && !freshAscii.Contains("S") && !freshAscii.Contains("R") && !freshAscii.Contains("·"),
                 "ascii grid for undiscovered world contains no revealed resource or explored marks");
+            Check(freshAscii.Contains("░"), "ascii grid for undiscovered world renders fog of war on unexplored cells");
 
             // 2. Only matching scope admitted (fails closed on mismatch and after new-world/reload rebinding)
             freshModel.State.tick = 1;

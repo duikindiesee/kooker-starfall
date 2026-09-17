@@ -406,6 +406,7 @@ namespace Starfall.Food
                 Model.State.body.active=Brain!=null && Brain.Actor!=null && Brain.Actor.ActualSpeed>.12f;
                 Model.State.body.resting=Refuge!=null && Refuge.Resting && Refuge.Body!=null && Refuge.Body.transform==Actor;
                 Model.State.body.sheltered=Refuge!=null && Refuge.GeometryVerified && Refuge.Sample(Actor.position+Vector3.up).RainMultiplier<.05f;
+                Model.State.body.submerged=Brain!=null && Brain.Actor!=null && Brain.Actor.IsSubmerged;
             }
             Model.FixedStep(paused);
             if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;

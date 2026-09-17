@@ -64,6 +64,7 @@ namespace Starfall.Food
             var s=State;string lesson="";
             if(s.body.cause=="prolonged-starvation")lesson="Energy and fat were exhausted before fatal damage.";
             else if(s.body.cause=="prolonged-dehydration")lesson="Hydration remained depleted before fatal damage.";
+            else if(s.body.cause=="drowning")lesson="Submerged underwater without air; drowned.";
             s.causalMemory=lesson;
             var d=new FoodDeath{id=s.generation+".death."+(s.deaths.Count+1),world=s.world,generation=s.generation,actor=s.actorId,tick=s.tick,incarnation=s.incarnation,cause=s.body.cause,lesson=lesson,energy=s.satiety,hydration=s.hydration,fat=s.body.fat,health=s.body.health,deficitSeconds=s.body.deficitSeconds,drySeconds=s.body.drySeconds,previousHash=s.deaths.Count==0?"":s.deaths[s.deaths.Count-1].hash,hash=""};
             d.hash=Hash(JsonUtility.ToJson(d));s.deaths.Add(d);s.bags.Add(new RecoveryBag{death=s.deaths.Count,owner=s.actorId,berries=s.carriedFruit,seeds=s.seeds});s.carriedFruit=s.seeds=0;

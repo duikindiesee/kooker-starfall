@@ -58,8 +58,8 @@ namespace CityLife.World
                 return t;
             }
             var title = Label("Title", 35, 50, 28, new Color(.6f, .93f, .93f)); title.text = "STARFALL / Inhabitant decisions";
-            Summary = Label("Current decision", 92, 130, 22, Color.white);
-            Perceptions = Label("Perceived objects", 230, 200, 19, new Color(.78f, .86f, .91f));
+            Summary = Label("Current decision", 90, 160, 20, Color.white);
+            Perceptions = Label("Perceived objects", 260, 170, 19, new Color(.78f, .86f, .91f));
             History = Label("Action log", 442, 346, 18, new Color(.94f, .88f, .73f));
             footer = Label("Controls", 798, 72, 17, new Color(.65f, .75f, .82f)); footerRect = footer.rectTransform;
             footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nDeterministic rules; no LLM or learning.";
@@ -114,8 +114,8 @@ namespace CityLife.World
                     (!string.IsNullOrEmpty(LivingMemoryText) ? " · memory status shown" : "");
             }
             Perceptions.gameObject.SetActive(Detailed); History.gameObject.SetActive(Detailed);
-            backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 310);
-            footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -238);
+            backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 340);
+            footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -260);
             string mode = Brain.MenuPaused ? "PAUSED / " : "";
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
             string currentGoal = Brain.GoalId.Length > 0 ? Brain.GoalId :
@@ -123,27 +123,44 @@ namespace CityLife.World
             Summary.text = mode + "  |  " + (Brain.Possessed ? "Autonomy suspended" : Brain.Running ? "Autonomy on" : "Autonomy stopped") +
                 "\nTick " + Brain.Tick + "  |  " + Brain.Phase +
                 "\nGoal: " + currentGoal +
-                "\nCargo: " + (Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
+                "\nCargo: " + (Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
                 "\nResult: " + Brain.LastResult;
-            if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
+            var foodRuntime = Brain.Survival != null ? Brain.Survival.Food : null;
+            if (foodRuntime == null) foodRuntime = FindAnyObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+            if (foodRuntime != null && foodRuntime.Model != null)
             {
-                var food=Brain.Survival.Food.Model.State;
+                var food = foodRuntime.Model.State;
                 string cargo = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none";
                 int visitedCount = food.observedPlaces != null ? food.observedPlaces.Count : 0;
                 int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
-                Summary.text=mode+" survivor | Tick "+Brain.Tick+
-                    "\nGoal: "+currentGoal+"  |  Cargo: "+cargo+
-                    "\nPlaces: "+visitedCount+"  |  Explored: "+exploredCount+" cells"+
-                    "\nEnergy "+food.satiety+" / water "+food.hydration+" / fruit "+food.carriedFruit+
-                    "\n"+(Brain.Survival.LastChoiceByModel?"Model chose: ":"System state: ")+Brain.Survival.LastChoice+
-                    "\nOutcome: "+Brain.Survival.LastOutcome;
-                if(food.body.dead)
-                    Summary.text=mode+" survivor | Tick "+Brain.Tick+
-                        "\nBODY DEAD: "+food.body.cause+
-                        "\nWorld and death record retained"
-                        +"\nAwaiting verified safe return";
-                footer.text="M map · P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nPlanner "+
-                    (Brain.OptionalPlanner.EnabledByUser?"on":"off")+" · Survival model on";
+                int healthPct = Mathf.Clamp(food.body.health / 100, 0, 100);
+                int strengthPct = Mathf.Clamp((10000 - food.body.fatigue) / 100, 0, 100);
+                int hungerPct = Mathf.Clamp(food.satiety / 100, 0, 100);
+                int thirstPct = Mathf.Clamp(food.hydration / 100, 0, 100);
+
+                string airAlert = "";
+                if (food.body.submerged)
+                {
+                    int airSec = Mathf.Max(0, 15 - food.body.submergedSeconds);
+                    airAlert = airSec > 0 ? $"  |  AIR: {airSec}s [SUBMERGED]" : "  |  AIR: 0s [DROWNING!]";
+                }
+
+                if (food.body.dead)
+                {
+                    Summary.text = mode + " | Tick " + Brain.Tick +
+                        "\nBODY DEAD: " + food.body.cause +
+                        "\nHealth: 0%  |  World & memory preserved" +
+                        "\nAwaiting verified safe return to refuge";
+                }
+                else
+                {
+                    Summary.text = mode + " | Tick " + Brain.Tick +
+                        "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
+                        $"\nHealth: {healthPct}%  |  Strength: {strengthPct}%" +
+                        $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%" + airAlert +
+                        $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Fruit: {food.carriedFruit}";
+                }
+                footer.text = "M map · P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nSurvival vitals active";
             }
             var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
             foreach (var x in Brain.Perception.Current)

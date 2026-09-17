@@ -81,10 +81,15 @@ namespace CityLife.World.Editor
             if (!ForagingExpeditionCycle.VerifyForagingLogic(out string forageReceipt))
                 throw new InvalidOperationException($"Foraging expedition verification failed: {forageReceipt}");
 
+            string mapChecksFolder = Path.Combine(Path.GetTempPath(), "sf-map-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
+            if (Directory.Exists(mapChecksFolder)) Directory.Delete(mapChecksFolder, true);
+            Directory.CreateDirectory(mapChecksFolder);
+            var mapChecks = Starfall.Food.StarfallMapChecks.Run(mapChecksFolder);
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + 10;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, survival cycle, masonry, and crafting loops with zero errors.");
+                              woodChecks.Count + mapChecks.Count + 10;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, survival cycle, masonry, map fog-of-war, and crafting loops with zero errors.");
 
             KokerboomRender.BuildCoastalPlayableSlice();
         }
@@ -96,10 +101,12 @@ namespace CityLife.World.Editor
             var actorObject = new GameObject("First coastal inhabitant"); actorObject.layer = 9;
             var actor = actorObject.AddComponent<CharacterPreviewActor>(); actor.ExternalDrive = true;
             actor.Capsule = actorObject.AddComponent<CharacterController>();
-            actor.Capsule.height = 1.85f; actor.Capsule.center = new Vector3(0, .93f, 0); actor.Capsule.radius = .3f;
+            actor.Capsule.height = 1.85f; actor.Capsule.center = new Vector3(0, .96f, 0); actor.Capsule.radius = .3f;
             actor.Capsule.skinWidth = .025f; actor.Capsule.stepOffset = .25f; actor.Capsule.slopeLimit = 45;
             var model = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(CharacterAssetImport.Body));
-            model.transform.SetParent(actorObject.transform, false); model.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            model.transform.SetParent(actorObject.transform, false);
+            model.transform.localPosition = new Vector3(0, .085f, 0);
+            model.transform.localRotation = Quaternion.Euler(0, 180, 0);
             actor.Animator = model.GetComponent<Animator>();
             if (actor.Animator.avatar == null || !actor.Animator.avatar.isValid || !actor.Animator.avatar.isHuman) throw new InvalidOperationException("Humanoid avatar invalid.");
             actor.Animator.applyRootMotion = false; actor.Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -107,7 +114,8 @@ namespace CityLife.World.Editor
             var controller = AnimatorController.CreateAnimatorControllerAtPath(folder + "/IntegratedHumanoid.controller");
             foreach (var pair in new[] { ("Idle", "Idle_Loop"), ("Walk", "Walk_Loop"), ("Interact", "Interact"),
                 ("Crouch", "Crouch_Idle_Loop"), ("CrouchWalk", "Crouch_Fwd_Loop"), ("Sit", "Sitting_Idle_Loop"),
-                ("SitEnter", "Sitting_Enter"), ("SitExit", "Sitting_Exit"), ("Pickup", "PickUp_Table") })
+                ("SitEnter", "Sitting_Enter"), ("SitExit", "Sitting_Exit"), ("Pickup", "PickUp_Table"),
+                ("Swim", "Swim_Fwd_Loop"), ("SwimIdle", "Swim_Idle_Loop") })
             {
                 var state = controller.layers[0].stateMachine.AddState(pair.Item1);
                 state.motion = clips.Single(c => c.name == pair.Item2 || c.name == "Armature|" + pair.Item2);
@@ -172,8 +180,8 @@ namespace CityLife.World.Editor
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
             livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
-            float spawnX = activityOffset.x - 4f;
-            float spawnZ = activityOffset.z - 5f;
+            float spawnX = CoastalTerrain.RefugeCentre.x + 2.5f;
+            float spawnZ = CoastalTerrain.RefugeCentre.y - 0.5f;
             float spawnY = CoastalTerrain.Height(spawnX, spawnZ) + 0.05f;
             brain.SpawnPosition = new Vector3(spawnX, spawnY, spawnZ);
             actor.Place(brain.SpawnPosition);
@@ -181,7 +189,7 @@ namespace CityLife.World.Editor
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
-            camera.fieldOfView = 60; actor.View.Yaw = -25; actor.View.Pitch = 12; actor.View.Follow();
+            camera.fieldOfView = 60; actor.View.Yaw = 65; actor.View.Pitch = 12; actor.View.Follow();
             // Keep the composed galaxy view and add background coverage behind it.
             var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
             if (galaxy != null)
@@ -221,7 +229,11 @@ namespace CityLife.World.Editor
             actorObject.layer = 9;
             foreach (var item in brain.Registry)
                 foreach (var collider in item.GetComponentsInChildren<Collider>(true)) collider.gameObject.layer = 11;
-            actor.Place(brain.SpawnPosition); actor.View.Follow();
+            Vector3 caveSpawn = refugeRuntime.Hearth + new Vector3(2.5f, 0, -0.5f);
+            caveSpawn.y = CoastalTerrain.Height(caveSpawn.x, caveSpawn.z) + 0.05f;
+            brain.SpawnPosition = caveSpawn;
+            actor.Place(brain.SpawnPosition);
+            actor.View.Yaw = 65; actor.View.Pitch = 12; actor.View.Distance = 5.2f; actor.View.Follow();
             var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = refugeRuntime.Hearth;
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
@@ -267,59 +279,18 @@ namespace CityLife.World.Editor
             if (basketMaterial == null || basketMaterial.shader == null || !basketMaterial.shader.isSupported)
                 throw new InvalidOperationException("Basket material requires a valid, supported Universal Render Pipeline/Lit shader.");
             physicalBootstrap.BasketMaterial = basketMaterial;
-            physicalBootstrap.OptInStarterLayout = true;
+            physicalBootstrap.OptInStarterLayout = false;
 
             var containerPanel = camera.gameObject.AddComponent<PhysicalContainerPanel>();
             containerPanel.Controls = controls;
             containerPanel.Bootstrap = physicalBootstrap;
             controls.ContainerPanel = containerPanel;
 
-            // Extraterrestrial Scanner Terminal: anomalous computer on stone plinth
-            var scannerObj = new GameObject("Alien artifact scanner terminal");
-            scannerObj.transform.SetParent(ground.transform, false);
-            Vector3 scannerPos = new Vector3(CoastalTerrain.ActivityCentre.x - 1.8f, 0, CoastalTerrain.ActivityCentre.y - 2.5f);
-            scannerPos.y = CoastalTerrain.Height(scannerPos.x, scannerPos.z);
-            scannerObj.transform.position = scannerPos;
-
-            var scannerPlinth = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            scannerPlinth.name = "Scanner plinth";
-            scannerPlinth.transform.SetParent(scannerObj.transform, false);
-            scannerPlinth.transform.localScale = new Vector3(0.6f, 0.45f, 0.6f);
-            scannerPlinth.transform.localPosition = new Vector3(0, 0.45f, 0);
-            var plinthRend = scannerPlinth.GetComponent<MeshRenderer>();
-            if (plinthRend != null) plinthRend.sharedMaterial = stoneMat;
-
-            var pad = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            pad.name = "Holographic scanning pad";
-            pad.transform.SetParent(scannerObj.transform, false);
-            pad.transform.localScale = new Vector3(0.35f, 0.05f, 0.35f);
-            pad.transform.localPosition = new Vector3(0, 0.92f, 0);
-            var padMat = Material("Scanner pad metallic", new Color(0.15f, 0.22f, 0.28f));
-            padMat.SetFloat("_Smoothness", 0.85f);
-            var padRend = pad.GetComponent<MeshRenderer>();
-            if (padRend != null) padRend.sharedMaterial = padMat;
-
-            var scanLightObj = new GameObject("Scan beam");
-            scanLightObj.transform.SetParent(pad.transform, false);
-            scanLightObj.transform.localPosition = new Vector3(0, 0.2f, 0);
-            var scanLight = scanLightObj.AddComponent<Light>();
-            scanLight.type = LightType.Point;
-            scanLight.range = 2.0f;
-            scanLight.color = new Color(0.2f, 0.85f, 1.0f);
-            scanLight.intensity = 2.0f;
-
-            var scanner = scannerObj.AddComponent<AlienArtifactScanner>();
-            scanner.Brain = brain;
-            scanner.Hud = camera.GetComponent<NpcDecisionHud>();
-            scanner.ScanningPad = pad.transform;
-            scanner.ScanLight = scanLight;
-            scanner.VisualRenderer = padRend;
-
             // Autonomous Evening Refuge Fire Survival Cycle
             var eveningFire = actorObject.AddComponent<EveningRefugeFireCycle>();
             eveningFire.Brain = brain;
             eveningFire.Refuge = refugeRuntime;
-            eveningFire.Scanner = scanner;
+            eveningFire.Scanner = null;
             eveningFire.Bootstrap = physicalBootstrap;
             eveningFire.Environment = environment;
 
@@ -360,7 +331,7 @@ namespace CityLife.World.Editor
             foraging.Hud = camera.GetComponent<NpcDecisionHud>();
             foraging.BuildingWorkstation = building;
             foraging.KnappingWorkstation = knapping;
-            foraging.Scanner = scanner;
+            foraging.Scanner = null;
             brain.Foraging = foraging;
 
             // Natural Stone Supply (AG3): place procedural river cobbles, fieldstones, and flat slabs on activity terrace

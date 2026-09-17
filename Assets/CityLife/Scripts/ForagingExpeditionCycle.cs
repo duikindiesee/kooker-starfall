@@ -407,7 +407,7 @@ namespace CityLife.World
 
         private Vector3 GetBasketPosition()
         {
-            Vector3 pos = new Vector3(CoastalTerrain.ActivityCentre.x - 0.8f, 0, CoastalTerrain.ActivityCentre.y - 0.6f);
+            Vector3 pos = (Refuge != null) ? Refuge.Hearth + new Vector3(1.2f, 0, 0.8f) : new Vector3(CoastalTerrain.RefugeCentre.x - 0.8f, 0, CoastalTerrain.RefugeCentre.y - 0.6f);
             pos.y = GroundHeight(pos);
             return pos;
         }
@@ -417,37 +417,39 @@ namespace CityLife.World
             Vector3 pos;
             if (resourceId.Contains("cobble"))
             {
-                // Round river stones gathered down at the shallow riverbed crossing
-                pos = new Vector3(2.0f, 0, -8.0f);
+                // Cobbles on dry canyon shelf near refuge
+                pos = new Vector3(-158f, 0, 122f);
             }
             else if (resourceId.Contains("driftwood") || (resourceId.Contains("wood") && (ExpeditionsCompleted % 3 == 1)))
             {
-                // Driftwood gathered along the riverbank washed from upper canyon waterfall
+                // Driftwood along the riverbank
                 pos = new Vector3(22.0f, 0, -65.0f);
             }
             else if (resourceId.Contains("wood"))
             {
-                // Fallen wood gathered along the terrace margin
-                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 4.5f, 0, CoastalTerrain.ActivityCentre.y + 3.0f);
+                // Fallen wood along refuge shelf
+                pos = new Vector3(-148f, 0, 105f);
             }
             else if (resourceId.Contains("fieldstone"))
             {
-                pos = new Vector3(CoastalTerrain.ActivityCentre.x - 2.8f, 0, CoastalTerrain.ActivityCentre.y + 2.0f);
+                pos = new Vector3(-170f, 0, 110f);
             }
             else if (resourceId.Contains("slab"))
             {
-                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 1.2f, 0, CoastalTerrain.ActivityCentre.y + 3.5f);
+                pos = new Vector3(-138f, 0, 132f);
             }
             else if (resourceId.Contains("tinder"))
             {
-                pos = new Vector3(CoastalTerrain.ActivityCentre.x - 1.5f, 0, CoastalTerrain.ActivityCentre.y + 2.8f);
+                pos = (Refuge != null) ? Refuge.Hearth + new Vector3(0.6f, 0, 0.4f) : new Vector3(CoastalTerrain.RefugeCentre.x + 0.6f, 0, CoastalTerrain.RefugeCentre.y + 0.4f);
             }
             else
             {
-                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 2.0f, 0, CoastalTerrain.ActivityCentre.y + 1.5f);
+                pos = new Vector3(-152f, 0, 110f);
             }
 
             pos.y = GroundHeight(pos);
+            if (pos.y < CoastalWater.Level + 0.2f)
+                pos.y = CoastalWater.Level + 0.2f;
             return pos;
         }
 
@@ -481,21 +483,14 @@ namespace CityLife.World
                 return BuildingWorkstation.ConstructionSite != Vector3.zero ? BuildingWorkstation.ConstructionSite : BuildingWorkstation.transform.position;
             }
 
-            Vector3 terracePos = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
-            terracePos.y = GroundHeight(terracePos);
-            return terracePos;
+            Vector3 refugeHearth = (Refuge != null) ? Refuge.Hearth : new Vector3(CoastalTerrain.RefugeCentre.x, 0, CoastalTerrain.RefugeCentre.y);
+            refugeHearth.y = GroundHeight(refugeHearth);
+            return refugeHearth;
         }
 
         private Vector3 GetRestPosition()
         {
-            if (ExpeditionsCompleted % 3 == 1)
-            {
-                // Rest and warm up at the Refuge Cave
-                Vector3 caveRest = new Vector3(CoastalTerrain.RefugeCentre.x, 0, CoastalTerrain.RefugeCentre.y);
-                caveRest.y = GroundHeight(caveRest);
-                return caveRest;
-            }
-            Vector3 pos = new Vector3(CoastalTerrain.ActivityCentre.x + 4.5f, 0, CoastalTerrain.ActivityCentre.y - 3.8f);
+            Vector3 pos = (Refuge != null) ? Refuge.Hearth + new Vector3(2.5f, 0, -0.5f) : new Vector3(CoastalTerrain.RefugeCentre.x + 2.5f, 0, CoastalTerrain.RefugeCentre.y - 0.5f);
             pos.y = GroundHeight(pos);
             return pos;
         }
@@ -516,7 +511,7 @@ namespace CityLife.World
                     return route;
             }
 
-            // Fallback straight-line segmented route if direct grid search finds no path
+            // Fallback safe waypoints along walkable terrain: never route into deep water!
             var direct = new Queue<Vector3>();
             Vector3 origin = transform.position;
             int segments = Mathf.Max(1, Mathf.RoundToInt(FlatDistance(origin, dest) / 1.5f));
@@ -525,6 +520,8 @@ namespace CityLife.World
                 float t = i / (float)segments;
                 Vector3 pt = Vector3.Lerp(origin, dest, t);
                 pt.y = GroundHeight(pt);
+                if (pt.y < CoastalWater.Level + 0.1f)
+                    break;
                 direct.Enqueue(pt);
             }
             return direct;

@@ -510,7 +510,7 @@ namespace CityLife.World
                     }
                     else
                     {
-                        sb.Append(' ');
+                        sb.Append('░');
                     }
                     sb.Append(' ');
                 }

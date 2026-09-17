@@ -275,6 +275,8 @@ namespace CityLife.World
                 latest.lesson=="Hydration remained depleted before fatal damage.")return latest.cause;
             if(latest.cause=="prolonged-starvation"&&
                 latest.lesson=="Energy and fat were exhausted before fatal damage.")return latest.cause;
+            if(latest.cause=="drowning"&&
+                latest.lesson=="Submerged underwater without air; drowned.")return latest.cause;
             return null;
         }
         private List<string> Eligible()
@@ -325,8 +327,16 @@ namespace CityLife.World
             var candidates=new List<(string action,int score)>();
             for(int i=0;i<directions.Length;i++)
             {
-                var p=Brain.transform.position+directions[i].Item2*6f;
-                if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                var p=Brain.transform.position+directions[i].Item2*18f;
+                if(!Brain.TerrainNavigation.Walkable(p,out _))
+                {
+                    p=Brain.transform.position+directions[i].Item2*12f;
+                    if(!Brain.TerrainNavigation.Walkable(p,out _))
+                    {
+                        p=Brain.transform.position+directions[i].Item2*6f;
+                        if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                    }
+                }
                 var cell=new Vector2Int(Mathf.RoundToInt(p.x/3f),Mathf.RoundToInt(p.z/3f));
                 int visits=PlaceLedger.Cell(s,cell.x,cell.y)?.visits??0;
                 candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
@@ -362,6 +372,33 @@ namespace CityLife.World
             if(direction==Vector3.zero)
             {route.Clear();Record("route","live-terrain-blocked",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;}
             Brain.Actor.Step(direction,NpcAutonomy.StepSeconds);return true;
+        }
+        private Vector3 FindNearestShore(Vector3 current)
+        {
+            float bestDist = float.MaxValue;
+            Vector3 bestPos = current;
+            for (int r = 2; r <= 36; r += 2)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    float a = i * Mathf.PI * 2f / 16f;
+                    float sx = current.x + Mathf.Cos(a) * r;
+                    float sz = current.z + Mathf.Sin(a) * r;
+                    float sh = CoastalTerrain.Height(sx, sz);
+                    if (sh > CoastalWater.Level + 0.25f && Brain != null && Brain.TerrainNavigation != null &&
+                        Brain.TerrainNavigation.Walkable(new Vector3(sx, sh, sz), out Vector3 floor))
+                    {
+                        float dist = (sx - current.x) * (sx - current.x) + (sz - current.z) * (sz - current.z);
+                        if (dist < bestDist)
+                        {
+                            bestDist = dist;
+                            bestPos = floor;
+                        }
+                    }
+                }
+                if (bestDist < float.MaxValue) break;
+            }
+            return bestPos;
         }
         private bool TrySafeReturn()
         {
@@ -454,7 +491,13 @@ namespace CityLife.World
                 routePurpose=accepted;
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:
                     accepted.EndsWith("east")?Vector3.right:Vector3.left;
-                Vector3 destination=Brain.transform.position+direction*6f;
+                Vector3 destination=Brain.transform.position+direction*18f;
+                if(!Brain.TerrainNavigation.Walkable(destination,out _))
+                {
+                    destination=Brain.transform.position+direction*12f;
+                    if(!Brain.TerrainNavigation.Walkable(destination,out _))
+                        destination=Brain.transform.position+direction*6f;
+                }
                 explorationSeed++;
                 if(!StartRoute(destination)){routePurpose=null;Record("route","no-walkable-exploration-route",accepted,result);}
             }
@@ -512,6 +555,19 @@ namespace CityLife.World
             if(mapAcceptanceRequested)
             {
                 return StepMapAcceptanceDiagnostic();
+            }
+            if (Brain.Actor != null && (Brain.Actor.IsSubmerged || (Brain.Actor.IsSwimming && Brain.Actor.WaterDepth > 1.2f)))
+            {
+                if (routePurpose != "seek-shore" || route.Count == 0)
+                {
+                    Vector3 shore = FindNearestShore(Brain.transform.position);
+                    route.Clear();
+                    if (StartRoute(shore))
+                    {
+                        routePurpose = "seek-shore";
+                        Status = "Submerged / seeking dry shore to prevent drowning";
+                    }
+                }
             }
             if(route.Count>0)return MoveRoute();
             if(pending!=null)

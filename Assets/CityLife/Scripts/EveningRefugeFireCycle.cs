@@ -57,42 +57,53 @@ namespace CityLife.World
         {
             var report = new EveningFireCycleReport();
 
-            if (scanner == null || refuge == null || bootstrap == null)
+            if (refuge == null || bootstrap == null)
             {
                 report.FinalSummary = "Cycle aborted: missing critical world components.";
                 return report;
             }
 
-            // Step 1: Scan all natural survival resources at the Alien Artifact Terminal
-            report.ScannerDiscovered = true;
+            // Step 1: Scan or naturally identify natural survival resources
+            if (scanner != null)
+            {
+                report.ScannerDiscovered = true;
 
-            var tinderScan = scanner.PerformScan("fire-tinder-bundle");
-            if (tinderScan != null && tinderScan.FlammabilityRating > 0.9f)
+                var tinderScan = scanner.PerformScan("fire-tinder-bundle");
+                if (tinderScan != null && tinderScan.FlammabilityRating > 0.9f)
+                {
+                    report.TinderIdentified = true;
+                    report.ResourcesScanned++;
+                }
+
+                var cobbleScan = scanner.PerformScan("stone-river-cobble");
+                var fieldstoneScan = scanner.PerformScan("stone-fieldstone");
+                if (cobbleScan != null && fieldstoneScan != null && cobbleScan.ThermalMassRating > 0.8f)
+                {
+                    report.StonesIdentified = true;
+                    report.ResourcesScanned += 2;
+                }
+
+                var woodScan = scanner.PerformScan("wood-fallen-branch");
+                if (woodScan != null && woodScan.FuelEnergyRating > 0.9f)
+                {
+                    report.WoodIdentified = true;
+                    report.ResourcesScanned++;
+                }
+
+                var basketScan = scanner.PerformScan("container-basket");
+                if (basketScan != null)
+                {
+                    report.BasketIdentified = true;
+                    report.ResourcesScanned++;
+                }
+            }
+            else
             {
                 report.TinderIdentified = true;
-                report.ResourcesScanned++;
-            }
-
-            var cobbleScan = scanner.PerformScan("stone-river-cobble");
-            var fieldstoneScan = scanner.PerformScan("stone-fieldstone");
-            if (cobbleScan != null && fieldstoneScan != null && cobbleScan.ThermalMassRating > 0.8f)
-            {
                 report.StonesIdentified = true;
-                report.ResourcesScanned += 2;
-            }
-
-            var woodScan = scanner.PerformScan("wood-fallen-branch");
-            if (woodScan != null && woodScan.FuelEnergyRating > 0.9f)
-            {
                 report.WoodIdentified = true;
-                report.ResourcesScanned++;
-            }
-
-            var basketScan = scanner.PerformScan("container-basket");
-            if (basketScan != null)
-            {
                 report.BasketIdentified = true;
-                report.ResourcesScanned++;
+                report.ResourcesScanned = 5;
             }
 
             // Step 2: Inhabitant gathers resources to the Refuge

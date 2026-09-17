@@ -66,7 +66,9 @@ namespace CityLife.World
             string death=verifiedDeathCause=="prolonged-dehydration"?
                 "Prior verified own death: Hydration remained depleted before fatal damage. ":
                 verifiedDeathCause=="prolonged-starvation"?
-                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":"";
+                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":
+                verifiedDeathCause=="drowning"?
+                "Prior verified own death: Submerged underwater without air; drowned. ":"";
             string energyLabel=hunger<2000?"severe low energy":hunger<8500?"below replenish target":"at replenish target";
             string waterLabel=thirst<2000?"severe low hydration":thirst<8500?"below replenish target":"at replenish target";
             string user=explorationOnly?death+prior+"Eligible: "+string.Join(", ",eligible)+".":
