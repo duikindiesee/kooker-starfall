@@ -32,6 +32,15 @@ namespace CityLife.World
         public void RefreshAnimation() { state = ""; gestureUntil = 0; }
         public void Place(Vector3 position)
         {
+            float groundH = CoastalTerrain.Height(position.x, position.z);
+            if (Physics.Raycast(new Vector3(position.x, position.y + 10f, position.z), Vector3.down, out RaycastHit hit, 50f, 1 << 10, QueryTriggerInteraction.Ignore))
+            {
+                groundH = Mathf.Max(groundH, hit.point.y);
+            }
+            if (position.y < groundH + 0.01f)
+            {
+                position.y = groundH + 0.05f;
+            }
             Capsule.enabled = false; transform.position = position; Capsule.enabled = true;
             fallingSpeed = 0; gestureUntil = 0; Physics.SyncTransforms();
         }
@@ -76,6 +85,22 @@ namespace CityLife.World
             if (direction.sqrMagnitude > .01f)
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 360 * dt);
             if (Time.time >= gestureUntil) Animate(DeadPose ? "Crouch" : ActualSpeed > .12f ? "Walk" : "Idle");
+
+            // Absolute terrain collision safety clamp:
+            // Prevents the actor from ever falling through single-sided terrain mesh into the void
+            float groundY = CoastalTerrain.Height(transform.position.x, transform.position.z);
+            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 10f, transform.position.z), Vector3.down, out RaycastHit stepHit, 50f, 1 << 10, QueryTriggerInteraction.Ignore))
+            {
+                groundY = Mathf.Max(groundY, stepHit.point.y);
+            }
+            if (transform.position.y < groundY - 0.25f)
+            {
+                Capsule.enabled = false;
+                transform.position = new Vector3(transform.position.x, groundY + 0.05f, transform.position.z);
+                Capsule.enabled = true;
+                fallingSpeed = 0;
+                Physics.SyncTransforms();
+            }
         }
         private void Animate(string wanted)
         {

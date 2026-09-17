@@ -172,7 +172,11 @@ namespace CityLife.World.Editor
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
             livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
-            brain.SpawnPosition = new Vector3(activityOffset.x - 4, 4.02f, activityOffset.z - 5); actor.Place(brain.SpawnPosition);
+            float spawnX = activityOffset.x - 4f;
+            float spawnZ = activityOffset.z - 5f;
+            float spawnY = CoastalTerrain.Height(spawnX, spawnZ) + 0.05f;
+            brain.SpawnPosition = new Vector3(spawnX, spawnY, spawnZ);
+            actor.Place(brain.SpawnPosition);
             controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
