@@ -74,12 +74,21 @@ namespace CityLife.World
             ground = Mathf.Lerp(ground, 0f, pad);
             // A second modest, dry terrace separates inhabitant activities from
             // the hero tree's dense rock bank while remaining part of the terrain.
+            // Features a gentle westward ramp down to the river bank so the inhabitant
+            // and player can freely walk between the terrace, river, and crossing without being trapped.
             float activityRadius = Vector2.Distance(new Vector2(x, z), ActivityCentre);
-            ground = Mathf.Lerp(ground, 4f, 1f - Smooth(18f, 24f, activityRadius));
+            float terracePad = 1f - Smooth(24f, 52f, activityRadius);
+            float rampX = Smooth(20f, 120f, x);
+            float rampZ = 1f - Smooth(20f, 52f, Mathf.Abs(z - ActivityCentre.y));
+            float rampFactor = rampZ * Smooth(15f, 125f, x);
+            float rampHeight = Mathf.Lerp(1.5f, 6.5f, rampX);
+            ground = Mathf.Lerp(ground, rampHeight, rampFactor * .85f);
+            ground = Mathf.Lerp(ground, 6.5f, terracePad * .92f);
+
             // A broad, dry shelf makes the authored cave/refuge entrance truly
             // reachable instead of merely translating it into a mesa face.
             float refugeRadius = Vector2.Distance(new Vector2(x, z), RefugeCentre);
-            ground = Mathf.Lerp(ground, 6f, 1f - Smooth(28f, 36f, refugeRadius));
+            ground = Mathf.Lerp(ground, 6f, 1f - Smooth(28f, 44f, refugeRadius));
             return ground;
         }
 

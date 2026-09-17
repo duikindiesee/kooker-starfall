@@ -414,19 +414,38 @@ namespace CityLife.World
 
         private Vector3 GetResourceSupplyPosition(string resourceId)
         {
-            Vector3 pos = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
-            if (resourceId.Contains("cobble") || resourceId.StartsWith("tool-"))
-                pos += new Vector3(3.2f, 0, -1.5f);
-            else if (resourceId.Contains("fieldstone"))
-                pos += new Vector3(-2.8f, 0, 2.0f);
-            else if (resourceId.Contains("slab"))
-                pos += new Vector3(1.2f, 0, 3.5f);
+            Vector3 pos;
+            if (resourceId.Contains("cobble"))
+            {
+                // Round river stones gathered down at the shallow riverbed crossing
+                pos = new Vector3(2.0f, 0, -8.0f);
+            }
+            else if (resourceId.Contains("driftwood") || (resourceId.Contains("wood") && (ExpeditionsCompleted % 3 == 1)))
+            {
+                // Driftwood gathered along the riverbank washed from upper canyon waterfall
+                pos = new Vector3(22.0f, 0, -65.0f);
+            }
             else if (resourceId.Contains("wood"))
-                pos += new Vector3(4.5f, 0, 3.0f);
+            {
+                // Fallen wood gathered along the terrace margin
+                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 4.5f, 0, CoastalTerrain.ActivityCentre.y + 3.0f);
+            }
+            else if (resourceId.Contains("fieldstone"))
+            {
+                pos = new Vector3(CoastalTerrain.ActivityCentre.x - 2.8f, 0, CoastalTerrain.ActivityCentre.y + 2.0f);
+            }
+            else if (resourceId.Contains("slab"))
+            {
+                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 1.2f, 0, CoastalTerrain.ActivityCentre.y + 3.5f);
+            }
             else if (resourceId.Contains("tinder"))
-                pos += new Vector3(-1.5f, 0, 2.8f);
+            {
+                pos = new Vector3(CoastalTerrain.ActivityCentre.x - 1.5f, 0, CoastalTerrain.ActivityCentre.y + 2.8f);
+            }
             else
-                pos += new Vector3(2.0f, 0, 1.5f);
+            {
+                pos = new Vector3(CoastalTerrain.ActivityCentre.x + 2.0f, 0, CoastalTerrain.ActivityCentre.y + 1.5f);
+            }
 
             pos.y = GroundHeight(pos);
             return pos;
@@ -434,6 +453,14 @@ namespace CityLife.World
 
         private Vector3 GetCurrentHaulDestination()
         {
+            if (TargetResourceId.Contains("wood") && (ExpeditionsCompleted % 3 == 1))
+            {
+                // Haul river driftwood directly up to the Refuge Cave hearth
+                Vector3 caveHearth = new Vector3(CoastalTerrain.RefugeCentre.x + 2.5f, 0, CoastalTerrain.RefugeCentre.y - 1.0f);
+                caveHearth.y = GroundHeight(caveHearth);
+                return caveHearth;
+            }
+
             if (TargetResourceId.StartsWith("tool-") && KnappingWorkstation != null)
             {
                 return KnappingWorkstation.AnvilPoint != null ? KnappingWorkstation.AnvilPoint.position : KnappingWorkstation.transform.position;
@@ -461,6 +488,13 @@ namespace CityLife.World
 
         private Vector3 GetRestPosition()
         {
+            if (ExpeditionsCompleted % 3 == 1)
+            {
+                // Rest and warm up at the Refuge Cave
+                Vector3 caveRest = new Vector3(CoastalTerrain.RefugeCentre.x, 0, CoastalTerrain.RefugeCentre.y);
+                caveRest.y = GroundHeight(caveRest);
+                return caveRest;
+            }
             Vector3 pos = new Vector3(CoastalTerrain.ActivityCentre.x + 4.5f, 0, CoastalTerrain.ActivityCentre.y - 3.8f);
             pos.y = GroundHeight(pos);
             return pos;

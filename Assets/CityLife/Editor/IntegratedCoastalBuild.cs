@@ -165,6 +165,18 @@ namespace CityLife.World.Editor
                 if (plinth != null)
                     plinth.transform.position = new Vector3(plinth.transform.position.x + activityOffset.x, floor + .43f, plinth.transform.position.z + activityOffset.z);
             }
+            // In main gameplay, hide test crystal primitives & plinths from view while keeping colliders/logic for CI checks
+            foreach (var item in brain.Registry)
+            {
+                var r = item.GetComponent<Renderer>();
+                if (r != null) r.enabled = false;
+                var plinth = GameObject.Find(item.Kind == NpcObjectKind.Item ? item.StableId + " plinth" : item.StableId);
+                if (plinth != null)
+                {
+                    var pr = plinth.GetComponent<Renderer>();
+                    if (pr != null) pr.enabled = false;
+                }
+            }
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
             livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
@@ -419,6 +431,41 @@ namespace CityLife.World.Editor
             var woodCol = woodObj.AddComponent<MeshCollider>();
             woodCol.sharedMesh = branchMesh;
             woodObj.layer = 8;
+
+            // Riverbed Round Stones & Shallow Crossing Cobbles
+            var riverCobbleObj = new GameObject("River crossing cobbles");
+            riverCobbleObj.transform.SetParent(stoneGroup.transform, false);
+            Vector3 riverCobblePos = new Vector3(2.0f, CoastalTerrain.Height(2.0f, -8.0f), -8.0f);
+            riverCobbleObj.transform.position = riverCobblePos;
+            var riverCobbleMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(CityLife.Stones.StoneShapeKind.RiverCobble, seed: 505, variantIndex: 0, uniformScale: 1.3f, flatShaded: true);
+            riverCobbleObj.AddComponent<MeshFilter>().sharedMesh = riverCobbleMesh;
+            riverCobbleObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
+            var riverCobbleCol = riverCobbleObj.AddComponent<MeshCollider>();
+            riverCobbleCol.sharedMesh = riverCobbleMesh;
+            riverCobbleObj.layer = 8;
+
+            // Driftwood along the Riverbank (washed down from upper canyon waterfall)
+            var driftwoodObj = new GameObject("Riverbank driftwood branch");
+            driftwoodObj.transform.SetParent(woodGroup.transform, false);
+            Vector3 driftPos = new Vector3(22.0f, CoastalTerrain.Height(22.0f, -65.0f), -65.0f);
+            driftwoodObj.transform.position = driftPos;
+            var driftProfile = CityLife.Wood.FallenWoodProfile.CreateBranchPreset();
+            var driftMesh = CityLife.Wood.FallenWoodGenerator.GenerateMesh(driftProfile, 0x7E3F101Au, out _);
+            driftwoodObj.AddComponent<MeshFilter>().sharedMesh = driftMesh;
+            driftwoodObj.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
+            var driftCol = driftwoodObj.AddComponent<MeshCollider>();
+            driftCol.sharedMesh = driftMesh;
+            driftwoodObj.layer = 8;
+
+            // Secondary Cave Hearth Station at Refuge Cave entrance
+            var caveHearthObj = new GameObject("Refuge Cave Hearth Station");
+            caveHearthObj.transform.SetParent(ground.transform, false);
+            Vector3 caveHearthPos = new Vector3(CoastalTerrain.RefugeCentre.x + 2.5f, CoastalTerrain.Height(CoastalTerrain.RefugeCentre.x + 2.5f, CoastalTerrain.RefugeCentre.y - 1.0f), CoastalTerrain.RefugeCentre.y - 1.0f);
+            caveHearthObj.transform.position = caveHearthPos;
+            var caveHearthComp = caveHearthObj.AddComponent<StoneBuildingWorkstation>();
+            caveHearthComp.StructureType = CityLife.World.StoneBuildingWorkstation.TerraceStructureType.Hearth;
+            caveHearthComp.ConstructionSite = caveHearthPos;
+            caveHearthComp.Radius = 1.6f;
 
             var giant = GameObject.Find("Blue gas giant - procedural volumetric cloud bands");
             if (giant == null) throw new InvalidOperationException("Coastal giant missing.");
