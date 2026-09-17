@@ -128,8 +128,7 @@ namespace CityLife.World
             if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
             {
                 var food=Brain.Survival.Food.Model.State;
-                string cargo = Brain.Actions.Held != null ? Brain.Actions.Held.StableId :
-                    (Brain.PhysicalItems != null && Brain.PhysicalItems.Authority != null && Brain.PhysicalItems.Authority.PrimaryItem != null ? Brain.PhysicalItems.Authority.PrimaryItem.Kind.ToString() : "none");
+                string cargo = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none";
                 int visitedCount = food.observedPlaces != null ? food.observedPlaces.Count : 0;
                 int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
                 Summary.text=mode+" survivor | Tick "+Brain.Tick+
