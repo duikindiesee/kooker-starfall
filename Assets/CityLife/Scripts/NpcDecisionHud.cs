@@ -120,17 +120,27 @@ namespace CityLife.World
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
             string currentGoal = Brain.GoalId.Length > 0 ? Brain.GoalId :
                 (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId) ? Brain.Foraging.TargetResourceId : "observe / wait");
+            string FormatCargo()
+            {
+                if (Brain.Actions == null) return "none";
+                var r = Brain.Actions.HeldRight;
+                var l = Brain.Actions.HeldLeft;
+                if (r != null && l != null) return $"R:{r.StableId} | L:{l.StableId}";
+                if (r != null) return $"R:{r.StableId}";
+                if (l != null) return $"L:{l.StableId}";
+                return "none";
+            }
+            string cargo = FormatCargo();
             Summary.text = mode + "  |  " + (Brain.Possessed ? "Autonomy suspended" : Brain.Running ? "Autonomy on" : "Autonomy stopped") +
                 "\nTick " + Brain.Tick + "  |  " + Brain.Phase +
                 "\nGoal: " + currentGoal +
-                "\nCargo: " + (Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
+                "\nCargo: " + cargo +
                 "\nResult: " + Brain.LastResult;
             var foodRuntime = Brain.Survival != null ? Brain.Survival.Food : null;
             if (foodRuntime == null) foodRuntime = FindAnyObjectByType<Starfall.Food.IntegratedFoodRuntime>();
             if (foodRuntime != null && foodRuntime.Model != null)
             {
                 var food = foodRuntime.Model.State;
-                string cargo = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none";
                 int visitedCount = food.observedPlaces != null ? food.observedPlaces.Count : 0;
                 int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
                 int healthPct = Mathf.Clamp(food.body.health / 100, 0, 100);

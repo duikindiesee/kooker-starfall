@@ -60,7 +60,43 @@ namespace CityLife.World
    GripLeaves=new Transform[5];LeafRotations=new Quaternion[5];LeafPositions=new Vector3[5];
    for(int i=0;i<5;i++){var leaf=GripBones[i*3+2].GetChild(0);GripLeaves[i]=leaf;LeafRotations[i]=leaf.localRotation;LeafPositions[i]=leaf.localPosition;}
   }
-  private void LateUpdate(){if(!Animator||!Club||GripBones==null)return;
+  public bool Stowed { get; private set; }
+  public void SetStowed(bool stowed)
+  {
+      Stowed = stowed;
+      if (Club != null)
+      {
+          var rend = Club.GetComponent<Renderer>();
+          if (rend != null) rend.enabled = true;
+          if (stowed)
+          {
+              AttachToBack();
+          }
+      }
+  }
+  public void AttachToBack()
+  {
+      if (!Animator || !Club) return;
+      Transform backBone = Animator.GetBoneTransform(HumanBodyBones.Chest);
+      if (backBone == null) backBone = Animator.GetBoneTransform(HumanBodyBones.Spine);
+      if (backBone == null) backBone = Actor;
+      if (Club.parent != backBone)
+      {
+          Club.SetParent(backBone, false);
+          Club.localScale = Vector3.one;
+      }
+      // Holster diagonally across back / shoulder blade
+      Club.localPosition = new Vector3(-0.12f, 0.20f, -0.15f);
+      Club.localRotation = Quaternion.Euler(30f, 25f, -40f);
+  }
+  private void LateUpdate(){
+      if(!Animator||!Club)return;
+      if(Stowed)
+      {
+          AttachToBack();
+          return;
+      }
+      if(GripBones==null)return;
    var upper=Animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
    var forearm=Animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
    var hand=Animator.GetBoneTransform(HumanBodyBones.LeftHand);

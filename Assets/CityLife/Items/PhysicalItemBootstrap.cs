@@ -920,6 +920,11 @@ namespace CityLife.Items
         {
             if (actions == null || Model == null) return false;
 
+            if (!string.IsNullOrEmpty(actions.AgentId))
+            {
+                Model.SetActorCarryLimits(actions.AgentId, new ActorCarryLimits(25.0f, 2));
+            }
+
             if (HasSavedPayload && savedPayload != null && !restoreAttempted)
             {
                 var origModel = actions.PhysicalModel;

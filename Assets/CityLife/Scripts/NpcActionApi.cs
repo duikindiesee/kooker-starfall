@@ -13,17 +13,26 @@ namespace CityLife.World
     public sealed class NpcActionApi
     {
         private readonly string agentId, worldId;
-        private readonly Transform actor, hand;
+        private readonly Transform actor, rightHand, leftHand;
         private readonly Dictionary<string, NpcInteractable> objects = new Dictionary<string, NpcInteractable>(StringComparer.Ordinal);
         private readonly Dictionary<int, Receipt> receipts = new Dictionary<int, Receipt>();
         private sealed class Receipt { public string signature; public NpcActionResult result; }
-        public NpcInteractable Held { get; private set; }
+
+        public NpcInteractable Held => HeldRight ?? HeldLeft;
+        public NpcInteractable HeldRight { get; private set; }
+        public NpcInteractable HeldLeft { get; private set; }
+        public int HeldCount => (HeldRight != null ? 1 : 0) + (HeldLeft != null ? 1 : 0);
+
+        public event Action<bool> OnLeftHandOccupiedChanged;
+
         public bool AllowPickup = true, AllowDelivery = true, AllowDrop = true;
         public int Deliveries { get; private set; }
         public ItemModel PhysicalModel { get; set; }
         public IItemActionAuthority PhysicalAuthority { get; set; }
         public int ClearanceMask = (1 << 0) | (1 << 8) | (1 << 10);
-        public Transform HandTransform => hand;
+        public Transform HandTransform => rightHand ?? leftHand;
+        public Transform RightHandTransform => rightHand;
+        public Transform LeftHandTransform => leftHand;
         public Transform ActorTransform => actor;
         public string LastPhysicalDiagnostic { get; private set; }
         public string AgentId => agentId;
@@ -45,8 +54,17 @@ namespace CityLife.World
         }
 
         public NpcActionApi(string agentId, string worldId, Transform actor, Transform hand, IEnumerable<NpcInteractable> registry)
+            : this(agentId, worldId, actor, hand, null, registry)
         {
-            this.agentId = agentId; this.worldId = worldId; this.actor = actor; this.hand = hand;
+        }
+
+        public NpcActionApi(string agentId, string worldId, Transform actor, Transform rightHand, Transform leftHand, IEnumerable<NpcInteractable> registry)
+        {
+            this.agentId = agentId;
+            this.worldId = worldId;
+            this.actor = actor;
+            this.rightHand = rightHand;
+            this.leftHand = leftHand;
             foreach (var item in registry)
             {
                 if (item == null || string.IsNullOrEmpty(item.StableId) || objects.ContainsKey(item.StableId))
@@ -74,18 +92,28 @@ namespace CityLife.World
         /// against the authoritative PhysicalModel, world scope, hand existence, and kinematic carry state.
         /// Does NOT bypass physical validation or permit arbitrary transform assignments.
         /// </summary>
-        public bool RestoreHeld(NpcInteractable interactable)
+        public bool RestoreHeld(NpcInteractable interactable, bool isLeftHand = false)
         {
             if (interactable == null)
             {
-                Held = null;
+                if (isLeftHand)
+                {
+                    HeldLeft = null;
+                    OnLeftHandOccupiedChanged?.Invoke(false);
+                }
+                else
+                {
+                    HeldRight = null;
+                }
                 return true;
             }
 
             if (interactable.Kind != NpcObjectKind.Item) return false;
             if (!objects.TryGetValue(interactable.StableId, out var reg) || reg != interactable) return false;
             if (interactable.WorldId != worldId || interactable.gameObject.scene != actor.gameObject.scene) return false;
-            if (hand == null || hand.gameObject.scene != actor.gameObject.scene) return false;
+
+            Transform targetHand = isLeftHand ? leftHand : (rightHand ?? leftHand);
+            if (targetHand == null || targetHand.gameObject.scene != actor.gameObject.scene) return false;
             if (interactable.HeldBy != agentId) return false;
 
             var phys = interactable.GetComponent<PhysicalItem>();
@@ -95,14 +123,22 @@ namespace CityLife.World
                 if (!phys.IsBoundTo(PhysicalModel, worldId, PhysicalModel.GenerationId)) return false;
                 if (!PhysicalModel.TryGetItem(interactable.StableId, out var snap)) return false;
                 if (snap.location != ItemLocationKind.Carried || !string.Equals(snap.holderActorId, agentId, StringComparison.Ordinal)) return false;
-                if (!phys.IsCarried || phys.CarriedHand != hand) return false;
+                if (!phys.IsCarried || phys.CarriedHand != targetHand) return false;
             }
             else
             {
-                if (interactable.transform.parent != hand) return false;
+                if (interactable.transform.parent != targetHand) return false;
             }
 
-            Held = interactable;
+            if (isLeftHand)
+            {
+                HeldLeft = interactable;
+                OnLeftHandOccupiedChanged?.Invoke(true);
+            }
+            else
+            {
+                HeldRight = interactable;
+            }
             return true;
         }
 
@@ -186,21 +222,62 @@ namespace CityLife.World
 
             if (action == NpcActionKind.Drop)
             {
-                if (Held == null) return Finish(Deny("cargo-ownership-mismatch"));
-                if (!Held.isActiveAndEnabled) return Finish(Deny("target-unavailable"));
-                var phys = Held.GetComponent<PhysicalItem>();
-                bool isCarriedByHand = phys != null ? (phys.CarriedHand == hand && phys.IsCarried) : (Held.transform.parent == hand);
-                if (Held.HeldBy != agentId || !isCarriedByHand)
+                NpcInteractable targetDrop = null;
+                Transform targetDropHand = null;
+                bool isDropLeft = false;
+
+                if (!string.IsNullOrEmpty(targetId))
+                {
+                    if (HeldLeft != null && string.Equals(HeldLeft.StableId, targetId, StringComparison.Ordinal))
+                    {
+                        targetDrop = HeldLeft;
+                        targetDropHand = leftHand;
+                        isDropLeft = true;
+                    }
+                    else if (HeldRight != null && string.Equals(HeldRight.StableId, targetId, StringComparison.Ordinal))
+                    {
+                        targetDrop = HeldRight;
+                        targetDropHand = rightHand ?? leftHand;
+                        isDropLeft = false;
+                    }
+                    else
+                    {
+                        return Finish(Deny("cargo-ownership-mismatch"));
+                    }
+                }
+                else
+                {
+                    // LIFO default: drop off-hand (left) first, then primary (right)
+                    if (HeldLeft != null)
+                    {
+                        targetDrop = HeldLeft;
+                        targetDropHand = leftHand;
+                        isDropLeft = true;
+                    }
+                    else if (HeldRight != null)
+                    {
+                        targetDrop = HeldRight;
+                        targetDropHand = rightHand ?? leftHand;
+                        isDropLeft = false;
+                    }
+                    else
+                    {
+                        return Finish(Deny("cargo-ownership-mismatch"));
+                    }
+                }
+
+                if (!targetDrop.isActiveAndEnabled) return Finish(Deny("target-unavailable"));
+                var phys = targetDrop.GetComponent<PhysicalItem>();
+                bool isCarriedByHand = phys != null ? (phys.CarriedHand == targetDropHand && phys.IsCarried) : (targetDrop.transform.parent == targetDropHand);
+                if (targetDrop.HeldBy != agentId || !isCarriedByHand)
                     return Finish(Deny("cargo-ownership-mismatch"));
-                if (!objects.TryGetValue(Held.StableId, out var regHeld) || regHeld != Held)
+                if (!objects.TryGetValue(targetDrop.StableId, out var regHeld) || regHeld != targetDrop)
                     return Finish(Deny("cargo-ownership-mismatch"));
-                if (!string.IsNullOrEmpty(targetId) && !string.Equals(targetId, Held.StableId, StringComparison.Ordinal))
-                    return Finish(Deny("cargo-ownership-mismatch"));
-                if (!Held.Permission || !AllowDrop)
+                if (!targetDrop.Permission || !AllowDrop)
                     return Finish(Deny("permission-denied"));
-                if (hand == null)
+                if (targetDropHand == null)
                     return Finish(Deny("item-unavailable"));
-                if (Held.WorldId != worldId || Held.gameObject.scene != actor.gameObject.scene || hand.gameObject.scene != actor.gameObject.scene)
+                if (targetDrop.WorldId != worldId || targetDrop.gameObject.scene != actor.gameObject.scene || targetDropHand.gameObject.scene != actor.gameObject.scene)
                     return Finish(Deny("world-mismatch"));
 
                 if (phys != null)
@@ -208,9 +285,9 @@ namespace CityLife.World
                     phys.UpdateGripPose();
                     if (PhysicalModel == null)
                         return Finish(Deny("physical-model-required"));
-                    if (!ValidatePhysicalMetadata(phys, Held, out string metaDeny))
+                    if (!ValidatePhysicalMetadata(phys, targetDrop, out string metaDeny))
                         return Finish(Deny(metaDeny));
-                    if (!PhysicalModel.TryGetItem(Held.StableId, out var carriedSnap) ||
+                    if (!PhysicalModel.TryGetItem(targetDrop.StableId, out var carriedSnap) ||
                         carriedSnap.location != ItemLocationKind.Carried ||
                         !string.Equals(carriedSnap.holderActorId, agentId, StringComparison.Ordinal))
                     {
@@ -218,8 +295,8 @@ namespace CityLife.World
                     }
                 }
 
-                Vector3 releasePos = hand.position + hand.forward * 0.25f;
-                Quaternion releaseRot = hand.rotation;
+                Vector3 releasePos = targetDropHand.position + targetDropHand.forward * 0.25f;
+                Quaternion releaseRot = targetDropHand.rotation;
 
                 Physics.SyncTransforms();
                 var scene = actor.gameObject.scene;
@@ -227,11 +304,11 @@ namespace CityLife.World
                 if (!ps.IsValid())
                     return Finish(Deny("invalid-physics-scene"));
 
-                Collider heldCol = Held.GetComponent<Collider>();
+                Collider heldCol = targetDrop.GetComponent<Collider>();
                 if (heldCol == null)
                     return Finish(Deny("physical-item-invalid"));
 
-                Vector3 heldPos = Held.transform.position;
+                Vector3 heldPos = targetDrop.transform.position;
                 bool clearanceBlocked = false;
 
                 var sweepHits = new RaycastHit[32];
@@ -239,8 +316,8 @@ namespace CityLife.World
 
                 if (heldCol is BoxCollider box)
                 {
-                    Vector3 halfExtents = Vector3.Scale(box.size * 0.5f, Held.transform.lossyScale);
-                    Vector3 heldCenter = heldPos + Held.transform.rotation * box.center;
+                    Vector3 halfExtents = Vector3.Scale(box.size * 0.5f, targetDrop.transform.lossyScale);
+                    Vector3 heldCenter = heldPos + targetDrop.transform.rotation * box.center;
                     Vector3 releaseCenter = releasePos + releaseRot * box.center;
                     Vector3 centerDelta = releaseCenter - heldCenter;
                     float centerDist = centerDelta.magnitude;
@@ -258,7 +335,7 @@ namespace CityLife.World
                             var c = sweepHits[i].collider;
                             if (c == null) continue;
                             if (actor != null && (c.transform == actor || c.transform.IsChildOf(actor))) continue;
-                            if (Held != null && (c.transform == Held.transform || c.transform.IsChildOf(Held.transform))) continue;
+                            if (c.transform == targetDrop.transform || c.transform.IsChildOf(targetDrop.transform)) continue;
                             clearanceBlocked = true;
                             break;
                         }
@@ -276,7 +353,7 @@ namespace CityLife.World
                             var c = overlapHits[i];
                             if (c == null) continue;
                             if (actor != null && (c.transform == actor || c.transform.IsChildOf(actor))) continue;
-                            if (Held != null && (c.transform == Held.transform || c.transform.IsChildOf(Held.transform))) continue;
+                            if (c.transform == targetDrop.transform || c.transform.IsChildOf(targetDrop.transform)) continue;
                             clearanceBlocked = true;
                             break;
                         }
@@ -284,8 +361,8 @@ namespace CityLife.World
                 }
                 else if (heldCol is SphereCollider sphere)
                 {
-                    float radius = sphere.radius * Mathf.Max(Held.transform.lossyScale.x, Mathf.Max(Held.transform.lossyScale.y, Held.transform.lossyScale.z));
-                    Vector3 heldCenter = heldPos + Held.transform.rotation * sphere.center;
+                    float radius = sphere.radius * Mathf.Max(targetDrop.transform.lossyScale.x, Mathf.Max(targetDrop.transform.lossyScale.y, targetDrop.transform.lossyScale.z));
+                    Vector3 heldCenter = heldPos + targetDrop.transform.rotation * sphere.center;
                     Vector3 releaseCenter = releasePos + releaseRot * sphere.center;
                     Vector3 centerDelta = releaseCenter - heldCenter;
                     float centerDist = centerDelta.magnitude;
@@ -302,7 +379,7 @@ namespace CityLife.World
                             var c = sweepHits[i].collider;
                             if (c == null) continue;
                             if (actor != null && (c.transform == actor || c.transform.IsChildOf(actor))) continue;
-                            if (Held != null && (c.transform == Held.transform || c.transform.IsChildOf(Held.transform))) continue;
+                            if (c.transform == targetDrop.transform || c.transform.IsChildOf(targetDrop.transform)) continue;
                             clearanceBlocked = true;
                             break;
                         }
@@ -319,7 +396,7 @@ namespace CityLife.World
                             var c = overlapHits[i];
                             if (c == null) continue;
                             if (actor != null && (c.transform == actor || c.transform.IsChildOf(actor))) continue;
-                            if (Held != null && (c.transform == Held.transform || c.transform.IsChildOf(Held.transform))) continue;
+                            if (c.transform == targetDrop.transform || c.transform.IsChildOf(targetDrop.transform)) continue;
                             clearanceBlocked = true;
                             break;
                         }
@@ -340,7 +417,7 @@ namespace CityLife.World
                         requestId = requestId,
                         action = ItemActionKind.Drop,
                         actorId = agentId,
-                        itemId = Held.StableId,
+                        itemId = targetDrop.StableId,
                         position = releasePos,
                         rotation = releaseRot
                     };
@@ -352,13 +429,20 @@ namespace CityLife.World
                 }
                 else
                 {
-                    Held.transform.SetParent(null, true);
-                    Held.transform.SetPositionAndRotation(releasePos, releaseRot);
+                    targetDrop.transform.SetParent(null, true);
+                    targetDrop.transform.SetPositionAndRotation(releasePos, releaseRot);
                 }
 
-                var dropped = Held;
-                dropped.HeldBy = "";
-                Held = null;
+                targetDrop.HeldBy = "";
+                if (isDropLeft)
+                {
+                    HeldLeft = null;
+                    OnLeftHandOccupiedChanged?.Invoke(false);
+                }
+                else
+                {
+                    HeldRight = null;
+                }
                 return Finish(new NpcActionResult { success = true, code = "dropped" });
             }
 
@@ -402,8 +486,31 @@ namespace CityLife.World
             if (action == NpcActionKind.Pickup)
             {
                 if (target.Kind != NpcObjectKind.Item) return Finish(Deny("wrong-target-kind"));
-                if (Held != null) return Finish(Deny("hands-full"));
-                if (!target.Available || hand == null) return Finish(Deny("item-unavailable"));
+
+                Transform targetHand = null;
+                bool isPickupLeft = false;
+
+                if (HeldRight == null && rightHand != null)
+                {
+                    targetHand = rightHand;
+                    isPickupLeft = false;
+                }
+                else if (HeldLeft == null && leftHand != null)
+                {
+                    targetHand = leftHand;
+                    isPickupLeft = true;
+                }
+                else if (HeldRight == null && rightHand == null && leftHand != null)
+                {
+                    targetHand = leftHand;
+                    isPickupLeft = true;
+                }
+                else
+                {
+                    return Finish(Deny("hands-full"));
+                }
+
+                if (!target.Available || targetHand == null) return Finish(Deny("item-unavailable"));
 
                 var phys = target.GetComponent<PhysicalItem>();
                 if (phys != null)
@@ -426,33 +533,62 @@ namespace CityLife.World
                     if (!modelReceipt.success)
                         return Finish(Deny(modelReceipt.code));
 
-                    phys.AttachToHand(hand);
+                    phys.AttachToHand(targetHand);
                     target.HeldBy = agentId;
-                    Held = target;
+                    if (isPickupLeft)
+                    {
+                        HeldLeft = target;
+                        OnLeftHandOccupiedChanged?.Invoke(true);
+                    }
+                    else
+                    {
+                        HeldRight = target;
+                    }
                     return Finish(new NpcActionResult { success = true, code = "picked-up" });
                 }
 
                 // Non-physical interactable legacy pickup
-                target.transform.SetParent(hand, false); target.transform.localPosition = new Vector3(.06f, .04f, 0);
+                target.transform.SetParent(targetHand, false);
+                target.transform.localPosition = new Vector3(.06f, .04f, 0);
                 target.transform.localRotation = Quaternion.identity;
-                target.HeldBy = agentId; Held = target;
+                target.HeldBy = agentId;
+                if (isPickupLeft)
+                {
+                    HeldLeft = target;
+                    OnLeftHandOccupiedChanged?.Invoke(true);
+                }
+                else
+                {
+                    HeldRight = target;
+                }
                 return Finish(new NpcActionResult { success = true, code = "picked-up" });
             }
 
             if (target.Kind != NpcObjectKind.Destination) return Finish(Deny("wrong-target-kind"));
-            var heldPhys = Held != null ? Held.GetComponent<PhysicalItem>() : null;
-            bool isDeliveredByHand = heldPhys != null ? (heldPhys.CarriedHand == hand && heldPhys.IsCarried) : (Held != null && Held.transform.parent == hand);
-            if (Held == null || Held.HeldBy != agentId || !isDeliveredByHand)
+            var currentHeld = Held;
+            var heldPhys = currentHeld != null ? currentHeld.GetComponent<PhysicalItem>() : null;
+            Transform currentHand = (HeldRight != null && rightHand != null) ? rightHand : leftHand;
+            bool isDeliveredByHand = heldPhys != null ? (heldPhys.CarriedHand == currentHand && heldPhys.IsCarried) : (currentHeld != null && currentHeld.transform.parent == currentHand);
+            if (currentHeld == null || currentHeld.HeldBy != agentId || !isDeliveredByHand)
                 return Finish(Deny("cargo-ownership-mismatch"));
 
             if (heldPhys != null)
                 return Finish(Deny("physical-delivery-not-supported-in-slice"));
 
             if (!target.Available || target.Socket == null) return Finish(Deny("destination-full-or-invalid"));
-            Held.transform.SetParent(target.Socket, false); Held.transform.localPosition = Vector3.zero;
-            Held.transform.localRotation = Quaternion.identity;
-            target.Occupant = Held.StableId; Held.DeliveredTo = target.StableId; Held.HeldBy = "";
-            Held = null; Deliveries++;
+            currentHeld.transform.SetParent(target.Socket, false); currentHeld.transform.localPosition = Vector3.zero;
+            currentHeld.transform.localRotation = Quaternion.identity;
+            target.Occupant = currentHeld.StableId; currentHeld.DeliveredTo = target.StableId; currentHeld.HeldBy = "";
+            if (currentHeld == HeldLeft)
+            {
+                HeldLeft = null;
+                OnLeftHandOccupiedChanged?.Invoke(false);
+            }
+            else
+            {
+                HeldRight = null;
+            }
+            Deliveries++;
             return Finish(new NpcActionResult { success = true, code = "delivered" });
         }
 
@@ -537,24 +673,56 @@ namespace CityLife.World
 
             if (string.Equals(itemId, containerId, StringComparison.Ordinal)) return FailScoped("cannot-store-in-itself");
 
+            Transform targetActionHand = null;
+            bool isActionLeft = false;
+
             if (action == NpcActionKind.Store)
             {
-                if (Held == null) return FailScoped("cargo-ownership-mismatch");
-                if (!string.Equals(Held.StableId, itemId, StringComparison.Ordinal) || Held.HeldBy != agentId)
+                if (HeldLeft != null && string.Equals(HeldLeft.StableId, itemId, StringComparison.Ordinal))
+                {
+                    targetActionHand = leftHand;
+                    isActionLeft = true;
+                }
+                else if (HeldRight != null && string.Equals(HeldRight.StableId, itemId, StringComparison.Ordinal))
+                {
+                    targetActionHand = rightHand ?? leftHand;
+                    isActionLeft = false;
+                }
+                else
+                {
                     return FailScoped("cargo-ownership-mismatch");
-                if (!objects.TryGetValue(itemId, out var regHeld) || regHeld != Held)
+                }
+
+                var heldPhys = (isActionLeft ? HeldLeft : HeldRight).GetComponent<PhysicalItem>();
+                if (heldPhys == null || !heldPhys.IsCarried || heldPhys.CarriedHand != targetActionHand)
                     return FailScoped("cargo-ownership-mismatch");
-                var heldPhys = Held.GetComponent<PhysicalItem>();
-                if (heldPhys == null || !heldPhys.IsCarried || heldPhys.CarriedHand != hand)
-                    return FailScoped("cargo-ownership-mismatch");
-                if (hand == null) return FailScoped("item-unavailable");
-                if (hand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
+                if (targetActionHand == null) return FailScoped("item-unavailable");
+                if (targetActionHand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
             }
             else // Retrieve
             {
-                if (Held != null) return FailScoped("hands-full");
-                if (hand == null) return FailScoped("item-unavailable");
-                if (hand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
+                if (HeldRight == null && rightHand != null)
+                {
+                    targetActionHand = rightHand;
+                    isActionLeft = false;
+                }
+                else if (HeldLeft == null && leftHand != null)
+                {
+                    targetActionHand = leftHand;
+                    isActionLeft = true;
+                }
+                else if (HeldRight == null && rightHand == null && leftHand != null)
+                {
+                    targetActionHand = leftHand;
+                    isActionLeft = true;
+                }
+                else
+                {
+                    return FailScoped("hands-full");
+                }
+
+                if (targetActionHand == null) return FailScoped("item-unavailable");
+                if (targetActionHand.gameObject.scene != actor.gameObject.scene) return FailScoped("world-mismatch");
             }
 
             NpcInteractable itemInteractable;
@@ -562,7 +730,7 @@ namespace CityLife.World
 
             if (action == NpcActionKind.Store)
             {
-                itemInteractable = Held;
+                itemInteractable = isActionLeft ? HeldLeft : HeldRight;
                 if (!objects.TryGetValue(containerId, out containerInteractable) || containerInteractable == null || !containerInteractable.isActiveAndEnabled)
                     return FailScoped("target-unavailable");
             }
@@ -588,7 +756,7 @@ namespace CityLife.World
             if (!itemInteractable.Permission || !containerInteractable.Permission || !rootInteractable.Permission)
                 return FailScoped("permission-denied");
 
-            bool containerHeldBySelf = (rootInteractable == Held || string.Equals(rootInteractable.HeldBy, agentId, StringComparison.Ordinal));
+            bool containerHeldBySelf = (rootInteractable == HeldRight || rootInteractable == HeldLeft || string.Equals(rootInteractable.HeldBy, agentId, StringComparison.Ordinal));
             if (!containerHeldBySelf)
             {
                 if (rootInteractable.Approach == null ||
@@ -654,7 +822,8 @@ namespace CityLife.World
             }
 
             var itemCapture = itemPhys.CaptureRuntimeState();
-            var oldHeld = Held;
+            var oldHeldRight = HeldRight;
+            var oldHeldLeft = HeldLeft;
             var oldItemHeldBy = itemInteractable.HeldBy;
 
             bool physicalSucceeded = false;
@@ -664,13 +833,29 @@ namespace CityLife.World
                 {
                     itemPhys.ApplyStored(containerInteractable.transform, containerId);
                     itemInteractable.HeldBy = "";
-                    Held = null;
+                    if (isActionLeft)
+                    {
+                        HeldLeft = null;
+                        OnLeftHandOccupiedChanged?.Invoke(false);
+                    }
+                    else
+                    {
+                        HeldRight = null;
+                    }
                 }
                 else // Retrieve
                 {
-                    itemPhys.AttachToHand(hand);
+                    itemPhys.AttachToHand(targetActionHand);
                     itemInteractable.HeldBy = agentId;
-                    Held = itemInteractable;
+                    if (isActionLeft)
+                    {
+                        HeldLeft = itemInteractable;
+                        OnLeftHandOccupiedChanged?.Invoke(true);
+                    }
+                    else
+                    {
+                        HeldRight = itemInteractable;
+                    }
                 }
 
                 if (FailAfterPhysicalApplyForTesting)
@@ -687,7 +872,8 @@ namespace CityLife.World
             if (!physicalSucceeded)
             {
                 itemPhys.RestoreRuntimeState(itemCapture);
-                Held = oldHeld;
+                HeldRight = oldHeldRight;
+                HeldLeft = oldHeldLeft;
                 itemInteractable.HeldBy = oldItemHeldBy;
                 PhysicalModel.CancelPreparedTransition(token);
                 return FailScoped("physical-application-failed");
@@ -696,7 +882,8 @@ namespace CityLife.World
             if (!PhysicalModel.TryCommitTransition(token, out var commitReceipt))
             {
                 itemPhys.RestoreRuntimeState(itemCapture);
-                Held = oldHeld;
+                HeldRight = oldHeldRight;
+                HeldLeft = oldHeldLeft;
                 itemInteractable.HeldBy = oldItemHeldBy;
                 return FailScoped("commit-failed");
             }

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using CityLife.Items;
 using Object = UnityEngine.Object;
 
 namespace CityLife.World.Editor
@@ -86,10 +88,13 @@ namespace CityLife.World.Editor
             Directory.CreateDirectory(mapChecksFolder);
             var mapChecks = Starfall.Food.StarfallMapChecks.Run(mapChecksFolder);
 
+            // Dual-Hand Carry & Leather Bag Expansion verification
+            var dualHandChecks = CityLife.Items.DualHandCarryChecks.Run();
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + 10;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, survival cycle, masonry, map fog-of-war, and crafting loops with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 10;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, and crafting loops with zero errors.");
 
             KokerboomRender.BuildCoastalPlayableSlice();
         }
@@ -399,17 +404,113 @@ namespace CityLife.World.Editor
             woodCol.sharedMesh = branchMesh;
             woodObj.layer = 8;
 
-            // Riverbed Round Stones & Shallow Crossing Cobbles
-            var riverCobbleObj = new GameObject("River crossing cobbles");
-            riverCobbleObj.transform.SetParent(stoneGroup.transform, false);
-            Vector3 riverCobblePos = new Vector3(2.0f, CoastalTerrain.Height(2.0f, -8.0f), -8.0f);
-            riverCobbleObj.transform.position = riverCobblePos;
-            var riverCobbleMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(CityLife.Stones.StoneShapeKind.RiverCobble, seed: 505, variantIndex: 0, uniformScale: 1.3f, flatShaded: true);
-            riverCobbleObj.AddComponent<MeshFilter>().sharedMesh = riverCobbleMesh;
-            riverCobbleObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
-            var riverCobbleCol = riverCobbleObj.AddComponent<MeshCollider>();
-            riverCobbleCol.sharedMesh = riverCobbleMesh;
-            riverCobbleObj.layer = 8;
+            // Natural River Bed Pebbles & Shallow Crossing Cobbles
+            var riverStones = new (float x, float z, float scale, bool isPebble, int seed)[]
+            {
+                // Southern upstream shallow gravel beds
+                (12f, -160f, 0.60f, true, 501),
+                (15f, -140f, 0.65f, true, 502),
+                (17f, -118f, 1.10f, false, 503), // River crossing cobble
+                (14f, -95f, 0.58f, true, 504),
+                // Mid-canyon river meanders & sandbars
+                (8f, -70f, 0.62f, true, 505),
+                (5f, -48f, 0.55f, true, 506),
+                (2f, -25f, 1.15f, false, 507),  // Shallow crossing cobble
+                (-1f, -6f, 0.64f, true, 508),
+                (3f, 14f, 0.58f, true, 509),
+                (8f, 35f, 1.05f, false, 510),   // Stepping cobble
+                // Northern downstream shallows & gravel bars
+                (18f, 60f, 0.60f, true, 511),
+                (28f, 85f, 0.56f, true, 512),
+                (42f, 110f, 1.20f, false, 513),  // Lower crossing cobble
+                (55f, 132f, 0.68f, true, 514),
+                (64f, 155f, 0.62f, true, 515),
+                // Shallow margin pebbles (easily reached from banks)
+                (9f, -12f, 0.52f, true, 516),
+                (-4f, 22f, 0.54f, true, 517),
+                (22f, 48f, 0.60f, true, 518)
+            };
+
+            var riverPebbleInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < riverStones.Length; i++)
+            {
+                var s = riverStones[i];
+                float ry = CoastalTerrain.Height(s.x, s.z);
+                string stoneId = s.isPebble ? $"river-pebble-{i + 1:D2}" : $"river-cobble-{i + 1:D2}";
+                string stoneTypeId = s.isPebble ? "stone-river-pebble" : "stone-river-cobble";
+                float stoneMass = s.isPebble ? 0.65f : 1.8f;
+                Vector3 stoneDim = s.isPebble ? new Vector3(0.12f, 0.08f, 0.10f) * (s.scale / 0.6f) : new Vector3(0.24f, 0.16f, 0.20f) * (s.scale / 1.1f);
+
+                var stoneObj = new GameObject(stoneId);
+                stoneObj.transform.SetParent(stoneGroup.transform, false);
+                stoneObj.transform.position = new Vector3(s.x, ry + stoneDim.y * 0.45f, s.z);
+                stoneObj.transform.rotation = Quaternion.Euler((s.seed * 29) % 360, (s.seed * 53) % 360, (s.seed * 17) % 360);
+
+                var stoneMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(
+                    CityLife.Stones.StoneShapeKind.RiverCobble,
+                    seed: s.seed,
+                    variantIndex: i % 3,
+                    uniformScale: s.scale,
+                    flatShaded: true
+                );
+                stoneObj.AddComponent<MeshFilter>().sharedMesh = stoneMesh;
+                stoneObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
+
+                var stoneCol = stoneObj.AddComponent<MeshCollider>();
+                stoneCol.sharedMesh = stoneMesh;
+                stoneCol.convex = true;
+                stoneObj.layer = 8;
+
+                var approachObj = new GameObject(stoneId + " approach");
+                approachObj.transform.SetParent(stoneObj.transform, false);
+                approachObj.transform.localPosition = Vector3.zero;
+
+                var ni = stoneObj.AddComponent<NpcInteractable>();
+                ni.StableId = stoneId;
+                ni.WorldId = brain.InstanceWorldId;
+                ni.Kind = NpcObjectKind.Item;
+                ni.Permission = true;
+                ni.Approach = approachObj.transform;
+
+                var phys = stoneObj.AddComponent<PhysicalItem>();
+                phys.itemId = stoneId;
+                phys.itemTypeId = stoneTypeId;
+                phys.massKg = stoneMass;
+                phys.dimensions = new PhysicalDimensions(stoneDim.x, stoneDim.y, stoneDim.z);
+                phys.ConfigureComponents();
+
+                riverPebbleInteractables.Add(ni);
+            }
+            brain.Registry = brain.Registry.Concat(riverPebbleInteractables).ToArray();
+
+            // Leather gathering bag for pebble storage & carry capacity expansion
+            var bagObj = new GameObject("inhabitant-leather-bag");
+            bagObj.transform.SetParent(ground.transform, false);
+            Vector3 bagPos = refugeRuntime.Storage + new Vector3(0.3f, 0.1f, 0.3f);
+            bagPos.y = CoastalTerrain.Height(bagPos.x, bagPos.z) + 0.15f;
+            bagObj.transform.position = bagPos;
+            var bagCol = bagObj.AddComponent<BoxCollider>();
+            bagCol.size = new Vector3(0.25f, 0.20f, 0.20f);
+            bagObj.layer = 8;
+
+            var bagApproachObj = new GameObject("leather bag approach");
+            bagApproachObj.transform.SetParent(bagObj.transform, false);
+            bagApproachObj.transform.localPosition = Vector3.zero;
+
+            var bagNi = bagObj.AddComponent<NpcInteractable>();
+            bagNi.StableId = "inhabitant-leather-bag";
+            bagNi.WorldId = brain.InstanceWorldId;
+            bagNi.Kind = NpcObjectKind.Item;
+            bagNi.Permission = true;
+            bagNi.Approach = bagApproachObj.transform;
+
+            var bagPhys = bagObj.AddComponent<PhysicalItem>();
+            bagPhys.itemId = "inhabitant-leather-bag";
+            bagPhys.itemTypeId = "container-leather-bag";
+            bagPhys.massKg = 0.45f;
+            bagPhys.dimensions = new PhysicalDimensions(0.25f, 0.20f, 0.20f);
+            bagPhys.ConfigureComponents();
+            brain.Registry = brain.Registry.Concat(new[] { bagNi }).ToArray();
 
             // Driftwood along the Riverbank (washed down from upper canyon waterfall)
             var driftwoodObj = new GameObject("Riverbank driftwood branch");

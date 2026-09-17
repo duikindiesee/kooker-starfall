@@ -498,6 +498,7 @@ namespace CityLife.Items
         private static void TestCarryLimitsOneHandRootEnforced(List<string> passed)
         {
             var model = CreateTestModel();
+            model.SetActorCarryLimits(ActorId, new ActorCarryLimits(25.0f, 1));
             // Actor carries basket-01 (1 root item, hand occupied)
             model.RegisterItem("basket-01", "container.basket.v1", ItemLocationKind.Free, Vector3.zero, Quaternion.identity);
             model.Execute(WorldId, GenId, new ItemActionRequest { requestId = 1, action = ItemActionKind.Pickup, actorId = ActorId, itemId = "basket-01" }, new BasicItemActionAuthority());

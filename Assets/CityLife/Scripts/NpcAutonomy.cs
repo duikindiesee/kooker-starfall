@@ -60,15 +60,22 @@ namespace CityLife.World
 
         public bool ResetState()
         {
-            Transform hand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            Transform rightHand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            Transform leftHand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.LeftHand) : null;
             NpcActionApi candidateActions;
             try
             {
-                candidateActions = new NpcActionApi(AgentId, InstanceWorldId, transform, hand, AllInteractables);
+                candidateActions = new NpcActionApi(AgentId, InstanceWorldId, transform, rightHand, leftHand, AllInteractables);
             }
             catch
             {
                 return false;
+            }
+
+            var hunterClub = GetComponentInChildren<HunterClubCarry>();
+            if (hunterClub != null)
+            {
+                candidateActions.OnLeftHandOccupiedChanged += stowed => hunterClub.SetStowed(stowed);
             }
 
             if (PhysicalItems != null)

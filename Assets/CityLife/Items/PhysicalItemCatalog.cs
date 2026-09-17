@@ -217,6 +217,27 @@ namespace CityLife.Items
                 isContainer = false
             });
 
+            // Smooth River Pebbles (Shallow river bed collection & knapping stock)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "stone-river-pebble",
+                dimensions = new PhysicalDimensions(0.12f, 0.08f, 0.10f),
+                massKg = 0.65f,
+                isContainer = false
+            });
+
+            // Leather Gathering Bag (Equipped on hip, expanding pebble & resource carry capacity)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "container-leather-bag",
+                dimensions = new PhysicalDimensions(0.25f, 0.20f, 0.20f),
+                massKg = 0.45f,
+                isContainer = true,
+                maxContainedSlots = 6,
+                maxContainedVolumeM3 = 0.05f,
+                maxContainedMassKg = 15.0f
+            });
+
             return catalog;
         }
     }

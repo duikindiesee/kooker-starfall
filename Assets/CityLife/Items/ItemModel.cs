@@ -50,7 +50,7 @@ namespace CityLife.Items
         public float maxCarryMassKg;
         public int maxCarriedItems;
 
-        public ActorCarryLimits(float maxCarryMassKg = 25f, int maxCarriedItems = 1)
+        public ActorCarryLimits(float maxCarryMassKg = 25f, int maxCarriedItems = 2)
         {
             this.maxCarryMassKg = maxCarryMassKg;
             this.maxCarriedItems = maxCarriedItems;
@@ -316,7 +316,7 @@ namespace CityLife.Items
         {
             if (!string.IsNullOrEmpty(actorId) && actorLimits.TryGetValue(actorId, out var limits))
                 return limits;
-            return new ActorCarryLimits(25f, 1);
+            return new ActorCarryLimits(25f, 2);
         }
 
         public bool TryGetItemContainerSlot(string itemId, out int slot)
