@@ -154,7 +154,18 @@ namespace CityLife.World
             {
                 RefreshPickupTarget();
             }
-            if (key.gKey.wasPressedThisFrame) InteractPhysicalItem();
+            if (Brain.Possessed && (key.eKey.wasPressedThisFrame || key.gKey.wasPressedThisFrame))
+            {
+                InteractCurrentTarget(key.gKey.wasPressedThisFrame);
+            }
+            else if (key.gKey.wasPressedThisFrame)
+            {
+                InteractPhysicalItem();
+            }
+            if (Brain.Possessed && key.hKey.wasPressedThisFrame)
+            {
+                TryEatInventoryFruit();
+            }
             if (mouse != null)
             {
                 if (mouse.rightButton.wasPressedThisFrame || (PersistentMouseCapture && mouse.leftButton.wasPressedThisFrame &&
@@ -303,19 +314,99 @@ namespace CityLife.World
             }
             UpdatePickupTargetLabel();
         }
+        private enum NearbyResourceType { None, Berry, Spring }
+        private NearbyResourceType currentNearbyResource = NearbyResourceType.None;
+
+        private void DetectNearbySurvivalResources()
+        {
+            currentNearbyResource = NearbyResourceType.None;
+            if (Brain == null || !Brain.Possessed) return;
+
+            var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+            if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+            if (food == null || food.Model == null) return;
+
+            Vector3 actorPos = Brain.transform.position;
+
+            // Check spring
+            if (food.Spring != null)
+            {
+                float d = Vector3.Distance(actorPos, food.SpringPosition);
+                if (d < 2.5f)
+                {
+                    currentNearbyResource = NearbyResourceType.Spring;
+                    return;
+                }
+            }
+
+            // Check primary berry bush
+            if (food.Berry != null && Vector3.Distance(actorPos, food.BerryPosition) < 2.5f)
+            {
+                currentNearbyResource = NearbyResourceType.Berry;
+                return;
+            }
+
+            // Check additional berry bushes
+            if (food.AdditionalBerryBushes != null)
+            {
+                foreach (var bush in food.AdditionalBerryBushes)
+                {
+                    if (bush != null && Vector3.Distance(actorPos, bush.transform.position) < 2.5f)
+                    {
+                        currentNearbyResource = NearbyResourceType.Berry;
+                        return;
+                    }
+                }
+            }
+        }
+
         public void UpdatePickupTargetLabel()
         {
-            if (Brain != null && Brain.Actions != null && Brain.Actions.Held != null)
+            DetectNearbySurvivalResources();
+
+            if (currentNearbyResource == NearbyResourceType.Spring)
+            {
+                CurrentPickupTargetLabel = "[E] Drink Freshwater";
+            }
+            else if (currentNearbyResource == NearbyResourceType.Berry)
+            {
+                var food = (Brain != null && Brain.Survival != null) ? Brain.Survival.Food : null;
+                if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                int fruitStock = food != null && food.Model != null ? food.Model.State.fruitStock : 2;
+                int carried = food != null && food.Model != null ? food.Model.State.carriedFruit : 0;
+                if (fruitStock > 0)
+                {
+                    CurrentPickupTargetLabel = carried > 0 ? "[E] Pick Berries  |  [H] Eat Fruit" : "[E] Pick Berries";
+                }
+                else if (carried > 0)
+                {
+                    CurrentPickupTargetLabel = "[E / H] Eat Carried Fruit";
+                }
+                else
+                {
+                    CurrentPickupTargetLabel = "Sourfig Berry Bush [Depleted]";
+                }
+            }
+            else if (Brain != null && Brain.Actions != null && Brain.Actions.Held != null)
             {
                 CurrentPickupTargetLabel = $"Held: {Brain.Actions.Held.StableId} [G: Drop]";
             }
             else if (CurrentPickupTarget != null)
             {
-                CurrentPickupTargetLabel = $"Target: {CurrentPickupTarget.StableId} [G: Pick Up | T: Cycle]";
+                CurrentPickupTargetLabel = $"Target: {CurrentPickupTarget.StableId} [E: Pick Up | T: Cycle]";
             }
             else
             {
-                CurrentPickupTargetLabel = "";
+                var food = (Brain != null && Brain.Survival != null) ? Brain.Survival.Food : null;
+                if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                if (food != null && food.Model != null && food.Model.State.carriedFruit > 0)
+                {
+                    CurrentPickupTargetLabel = $"Carried Fruit: {food.Model.State.carriedFruit} [H: Eat]";
+                }
+                else
+                {
+                    CurrentPickupTargetLabel = "";
+                }
             }
 
             if (TargetPromptText != null)
@@ -407,6 +498,91 @@ namespace CityLife.World
                         }
                     }
                 }
+            }
+        }
+        public void InteractCurrentTarget(bool isDropKey)
+        {
+            if (Brain == null || !Brain.Possessed) return;
+
+            // If G key was pressed and we are holding an item, drop it
+            if (isDropKey && Brain.Actions != null && Brain.Actions.Held != null)
+            {
+                InteractPhysicalItem();
+                return;
+            }
+
+            // If near survival resource, interact with it on E (or G if nothing held)
+            if (currentNearbyResource == NearbyResourceType.Spring)
+            {
+                var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+                if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                if (food != null && food.Model != null)
+                {
+                    var s = food.Model.State;
+                    var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Drink, "spring", food);
+                    if (receipt.success)
+                    {
+                        s.knowsSpring = true;
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                        if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                    }
+                    UpdatePickupTargetLabel();
+                }
+                return;
+            }
+            else if (currentNearbyResource == NearbyResourceType.Berry)
+            {
+                var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+                if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                if (food != null && food.Model != null)
+                {
+                    var s = food.Model.State;
+                    if (s.fruitStock > 0 && s.carriedFruit < 4)
+                    {
+                        var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Gather, "berry", food);
+                        if (receipt.success)
+                        {
+                            s.knowsBerry = true;
+                            food.SyncFruitVisual();
+                            if (Brain.Actor != null) Brain.Actor.Gesture();
+                            if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                        }
+                    }
+                    else if (s.carriedFruit > 0)
+                    {
+                        var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Eat, "inventory", food);
+                        if (receipt.success)
+                        {
+                            s.knowsMealBenefit = true;
+                            if (Brain.Actor != null) Brain.Actor.Gesture();
+                            if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                        }
+                    }
+                    UpdatePickupTargetLabel();
+                }
+                return;
+            }
+
+            // Otherwise, interact with physical item (pick up or drop)
+            InteractPhysicalItem();
+        }
+
+        public void TryEatInventoryFruit()
+        {
+            if (Brain == null || !Brain.Possessed) return;
+            var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+            if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+            if (food != null && food.Model != null && food.Model.State.carriedFruit > 0)
+            {
+                var s = food.Model.State;
+                var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Eat, "inventory", food);
+                if (receipt.success)
+                {
+                    s.knowsMealBenefit = true;
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                }
+                UpdatePickupTargetLabel();
             }
         }
         public void OpenMenu()

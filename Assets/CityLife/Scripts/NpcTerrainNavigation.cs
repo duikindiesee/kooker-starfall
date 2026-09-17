@@ -41,7 +41,7 @@ namespace CityLife.World
         public bool Walkable(Vector3 p, out Vector3 floor)
         {
             floor = p;
-            if (!TryGround(p, out float h, out Vector3 n) || n.y < Mathf.Cos(45 * Mathf.Deg2Rad) || h < WaterLevel(p) - .2f) return false;
+            if (!TryGround(p, out float h, out Vector3 n) || n.y < Mathf.Cos(45 * Mathf.Deg2Rad) || h < WaterLevel(p) - .85f) return false;
             floor.y = h;
             return !Physics.CheckCapsule(floor + Vector3.up * .45f, floor + Vector3.up * 1.5f,
                 .35f, 1 << 8, QueryTriggerInteraction.Ignore);

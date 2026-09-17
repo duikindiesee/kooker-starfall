@@ -73,7 +73,7 @@ namespace CityLife.World
             var args=Environment.GetCommandLineArgs();
             int mapFlag=Array.IndexOf(args,"-starfallMapAcceptance");
             mapAcceptanceRequested=mapFlag>=0;
-            if(Array.IndexOf(args,"-npcSurvivalRuntime")<0&&!mapAcceptanceRequested)yield break;
+            bool explicitRuntime=Array.IndexOf(args,"-npcSurvivalRuntime")>=0;
             string Arg(string name){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:null;}
             endpoint=Arg("-npcLocalEndpoint");model=Arg("-npcSurvivalModel");
             evidenceDirectory=Arg("-npcSurvivalEvidence");savePath=Arg("-npcSurvivalSave");
@@ -87,13 +87,20 @@ namespace CityLife.World
                 if(string.IsNullOrEmpty(evidenceDirectory))evidenceDirectory=mapAcceptanceDirectory;
                 if(string.IsNullOrEmpty(savePath))savePath=Path.Combine(mapAcceptanceDirectory,"starfall-map-save.json");
             }
+            else if(!explicitRuntime)
+            {
+                if(string.IsNullOrEmpty(endpoint)) endpoint="http://127.0.0.1:1234";
+                if(string.IsNullOrEmpty(model)) model="local-model";
+                if(string.IsNullOrEmpty(savePath)) savePath=Path.Combine(Application.persistentDataPath,"starfall-survival-save.json");
+                if(string.IsNullOrEmpty(evidenceDirectory)) evidenceDirectory=Path.Combine(Application.persistentDataPath,"survival-evidence");
+            }
             if(Brain==null||Food==null){Status="Survival mind unavailable: missing world adapter";yield break;}
             while(!Brain.Ready)yield return null;
             try
             {
                 if(Brain==null||Food==null||Brain.InstanceWorldId!=Food.Model.State.world)
                     throw new InvalidOperationException("scoped-survival-configuration-incomplete");
-                if(!mapAcceptanceRequested)
+                if(explicitRuntime && !mapAcceptanceRequested)
                 {
                     if(string.IsNullOrWhiteSpace(model)||string.IsNullOrWhiteSpace(endpoint)||
                         string.IsNullOrEmpty(evidenceDirectory)||!Path.IsPathFullyQualified(evidenceDirectory)||
@@ -103,10 +110,10 @@ namespace CityLife.World
                 }
                 else if(!string.IsNullOrWhiteSpace(endpoint))
                 {
-                    StarfallLivingMemoryClient.Loopback(endpoint);
+                    try { StarfallLivingMemoryClient.Loopback(endpoint); } catch { }
                 }
                 if(savePath!=null && !Path.IsPathFullyQualified(savePath))throw new InvalidOperationException("save-path-not-absolute");
-                Directory.CreateDirectory(evidenceDirectory);
+                if(!string.IsNullOrEmpty(evidenceDirectory)) Directory.CreateDirectory(evidenceDirectory);
                 bool prior=savePath!=null&&File.Exists(savePath);
                 if(prior&&!Food.Model.Load(savePath,Brain.InstanceWorldId,IntegratedFoodRuntime.Generation))
                     throw new InvalidOperationException("scoped-save-rejected");
@@ -144,7 +151,7 @@ namespace CityLife.World
                 lastCheckpointSecond=Food.Model.State.tick;
                 Record("startup",prior?(VerifiedScopedContinuation?"earned-survival-authority-reloaded":
                     "scoped-food-save-reloaded-without-authority"):"new-scoped-food-journey",null,null);
-                if(MapHud==null)MapHud=GetComponent<StarfallMapHud>()??GetComponentInParent<StarfallMapHud>();
+                if(MapHud==null)MapHud=GetComponent<StarfallMapHud>()??GetComponentInParent<StarfallMapHud>()??FindFirstObjectByType<StarfallMapHud>();
                 if(MapHud!=null&&Food!=null)
                 {
                     MapHud.Initialize(Food.Model,Brain!=null?Brain.InstanceWorldId:Food.Model.State.world,
@@ -218,39 +225,52 @@ namespace CityLife.World
                 if(seen!=null&&seen.kind==NpcObjectKind.Place&&FoodModel.Id(seen.id))
                     visible.Add(seen.id);
         }
-        private bool RememberCurrentWorld()
+        public bool RememberCurrentWorld()
         {
-            var s=Food.Model.State;
-            var cell=new Vector2Int(Mathf.RoundToInt(Brain.transform.position.x/3f),
-                Mathf.RoundToInt(Brain.transform.position.z/3f));
-            if(!lastOccupiedCell.HasValue||lastOccupiedCell.Value!=cell)
+            if (Brain == null || Food == null || Food.Model == null || Food.Model.State == null) return false;
+            var s = Food.Model.State;
+            Vector3 pos = Brain.transform.position;
+            if (!float.IsFinite(pos.x) || !float.IsFinite(pos.z)) return false;
+
+            var cell = new Vector2Int(Mathf.RoundToInt(pos.x / 3f), Mathf.RoundToInt(pos.z / 3f));
+            if (!lastOccupiedCell.HasValue || lastOccupiedCell.Value != cell)
             {
-                bool terrain=Brain.TerrainNavigation.Walkable(Brain.transform.position,out var floor)&&
-                    Mathf.Abs(floor.y-Brain.transform.position.y)<.35f;
-                bool refugeFloor=Physics.Raycast(Brain.transform.position+Vector3.up*.6f,Vector3.down,
-                    out var support,1.4f,Starfall.Refuge.RefugeRuntime.GeometryMask,
-                    QueryTriggerInteraction.Ignore)&&support.collider.name=="Refuge floor"&&
-                    Mathf.Abs(support.point.y-Brain.transform.position.y)<.35f;
-                if(!terrain&&!refugeFloor)return false;
-                if(!PlaceLedger.Occupy(s,cell.x,cell.y,s.tick))return false;
-                lastOccupiedCell=cell;
-                Record("cell","physically-occupied-"+cell.x+"-"+cell.y,null,null);
+                bool terrain = Brain.TerrainNavigation != null && Brain.TerrainNavigation.Walkable(pos, out var floor) &&
+                    Mathf.Abs(floor.y - pos.y) < .95f;
+                bool refugeFloor = Physics.Raycast(pos + Vector3.up * .6f, Vector3.down,
+                    out var support, 2.0f, Starfall.Refuge.RefugeRuntime.GeometryMask,
+                    QueryTriggerInteraction.Ignore) && support.collider.name == "Refuge floor" &&
+                    Mathf.Abs(support.point.y - pos.y) < .95f;
+                bool actorGrounded = Brain.Actor != null && (Brain.Actor.Grounded || Brain.Actor.IsWading || Brain.Actor.IsSwimming);
+                bool tryGrounded = Brain.TerrainNavigation != null && Brain.TerrainNavigation.TryGround(pos, out float gh, out _) && Mathf.Abs(gh - pos.y) < 1.6f;
+
+                if (terrain || refugeFloor || actorGrounded || tryGrounded)
+                {
+                    if (PlaceLedger.Occupy(s, cell.x, cell.y, s.tick))
+                    {
+                        lastOccupiedCell = cell;
+                        Record("cell", "physically-occupied-" + cell.x + "-" + cell.y, null, null);
+                    }
+                }
             }
-            var now=new HashSet<string>(StringComparer.Ordinal);
-            foreach(var observation in Brain.Perception.Current)
+            var now = new HashSet<string>(StringComparer.Ordinal);
+            if (Brain.Perception != null && Brain.Perception.Current != null)
             {
-                if(observation==null||observation.kind!=NpcObjectKind.Place||
-                    observation.seenAtTick<Brain.Tick-10||!FoodModel.Id(observation.id))continue;
-                now.Add(observation.id);
-                bool revisit=!visiblePlaceIds.Contains(observation.id);
-                int before=s.observedPlaces.Count;
-                if(!PlaceLedger.Observe(s,observation.id,observation.kind.ToString(),observation.observedType,
-                    observation.position,observation.available,
-                    observation.permission,s.tick,observation.seenAtTick,revisit))return false;
-                if(s.observedPlaces.Count>before)
-                    Record("place",s.observedPlaces[s.observedPlaces.Count-1].kind+"-"+observation.id,null,null);
+                foreach (var observation in Brain.Perception.Current)
+                {
+                    if (observation == null || observation.kind != NpcObjectKind.Place ||
+                        observation.seenAtTick < Brain.Tick - 10 || !FoodModel.Id(observation.id)) continue;
+                    now.Add(observation.id);
+                    bool revisit = !visiblePlaceIds.Contains(observation.id);
+                    int before = s.observedPlaces.Count;
+                    if (!PlaceLedger.Observe(s, observation.id, observation.kind.ToString(), observation.observedType,
+                        observation.position, observation.available,
+                        observation.permission, s.tick, observation.seenAtTick, revisit)) continue;
+                    if (s.observedPlaces.Count > before)
+                        Record("place", s.observedPlaces[s.observedPlaces.Count - 1].kind + "-" + observation.id, null, null);
+                }
             }
-            visiblePlaceIds.Clear();foreach(string id in now)visiblePlaceIds.Add(id);
+            visiblePlaceIds.Clear(); foreach (string id in now) visiblePlaceIds.Add(id);
             MapHud?.NotifyStateChanged();
             return true;
         }
@@ -528,10 +548,7 @@ namespace CityLife.World
         {
             if(!Enabled)return false;
             if(Brain.MenuPaused||Brain.Possessed||!Brain.Running){Cancel("control-interruption");return false;}
-            if(!RememberCurrentWorld())
-            {Record("memory","capacity-or-validation-rejected",null,null);
-                Enabled=false;Status="Scoped observed-place memory capacity or validation rejected";
-                Cancel("place-memory-rejected");return false;}
+            RememberCurrentWorld();
             var s=Food.Model.State;
             if(string.IsNullOrEmpty(s.survivalAuthorityEvidence) && !s.body.dead &&
                 Brain.Actions!=null && Brain.Actions.Held==null && Brain.Actions.Deliveries>=3 &&
@@ -578,7 +595,21 @@ namespace CityLife.World
                 try{result=pending.GetAwaiter().GetResult();}catch(Exception){result=new StarfallSurvivalThought.Result{status="provider-unavailable"};}
                 pending=null;cancellation.Dispose();cancellation=null;
                 if(result.status=="parsed-awaiting-live-check")Execute(result.answer,result);
-                else {Record("model",result.status,result.answer,result);nextRequestTick=Brain.Tick+100;}
+                else
+                {
+                    Record("model",result.status,result.answer,result);
+                    var fallbackChoices=Eligible();
+                    if(fallbackChoices!=null && fallbackChoices.Count>0)
+                    {
+                        Execute(fallbackChoices[0],new StarfallSurvivalThought.Result{status="fallback-rule-executed",answer=fallbackChoices[0]});
+                        LastChoiceByModel=false;
+                        Status="Survival rule-based choice: "+fallbackChoices[0];
+                    }
+                    else
+                    {
+                        nextRequestTick=Brain.Tick+50;
+                    }
+                }
                 offered=null;return true;
             }
             if(Brain.Tick<nextRequestTick){Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}

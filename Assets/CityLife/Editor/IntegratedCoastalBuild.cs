@@ -110,7 +110,7 @@ namespace CityLife.World.Editor
             actor.Capsule.skinWidth = .025f; actor.Capsule.stepOffset = .25f; actor.Capsule.slopeLimit = 45;
             var model = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(CharacterAssetImport.Body));
             model.transform.SetParent(actorObject.transform, false);
-            model.transform.localPosition = new Vector3(0, .085f, 0);
+            model.transform.localPosition = new Vector3(0, .12f, 0);
             model.transform.localRotation = Quaternion.Euler(0, 180, 0);
             actor.Animator = model.GetComponent<Animator>();
             if (actor.Animator.avatar == null || !actor.Animator.avatar.isValid || !actor.Animator.avatar.isHuman) throw new InvalidOperationException("Humanoid avatar invalid.");

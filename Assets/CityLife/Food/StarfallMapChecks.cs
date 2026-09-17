@@ -510,6 +510,85 @@ namespace Starfall.Food
                 }
             }
 
+            // 13. AAA Tactical Visual Map Generator, Dynamic Fog-of-War, GPS Regions, and Terrain Navigation
+            {
+                // World to Map UV bounds and coordinate mapping
+                Vector2 minUv = StarfallVisualMapGenerator.WorldToMapUV(new Vector3(-250f, 0, -250f));
+                Check(Mathf.Approximately(minUv.x, 0f) && Mathf.Approximately(minUv.y, 0f), "WorldToMapUV maps southwest world bounds to (0, 0)");
+
+                Vector2 maxUv = StarfallVisualMapGenerator.WorldToMapUV(new Vector3(250f, 0, 250f));
+                Check(Mathf.Approximately(maxUv.x, 1f) && Mathf.Approximately(maxUv.y, 1f), "WorldToMapUV maps northeast world bounds to (1, 1)");
+
+                Vector2 centerUv = StarfallVisualMapGenerator.WorldToMapUV(Vector3.zero);
+                Check(Mathf.Approximately(centerUv.x, 0.5f) && Mathf.Approximately(centerUv.y, 0.5f), "WorldToMapUV maps origin to map center (0.5, 0.5)");
+
+                Vector3 roundTripOrigin = StarfallVisualMapGenerator.MapUVToWorld(new Vector2(0.5f, 0.5f));
+                Check(Mathf.Approximately(roundTripOrigin.x, 0f) && Mathf.Approximately(roundTripOrigin.z, 0f), "MapUVToWorld recovers world (0, 0) from center UV");
+
+                // Topographical map texture generation
+                var topoTex = StarfallVisualMapGenerator.GenerateTopographicalTexture();
+                try
+                {
+                    Check(topoTex != null, "GenerateTopographicalTexture produces non-null relief texture");
+                    Check(topoTex.width == StarfallVisualMapGenerator.TextureWidth && topoTex.height == StarfallVisualMapGenerator.TextureHeight,
+                        "relief texture dimensions match 384x384 high-detail map specification");
+                    Color32 samplePx = topoTex.GetPixel(StarfallVisualMapGenerator.TextureWidth / 2, StarfallVisualMapGenerator.TextureHeight / 2);
+                    Check(samplePx.a > 0, "relief texture contains opaque rendered pixels");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(topoTex);
+                }
+
+                // Dynamic Fog of War mask creation and cell reveal
+                var fogTex = StarfallVisualMapGenerator.CreateFogOfWarTexture();
+                try
+                {
+                    Check(fogTex != null, "CreateFogOfWarTexture produces non-null fog mask");
+                    Check(fogTex.width == StarfallVisualMapGenerator.TextureWidth && fogTex.height == StarfallVisualMapGenerator.TextureHeight,
+                        "fog mask matches 384x384 map resolution");
+                    var pixels = fogTex.GetPixels32();
+                    Check(pixels[0].a == 248, "unexplored fog mask initialized to 248 dark atmospheric mist");
+
+                    // Reveal world cell (0, 0)
+                    StarfallVisualMapGenerator.RevealCell(pixels, 0, 0, 22f);
+                    int centerIdx = (StarfallVisualMapGenerator.TextureHeight / 2) * StarfallVisualMapGenerator.TextureWidth + (StarfallVisualMapGenerator.TextureWidth / 2);
+                    Check(pixels[centerIdx].a == 0, "RevealCell burns away fog of war at cell center to alpha 0");
+                    Check(pixels[0].a == 248, "RevealCell leaves distant unexplored corners shrouded in dark mist");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(fogTex);
+                }
+
+                // GPS Regional naming
+                Check(StarfallMapHud.GetRegionName(new Vector3(-150f, 10f, 100f)) == "Refuge Cavern & West Ridge",
+                    "GPS region identifies Refuge Cavern & West Ridge");
+                Check(StarfallMapHud.GetRegionName(new Vector3(120f, 2f, -60f)) == "Freshwater Spring Oasis",
+                    "GPS region identifies Freshwater Spring Oasis");
+                Check(StarfallMapHud.GetRegionName(new Vector3(0f, -2f, 0f)) == "Whispering River Shallows",
+                    "GPS region identifies Whispering River Shallows");
+                Check(StarfallMapHud.GetRegionName(new Vector3(0f, 20f, 150f)) == "North River Meander & Cliffs",
+                    "GPS region identifies North River Meander & Cliffs");
+                Check(StarfallMapHud.GetRegionName(new Vector3(0f, 10f, -150f)) == "South Canyon Basin",
+                    "GPS region identifies South Canyon Basin");
+                Check(StarfallMapHud.GetRegionName(new Vector3(60f, 10f, 100f)) == "Sunlit Canyon Terrace",
+                    "GPS region identifies Sunlit Canyon Terrace fallback");
+
+                // Navigation surface properties
+                var navGo = new GameObject("nav-unit-test");
+                try
+                {
+                    var nav = navGo.AddComponent<NpcTerrainNavigation>();
+                    Check(nav.PhysicalBounds.size.x > 0f, "NpcTerrainNavigation reports valid physical bounds");
+                    Check(nav.WaterLevel(Vector3.zero) == CoastalWater.Level, "NpcTerrainNavigation returns CoastalWater level");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(navGo);
+                }
+            }
+
             return passed;
         }
     }

@@ -74,7 +74,21 @@ namespace CityLife.World
         private Text tab0Text, tab1Text, tab2Text;
         private Text gridLabel, legendLabel, beliefsLabel, eventsLabel, footerLabel;
 
-        private int activeTab = 0; // 0: Grid, 1: Beliefs, 2: History
+        // Visual Map components (God of War / Ghost Recon Wildlands style)
+        private Texture2D topoTexture;
+        private Texture2D fogTexture;
+        private Color32[] fogPixels;
+        private RawImage topoRawImage;
+        private RawImage fogRawImage;
+        private GameObject visualMapContainer;
+        private RectTransform visualMapRt;
+        private RectTransform playerChevronRt;
+        private Text gpsLabel;
+        private readonly System.Collections.Generic.List<(Vector3 worldPos, string label, RectTransform rt, Text txt)> poiBadges = new System.Collections.Generic.List<(Vector3, string, RectTransform, Text)>();
+        private bool showVisualMap = true;
+        private int lastRevealedCellCount = -1;
+
+        private int activeTab = 0; // 0: Tactical Map / Grid, 1: Beliefs, 2: History
         private int lastScreenWidth = -1;
         private int lastScreenHeight = -1;
 
@@ -244,8 +258,34 @@ namespace CityLife.World
             BuildUi();
         }
 
+        private void EnsureMapTextures()
+        {
+            if (topoTexture == null)
+            {
+                topoTexture = StarfallVisualMapGenerator.GenerateTopographicalTexture();
+            }
+            if (fogTexture == null)
+            {
+                fogTexture = StarfallVisualMapGenerator.CreateFogOfWarTexture();
+                fogPixels = fogTexture.GetPixels32();
+                lastRevealedCellCount = -1;
+            }
+        }
+
+        public static string GetRegionName(Vector3 pos)
+        {
+            if (pos.x < -100f && pos.z > 60f) return "Refuge Cavern & West Ridge";
+            if (pos.x > 80f && pos.z < -40f) return "Freshwater Spring Oasis";
+            if (Mathf.Abs(pos.x) < 50f && Mathf.Abs(pos.z) < 80f) return "Whispering River Shallows";
+            if (pos.z > 120f) return "North River Meander & Cliffs";
+            if (pos.z < -120f) return "South Canyon Basin";
+            return "Sunlit Canyon Terrace";
+        }
+
         private void OnDestroy()
         {
+            if (topoTexture != null) { Destroy(topoTexture); topoTexture = null; }
+            if (fogTexture != null) { Destroy(fogTexture); fogTexture = null; }
             if (canvas != null && canvas.gameObject != null && canvas.gameObject != gameObject)
             {
                 if (Application.isPlaying) Destroy(canvas.gameObject);
@@ -291,6 +331,11 @@ namespace CityLife.World
                 else if (key.digit3Key.wasPressedThisFrame || key.numpad3Key.wasPressedThisFrame) SetActiveTab(2);
                 else if (key.hKey.wasPressedThisFrame) SetActiveTab(2); // 'H' for History
                 else if (key.tKey.wasPressedThisFrame) SetActiveTab((activeTab + 1) % 3); // 'T' to cycle tabs
+                else if (key.gKey.wasPressedThisFrame && activeTab == 0)
+                {
+                    showVisualMap = !showVisualMap;
+                    UpdateResponsiveLayout();
+                }
             }
         }
 
@@ -358,6 +403,56 @@ namespace CityLife.World
             {
                 lastDisplayedValid = updateOk;
                 RefreshUi();
+            }
+
+            // Update dynamic Fog of War reveal on cell changes
+            if (fogPixels != null && fogTexture != null && ViewModel != null && ViewModel.IsValid)
+            {
+                if (ViewModel.ExploredCellCount != lastRevealedCellCount)
+                {
+                    var cells = ViewModel.GetExploredCells();
+                    if (cells != null)
+                    {
+                        for (int i = 0; i < cells.Length; i++)
+                        {
+                            StarfallVisualMapGenerator.RevealCell(fogPixels, cells[i].X, cells[i].Z, 22f);
+                        }
+                        fogTexture.SetPixels32(fogPixels);
+                        fogTexture.Apply();
+                        lastRevealedCellCount = cells.Length;
+                    }
+                }
+            }
+
+            // Update player marker & POIs on visual map
+            if (visualMapRt != null && visualMapContainer != null && visualMapContainer.activeSelf)
+            {
+                Vector3 actorPos = actorPositionProvider != null ? actorPositionProvider() : (Brain != null ? Brain.transform.position : Vector3.zero);
+                Vector2 uv = StarfallVisualMapGenerator.WorldToMapUV(actorPos);
+                Vector2 mapSize = visualMapRt.sizeDelta;
+
+                if (playerChevronRt != null)
+                {
+                    playerChevronRt.anchoredPosition = new Vector2(uv.x * mapSize.x, (uv.y - 1f) * mapSize.y);
+                    float yaw = 0f;
+                    if (Brain != null) yaw = Brain.transform.eulerAngles.y;
+                    else if (View != null) yaw = View.transform.eulerAngles.y;
+                    playerChevronRt.localEulerAngles = new Vector3(0, 0, -yaw);
+
+                    if (gpsLabel != null)
+                    {
+                        string region = GetRegionName(actorPos);
+                        gpsLabel.text = $"GRID: [{actorPos.x:+0.0;-0.0;0.0}, {actorPos.z:+0.0;-0.0;0.0}] · ALT: {actorPos.y:0.0}m · HDG: {Mathf.Repeat(yaw, 360f):0}°\nREGION: {region}  ·  FOG: {(ViewModel.ExploredCellCount > 0 ? "Revealing" : "Shrouded")}";
+                    }
+                }
+
+                // Update POI pins
+                for (int i = 0; i < poiBadges.Count; i++)
+                {
+                    var (wpos, name, pRt, pTxt) = poiBadges[i];
+                    Vector2 poiUv = StarfallVisualMapGenerator.WorldToMapUV(wpos);
+                    pRt.anchoredPosition = new Vector2(poiUv.x * mapSize.x, (poiUv.y - 1f) * mapSize.y);
+                }
             }
         }
 
@@ -486,18 +581,40 @@ namespace CityLife.World
                     cRt.sizeDelta = new Vector2(usableW, contentH);
                 }
 
-                // Reflow Tab 0 contents: grid and legend
+                // Reflow Tab 0 contents: visual map and GPS banner or grid
+                float mapDim = Mathf.Min(usableW, contentH - 52f);
+                mapDim = Mathf.Max(120f, mapDim);
+
+                if (visualMapRt != null)
+                {
+                    visualMapRt.anchoredPosition = new Vector2((usableW - mapDim) * 0.5f, 0f);
+                    visualMapRt.sizeDelta = new Vector2(mapDim, mapDim);
+                }
+                if (visualMapContainer != null)
+                {
+                    visualMapContainer.SetActive(showVisualMap);
+                }
+
+                if (gpsLabel != null)
+                {
+                    gpsLabel.rectTransform.anchoredPosition = new Vector2(0f, -mapDim - 4f);
+                    gpsLabel.rectTransform.sizeDelta = new Vector2(usableW, 46f);
+                    gpsLabel.gameObject.SetActive(showVisualMap);
+                }
+
                 float legendH = 26f;
                 float gridH = Mathf.Max(30f, contentH - legendH - 4f);
                 if (gridLabel != null)
                 {
                     gridLabel.rectTransform.anchoredPosition = Vector2.zero;
                     gridLabel.rectTransform.sizeDelta = new Vector2(usableW, gridH);
+                    gridLabel.gameObject.SetActive(!showVisualMap);
                 }
                 if (legendLabel != null)
                 {
                     legendLabel.rectTransform.anchoredPosition = new Vector2(0f, -contentH + legendH);
                     legendLabel.rectTransform.sizeDelta = new Vector2(usableW, legendH);
+                    legendLabel.gameObject.SetActive(!showVisualMap);
                 }
 
                 // Reflow Tab 1 contents: beliefs
@@ -519,6 +636,7 @@ namespace CityLife.World
                 {
                     footerLabel.rectTransform.anchoredPosition = new Vector2(12f, -size.y + 26f);
                     footerLabel.rectTransform.sizeDelta = new Vector2(usableW, 26f);
+                    footerLabel.text = "[M] close · 1/2/3: tabs · [G] toggle grid · Fog of war active";
                 }
             }
         }
@@ -677,7 +795,7 @@ namespace CityLife.World
             }
 
             float tabW = 108f;
-            MakeTabButton("Tab0", "1: Map Grid", 0, 0, tabW, out tab0Bg, out tab0Text, out tab0Rt);
+            MakeTabButton("Tab0", "1: Map", 0, 0, tabW, out tab0Bg, out tab0Text, out tab0Rt);
             MakeTabButton("Tab1", "2: Beliefs", 1, tabW + 4, tabW, out tab1Bg, out tab1Text, out tab1Rt);
             MakeTabButton("Tab2", "3: History", 2, (tabW + 4) * 2, tabW, out tab2Bg, out tab2Text, out tab2Rt);
 
@@ -694,14 +812,93 @@ namespace CityLife.World
                 return cGo;
             }
 
-            // Tab 0: Grid & Legend
+            // Tab 0: Visual Tactical Map & Grid
             tab0Container = MakeContainer("Tab0Container");
-            gridLabel = MakeLabel(tab0Container, "AsciiGrid", new Vector2(0, 0), new Vector2(336, 88), 22, new Color(.95f, .90f, .72f));
+            EnsureMapTextures();
+
+            visualMapContainer = new GameObject("VisualMapContainer", typeof(RectTransform), typeof(Image));
+            visualMapRt = visualMapContainer.GetComponent<RectTransform>();
+            visualMapRt.SetParent(tab0Container.transform, false);
+            visualMapRt.anchorMin = visualMapRt.anchorMax = new Vector2(0, 1);
+            visualMapRt.pivot = new Vector2(0, 1);
+            visualMapContainer.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.08f, 0.95f);
+
+            var topoGo = new GameObject("TopographicalMapImage", typeof(RectTransform), typeof(RawImage));
+            var topoRt = topoGo.GetComponent<RectTransform>();
+            topoRt.SetParent(visualMapRt, false);
+            topoRt.anchorMin = Vector2.zero;
+            topoRt.anchorMax = Vector2.one;
+            topoRt.sizeDelta = Vector2.zero;
+            topoRawImage = topoGo.GetComponent<RawImage>();
+            topoRawImage.texture = topoTexture;
+            topoRawImage.raycastTarget = false;
+
+            var fogGo = new GameObject("FogOfWarImage", typeof(RectTransform), typeof(RawImage));
+            var fogRt = fogGo.GetComponent<RectTransform>();
+            fogRt.SetParent(visualMapRt, false);
+            fogRt.anchorMin = Vector2.zero;
+            fogRt.anchorMax = Vector2.one;
+            fogRt.sizeDelta = Vector2.zero;
+            fogRawImage = fogGo.GetComponent<RawImage>();
+            fogRawImage.texture = fogTexture;
+            fogRawImage.raycastTarget = false;
+
+            // POI Badges
+            poiBadges.Clear();
+            var landmarks = new[]
+            {
+                (new Vector3(-165f, 0, 118f), "🏛️ Refuge"),
+                (new Vector3(121f, 0, -58f), "💧 Spring"),
+                (new Vector3(126f, 0, -80f), "🍒 Berries"),
+                (new Vector3(10f, 0, -25f), "🪨 Pebbles"),
+                (new Vector3(120f, 0, -80f), "🔥 Hearth")
+            };
+            foreach (var (wpos, name) in landmarks)
+            {
+                var pGo = new GameObject("POI_" + name, typeof(RectTransform), typeof(Text));
+                var pRt = pGo.GetComponent<RectTransform>();
+                pRt.SetParent(visualMapRt, false);
+                pRt.anchorMin = pRt.anchorMax = new Vector2(0, 1);
+                pRt.pivot = new Vector2(0.5f, 0.5f);
+                pRt.sizeDelta = new Vector2(85f, 20f);
+                var pTxt = pGo.GetComponent<Text>();
+                pTxt.font = font;
+                pTxt.fontSize = 14;
+                pTxt.fontStyle = FontStyle.Bold;
+                pTxt.color = new Color(1f, 0.92f, 0.65f, 0.95f);
+                pTxt.alignment = TextAnchor.MiddleCenter;
+                pTxt.text = name;
+                poiBadges.Add((wpos, name, pRt, pTxt));
+            }
+
+            // Player chevron marker
+            var chevGo = new GameObject("PlayerChevron", typeof(RectTransform), typeof(Text));
+            playerChevronRt = chevGo.GetComponent<RectTransform>();
+            playerChevronRt.SetParent(visualMapRt, false);
+            playerChevronRt.anchorMin = playerChevronRt.anchorMax = new Vector2(0, 1);
+            playerChevronRt.pivot = new Vector2(0.5f, 0.5f);
+            playerChevronRt.sizeDelta = new Vector2(24f, 24f);
+            var chevTxt = chevGo.GetComponent<Text>();
+            chevTxt.font = font;
+            chevTxt.fontSize = 20;
+            chevTxt.fontStyle = FontStyle.Bold;
+            chevTxt.color = new Color(1f, 0.88f, 0.2f, 1f);
+            chevTxt.alignment = TextAnchor.MiddleCenter;
+            chevTxt.text = "▲";
+
+            gpsLabel = MakeLabel(tab0Container, "GpsBanner", new Vector2(0, -260), new Vector2(336, 46), 14, new Color(0.85f, 0.88f, 0.92f), FontStyle.Normal, TextAnchor.MiddleLeft);
+            gpsLabel.text = "TACTICAL GPS INITIALIZING...";
+
+            gridLabel = MakeLabel(tab0Container, "AsciiGrid", new Vector2(0, 0), new Vector2(336, 88), 16, new Color(.95f, .90f, .72f));
             gridLabel.lineSpacing = 1.0f;
             gridLabel.text = "[Grid initializing]";
 
-            legendLabel = MakeLabel(tab0Container, "Legend", new Vector2(0, -92), new Vector2(336, 26), 22, new Color(.65f, .75f, .82f));
-            legendLabel.text = "@ You  · Explored  [ ] Unknown  B/S/R Beliefs";
+            legendLabel = MakeLabel(tab0Container, "Legend", new Vector2(0, -92), new Vector2(336, 26), 14, new Color(.65f, .75f, .82f));
+            legendLabel.text = "@ You  · Explored  ░ Unknown  B/S/R Beliefs";
+
+            // Default: show visual map
+            gridLabel.gameObject.SetActive(false);
+            legendLabel.gameObject.SetActive(false);
 
             // Tab 1: Beliefs
             tab1Container = MakeContainer("Tab1Container");
@@ -715,7 +912,7 @@ namespace CityLife.World
 
             // Footer
             footerLabel = MakeLabel(expandedGroup, "Footer", new Vector2(12, -240), new Vector2(336, 26), 22, new Color(.55f, .65f, .72f));
-            footerLabel.text = "[M] close · 1/2/3: tabs · Read-only memory";
+            footerLabel.text = "[M] close · 1/2/3: tabs · [G] toggle grid · Fog of war active";
 
             UpdateResponsiveLayout();
             panelObject.SetActive(Visible);
@@ -739,6 +936,7 @@ namespace CityLife.World
                 provenanceLabel.text = "Place Memory: Unavailable";
 
                 gridLabel.text = "";
+                if (gpsLabel != null) gpsLabel.text = "[GPS UNAVAILABLE]";
                 beliefsLabel.text = "Authoritative state failed validation or scope mismatch.";
                 eventsLabel.text = "";
                 return;

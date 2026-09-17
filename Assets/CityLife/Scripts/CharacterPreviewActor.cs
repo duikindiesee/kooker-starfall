@@ -42,7 +42,7 @@ namespace CityLife.World
             {
                 groundH = Mathf.Max(groundH, hit.point.y);
             }
-            if (position.y < groundH + 0.01f)
+            if (position.y < groundH + 0.02f)
             {
                 position.y = groundH + 0.05f;
             }
@@ -139,11 +139,11 @@ namespace CityLife.World
             }
 
             // Absolute terrain collision safety clamp:
-            // Prevents the actor from ever falling through single-sided terrain mesh into the void
-            if (transform.position.y < groundY - 0.25f)
+            // Prevents the actor from sinking into uneven terrain or falling through single-sided mesh
+            if (transform.position.y < groundY + 0.01f)
             {
                 Capsule.enabled = false;
-                transform.position = new Vector3(transform.position.x, groundY + 0.05f, transform.position.z);
+                transform.position = new Vector3(transform.position.x, groundY + 0.02f, transform.position.z);
                 Capsule.enabled = true;
                 fallingSpeed = 0;
                 Physics.SyncTransforms();

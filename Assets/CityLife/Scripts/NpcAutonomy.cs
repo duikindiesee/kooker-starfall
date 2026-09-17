@@ -231,16 +231,27 @@ namespace CityLife.World
             }
             if (Survival != null && Survival.Enabled && Survival.Food.Model.State.body.dead && Possessed)
             { Actor.Step(Vector3.zero, StepSeconds); return; }
-            if (Possessed) { Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds); return; }
+            if (Possessed)
+            {
+                Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds);
+                if (Survival != null && Survival.Enabled)
+                {
+                    Survival.RememberCurrentWorld();
+                }
+                return;
+            }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
             bool hasAuthoredLegacyItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item && x.GetComponent<CityLife.Items.PhysicalItem>() == null);
-            if (Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
+            bool survivalPriority = Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
+                (Survival.Food.Model.State.satiety < 5000 && Actions.Held == null) ||
+                (Survival.Food.Model.State.hydration < 5000 && Actions.Held == null) ||
                 // A scoped continuation earned in a prior real delivery cycle
                 // resumes survival without inventing delivery state in this
                 // reconstructed world. Never override a currently held item.
                 (Survival.VerifiedScopedContinuation && Actions.Held == null) ||
                 (goal == null && Actions.Held == null && (!hasAuthoredLegacyItems || (Actions.Deliveries >= 3 &&
-                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0))))))
+                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0)))));
+            if (survivalPriority)
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }
