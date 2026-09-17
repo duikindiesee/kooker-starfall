@@ -201,6 +201,10 @@ namespace CityLife.World
                 var foraging = inhabitantGo.AddComponent<ForagingExpeditionCycle>();
                 foraging.Brain = brain;
                 foraging.Bootstrap = physicalBootstrap;
+                foraging.BuildingWorkstation = building;
+                foraging.KnappingWorkstation = knapping;
+                foraging.Scanner = scanner;
+                brain.Foraging = foraging;
 
                 // Natural Stone and Tinder Supply Points around the landing camp
                 SpawnNaturalSupplies(field, spawn, physicalBootstrap);

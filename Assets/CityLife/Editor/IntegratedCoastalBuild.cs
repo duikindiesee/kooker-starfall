@@ -350,6 +350,8 @@ namespace CityLife.World.Editor
             foraging.Hud = camera.GetComponent<NpcDecisionHud>();
             foraging.BuildingWorkstation = building;
             foraging.KnappingWorkstation = knapping;
+            foraging.Scanner = scanner;
+            brain.Foraging = foraging;
 
             // Natural Stone Supply (AG3): place procedural river cobbles, fieldstones, and flat slabs on activity terrace
             var stoneGroup = new GameObject("Natural stone supply points");

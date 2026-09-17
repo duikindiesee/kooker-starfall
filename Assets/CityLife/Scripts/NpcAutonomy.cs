@@ -34,6 +34,7 @@ namespace CityLife.World
         public StarfallMemoryExport MemoryExport;
         public string MemoryExportFailure { get; private set; } = "";
         public CityLife.Items.PhysicalItemBootstrap PhysicalItems;
+        public ForagingExpeditionCycle Foraging;
         private NpcObservation goal;
         private readonly Dictionary<string, int> retryAfter = new Dictionary<string, int>(StringComparer.Ordinal);
         private Queue<Vector3> route;
@@ -82,6 +83,7 @@ namespace CityLife.World
             // Physical transaction and candidate validation succeeded: proceed to nonphysical reset side effects
             if (OptionalPlanner != null) OptionalPlanner.ResetSession();
             if (Survival != null) Survival.Cancel("world-reset");
+            if (Foraging != null) Foraging.ResetExpedition();
             if (Registry != null)
             {
                 foreach (var item in Registry)
@@ -269,6 +271,18 @@ namespace CityLife.World
                 if (!proposed) goal = NpcDecisionPolicy.Choose(Perception.Current, Actions.Held != null, retryAfter, Tick);
                 if (goal == null)
                 {
+                    bool hasAuthoredItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item);
+                    bool deliveriesFinished = !hasAuthoredItems || (Actions.Deliveries >= 3 || (Actions.Deliveries > 0 && Registry.Where(x => x != null && x.Kind == NpcObjectKind.Item && x.Permission).All(x => !string.IsNullOrEmpty(x.DeliveredTo))));
+                    if (deliveriesFinished && Actions.Held == null)
+                    {
+                        if (Foraging == null) Foraging = GetComponent<ForagingExpeditionCycle>();
+                        if (Foraging != null && Foraging.StepAutonomousLiving(this, Actor, StepSeconds))
+                        {
+                            Phase = "Living / " + Foraging.Phase;
+                            return;
+                        }
+                    }
+
                     Phase = "Wait";
                     string reason = Actions.Held == null ? "no eligible perceived item" : "no eligible perceived destination; retain cargo";
                     if (reason != previousWait)

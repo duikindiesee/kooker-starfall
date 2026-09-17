@@ -121,12 +121,14 @@ namespace CityLife.World
         {
             var go = new GameObject("TestKnapping");
             var ws = go.AddComponent<StoneKnappingWorkstation>();
-            bool canKnapInit = ws.CanKnap(out string reason);
-            bool knapFailedNoBootstrap = !ws.PerformKnap(out _);
+            bool noBootstrapRejected = !ws.CanKnap(out string reason) && reason == "bootstrap-missing";
+            ws.Bootstrap = go.AddComponent<PhysicalItemBootstrap>();
+            bool canKnapInit = ws.CanKnap(out _);
+            bool knapSuccess = ws.PerformKnap(out string toolId) && !string.IsNullOrEmpty(toolId);
             UnityEngine.Object.DestroyImmediate(go);
 
-            verificationReceipt = $"knapInit={canKnapInit}, noBootstrapRejected={knapFailedNoBootstrap}, reason={reason}";
-            return canKnapInit && knapFailedNoBootstrap;
+            verificationReceipt = $"knapInit={canKnapInit}, noBootstrapRejected={noBootstrapRejected}, knapSuccess={knapSuccess}, tool={toolId}";
+            return canKnapInit && noBootstrapRejected && knapSuccess;
         }
     }
 }
