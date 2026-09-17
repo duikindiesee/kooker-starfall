@@ -32,6 +32,15 @@ namespace CityLife.Items
         [Tooltip("Serialized URP material asset for woven basket visual. Assigned during scene build generation.")]
         public Material BasketMaterial;
 
+        [Tooltip("Serialized URP material asset for natural stones.")]
+        public Material StoneMaterial;
+
+        [Tooltip("Serialized URP material asset for tinder dry brush.")]
+        public Material TinderMaterial;
+
+        [Tooltip("Serialized URP material asset for fallen wood.")]
+        public Material WoodMaterial;
+
         [Tooltip("Opt-in flag to populate starter canyon layout with basket and small physical objects on fresh start.")]
         public bool OptInStarterLayout = false;
 
@@ -1079,10 +1088,12 @@ namespace CityLife.Items
                     : UnityEngine.SceneManagement.SceneManager.GetActiveScene();
 
                 CreateStarterPhysicalItem("canyon-basket-01", "container-basket", new Vector3(0.42f, 0.15f, 0.35f), targetScene);
+                CreateStarterPhysicalItem("canyon-cobble-01", "stone-river-cobble", new Vector3(1.2f, 0.10f, 0.8f), targetScene);
+                CreateStarterPhysicalItem("canyon-fieldstone-01", "stone-fieldstone", new Vector3(-1.1f, 0.12f, 0.9f), targetScene);
+                CreateStarterPhysicalItem("canyon-tinder-01", "fire-tinder-bundle", new Vector3(0.8f, 0.12f, 1.4f), targetScene);
+                CreateStarterPhysicalItem("canyon-branch-01", "wood-fallen-branch", new Vector3(-1.4f, 0.15f, 1.6f), targetScene);
                 CreateStarterPhysicalItem("canyon-ruby-01", "gem-ruby", new Vector3(-0.35f, 0.05f, 0.35f), targetScene);
-                CreateStarterPhysicalItem("canyon-ruby-02", "gem-ruby", new Vector3(-0.35f, 0.05f, 0.42f), targetScene);
                 CreateStarterPhysicalItem("canyon-chisel-01", "tool-chisel", new Vector3(-0.35f, 0.05f, 0.48f), targetScene);
-                CreateStarterPhysicalItem("canyon-chisel-02", "tool-chisel", new Vector3(-0.35f, 0.05f, 0.54f), targetScene);
             }
         }
 
@@ -1104,6 +1115,46 @@ namespace CityLife.Items
             {
                 var basketMat = BasketMaterial != null ? BasketMaterial : DemonstrationMaterial;
                 return WovenBasketVisual.CreateVisual(parent, basketMat, new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth));
+            }
+            else if (string.Equals(itemTypeId, "stone-river-cobble", StringComparison.Ordinal) ||
+                     string.Equals(itemTypeId, "stone-fieldstone", StringComparison.Ordinal))
+            {
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(parent, false);
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                var shape = string.Equals(itemTypeId, "stone-river-cobble", StringComparison.Ordinal)
+                    ? CityLife.Stones.StoneShapeKind.RiverCobble
+                    : CityLife.Stones.StoneShapeKind.Fieldstone;
+                var mesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(shape, 101, 0, 1.0f, true);
+                visual.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var rend = visual.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = StoneMaterial != null ? StoneMaterial : DemonstrationMaterial;
+                return visual;
+            }
+            else if (string.Equals(itemTypeId, "fire-tinder-bundle", StringComparison.Ordinal))
+            {
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(parent, false);
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                var mesh = CityLife.Fire.TinderGeometry.GenerateMesh(CityLife.Fire.TinderParameters.ForLod(0, 4217));
+                visual.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var rend = visual.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = TinderMaterial != null ? TinderMaterial : DemonstrationMaterial;
+                return visual;
+            }
+            else if (string.Equals(itemTypeId, "wood-fallen-branch", StringComparison.Ordinal))
+            {
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(parent, false);
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                var mesh = CityLife.Wood.FallenWoodGenerator.GenerateMesh(CityLife.Wood.FallenWoodProfile.CreateBranchPreset(), 0x4A8C193Eu, out _);
+                visual.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var rend = visual.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = WoodMaterial != null ? WoodMaterial : DemonstrationMaterial;
+                return visual;
             }
             else
             {

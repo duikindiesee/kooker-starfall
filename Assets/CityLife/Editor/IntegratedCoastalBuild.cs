@@ -47,10 +47,32 @@ namespace CityLife.World.Editor
             // AG5: Fallen wood procedural supply verification
             var woodChecks = CityLife.Wood.FallenWoodChecks.Run();
 
+            // Extraterrestrial Artifact Scanner: resource analysis & physical fact verification
+            var scannerMock = new GameObject("Test scanner").AddComponent<AlienArtifactScanner>();
+            var tinderScan = scannerMock.PerformScan("fire-tinder-bundle");
+            var cobbleScan = scannerMock.PerformScan("stone-river-cobble");
+            var fieldScan = scannerMock.PerformScan("stone-fieldstone");
+            var woodScan = scannerMock.PerformScan("wood-fallen-branch");
+            var basketScan = scannerMock.PerformScan("container-basket");
+            if (tinderScan.FlammabilityRating <= 0.9f || cobbleScan.ThermalMassRating <= 0.8f ||
+                fieldScan.ThermalMassRating <= 0.8f || woodScan.FuelEnergyRating <= 0.9f ||
+                basketScan.PracticalUtility.Length == 0)
+                throw new InvalidOperationException("Alien scanner resource analysis verification failed.");
+            UnityEngine.Object.DestroyImmediate(scannerMock.gameObject);
+
+            // Evening Refuge Hearth: fuel storage and dusk ignition verification
+            var testHearth = new Starfall.Refuge.HearthState();
+            testHearth.AddLog();
+            testHearth.AddLog();
+            bool hearthIgnited = testHearth.Ignite(0.0f, 2.0f, true);
+            float radiatedHeat = testHearth.HeatAt(1.0f);
+            if (!hearthIgnited || !testHearth.Burning || radiatedHeat <= 0f)
+                throw new InvalidOperationException("Evening refuge hearth ignition verification failed.");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes with zero errors.");
+                              woodChecks.Count + 7;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes and living world survival loop with zero errors.");
 
             KokerboomRender.BuildCoastalPlayableSlice();
         }
@@ -210,6 +232,14 @@ namespace CityLife.World.Editor
                 throw new InvalidOperationException("Demonstration stone material requires a valid, supported Universal Render Pipeline/Lit shader.");
             physicalBootstrap.DemonstrationMaterial = demoMaterial;
 
+            // Natural material definitions for procedural resources
+            var stoneMat = Material("Natural coastal stone", new Color(0.55f, 0.52f, 0.48f));
+            var tinderMat = Material("Tinder dry brush", new Color(0.48f, 0.38f, 0.22f));
+            var woodMat = Material("Fallen wood bark", new Color(0.38f, 0.26f, 0.16f));
+            physicalBootstrap.StoneMaterial = stoneMat;
+            physicalBootstrap.TinderMaterial = tinderMat;
+            physicalBootstrap.WoodMaterial = woodMat;
+
             // Basket foundation & player integration: serialized basket material, opt-in starter layout, and container panel wiring
             var basketMaterial = Material("Woven basket material", new Color(0.62f, 0.46f, 0.28f));
             if (basketMaterial == null || basketMaterial.shader == null || !basketMaterial.shader.isSupported)
@@ -222,10 +252,58 @@ namespace CityLife.World.Editor
             containerPanel.Bootstrap = physicalBootstrap;
             controls.ContainerPanel = containerPanel;
 
+            // Extraterrestrial Scanner Terminal: anomalous computer on stone plinth
+            var scannerObj = new GameObject("Alien artifact scanner terminal");
+            scannerObj.transform.SetParent(ground.transform, false);
+            Vector3 scannerPos = new Vector3(CoastalTerrain.ActivityCentre.x - 1.8f, 0, CoastalTerrain.ActivityCentre.y - 2.5f);
+            scannerPos.y = CoastalTerrain.Height(scannerPos.x, scannerPos.z);
+            scannerObj.transform.position = scannerPos;
+
+            var scannerPlinth = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            scannerPlinth.name = "Scanner plinth";
+            scannerPlinth.transform.SetParent(scannerObj.transform, false);
+            scannerPlinth.transform.localScale = new Vector3(0.6f, 0.45f, 0.6f);
+            scannerPlinth.transform.localPosition = new Vector3(0, 0.45f, 0);
+            var plinthRend = scannerPlinth.GetComponent<MeshRenderer>();
+            if (plinthRend != null) plinthRend.sharedMaterial = stoneMat;
+
+            var pad = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            pad.name = "Holographic scanning pad";
+            pad.transform.SetParent(scannerObj.transform, false);
+            pad.transform.localScale = new Vector3(0.35f, 0.05f, 0.35f);
+            pad.transform.localPosition = new Vector3(0, 0.92f, 0);
+            var padMat = Material("Scanner pad metallic", new Color(0.15f, 0.22f, 0.28f));
+            padMat.SetFloat("_Smoothness", 0.85f);
+            var padRend = pad.GetComponent<MeshRenderer>();
+            if (padRend != null) padRend.sharedMaterial = padMat;
+
+            var scanLightObj = new GameObject("Scan beam");
+            scanLightObj.transform.SetParent(pad.transform, false);
+            scanLightObj.transform.localPosition = new Vector3(0, 0.2f, 0);
+            var scanLight = scanLightObj.AddComponent<Light>();
+            scanLight.type = LightType.Point;
+            scanLight.range = 2.0f;
+            scanLight.color = new Color(0.2f, 0.85f, 1.0f);
+            scanLight.intensity = 2.0f;
+
+            var scanner = scannerObj.AddComponent<AlienArtifactScanner>();
+            scanner.Brain = brain;
+            scanner.Hud = camera.GetComponent<NpcDecisionHud>();
+            scanner.ScanningPad = pad.transform;
+            scanner.ScanLight = scanLight;
+            scanner.VisualRenderer = padRend;
+
+            // Autonomous Evening Refuge Fire Survival Cycle
+            var eveningFire = actorObject.AddComponent<EveningRefugeFireCycle>();
+            eveningFire.Brain = brain;
+            eveningFire.Refuge = refugeRuntime;
+            eveningFire.Scanner = scanner;
+            eveningFire.Bootstrap = physicalBootstrap;
+            eveningFire.Environment = environment;
+
             // Natural Stone Supply (AG3): place procedural river cobbles and fieldstone on activity terrace
             var stoneGroup = new GameObject("Natural stone supply points");
             stoneGroup.transform.SetParent(ground.transform, false);
-            var stoneMat = Material("Natural coastal stone", new Color(0.55f, 0.52f, 0.48f));
 
             var cobbleObj = new GameObject("Natural river cobble");
             cobbleObj.transform.SetParent(stoneGroup.transform, false);
@@ -256,7 +334,6 @@ namespace CityLife.World.Editor
             tinderObj.transform.position = tinderPos;
             var tinderMesh = CityLife.Fire.TinderGeometry.GenerateMesh(tinderParams);
             tinderObj.AddComponent<MeshFilter>().sharedMesh = tinderMesh;
-            var tinderMat = Material("Tinder dry brush", new Color(0.48f, 0.38f, 0.22f));
             tinderObj.AddComponent<MeshRenderer>().sharedMaterial = tinderMat;
             var tinderCol = tinderObj.AddComponent<BoxCollider>();
             tinderCol.size = CityLife.Fire.TinderMetadata.TargetDimensionsMetres;
@@ -274,7 +351,6 @@ namespace CityLife.World.Editor
             branchPos.y = CoastalTerrain.Height(branchPos.x, branchPos.z);
             woodObj.transform.position = branchPos;
             woodObj.AddComponent<MeshFilter>().sharedMesh = branchMesh;
-            var woodMat = Material("Fallen wood bark", new Color(0.38f, 0.26f, 0.16f));
             woodObj.AddComponent<MeshRenderer>().sharedMaterial = woodMat;
             var woodCol = woodObj.AddComponent<MeshCollider>();
             woodCol.sharedMesh = branchMesh;

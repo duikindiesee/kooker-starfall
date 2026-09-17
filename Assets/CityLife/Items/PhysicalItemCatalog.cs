@@ -165,6 +165,41 @@ namespace CityLife.Items
                 isAnchored = true
             });
 
+            // Natural Starfall Survival Resources (AG3 - Natural Stones)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "stone-river-cobble",
+                dimensions = new PhysicalDimensions(0.24f, 0.16f, 0.20f),
+                massKg = 1.8f,
+                isContainer = false
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "stone-fieldstone",
+                dimensions = new PhysicalDimensions(0.28f, 0.22f, 0.25f),
+                massKg = 2.4f,
+                isContainer = false
+            });
+
+            // Natural Starfall Survival Resources (AG4 - Tinder Dry Brush)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "fire-tinder-bundle",
+                dimensions = new PhysicalDimensions(0.35f, 0.25f, 0.25f),
+                massKg = 0.35f,
+                isContainer = false
+            });
+
+            // Natural Starfall Survival Resources (AG5 - Fallen Wood Branch)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "wood-fallen-branch",
+                dimensions = new PhysicalDimensions(0.85f, 0.18f, 0.18f),
+                massKg = 3.2f,
+                isContainer = false
+            });
+
             return catalog;
         }
     }
