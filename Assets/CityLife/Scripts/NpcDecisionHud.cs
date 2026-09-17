@@ -128,7 +128,13 @@ namespace CityLife.World
             if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
             {
                 var food=Brain.Survival.Food.Model.State;
+                string cargo = Brain.Actions.Held != null ? Brain.Actions.Held.StableId :
+                    (Brain.PhysicalItems != null && Brain.PhysicalItems.Authority != null && Brain.PhysicalItems.Authority.PrimaryItem != null ? Brain.PhysicalItems.Authority.PrimaryItem.Kind.ToString() : "none");
+                int visitedCount = food.observedPlaces != null ? food.observedPlaces.Count : 0;
+                int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
                 Summary.text=mode+" survivor | Tick "+Brain.Tick+
+                    "\nGoal: "+currentGoal+"  |  Cargo: "+cargo+
+                    "\nPlaces: "+visitedCount+"  |  Explored: "+exploredCount+" cells"+
                     "\nEnergy "+food.satiety+" / water "+food.hydration+" / fruit "+food.carriedFruit+
                     "\n"+(Brain.Survival.LastChoiceByModel?"Model chose: ":"System state: ")+Brain.Survival.LastChoice+
                     "\nOutcome: "+Brain.Survival.LastOutcome;
@@ -137,7 +143,7 @@ namespace CityLife.World
                         "\nBODY DEAD: "+food.body.cause+
                         "\nWorld and death record retained"
                         +"\nAwaiting verified safe return";
-                footer.text="P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nPlanner "+
+                footer.text="M map · P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nPlanner "+
                     (Brain.OptionalPlanner.EnabledByUser?"on":"off")+" · Survival model on";
             }
             var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
