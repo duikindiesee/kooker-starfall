@@ -80,7 +80,8 @@ namespace CityLife.World
         private void Animate(string wanted)
         {
             if (state == wanted) return;
-            state = wanted; Animator.CrossFadeInFixedTime(wanted, .16f);
+            state = wanted;
+            if (Animator != null) Animator.CrossFadeInFixedTime(wanted, .16f);
         }
     }
 }

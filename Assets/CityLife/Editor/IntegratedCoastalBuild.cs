@@ -69,10 +69,22 @@ namespace CityLife.World.Editor
             if (!hearthIgnited || !testHearth.Burning || radiatedHeat <= 0f)
                 throw new InvalidOperationException("Evening refuge hearth ignition verification failed.");
 
+            // Stone Knapping Workstation verification
+            if (!StoneKnappingWorkstation.VerifyKnappingLogic(out string knapReceipt))
+                throw new InvalidOperationException($"Stone knapping workstation verification failed: {knapReceipt}");
+
+            // Stone Building Workstation verification
+            if (!StoneBuildingWorkstation.VerifyBuildingLogic(out string buildReceipt))
+                throw new InvalidOperationException($"Stone building workstation verification failed: {buildReceipt}");
+
+            // Foraging Expedition Cycle verification
+            if (!ForagingExpeditionCycle.VerifyForagingLogic(out string forageReceipt))
+                throw new InvalidOperationException($"Foraging expedition verification failed: {forageReceipt}");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + 7;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes and living world survival loop with zero errors.");
+                              woodChecks.Count + 10;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, survival cycle, masonry, and crafting loops with zero errors.");
 
             KokerboomRender.BuildCoastalPlayableSlice();
         }
@@ -301,7 +313,45 @@ namespace CityLife.World.Editor
             eveningFire.Bootstrap = physicalBootstrap;
             eveningFire.Environment = environment;
 
-            // Natural Stone Supply (AG3): place procedural river cobbles and fieldstone on activity terrace
+            // Stone Knapping Workstation: crafted sharp blade & fire striker
+            var knappingObj = new GameObject("Stone knapping workstation");
+            knappingObj.transform.SetParent(ground.transform, false);
+            Vector3 knapPos = new Vector3(CoastalTerrain.ActivityCentre.x + 1.4f, 0, CoastalTerrain.ActivityCentre.y - 1.8f);
+            knapPos.y = CoastalTerrain.Height(knapPos.x, knapPos.z);
+            knappingObj.transform.position = knapPos;
+            var knapAnvil = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            knapAnvil.name = "Anvil stone";
+            knapAnvil.transform.SetParent(knappingObj.transform, false);
+            knapAnvil.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
+            knapAnvil.transform.localPosition = new Vector3(0, 0.25f, 0);
+            var anvilRend = knapAnvil.GetComponent<MeshRenderer>();
+            if (anvilRend != null) anvilRend.sharedMaterial = stoneMat;
+            var knapping = knappingObj.AddComponent<StoneKnappingWorkstation>();
+            knapping.Brain = brain;
+            knapping.Bootstrap = physicalBootstrap;
+            knapping.AnvilPoint = knapAnvil.transform;
+
+            // Stone Building Workstation: Masonry & Hearth/Windbreak Construction on Canyon Terrace
+            var buildingObj = new GameObject("Stone building workstation");
+            buildingObj.transform.SetParent(ground.transform, false);
+            Vector3 buildPos = new Vector3(CoastalTerrain.ActivityCentre.x + 3.8f, 0, CoastalTerrain.ActivityCentre.y - 3.2f);
+            buildPos.y = CoastalTerrain.Height(buildPos.x, buildPos.z);
+            buildingObj.transform.position = buildPos;
+            var building = buildingObj.AddComponent<StoneBuildingWorkstation>();
+            building.Brain = brain;
+            building.Bootstrap = physicalBootstrap;
+            building.ConstructionSite = buildPos;
+
+            // Autonomous Foraging Expedition Cycle
+            var foraging = actorObject.AddComponent<ForagingExpeditionCycle>();
+            foraging.Brain = brain;
+            foraging.Refuge = refugeRuntime;
+            foraging.Bootstrap = physicalBootstrap;
+            foraging.Hud = camera.GetComponent<NpcDecisionHud>();
+            foraging.BuildingWorkstation = building;
+            foraging.KnappingWorkstation = knapping;
+
+            // Natural Stone Supply (AG3): place procedural river cobbles, fieldstones, and flat slabs on activity terrace
             var stoneGroup = new GameObject("Natural stone supply points");
             stoneGroup.transform.SetParent(ground.transform, false);
 
@@ -324,6 +374,16 @@ namespace CityLife.World.Editor
             var fieldCol = fieldObj.AddComponent<MeshCollider>();
             fieldCol.sharedMesh = fieldMesh;
             fieldObj.layer = 8;
+
+            var slabObj = new GameObject("Natural flat slab");
+            slabObj.transform.SetParent(stoneGroup.transform, false);
+            slabObj.transform.position = new Vector3(CoastalTerrain.ActivityCentre.x + 1.2f, CoastalTerrain.Height(CoastalTerrain.ActivityCentre.x + 1.2f, CoastalTerrain.ActivityCentre.y + 3.5f), CoastalTerrain.ActivityCentre.y + 3.5f);
+            var slabMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(CityLife.Stones.StoneShapeKind.FlatSlab, seed: 303, variantIndex: 0, uniformScale: 1.1f, flatShaded: true);
+            slabObj.AddComponent<MeshFilter>().sharedMesh = slabMesh;
+            slabObj.AddComponent<MeshRenderer>().sharedMaterial = stoneMat;
+            var slabCol = slabObj.AddComponent<MeshCollider>();
+            slabCol.sharedMesh = slabMesh;
+            slabObj.layer = 8;
 
             // Tinder & Night Fire (AG4): place procedural dry-brush tinder bundle near refuge hearth
             var tinderParams = CityLife.Fire.TinderParameters.ForLod(0, 4217);

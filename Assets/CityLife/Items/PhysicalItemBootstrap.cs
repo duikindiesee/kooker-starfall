@@ -1156,6 +1156,22 @@ namespace CityLife.Items
                 rend.sharedMaterial = WoodMaterial != null ? WoodMaterial : DemonstrationMaterial;
                 return visual;
             }
+            else if (string.Equals(itemTypeId, "tool-stone-blade", StringComparison.Ordinal) ||
+                     string.Equals(itemTypeId, "tool-fire-striker", StringComparison.Ordinal))
+            {
+                var visual = new GameObject("Visual");
+                visual.transform.SetParent(parent, false);
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                var shape = string.Equals(itemTypeId, "tool-stone-blade", StringComparison.Ordinal)
+                    ? CityLife.Stones.StoneShapeKind.FlatSlab
+                    : CityLife.Stones.StoneShapeKind.Handstone;
+                var mesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(shape, 303, 0, 0.5f, true);
+                visual.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var rend = visual.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = StoneMaterial != null ? StoneMaterial : DemonstrationMaterial;
+                return visual;
+            }
             else
             {
                 var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -1241,6 +1257,60 @@ namespace CityLife.Items
             else
             {
                 DestroyImmediate(go);
+            }
+        }
+
+        public PhysicalItem CreatePhysicalItem(string itemId, string itemTypeId, Vector3 worldPosition, Quaternion rotation)
+        {
+            if (Catalog == null || Model == null) return null;
+            if (!Catalog.TryGet(itemTypeId, out var def)) return null;
+
+            var go = new GameObject(itemId);
+            go.transform.position = worldPosition;
+            go.transform.rotation = rotation;
+            go.transform.localScale = Vector3.one;
+
+            var box = go.AddComponent<BoxCollider>();
+            box.size = new Vector3(def.dimensions.width, def.dimensions.height, def.dimensions.depth);
+            box.center = Vector3.zero;
+
+            var rb = go.AddComponent<Rigidbody>();
+            rb.mass = def.massKg;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            CreateVisualForItem(go.transform, itemTypeId, def);
+
+            var approachObj = new GameObject(itemId + " approach");
+            approachObj.transform.SetParent(go.transform, false);
+            approachObj.transform.localPosition = Vector3.zero;
+
+            var interactable = go.AddComponent<NpcInteractable>();
+            interactable.StableId = itemId;
+            interactable.WorldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
+            interactable.Kind = NpcObjectKind.Item;
+            interactable.Permission = true;
+            interactable.Approach = approachObj.transform;
+
+            var phys = go.AddComponent<PhysicalItem>();
+            phys.itemId = itemId;
+            phys.itemTypeId = itemTypeId;
+            phys.massKg = def.massKg;
+            phys.dimensions = def.dimensions;
+            phys.isAnchored = false;
+            phys.ConfigureComponents();
+            phys.Bind(Model, interactable.WorldId, Model.GenerationId);
+            phys.RecordInitialRendererStates();
+
+            bool registered = Model.RegisterItem(itemId, itemTypeId, ItemLocationKind.Free, worldPosition, rotation);
+            if (registered)
+            {
+                bindings.Add(new PhysicalItemRuntimeBinding(itemId, phys, interactable));
+                return phys;
+            }
+            else
+            {
+                DestroyImmediate(go);
+                return null;
             }
         }
 

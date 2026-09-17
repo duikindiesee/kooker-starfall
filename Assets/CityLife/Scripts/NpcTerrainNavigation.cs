@@ -8,22 +8,34 @@ namespace CityLife.World
     public sealed class NpcTerrainNavigation : MonoBehaviour, IEnvironmentSurface
     {
         public const string RegionId = "starfall.integrated-coastal.v1";
-        public string WorldId => RegionId;
-        public string Revision => CoastalTerrain.ContentRevision + ".integrated1";
-        public Bounds PhysicalBounds => new Bounds(
-            new Vector3((CoastalTerrain.MinX + CoastalTerrain.MaxX) * .5f, 50,
-                (CoastalTerrain.MinZ + CoastalTerrain.MaxZ) * .5f),
-            new Vector3(CoastalTerrain.MaxX - CoastalTerrain.MinX, 400,
-                CoastalTerrain.MaxZ - CoastalTerrain.MinZ));
+        public IslandField IslandField;
+        public string WorldId => IslandField != null ? IslandField.Definition.worldId : RegionId;
+        public string Revision => IslandField != null ? IslandField.Definition.Fingerprint() : CoastalTerrain.ContentRevision + ".integrated1";
+        public Bounds PhysicalBounds => IslandField != null
+            ? new Bounds(Vector3.zero, new Vector3(IslandField.Definition.Width, 800f, IslandField.Definition.Width))
+            : new Bounds(
+                new Vector3((CoastalTerrain.MinX + CoastalTerrain.MaxX) * .5f, 50,
+                    (CoastalTerrain.MinZ + CoastalTerrain.MaxZ) * .5f),
+                new Vector3(CoastalTerrain.MaxX - CoastalTerrain.MinX, 400,
+                    CoastalTerrain.MaxZ - CoastalTerrain.MinZ));
         public bool Contains(Vector3 p) => EnvironmentClock.Finite(p.sqrMagnitude) && PhysicalBounds.Contains(p);
         public bool TryGround(Vector3 p, out float height, out Vector3 normal)
         {
             height = 0; normal = Vector3.up;
-            if (!Contains(p) || !Physics.Raycast(new Vector3(p.x, 170, p.z), Vector3.down,
+            if (!Contains(p)) return false;
+            if (IslandField != null)
+            {
+                height = IslandField.Ground(p.x, p.z);
+                double gx = p.x / IslandField.Definition.cellMetres + IslandField.Definition.cells / 2.0;
+                double gz = p.z / IslandField.Definition.cellMetres + IslandField.Definition.cells / 2.0;
+                normal = IslandField.Normal(Mathf.RoundToInt((float)gx), Mathf.RoundToInt((float)gz));
+                return true;
+            }
+            if (!Physics.Raycast(new Vector3(p.x, 170, p.z), Vector3.down,
                 out RaycastHit hit, 300, 1 << 10, QueryTriggerInteraction.Ignore)) return false;
             height = hit.point.y; normal = hit.normal; return true;
         }
-        public float WaterLevel(Vector3 p) => CoastalWater.Level;
+        public float WaterLevel(Vector3 p) => IslandField != null ? 0f : CoastalWater.Level;
         public float WaterDepth(Vector3 p) => TryGround(p, out float h, out _) ? Mathf.Max(0, WaterLevel(p) - h) : 0;
         public Vector3 Current(Vector3 p) => Vector3.zero;
         public bool Walkable(Vector3 p, out Vector3 floor)

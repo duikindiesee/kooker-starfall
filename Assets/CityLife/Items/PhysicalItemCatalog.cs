@@ -200,6 +200,23 @@ namespace CityLife.Items
                 isContainer = false
             });
 
+            // Handcrafted Stone Tools (Knapping Workstation)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "tool-stone-blade",
+                dimensions = new PhysicalDimensions(0.15f, 0.08f, 0.03f),
+                massKg = 0.25f,
+                isContainer = false
+            });
+
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "tool-fire-striker",
+                dimensions = new PhysicalDimensions(0.12f, 0.07f, 0.04f),
+                massKg = 0.30f,
+                isContainer = false
+            });
+
             return catalog;
         }
     }
