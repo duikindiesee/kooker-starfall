@@ -53,9 +53,7 @@ namespace Starfall.Food
                 new Vector3(-152f, CoastalTerrain.Height(-152f, 110f), 110f), // Refuge Cave shelf outside entrance
                 new Vector3(-170f, CoastalTerrain.Height(-170f, 95f), 95f),   // West cave bench overlook
                 new Vector3(65f, CoastalTerrain.Height(65f, -35f), -35f),     // Ford East bank dry rise
-                new Vector3(-65f, CoastalTerrain.Height(-65f, -35f), -35f),    // Ford West bank dry rise
-                new Vector3(20f, CoastalTerrain.Height(20f, -170f), -170f),   // South canyon stream dry bench
-                new Vector3(28f, CoastalTerrain.Height(28f, -235f), -235f)    // South waterfall cascade terrace
+                new Vector3(-65f, CoastalTerrain.Height(-65f, -35f), -35f)    // Ford West bank dry rise
             };
             for (int i = 0; i < distributedSites.Length; i++)
             {
