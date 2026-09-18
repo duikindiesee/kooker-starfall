@@ -407,10 +407,10 @@ namespace Starfall.Food
             if(item!=null && item.isActiveAndEnabled && item.WorldId==Model.State.world && item.Permission)
             {
                 Vector3 eye=Actor.position+Vector3.up*1.6f, ray=item.SightPoint-eye;
-                visible=ray.magnitude<=12f && !Physics.Raycast(eye,ray.normalized,ray.magnitude,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore);
+                visible=ray.magnitude<=12f && (ray.magnitude <= 2.5f || !Physics.Raycast(eye,ray.normalized,ray.magnitude,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore));
             }
             return new FoodAccess { visible=visible,
-                inReach=inventory || (visible && Vector3.Distance(Actor.position,item.transform.position)<2.2f),
+                inReach=inventory || (visible && (Vector3.Distance(Actor.position,item.transform.position)<2.5f || (item.Approach != null && Vector3.Distance(Actor.position, item.Approach.position) < 1.2f))),
                 permitted=inventory || (item!=null && item.Permission),
                 verifiedFreshwater=target=="spring" && visible && item==Spring };
         }

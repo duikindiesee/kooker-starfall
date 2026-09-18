@@ -712,6 +712,63 @@ namespace CityLife.Items
                 }
             }
 
+            // -------------------------------------------------------------
+            // 14. Forage Priority, Immediate Eat When Low, and Moonbag Store When Full
+            // -------------------------------------------------------------
+            {
+                // 1. Action Parse & Narrative Formatting for new Gather/Approach Outcomes
+                var testEligible = new List<string> { "approach berry", "gather berry", "eat fruit", "seek food" };
+                Check(StarfallSurvivalThought.Parse("approach berry", testEligible, out string parsedApp) && parsedApp == "approach berry", "parse-approach-berry");
+                Check(StarfallSurvivalThought.Parse("gather berry", testEligible, out string parsedGath) && parsedGath == "gather berry", "parse-gather-berry-14");
+
+                string ateReqJson = StarfallSurvivalThought.BuildRequest("test-model", 1500, 5000, testEligible, 0, false, "gather berry succeeded; ate immediately");
+                Check(ateReqJson.Contains("gathered ripe berry and ate immediately to replenish energy"), "req-json-ate-immediately");
+
+                string storedReqJson = StarfallSurvivalThought.BuildRequest("test-model", 9000, 8000, testEligible, 0, false, "gather berry succeeded; stored in moonbag");
+                Check(storedReqJson.Contains("gathered ripe berry and stored in waist moonbag for later"), "req-json-stored-in-moonbag");
+
+                string appReqJson = StarfallSurvivalThought.BuildRequest("test-model", 1500, 5000, testEligible, 0, false, "approach berry started");
+                Check(appReqJson.Contains("approaching nearby ripe berry bush to forage"), "req-json-approach-started");
+
+                // 2. State & Invariants when gathering and eating immediately on low hunger
+                var s = new Starfall.Food.FoodState
+                {
+                    world = "test-world",
+                    generation = "gen-1",
+                    satiety = 1000,
+                    hydration = 2000,
+                    carriedFruit = 1,
+                    knowsBerry = true,
+                    berryEvidence = "gen-1.observed-fruit.1"
+                };
+                // Immediate eat consumes gathered berry and sets valid meal evidence
+                s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                s.hydration = Mathf.Min(10000, s.hydration + 600);
+                s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                s.knowsMealBenefit = true;
+                s.lastMealEvidence = "gen-1.ate.2";
+                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                Check(s.carriedFruit == 0 && s.satiety == 2500 && s.hydration == 2600, "gather-eat-immediately-applies-stats");
+                Check(Starfall.Food.FoodModel.Valid(s, "test-world", "gen-1"), "gather-eat-immediately-model-valid");
+
+                // 3. Moonbag Storage & Retrieval
+                var bagGo = new GameObject("TestHunterMoonbag");
+                try
+                {
+                    var moonbag = bagGo.AddComponent<HunterMoonbag>();
+                    Check(moonbag.CanStore && !moonbag.CanRetrieve && moonbag.StoredCount == 0, "moonbag-initially-empty");
+                    moonbag.StoreFruit();
+                    Check(moonbag.StoredCount == 1 && moonbag.CanRetrieve, "moonbag-store-fruit-increments");
+                    moonbag.RetrieveFruit();
+                    Check(moonbag.StoredCount == 0 && !moonbag.CanRetrieve, "moonbag-retrieve-fruit-decrements");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(bagGo);
+                }
+            }
+
             return passed;
         }
     }

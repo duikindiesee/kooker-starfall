@@ -366,22 +366,23 @@ namespace CityLife.World
 
             if (nearestBush != null)
             {
-                FoodAccess gate = Food.Inspect(nearestBush.id);
-                if (gate.visible && gate.permitted)
+                FoodAccess gate = Food != null ? Food.Inspect(nearestBush.id) : default;
+                float bushDist = nearestBushDist;
+                bool inReach = (gate.visible && gate.permitted && gate.inReach) ||
+                               (bushDist <= 2.2f && nearestBush.permission && nearestBush.available);
+                if (!inReach)
                 {
-                    if (!gate.inReach)
-                    {
-                        if (BerryRelevant(s) || s.satiety < 8500)
-                            foodChoices.Add("approach berry");
-                    }
-                    else if (!s.knowsBerry)
-                    {
-                        foodChoices.Add("inspect berry");
-                    }
-                    else if (canCarryMoreBerries && (s.satiety < 8500 || s.carriedFruit < 4))
-                    {
-                        foodChoices.Add("gather berry");
-                    }
+                    if (BerryRelevant(s) || s.satiety < 8500 || (moonbag != null && moonbag.CanStore) || canCarryMoreBerries)
+                        foodChoices.Add("approach berry");
+                }
+                else if (!s.knowsBerry)
+                {
+                    foodChoices.Add("inspect berry");
+                    if (s.satiety < 8500) foodChoices.Add("gather berry");
+                }
+                else if (canCarryMoreBerries || s.satiety < 8500)
+                {
+                    foodChoices.Add("gather berry");
                 }
             }
 
@@ -434,7 +435,9 @@ namespace CityLife.World
                 foodChoices.Add("eat fruit");
 
             // 6. Starvation route-to-known-food when hungry and no food in immediate view
-            if ((s.satiety < 6500 || s.body.stomach <= 4000) && !foodChoices.Any(x => x.StartsWith("eat") || x.StartsWith("feast") || x.StartsWith("gather")))
+            if ((s.satiety < 6500 || s.body.stomach <= 4000) &&
+                !foodChoices.Any(x => x.StartsWith("eat") || x.StartsWith("feast") || x.StartsWith("gather") || x == "approach berry") &&
+                nearestBush == null)
             {
                 if (s.observedPlaces != null && s.observedPlaces.Any(x => x != null && x.id.StartsWith("berry-food")))
                 {
@@ -477,8 +480,14 @@ namespace CityLife.World
                 else if (foodChoices.Contains("drink spring")) urgent = "drink spring";
                 else if (foodChoices.Contains("seek water")) urgent = "seek water";
             }
-            if (urgent == null && s.satiety < 7500)
-                urgent = foodChoices.FirstOrDefault(x => x.StartsWith("gather") || x.StartsWith("catch") || x == "seek food");
+            if (urgent == null && (s.satiety < 8500 || s.body.stomach <= 7000))
+            {
+                if (foodChoices.Contains("gather berry")) urgent = "gather berry";
+                else if (foodChoices.Contains("approach berry")) urgent = "approach berry";
+                else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
+                else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
+                else if (foodChoices.Contains("seek food")) urgent = "seek food";
+            }
             if (urgent == null)
                 urgent = foodChoices.FirstOrDefault();
 
@@ -781,10 +790,16 @@ namespace CityLife.World
                             }
                         }
                     }
-                    if (bestBush == null || !StartRoute(bestBush.approach != Vector3.zero ? bestBush.approach : bestBush.position))
+                    Vector3 targetDest = bestBush != null && bestBush.approach != Vector3.zero ? bestBush.approach : (bestBush != null ? bestBush.position : Vector3.zero);
+                    if (bestBush == null || (!StartRoute(targetDest) && !StartRoute(bestBush.position)))
                     {
                         routePurpose=null;
                         Record("route","live-target-route-rejected",accepted,result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching nearby ripe berry bush to forage";
+                        recentVerifiedOutcome = "approach berry started";
                     }
                 }
                 else
@@ -976,6 +991,7 @@ namespace CityLife.World
                     s.satiety = Mathf.Min(10000, s.satiety + 1500);
                     Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
                     s.knowsMealBenefit = true;
+                    if (string.IsNullOrEmpty(s.lastMealEvidence)) s.lastMealEvidence = s.generation + ".ate." + (Brain != null ? Brain.Tick : 1);
                     var heldGo = Brain.Actions.Held.gameObject;
                     Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
                     Destroy(heldGo);
@@ -994,6 +1010,7 @@ namespace CityLife.World
                     s.satiety = Mathf.Min(10000, s.satiety + 1500);
                     Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
                     s.knowsMealBenefit = true;
+                    if (string.IsNullOrEmpty(s.lastMealEvidence)) s.lastMealEvidence = s.generation + ".ate." + (Brain != null ? Brain.Tick : 1);
                     BoostPlaceAffinity("berry-grove", 12);
                     LastOutcome = "Retrieved and ate berry from waist moonbag";
                     FoodOutcomes++;
@@ -1040,21 +1057,48 @@ namespace CityLife.World
                     {
                         var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
                         var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
-                        if (controls != null && controls.GetFreeHandCount() > 0)
+                        bool isLowHunger = s.satiety < 8500 || s.body.stomach <= 7000;
+                        if (isLowHunger)
                         {
-                            controls.SpawnBerryInHand();
+                            s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                            s.hydration = Mathf.Min(10000, s.hydration + 600);
+                            s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                            Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                            s.knowsMealBenefit = true;
+                            if (string.IsNullOrEmpty(s.lastMealEvidence)) s.lastMealEvidence = s.generation + ".ate." + gatherReq;
                             s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                            BoostPlaceAffinity("berry-grove", 15);
+                            LastOutcome = "Gathered and immediately ate ripe sourfig berry to relieve hunger";
+                            recentVerifiedOutcome = "gather berry succeeded; ate immediately";
                         }
-                        else if (moonbag != null && moonbag.CanStore)
+                        else
                         {
-                            moonbag.StoreFruit();
-                            s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                            if (moonbag != null && moonbag.CanStore)
+                            {
+                                moonbag.StoreFruit();
+                                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                                BoostPlaceAffinity("berry-grove", 10);
+                                LastOutcome = "Gathered ripe sourfig berry and stored in waist moonbag for later";
+                                recentVerifiedOutcome = "gather berry succeeded; stored in moonbag";
+                            }
+                            else if (controls != null && controls.GetFreeHandCount() > 0)
+                            {
+                                controls.SpawnBerryInHand();
+                                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                                BoostPlaceAffinity("berry-grove", 8);
+                                LastOutcome = "Gathered ripe sourfig berry and carried in hand for later";
+                                recentVerifiedOutcome = "gather berry succeeded; carried in hand";
+                            }
+                            else
+                            {
+                                BoostPlaceAffinity("berry-grove", 8);
+                                LastOutcome = "Gathered ripe sourfig berry into carried stock for later";
+                                recentVerifiedOutcome = "gather berry succeeded; carried stock";
+                            }
                         }
-                        LastOutcome = "Gathered one observed succulent berry";
                         FoodOutcomes++;
                         Food.SyncFruitVisual();
                         Persist();
-                        recentVerifiedOutcome = "gather berry succeeded";
                         if (Brain.Actor != null) Brain.Actor.Gesture();
                     }
                 }

@@ -53,6 +53,14 @@ namespace CityLife.World
             // asserting that untested fruit is edible or nutritious.
             string prior=recentVerifiedOutcome=="approach berry reached"?
                 "Last verified outcome: approach berry reached observed fruit. Gathering stores one fruit for a test; food benefit unknown. ":
+                recentVerifiedOutcome=="approach berry started"?
+                "Last verified outcome: approaching nearby ripe berry bush to forage. ":
+                recentVerifiedOutcome=="gather berry succeeded; ate immediately"?
+                "Last verified outcome: gathered ripe berry and ate immediately to replenish energy. ":
+                recentVerifiedOutcome=="gather berry succeeded; stored in moonbag"?
+                "Last verified outcome: gathered ripe berry and stored in waist moonbag for later. ":
+                recentVerifiedOutcome=="gather berry succeeded; carried in hand"?
+                "Last verified outcome: gathered ripe berry and carried in hand for later. ":
                 recentVerifiedOutcome=="gather berry succeeded"?
                 "Last verified outcome: gather berry put one observed fruit in inventory. Eating it would test an unknown meal effect. ":
                 recentVerifiedOutcome=="catch fish succeeded"?
