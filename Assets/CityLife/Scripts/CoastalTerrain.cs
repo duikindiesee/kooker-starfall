@@ -26,6 +26,26 @@ namespace CityLife.World
             new Vector2(90,410), new Vector2(25,555), new Vector2(0,690)
         });
 
+        public static bool IsRiverFord(float x, float z)
+        {
+            return Mathf.Abs(z - (-15f)) <= 7f && Mathf.Abs(x) <= 25f;
+        }
+
+        public static float DistanceToFeed(float x, float z) => DistanceToCurve(x, z, Feed);
+        public static float DistanceToOutlet(float x, float z) => DistanceToCurve(x, z, Outlet);
+
+        public static bool IsFreshwaterRiver(float x, float z, float y, float waterLevel)
+        {
+            if (z > 420f) return false; // North of 420m opens into the broad saline sea
+            float groundY = Height(x, z);
+            float depth = waterLevel - groundY;
+            if (depth < 0.02f && (y - waterLevel > 1.4f || y < waterLevel - 2.2f)) return false;
+            float dFeed = DistanceToFeed(x, z);
+            float dOutlet = DistanceToOutlet(x, z);
+            float dCenter = Mathf.Sqrt(x * x + z * z);
+            return dFeed < 36f || dOutlet < 48f || (dCenter < 38f && depth > 0.02f);
+        }
+
         /// <summary>Metre-space surface height; outside this finite patch, returns the nearest edge height.</summary>
         public static float Height(float x, float z)
         {
@@ -43,6 +63,8 @@ namespace CityLife.World
             mesa = Mathf.Max(mesa,Mesa(x,z,410,20,250,310,132,97));
             mesa = Mathf.Max(mesa,Mesa(x,z,-390,350,250,310,124,151));
             mesa = Mathf.Max(mesa,Mesa(x,z,410,430,260,300,112,181));
+            // South Canyon Headwall: towering rear cliffs enclosing the south canyon vista and framing the waterfall
+            mesa = Mathf.Max(mesa, Mesa(x, z, -15f, -480f, 340f, 220f, 128f, 19f));
             ground += mesa;
 
             // Near-ring meander: a west-facing land neck keeps this an outcrop connected
@@ -59,7 +81,17 @@ namespace CityLife.World
             float outletCut = 1f - Smooth(-2f, 18f, DistanceToCurve(x,z,Outlet) - outletWidth);
             float channelCut = Mathf.Max(ringCut, Mathf.Max(feedCut, outletCut));
             float riverBed = -4.5f + Noise(x * .075f + 9, z * .075f) * .4f;
+            riverBed += Smooth(-230f, -390f, z) * 48f; // Elevated hanging gorge plunging over south canyon wall
             riverBed -= Smooth(120f, 700f, z) * 11.5f;
+
+            // Shallow River Ford crossing at z in [-22f, -8f] (centered at z = -15f):
+            // Lifts the channel bed to y = -2.18m (18cm water depth below the -2.0m water plane).
+            // Forms an authentic ankle-deep gravel ford allowing the character to wade
+            // between east and west canyon banks without swimming and without damming or blocking flow.
+            float fordInfluence = 1f - Smooth(3.5f, 8f, Mathf.Abs(z - (-15f)));
+            float fordBed = -2.18f + Noise(x * .12f + 14f, z * .12f) * .04f;
+            riverBed = Mathf.Lerp(riverBed, Mathf.Max(riverBed, fordBed), fordInfluence);
+
             ground = Mathf.Lerp(ground, Mathf.Min(ground, riverBed), channelCut);
 
             // One continuous underwater heightfield extends into the broad genuine sea.

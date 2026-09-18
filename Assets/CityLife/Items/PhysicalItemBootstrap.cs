@@ -1092,7 +1092,6 @@ namespace CityLife.Items
                     ? Brain.gameObject.scene
                     : UnityEngine.SceneManagement.SceneManager.GetActiveScene();
 
-                CreateStarterPhysicalItem("canyon-basket-01", "container-basket", new Vector3(0.42f, 0.15f, 0.35f), targetScene);
                 CreateStarterPhysicalItem("canyon-cobble-01", "stone-river-cobble", new Vector3(1.2f, 0.10f, 0.8f), targetScene);
                 CreateStarterPhysicalItem("canyon-fieldstone-01", "stone-fieldstone", new Vector3(-1.1f, 0.12f, 0.9f), targetScene);
                 CreateStarterPhysicalItem("canyon-tinder-01", "fire-tinder-bundle", new Vector3(0.8f, 0.12f, 1.4f), targetScene);

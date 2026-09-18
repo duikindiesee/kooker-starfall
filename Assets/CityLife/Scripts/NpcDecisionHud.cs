@@ -164,13 +164,16 @@ namespace CityLife.World
                 }
                 else
                 {
+                    int staminaPct = Brain.Actor != null ? Mathf.Clamp(Mathf.RoundToInt(Brain.Actor.Stamina), 0, 100) : 100;
+                    var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+                    int mbCount = moonbag != null ? moonbag.StoredCount : 0;
                     Summary.text = mode + " | Tick " + Brain.Tick +
                         "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
-                        $"\nHealth: {healthPct}%  |  Strength: {strengthPct}%" +
+                        $"\nHealth: {healthPct}%  |  Stamina: {staminaPct}%  |  Strength: {strengthPct}%" +
                         $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%" + airAlert +
-                        $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Fruit: {food.carriedFruit}";
+                        $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Moonbag: {mbCount}/2";
                 }
-                footer.text = "M map · P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nSurvival vitals active";
+                footer.text = "M map · Shift sprint · X holster club · B moonbag\nE pick/fish/drink · G drop · H eat from hand · Tab possess";
             }
             var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
             foreach (var x in Brain.Perception.Current)

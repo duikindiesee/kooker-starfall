@@ -12,6 +12,9 @@ namespace CityLife.World
         public CharacterPreviewRoamer Roamer;
         public float WalkSpeed = 1.65f;
         public float SwimSpeed = 2.0f;
+        public bool IsSprinting;
+        public float Stamina = 100f;
+        public float MaxStamina = 100f;
         public bool TestControl;
         public bool ExternalDrive;
         public bool DeadPose;
@@ -108,7 +111,17 @@ namespace CityLife.World
             IsWading = WaterDepth > 0.05f && !IsSwimming && transform.position.y <= waterSurface + 0.15f;
             IsSubmerged = transform.position.y + 1.65f < waterSurface;
 
-            float currentSpeed = IsSwimming ? SwimSpeed : WalkSpeed;
+            bool sprinting = IsSprinting && Stamina > 0f && direction.sqrMagnitude > 0.01f && !IsSwimming;
+            float currentSpeed = IsSwimming ? SwimSpeed : (sprinting ? WalkSpeed * 1.85f : WalkSpeed);
+            if (sprinting)
+            {
+                Stamina = Mathf.Max(0f, Stamina - 22f * dt);
+                if (Stamina <= 0f) IsSprinting = false;
+            }
+            else
+            {
+                Stamina = Mathf.Min(MaxStamina, Stamina + 18f * dt);
+            }
 
             if (IsSwimming)
             {
@@ -121,6 +134,17 @@ namespace CityLife.World
             {
                 if (Capsule.isGrounded && fallingSpeed < 0) fallingSpeed = -2;
                 fallingSpeed = Mathf.Max(-25, fallingSpeed - 18 * dt);
+            }
+
+            // Edge drop safety: dampen movement toward steep vertical drops to prevent stepping into thin air
+            if (direction.sqrMagnitude > 0.01f && !IsSwimming)
+            {
+                Vector3 probe = transform.position + direction * 0.55f;
+                float probeH = CoastalTerrain.Height(probe.x, probe.z);
+                if (transform.position.y - probeH > 1.8f && WaterDepth < 0.2f)
+                {
+                    direction *= 0.35f;
+                }
             }
 
             LastCollision = Capsule.Move((direction * currentSpeed + Vector3.up * fallingSpeed) * dt);
@@ -136,6 +160,50 @@ namespace CityLife.World
                 if (DeadPose) Animate("Crouch");
                 else if (IsSwimming) Animate(ActualSpeed > 0.12f ? "Swim" : "SwimIdle");
                 else Animate(ActualSpeed > 0.12f ? "Walk" : "Idle");
+                if (Animator != null)
+                {
+                    Animator.speed = (sprinting && ActualSpeed > 0.12f) ? 1.55f : 1.0f;
+                }
+            }
+
+            // Dynamic Terrain Slope Normal Alignment & Ground Contact:
+            // Eliminates "walking in the air" on steep banks by tilting the visual model
+            // smoothly to match the ground surface normal and adjusting vertical root offset
+            // so both feet remain solidly planted on slopes.
+            if (Animator != null && Animator.transform != transform)
+            {
+                if (IsSwimming || !Capsule.isGrounded)
+                {
+                    Animator.transform.localRotation = Quaternion.Slerp(Animator.transform.localRotation, Quaternion.Euler(0, 180f, 0), 10f * dt);
+                    Animator.transform.localPosition = Vector3.Lerp(Animator.transform.localPosition, new Vector3(0, 0.12f, 0), 10f * dt);
+                }
+                else
+                {
+                    Vector3 pos = transform.position;
+                    Vector3 fwd = transform.forward;
+                    Vector3 rgt = transform.right;
+
+                    float hF = CoastalTerrain.Height(pos.x + fwd.x * 0.40f, pos.z + fwd.z * 0.40f);
+                    float hB = CoastalTerrain.Height(pos.x - fwd.x * 0.40f, pos.z - fwd.z * 0.40f);
+                    float hR = CoastalTerrain.Height(pos.x + rgt.x * 0.30f, pos.z + rgt.z * 0.30f);
+                    float hL = CoastalTerrain.Height(pos.x - rgt.x * 0.30f, pos.z - rgt.z * 0.30f);
+
+                    Vector3 tanZ = (fwd * 0.80f + Vector3.up * (hF - hB)).normalized;
+                    Vector3 tanX = (rgt * 0.60f + Vector3.up * (hR - hL)).normalized;
+                    Vector3 groundNormal = Vector3.Cross(tanZ, tanX).normalized;
+                    if (groundNormal.y < 0) groundNormal = -groundNormal;
+
+                    Vector3 clampedNormal = Vector3.RotateTowards(Vector3.up, groundNormal, 32f * Mathf.Deg2Rad, 0f);
+                    Vector3 localNormal = transform.InverseTransformDirection(clampedNormal);
+                    Quaternion slopeTilt = Quaternion.FromToRotation(Vector3.up, localNormal);
+                    Quaternion targetModelRot = slopeTilt * Quaternion.Euler(0, 180f, 0);
+
+                    Animator.transform.localRotation = Quaternion.Slerp(Animator.transform.localRotation, targetModelRot, 14f * dt);
+
+                    float slopeDrop = Mathf.Min(0f, Mathf.Min(hF, hB) - pos.y);
+                    float targetY = Mathf.Clamp(0.12f + slopeDrop * 0.45f, -0.05f, 0.12f);
+                    Animator.transform.localPosition = Vector3.Lerp(Animator.transform.localPosition, new Vector3(0, targetY, 0), 10f * dt);
+                }
             }
 
             // Absolute terrain collision safety clamp:

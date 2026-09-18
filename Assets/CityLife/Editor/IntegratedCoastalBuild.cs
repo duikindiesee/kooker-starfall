@@ -91,10 +91,26 @@ namespace CityLife.World.Editor
             // Dual-Hand Carry & Leather Bag Expansion verification
             var dualHandChecks = CityLife.Items.DualHandCarryChecks.Run();
 
+            // Marine Protein Crab verification
+            if (!CoastalCrabDistribution.VerifyCrabEcology(out string crabReceipt))
+                throw new InvalidOperationException($"Protein crab ecology verification failed: {crabReceipt}");
+
+            // Tidal Driftwood Inflow verification
+            if (!DriftwoodTideDeposit.VerifyDriftwoodEcology(out string driftReceipt))
+                throw new InvalidOperationException($"Tidal driftwood ecology verification failed: {driftReceipt}");
+
+            // Canyon Micro-Weather verification
+            if (!CanyonMicroWeather.VerifyMicroWeather(out string weatherReceipt))
+                throw new InvalidOperationException($"Canyon micro-weather verification failed: {weatherReceipt}");
+
+            // Freshwater River Fish Ecology verification
+            if (!RiverFishSchool.VerifyFishEcology(out string fishReceipt))
+                throw new InvalidOperationException($"River fish ecology verification failed: {fishReceipt}");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 10;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, and crafting loops with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 14;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, and waist moonbag with zero errors.");
 
             KokerboomRender.BuildCoastalPlayableSlice();
         }
@@ -262,6 +278,12 @@ namespace CityLife.World.Editor
             deathDiagnostic.Brain=brain;deathDiagnostic.Survival=survival;deathDiagnostic.Food=food;deathDiagnostic.View=camera;
             var gameCapture=camera.gameObject.AddComponent<StarfallSurvivalGameCapture>();
             gameCapture.Brain=brain;gameCapture.View=camera;
+
+            // Hunter Waist Moonbag: side belt pouch holds up to 2 fruits for long journeys
+            var moonbag = actorObject.AddComponent<HunterMoonbag>();
+            var sourfigFruitMat = Material("Sourfig Fruit Material", new Color(0.72f, 0.18f, 0.52f));
+            var hipsBone = actor.Animator != null ? actor.Animator.GetBoneTransform(HumanBodyBones.Hips) : null;
+            if (hipsBone != null) moonbag.AttachVisuals(hipsBone, sourfigFruitMat);
 
             // Physical item foundation integration: bind authoritative ItemModel, PhysicalAuthority, and physical demonstration item to the canyon inhabitant
             var physicalBootstrap = actorObject.AddComponent<CityLife.Items.PhysicalItemBootstrap>();
@@ -525,6 +547,74 @@ namespace CityLife.World.Editor
             driftCol.sharedMesh = driftMesh;
             driftwoodObj.layer = 8;
 
+            // Tidal Protein Crabs along coastal shallows & mudflats
+            var crabObjects = CoastalCrabDistribution.SpawnCrabs(ground.transform);
+            var crabInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < crabObjects.Count; i++)
+            {
+                var crabObj = crabObjects[i];
+                string crabId = $"coastal-crab-{i + 1:D2}";
+                var crabApproach = new GameObject(crabId + " approach");
+                crabApproach.transform.SetParent(crabObj.transform, false);
+                crabApproach.transform.localPosition = Vector3.zero;
+
+                var crabNi = crabObj.AddComponent<NpcInteractable>();
+                crabNi.StableId = crabId;
+                crabNi.WorldId = brain.InstanceWorldId;
+                crabNi.Kind = NpcObjectKind.Item;
+                crabNi.Permission = true;
+                crabNi.Approach = crabApproach.transform;
+
+                var crabPhys = crabObj.AddComponent<PhysicalItem>();
+                crabPhys.itemId = crabId;
+                crabPhys.itemTypeId = "food-protein-crab";
+                crabPhys.massKg = 0.45f;
+                crabPhys.dimensions = new PhysicalDimensions(0.22f, 0.16f, 0.09f);
+                crabPhys.ConfigureComponents();
+
+                crabInteractables.Add(crabNi);
+            }
+            brain.Registry = brain.Registry.Concat(crabInteractables).ToArray();
+
+            // Tidal Inflowing Driftwood Logs along delta sandbars
+            var driftObjects = DriftwoodTideDeposit.SpawnDriftwood(ground.transform);
+            var driftInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < driftObjects.Count; i++)
+            {
+                var driftGo = driftObjects[i];
+                string driftId = $"tidal-driftwood-{i + 1:D2}";
+                var driftApproach = new GameObject(driftId + " approach");
+                driftApproach.transform.SetParent(driftGo.transform, false);
+                driftApproach.transform.localPosition = Vector3.zero;
+
+                var driftNi = driftGo.AddComponent<NpcInteractable>();
+                driftNi.StableId = driftId;
+                driftNi.WorldId = brain.InstanceWorldId;
+                driftNi.Kind = NpcObjectKind.Item;
+                driftNi.Permission = true;
+                driftNi.Approach = driftApproach.transform;
+
+                var driftPhys = driftGo.AddComponent<PhysicalItem>();
+                driftPhys.itemId = driftId;
+                driftPhys.itemTypeId = "wood-driftwood-log";
+                driftPhys.massKg = 4.2f;
+                driftPhys.dimensions = new PhysicalDimensions(0.95f, 0.22f, 0.22f);
+                driftPhys.ConfigureComponents();
+
+                driftInteractables.Add(driftNi);
+            }
+            brain.Registry = brain.Registry.Concat(driftInteractables).ToArray();
+
+            // Freshwater River Fish Schools in the river channel
+            var fishObjects = RiverFishSchool.SpawnFishSchool(ground.transform, brain.InstanceWorldId, out var fishSchoolComp);
+            var fishInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < fishSchoolComp.ActiveFish.Count; i++)
+            {
+                var f = fishSchoolComp.ActiveFish[i];
+                if (f.interactable != null) fishInteractables.Add(f.interactable);
+            }
+            brain.Registry = brain.Registry.Concat(fishInteractables).ToArray();
+
             // Secondary Cave Hearth Station at Refuge Cave entrance
             var caveHearthObj = new GameObject("Refuge Cave Hearth Station");
             caveHearthObj.transform.SetParent(ground.transform, false);
@@ -535,6 +625,9 @@ namespace CityLife.World.Editor
             caveHearthComp.Bootstrap = physicalBootstrap;
             caveHearthComp.ConstructionSite = caveHearthPos;
             caveHearthComp.CurrentTarget = StoneStructureKind.HearthRing;
+
+            // South Canyon Waterfall Cascade and Foaming Plunge Pool
+            CreateWaterfallCascade(ground.transform, folder);
 
             // Spread-out Kokerboom tree distribution across canyon ridges, terraces, and riverbanks
             var treeGroup = new GameObject("Canyon Kokerboom trees");
@@ -622,6 +715,135 @@ namespace CityLife.World.Editor
         {
             public string worldId = NpcTerrainNavigation.RegionId, terrain = CoastalTerrain.ContentRevision,
                 scope = "Finite 1200x1600m Fish River Canyon inspired candidate with a traversable turquoise river-to-sea corridor, terrain-fitted authored First Refuge, visible berry bush, environment, inhabitant, food model and local thought protocol. Boats and unified save/load remain unimplemented.";
+        }
+
+        private static GameObject CreateWaterfallCascade(Transform parent, string folder)
+        {
+            var root = new GameObject("South Canyon Waterfall Cascade");
+            root.transform.SetParent(parent, false);
+
+            Shader waterShader = Shader.Find("CityLife/CoastalWater");
+            if (waterShader == null || !waterShader.isSupported)
+                waterShader = Shader.Find("Universal Render Pipeline/Unlit");
+
+            var cascadeMat = new Material(waterShader) { name = "Waterfall cascade procedural" };
+            if (waterShader.name == "CityLife/CoastalWater")
+            {
+                cascadeMat.SetColor("_ShallowColor", new Color(0.15f, 0.92f, 0.95f, 0.9f));
+                cascadeMat.SetColor("_RiverColor", new Color(0.08f, 0.78f, 0.88f, 0.92f));
+                cascadeMat.SetColor("_DeepColor", new Color(0.04f, 0.45f, 0.65f, 0.95f));
+                cascadeMat.SetColor("_FoamColor", new Color(0.92f, 0.98f, 1.0f, 0.98f));
+                cascadeMat.SetFloat("_WaveStrength", 1.0f);
+            }
+            else
+            {
+                cascadeMat.color = new Color(0.2f, 0.85f, 0.95f, 0.85f);
+            }
+            if (!string.IsNullOrEmpty(folder))
+            {
+                AssetDatabase.CreateAsset(cascadeMat, folder + "/WaterfallCascade.mat");
+            }
+
+            // 1. Cascading water curtain mesh (flowing from upper lip at z=-252 down into plunge pool at z=-238)
+            int segsX = 16, segsY = 24;
+            var verts = new Vector3[(segsX + 1) * (segsY + 1)];
+            var norms = new Vector3[verts.Length];
+            var uvs = new Vector2[verts.Length];
+            var tris = new int[segsX * segsY * 6];
+
+            float xMin = 16f, xMax = 34f;
+            float topY = 24f, botY = -2.3f;
+            float topZ = -254f, botZ = -238f;
+
+            for (int y = 0; y <= segsY; y++)
+            {
+                float ty = y / (float)segsY;
+                float curY = Mathf.Lerp(topY, botY, ty);
+                float curZ = Mathf.Lerp(topZ, botZ, Mathf.Pow(ty, 0.65f));
+
+                for (int x = 0; x <= segsX; x++)
+                {
+                    float tx = x / (float)segsX;
+                    float curX = Mathf.Lerp(xMin, xMax, tx);
+                    float ripple = Mathf.Sin(tx * 12f + ty * 18f) * 0.35f;
+                    int idx = y * (segsX + 1) + x;
+                    verts[idx] = new Vector3(curX, curY, curZ + ripple);
+                    norms[idx] = new Vector3(0f, 0.2f, 1f).normalized;
+                    uvs[idx] = new Vector2(tx, ty * 4f);
+                }
+            }
+
+            int t = 0;
+            for (int y = 0; y < segsY; y++)
+            {
+                for (int x = 0; x < segsX; x++)
+                {
+                    int a = y * (segsX + 1) + x;
+                    int b = a + 1;
+                    int c = a + (segsX + 1);
+                    int d = c + 1;
+
+                    tris[t++] = a; tris[t++] = c; tris[t++] = b;
+                    tris[t++] = b; tris[t++] = c; tris[t++] = d;
+                }
+            }
+
+            var curtainMesh = new Mesh { name = "Waterfall curtain procedural" };
+            curtainMesh.vertices = verts;
+            curtainMesh.normals = norms;
+            curtainMesh.uv = uvs;
+            curtainMesh.triangles = tris;
+            curtainMesh.RecalculateBounds();
+
+            var curtainObj = new GameObject("Waterfall Curtain");
+            curtainObj.transform.SetParent(root.transform, false);
+            curtainObj.AddComponent<MeshFilter>().sharedMesh = curtainMesh;
+            curtainObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+
+            // 2. Foaming Plunge Pool Disc
+            int poolSegs = 24;
+            var pVerts = new Vector3[poolSegs + 2];
+            var pNorms = new Vector3[poolSegs + 2];
+            var pUvs = new Vector2[poolSegs + 2];
+            var pTris = new int[poolSegs * 3];
+
+            Vector3 poolCenter = new Vector3(25f, -2.2f, -238f);
+            float radiusX = 14f, radiusZ = 10f;
+            pVerts[0] = poolCenter;
+            pNorms[0] = Vector3.up;
+            pUvs[0] = new Vector2(0.5f, 0.5f);
+
+            for (int i = 0; i <= poolSegs; i++)
+            {
+                float angle = (i % poolSegs) * (Mathf.PI * 2f / poolSegs);
+                float px = poolCenter.x + Mathf.Cos(angle) * radiusX;
+                float pz = poolCenter.z + Mathf.Sin(angle) * radiusZ;
+                pVerts[i + 1] = new Vector3(px, poolCenter.y, pz);
+                pNorms[i + 1] = Vector3.up;
+                pUvs[i + 1] = new Vector2(0.5f + Mathf.Cos(angle) * 0.5f, 0.5f + Mathf.Sin(angle) * 0.5f);
+            }
+
+            int pt = 0;
+            for (int i = 0; i < poolSegs; i++)
+            {
+                pTris[pt++] = 0;
+                pTris[pt++] = i + 1;
+                pTris[pt++] = i + 2;
+            }
+
+            var poolMesh = new Mesh { name = "Waterfall plunge pool procedural" };
+            poolMesh.vertices = pVerts;
+            poolMesh.normals = pNorms;
+            poolMesh.uv = pUvs;
+            poolMesh.triangles = pTris;
+            poolMesh.RecalculateBounds();
+
+            var poolObj = new GameObject("Waterfall Plunge Pool");
+            poolObj.transform.SetParent(root.transform, false);
+            poolObj.AddComponent<MeshFilter>().sharedMesh = poolMesh;
+            poolObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+
+            return root;
         }
     }
 }

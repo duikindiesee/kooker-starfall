@@ -61,6 +61,7 @@ namespace CityLife.World
    for(int i=0;i<5;i++){var leaf=GripBones[i*3+2].GetChild(0);GripLeaves[i]=leaf;LeafRotations[i]=leaf.localRotation;LeafPositions[i]=leaf.localPosition;}
   }
   public bool Stowed { get; private set; }
+  public void ToggleHolster() => SetStowed(!Stowed);
   public void SetStowed(bool stowed)
   {
       Stowed = stowed;

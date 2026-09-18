@@ -35,7 +35,7 @@ namespace CityLife.World
                 out RaycastHit hit, 300, 1 << 10, QueryTriggerInteraction.Ignore)) return false;
             height = hit.point.y; normal = hit.normal; return true;
         }
-        public float WaterLevel(Vector3 p) => IslandField != null ? 0f : CoastalWater.Level;
+        public float WaterLevel(Vector3 p) => IslandField != null ? 0f : CoastalWater.CurrentLevel;
         public float WaterDepth(Vector3 p) => TryGround(p, out float h, out _) ? Mathf.Max(0, WaterLevel(p) - h) : 0;
         public Vector3 Current(Vector3 p) => Vector3.zero;
         public bool Walkable(Vector3 p, out Vector3 floor)

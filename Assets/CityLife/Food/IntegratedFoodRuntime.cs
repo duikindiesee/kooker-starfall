@@ -44,19 +44,21 @@ namespace Starfall.Food
             Berry = BerryBush(BerryPosition, worldRoot, worldId, "berry-food");
             Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId,out SpringWaterRenderer);
 
-            // Distributed botanical sourfig berry patches across the canyon
+            // Distributed botanical sourfig berry patches across dry canyon terraces and banks
             var distributedSites = new[]
             {
-                new Vector3(26f, CoastalTerrain.Height(26f, -62f), -62f),    // Riverbank moist soil near driftwood
-                new Vector3(-15f, CoastalTerrain.Height(-15f, -10f), -10f),   // Across river crossing trail
-                new Vector3(-65f, CoastalTerrain.Height(-65f, 45f), 45f),     // West bank canyon floor
-                new Vector3(-152f, CoastalTerrain.Height(-152f, 110f), 110f), // Refuge Cave shelf outside entrance
+                new Vector3(142f, CoastalTerrain.Height(142f, -65f), -65f),   // East terrace rim overlook
                 new Vector3(122f, CoastalTerrain.Height(122f, -54f), -54f),   // Freshwater spring seep oasis
                 new Vector3(135f, CoastalTerrain.Height(135f, -95f), -95f),   // South canyon terrace trail
-                new Vector3(10f, CoastalTerrain.Height(10f, 60f), 60f)        // North river meander margin
+                new Vector3(-152f, CoastalTerrain.Height(-152f, 110f), 110f), // Refuge Cave shelf outside entrance
+                new Vector3(-170f, CoastalTerrain.Height(-170f, 95f), 95f),   // West cave bench overlook
+                new Vector3(65f, CoastalTerrain.Height(65f, -35f), -35f),     // Ford East bank dry rise
+                new Vector3(-65f, CoastalTerrain.Height(-65f, -35f), -35f)    // Ford West bank dry rise
             };
             for (int i = 0; i < distributedSites.Length; i++)
             {
+                if (distributedSites[i].y <= CoastalWater.Level + 0.8f)
+                    throw new System.InvalidOperationException($"Berry bush {i} at ({distributedSites[i].x}, {distributedSites[i].z}) is underwater (y={distributedSites[i].y:F2})! Must be placed on dry ground.");
                 var bush = BerryBush(distributedSites[i], worldRoot, worldId, "berry-food-" + (i + 2));
                 AdditionalBerryBushes.Add(bush);
             }

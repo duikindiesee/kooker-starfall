@@ -433,7 +433,10 @@ namespace CityLife.World
 
                 if (playerChevronRt != null)
                 {
-                    playerChevronRt.anchoredPosition = new Vector2(uv.x * mapSize.x, (uv.y - 1f) * mapSize.y);
+                    float margin = 14f;
+                    float cx = Mathf.Clamp(uv.x * mapSize.x, margin, mapSize.x - margin);
+                    float cy = Mathf.Clamp((uv.y - 1f) * mapSize.y, -mapSize.y + margin, -margin);
+                    playerChevronRt.anchoredPosition = new Vector2(cx, cy);
                     float yaw = 0f;
                     if (Brain != null) yaw = Brain.transform.eulerAngles.y;
                     else if (View != null) yaw = View.transform.eulerAngles.y;
@@ -442,7 +445,8 @@ namespace CityLife.World
                     if (gpsLabel != null)
                     {
                         string region = GetRegionName(actorPos);
-                        gpsLabel.text = $"GRID: [{actorPos.x:+0.0;-0.0;0.0}, {actorPos.z:+0.0;-0.0;0.0}] · ALT: {actorPos.y:0.0}m · HDG: {Mathf.Repeat(yaw, 360f):0}°\nREGION: {region}  ·  FOG: {(ViewModel.ExploredCellCount > 0 ? "Revealing" : "Shrouded")}";
+                        string weatherLine = CanyonMicroWeather.GetHudWeatherLine(actorPos);
+                        gpsLabel.text = $"GRID: [{actorPos.x:+0.0;-0.0;0.0}, {actorPos.z:+0.0;-0.0;0.0}] · ALT: {actorPos.y:0.0}m · HDG: {Mathf.Repeat(yaw, 360f):0}°\nREGION: {region}  ·  FOG: {(ViewModel.ExploredCellCount > 0 ? "Revealing" : "Shrouded")}\n{weatherLine}";
                     }
                 }
 
@@ -598,7 +602,7 @@ namespace CityLife.World
                 if (gpsLabel != null)
                 {
                     gpsLabel.rectTransform.anchoredPosition = new Vector2(0f, -mapDim - 4f);
-                    gpsLabel.rectTransform.sizeDelta = new Vector2(usableW, 46f);
+                    gpsLabel.rectTransform.sizeDelta = new Vector2(usableW, 64f);
                     gpsLabel.gameObject.SetActive(showVisualMap);
                 }
 
@@ -851,7 +855,10 @@ namespace CityLife.World
                 (new Vector3(121f, 0, -58f), "💧 Spring"),
                 (new Vector3(126f, 0, -80f), "🍒 Berries"),
                 (new Vector3(10f, 0, -25f), "🪨 Pebbles"),
-                (new Vector3(120f, 0, -80f), "🔥 Hearth")
+                (new Vector3(120f, 0, -80f), "🔥 Hearth"),
+                (new Vector3(0f, 0, 95f), "🦀 Crabs"),
+                (new Vector3(5f, 0, 125f), "🪵 Driftwood"),
+                (new Vector3(25f, 0, -245f), "🌊 Waterfall")
             };
             foreach (var (wpos, name) in landmarks)
             {
@@ -886,7 +893,7 @@ namespace CityLife.World
             chevTxt.alignment = TextAnchor.MiddleCenter;
             chevTxt.text = "▲";
 
-            gpsLabel = MakeLabel(tab0Container, "GpsBanner", new Vector2(0, -260), new Vector2(336, 46), 14, new Color(0.85f, 0.88f, 0.92f), FontStyle.Normal, TextAnchor.MiddleLeft);
+            gpsLabel = MakeLabel(tab0Container, "GpsBanner", new Vector2(0, -260), new Vector2(336, 64), 14, new Color(0.85f, 0.88f, 0.92f), FontStyle.Normal, TextAnchor.MiddleLeft);
             gpsLabel.text = "TACTICAL GPS INITIALIZING...";
 
             gridLabel = MakeLabel(tab0Container, "AsciiGrid", new Vector2(0, 0), new Vector2(336, 88), 16, new Color(.95f, .90f, .72f));

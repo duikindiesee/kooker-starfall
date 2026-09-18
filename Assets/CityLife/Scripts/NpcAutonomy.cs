@@ -233,7 +233,8 @@ namespace CityLife.World
             { Actor.Step(Vector3.zero, StepSeconds); return; }
             if (Possessed)
             {
-                Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds);
+                float speed = (Actor != null && Actor.IsSprinting) ? Actor.WalkSpeed * 1.85f : Actor.WalkSpeed;
+                Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, speed * StepSeconds), StepSeconds);
                 if (Survival != null && Survival.Enabled)
                 {
                     Survival.RememberCurrentWorld();
@@ -243,8 +244,8 @@ namespace CityLife.World
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
             bool hasAuthoredLegacyItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item && x.GetComponent<CityLife.Items.PhysicalItem>() == null);
             bool survivalPriority = Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
-                (Survival.Food.Model.State.satiety < 5000 && Actions.Held == null) ||
-                (Survival.Food.Model.State.hydration < 5000 && Actions.Held == null) ||
+                (Survival.Food.Model.State.satiety < 7000 && Actions.Held == null) ||
+                (Survival.Food.Model.State.hydration < 7000 && Actions.Held == null) ||
                 // A scoped continuation earned in a prior real delivery cycle
                 // resumes survival without inventing delivery state in this
                 // reconstructed world. Never override a currently held item.

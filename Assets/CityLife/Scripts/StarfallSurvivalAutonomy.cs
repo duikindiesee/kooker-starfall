@@ -29,6 +29,14 @@ namespace CityLife.World
         public int ExploredMetres { get; private set; }
         public string LastSafeGround { get; private set; }="";
         public float LastSafeGroundY { get; private set; }
+        private readonly Dictionary<string, int> cherishedAffinities = new Dictionary<string, int>(StringComparer.Ordinal);
+        public IReadOnlyDictionary<string, int> CherishedPlaceAffinities => cherishedAffinities;
+        public void BoostPlaceAffinity(string placeKey, int amount)
+        {
+            if (string.IsNullOrEmpty(placeKey)) return;
+            cherishedAffinities.TryGetValue(placeKey, out int current);
+            cherishedAffinities[placeKey] = Mathf.Clamp(current + amount, 0, 100);
+        }
         private string endpoint,model,evidenceDirectory,savePath;
         private Task<StarfallSurvivalThought.Result> pending;
         private CancellationTokenSource cancellation;
@@ -332,13 +340,15 @@ namespace CityLife.World
             }
             if(s.carriedFruit>0&&s.knowsBerry&&s.body.stomach<=8800&&
                 (s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
+            if(s.hydration<8500&&CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel))
+                foodChoices.Add("drink river");
             // Exact-payload probes proved four exploratory options 8/8
             // length/empty, and the three-option near-berry runtime stalled
             // repeatedly. Two genuinely eligible options generated a final
             // live action in 5/5 separate warm requests. Rotate the offered
             // menu over time; this is capacity selection, not an action taken
             // on the model's behalf or hidden resource knowledge.
-            string urgent=s.hydration<6500?foodChoices.FirstOrDefault(x=>x.EndsWith("spring")):null;
+            string urgent=s.hydration<6500?(foodChoices.FirstOrDefault(x=>x.EndsWith("spring"))??foodChoices.FirstOrDefault(x=>x=="drink river")):null;
             if(urgent==null&&s.carriedFruit>0&&s.satiety<8500&&foodChoices.Contains("eat fruit"))urgent="eat fruit";
             if(urgent==null)urgent=foodChoices.FirstOrDefault();
             var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
@@ -528,6 +538,17 @@ namespace CityLife.World
                 if(!Observed(target,out var observation)||!StartRoute(observation.approach))
                 {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
             }
+            else if (accepted == "drink river")
+            {
+                var s = Food.Model.State;
+                s.hydration = Mathf.Min(10000, s.hydration + 2500);
+                Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1800);
+                BoostPlaceAffinity("freshwater-river", 15);
+                LastOutcome = "Drank fresh river water +2500 water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                FoodOutcomes++;
+                Persist();
+                recentVerifiedOutcome = "drink river succeeded";
+            }
             else
             {
                 FoodAction kind=accepted.StartsWith("inspect")?FoodAction.Inspect:
@@ -536,9 +557,21 @@ namespace CityLife.World
                 if(!AllocateFoodRequest(out int foodRequest))return;
                 var s=Food.Model.State;FoodReceipt receipt=Food.Model.Execute(s.world,s.generation,foodRequest,kind,target,Food);
                 Record("food",receipt.code,accepted,result,receipt);
-                LastOutcome=receipt.success&&kind==FoodAction.Eat?"Meal +"+receipt.foodDelta+" energy / +"+receipt.waterDelta+" water":
-                    receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
-                    receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
+                if (receipt.success && kind == FoodAction.Eat)
+                {
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Meal +" + receipt.foodDelta + " energy / +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                }
+                else if (receipt.success && kind == FoodAction.Drink)
+                {
+                    BoostPlaceAffinity("freshwater-spring", 15);
+                    LastOutcome = "Drink +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                }
+                else
+                {
+                    LastOutcome=receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
+                        receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
+                }
                 if(receipt.success){FoodOutcomes++;Food.SyncFruitVisual();Persist();}
                 if(receipt.success)recentVerifiedOutcome=accepted+" succeeded";
             }

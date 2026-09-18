@@ -106,13 +106,15 @@ namespace Starfall.Food
                     if(s.carriedFruit<1)return End("no-food");
                     if(s.body.stomach>8800)return End("comfortably-full");
                     s.body.stomach+=1200;s.body.protein=Math.Min(10000,s.body.protein+20);s.knowsMealBenefit=true;
+                    FoodPhysiology.ApplyDriveReduction(s.body,1500);
                     s.carriedFruit--;s.satiety=Math.Min(10000,s.satiety+1200);s.hydration=Math.Min(10000,s.hydration+400);s.lastMealEvidence=s.generation+".ate."+request;if(s.seeds<4)s.seeds++;code="ate-ripe-berry-and-kept-visible-seed";break;
                 case FoodAction.Drink:
                     if(target=="sea"||!gate.verifiedFreshwater)return End("unsafe-water");
                     if(target!="spring")return End("wrong-target");
                     if(!s.knowsSpring)return End("unverified-source");
                     if(s.freshwaterMl<250)return End("source-empty");
-                    s.freshwaterMl-=250;s.hydration=Math.Min(10000,s.hydration+2000);code="drank-250ml-freshwater";break;
+                    s.freshwaterMl-=250;s.hydration=Math.Min(10000,s.hydration+2000);
+                    FoodPhysiology.ApplyDriveReduction(s.body,1800);code="drank-250ml-freshwater";break;
                 case FoodAction.Plant:
                     if(target!="bed")return End("wrong-target");
                     if(!s.knowsPlanting)return End("unknown-cultivation");

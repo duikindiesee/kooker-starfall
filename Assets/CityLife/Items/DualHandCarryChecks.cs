@@ -392,6 +392,161 @@ namespace CityLife.Items
                 }
             }
 
+            // -------------------------------------------------------------
+            // 6. Marine Protein Crab & Tidal Driftwood Verification
+            // -------------------------------------------------------------
+            {
+                var catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+                Check(catalog.TryGet("food-protein-crab", out var crabDef), "catalog-contains-protein-crab");
+                Check(Mathf.Approximately(crabDef.massKg, 0.45f), "protein-crab-mass-matches-0.45kg");
+                Check(!crabDef.isContainer, "protein-crab-is-not-container");
+
+                Check(catalog.TryGet("wood-driftwood-log", out var driftDef), "catalog-contains-driftwood-log");
+                Check(Mathf.Approximately(driftDef.massKg, 4.2f), "driftwood-log-mass-matches-4.2kg");
+                Check(!driftDef.isContainer, "driftwood-log-is-not-container");
+
+                // Verify procedural meshes and ecology definitions
+                Check(CoastalCrabDistribution.VerifyCrabEcology(out _), "crab-ecology-geometry-verified");
+                Check(DriftwoodTideDeposit.VerifyDriftwoodEcology(out _), "driftwood-ecology-geometry-verified");
+            }
+
+            // -------------------------------------------------------------
+            // 7. Coastal Tide & Canyon Micro-Weather Verification
+            // -------------------------------------------------------------
+            {
+                // Tide mathematical properties
+                float t0 = CoastalTide.EvaluateTide(0f);
+                Check(Mathf.Abs(t0) < 0.001f, "tide-evaluates-to-zero-at-time-zero");
+
+                float tHigh = CoastalTide.EvaluateTide(60f); // 60s is 1/4 of 240s cycle
+                Check(tHigh >= CoastalTide.AmplitudeMetres - 0.01f, "tide-evaluates-to-peak-high-at-quarter-cycle");
+                Check(CoastalTide.IsHighTide(60f), "quarter-cycle-correctly-identified-as-high-tide");
+
+                float tLow = CoastalTide.EvaluateTide(180f); // 180s is 3/4 of 240s cycle
+                Check(tLow <= -CoastalTide.AmplitudeMetres + 0.01f, "tide-evaluates-to-slack-low-at-three-quarter-cycle");
+                Check(CoastalTide.IsLowTide(180f), "three-quarter-cycle-correctly-identified-as-low-tide");
+
+                // Micro-Weather verification
+                Check(CanyonMicroWeather.VerifyMicroWeather(out _), "canyon-micro-weathers-verified");
+
+                var cavernRep = CanyonMicroWeather.Sample(new Vector3(-140f, 6f, 90f));
+                Check(cavernRep.exposure == ExposureRating.Sheltered && cavernRep.rainMultiplier == 0f, "refuge-cavern-provides-complete-rain-shelter");
+
+                var mesaRep = CanyonMicroWeather.Sample(new Vector3(50f, 30f, -20f));
+                Check(mesaRep.exposure == ExposureRating.Harsh && mesaRep.windMultiplier > 1.5f, "high-mesa-amplifies-wind-and-solar-load");
+
+                var coastRep = CanyonMicroWeather.Sample(new Vector3(0f, -2f, 100f));
+                Check(coastRep.exposure == ExposureRating.Maritime && coastRep.localTemperatureC < 22f, "coastal-delta-samples-cool-maritime-breeze");
+            }
+
+            // -------------------------------------------------------------
+            // 8. Freshwater River & Creatures Drive Reduction Affinities
+            // -------------------------------------------------------------
+            {
+                // River freshwater drinking boundary verification
+                Check(CoastalTerrain.IsFreshwaterRiver(0f, 0f, -2f, -2f), "river-channel-center-is-freshwater-drinking");
+                Check(CoastalTerrain.IsFreshwaterRiver(25f, -245f, 10f, -2f), "waterfall-approach-is-freshwater-drinking");
+                Check(!CoastalTerrain.IsFreshwaterRiver(0f, 500f, -2f, -2f), "north-sea-saline-water-refuses-freshwater-drinking");
+                Check(!CoastalTerrain.IsFreshwaterRiver(50f, -20f, 30f, -2f), "high-mesa-cliff-refuses-river-drinking");
+
+                // Drive reduction endorphin & affinity verification
+                var body = new Starfall.Food.FoodBody { endorphin = 2000 };
+                Starfall.Food.FoodPhysiology.ApplyDriveReduction(body, 1800);
+                Check(body.endorphin == 3800, "drive-reduction-boosts-endorphins-by-1800-on-drink");
+
+                var satObj = new GameObject("test-survival-autonomy");
+                try
+                {
+                    var satAutonomy = satObj.AddComponent<StarfallSurvivalAutonomy>();
+                    satAutonomy.BoostPlaceAffinity("freshwater-river", 15);
+                    Check(satAutonomy.CherishedPlaceAffinities.TryGetValue("freshwater-river", out int aff) && aff == 15, "river-drinking-boosts-freshwater-river-cherished-affinity");
+                    satAutonomy.BoostPlaceAffinity("freshwater-river", 20);
+                    Check(satAutonomy.CherishedPlaceAffinities["freshwater-river"] == 35, "repeated-visitation-accumulates-cherished-place-affinity");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(satObj);
+                }
+            }
+
+            // -------------------------------------------------------------
+            // 9. Shallow River Crossing Ford & Dry Berry Bush Verification
+            // -------------------------------------------------------------
+            {
+                // Shallow ford crossing geometry & navigability
+                Check(CoastalTerrain.IsRiverFord(0f, -15f), "shallow-ford-detected-at-river-crossing-center");
+                Check(CoastalTerrain.IsRiverFord(15f, -15f), "shallow-ford-detected-at-east-bank-approach");
+                Check(CoastalTerrain.IsRiverFord(-15f, -15f), "shallow-ford-detected-at-west-bank-approach");
+                Check(!CoastalTerrain.IsRiverFord(0f, 150f), "far-north-outlet-not-identified-as-ford");
+                Check(!CoastalTerrain.IsRiverFord(0f, -250f), "far-south-waterfall-not-identified-as-ford");
+
+                float fordY = CoastalTerrain.Height(0f, -15f);
+                Check(fordY >= -2.25f && fordY <= -2.10f, "ford-riverbed-height-is-shallow-18cm-water-depth");
+                float depth = CoastalWater.Level - fordY;
+                Check(depth >= 0.10f && depth <= 0.25f, "ford-water-depth-is-ankle-deep-not-swimming");
+
+                // Both east and west approaches must be walkable above water line
+                float eastApproachY = CoastalTerrain.Height(28f, -15f);
+                float westApproachY = CoastalTerrain.Height(-28f, -15f);
+                Check(eastApproachY > CoastalWater.Level, "ford-east-bank-approach-is-dry-land");
+                Check(westApproachY > CoastalWater.Level, "ford-west-bank-approach-is-dry-land");
+
+                // Dry berry bush placements: no bushes underwater!
+                Check(CoastalTerrain.Height(142f, -65f) >= CoastalWater.Level + 0.8f, "east-terrace-berry-is-dry");
+                Check(CoastalTerrain.Height(122f, -54f) >= CoastalWater.Level + 0.8f, "spring-oasis-berry-is-dry");
+                Check(CoastalTerrain.Height(135f, -95f) >= CoastalWater.Level + 0.8f, "south-terrace-berry-is-dry");
+                Check(CoastalTerrain.Height(-152f, 110f) >= CoastalWater.Level + 0.8f, "refuge-shelf-berry-is-dry");
+                Check(CoastalTerrain.Height(-170f, 95f) >= CoastalWater.Level + 0.8f, "west-cave-berry-is-dry");
+                Check(CoastalTerrain.Height(65f, -35f) >= CoastalWater.Level + 0.8f, "ford-east-bank-berry-is-dry");
+                Check(CoastalTerrain.Height(-65f, -35f) >= CoastalWater.Level + 0.8f, "ford-west-bank-berry-is-dry");
+            }
+
+            // -------------------------------------------------------------
+            // 10. Hunter Waist Moonbag & River Fish Ecology Verification
+            // -------------------------------------------------------------
+            {
+                var mbGo = new GameObject("test-moonbag");
+                try
+                {
+                    var mb = mbGo.AddComponent<HunterMoonbag>();
+                    Check(mb.StoredCount == 0, "moonbag-initially-empty");
+                    Check(mb.CanStore, "moonbag-can-store-initially");
+                    Check(!mb.CanRetrieve, "empty-moonbag-cannot-retrieve");
+
+                    Check(mb.StoreFruit(), "moonbag-stores-first-fruit");
+                    Check(mb.StoredCount == 1, "moonbag-count-is-1");
+                    Check(mb.CanStore, "moonbag-can-still-store-second-fruit");
+
+                    Check(mb.StoreFruit(), "moonbag-stores-second-fruit");
+                    Check(mb.StoredCount == 2, "moonbag-count-is-2");
+                    Check(!mb.CanStore, "full-moonbag-refuses-third-fruit");
+                    Check(!mb.StoreFruit(), "moonbag-store-third-returns-false");
+
+                    Check(mb.RetrieveFruit(), "moonbag-retrieves-fruit");
+                    Check(mb.StoredCount == 1, "moonbag-count-is-1-after-retrieve");
+                    Check(mb.RetrieveFruit(), "moonbag-retrieves-second-fruit");
+                    Check(mb.StoredCount == 0, "moonbag-count-is-0-after-all-retrieved");
+                    Check(!mb.CanRetrieve, "empty-moonbag-refuses-further-retrieve");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(mbGo);
+                }
+
+                // River Fish School ecology & catalog verification
+                Check(RiverFishSchool.VerifyFishEcology(out _), "river-fish-ecology-verified");
+
+                var catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+                Check(catalog.TryGet("food-river-fish", out var fishDef), "catalog-contains-river-fish");
+                Check(Mathf.Approximately(fishDef.massKg, 0.65f), "river-fish-mass-matches-0.65kg");
+
+                Check(catalog.TryGet("food-sourfig-berry", out var berryDef), "catalog-contains-sourfig-berry");
+                Check(Mathf.Approximately(berryDef.massKg, 0.08f), "sourfig-berry-mass-matches-0.08kg");
+
+                Check(catalog.TryGet("container-waist-bag", out var waistDef), "catalog-contains-waist-moonbag");
+                Check(waistDef.maxContainedSlots == 2, "waist-moonbag-slots-equals-2");
+            }
+
             return passed;
         }
     }

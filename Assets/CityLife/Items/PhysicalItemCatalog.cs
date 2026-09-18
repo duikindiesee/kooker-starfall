@@ -238,6 +238,54 @@ namespace CityLife.Items
                 maxContainedMassKg = 15.0f
             });
 
+            // Marine Protein Crab (Harvested in coastal shallows & river delta)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-protein-crab",
+                dimensions = new PhysicalDimensions(0.22f, 0.16f, 0.09f),
+                massKg = 0.45f,
+                isContainer = false
+            });
+
+            // Coastal Driftwood Log (Washed ashore by ocean tides, high thermal hearth fuel)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "wood-driftwood-log",
+                dimensions = new PhysicalDimensions(0.95f, 0.22f, 0.22f),
+                massKg = 4.2f,
+                isContainer = false
+            });
+
+            // Ripe Sourfig Berry (Hand-held botanical fruit, nutritious drive reduction)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-sourfig-berry",
+                dimensions = new PhysicalDimensions(0.08f, 0.08f, 0.08f),
+                massKg = 0.08f,
+                isContainer = false
+            });
+
+            // Freshwater River Fish (Nutritious salmonoid swimming in river channel)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-river-fish",
+                dimensions = new PhysicalDimensions(0.35f, 0.12f, 0.08f),
+                massKg = 0.65f,
+                isContainer = false
+            });
+
+            // Hunter Waist Moonbag (Side belt pouch holding up to 2 fruits for long journeys)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "container-waist-bag",
+                dimensions = new PhysicalDimensions(0.18f, 0.14f, 0.12f),
+                massKg = 0.28f,
+                isContainer = true,
+                maxContainedSlots = 2,
+                maxContainedVolumeM3 = 0.015f,
+                maxContainedMassKg = 1.0f
+            });
+
             return catalog;
         }
     }
