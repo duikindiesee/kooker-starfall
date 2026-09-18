@@ -71,6 +71,10 @@ namespace CityLife.World
                 "Last verified outcome: inspected the observed maintained freshwater seep. ":
                 recentVerifiedOutcome=="drink river succeeded"?
                 "Last verified outcome: drank fresh river water. ":
+                recentVerifiedOutcome=="drink water succeeded"?
+                "Last verified outcome: drank carried freshwater from container. ":
+                recentVerifiedOutcome=="seek water started"?
+                "Last verified outcome: seeking freshwater river to quench thirst. ":
                 recentVerifiedOutcome!=null&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
                 "Last verified outcome: "+recentVerifiedOutcome+". ":"";
             // Only the two measured, hash-validated own-death causes can enter

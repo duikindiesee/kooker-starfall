@@ -521,10 +521,18 @@ namespace CityLife.World
                 if (mbCount > 0)
                 {
                     CurrentPickupTargetLabel = $"Waist Moonbag: {mbCount}/2 [B: Take Berry | H: Eat]";
+                    if (food != null && food.Model != null && food.Model.State.freshwaterMl >= 250 && food.Model.State.hydration < 8500)
+                        CurrentPickupTargetLabel += $" | Water: {food.Model.State.freshwaterMl}ml [E: Drink]";
                 }
                 else if (food != null && food.Model != null && food.Model.State.carriedFruit > 0)
                 {
                     CurrentPickupTargetLabel = $"Carried Fruit: {food.Model.State.carriedFruit} [H: Eat]";
+                    if (food.Model.State.freshwaterMl >= 250 && food.Model.State.hydration < 8500)
+                        CurrentPickupTargetLabel += $" | Water: {food.Model.State.freshwaterMl}ml [E: Drink]";
+                }
+                else if (food != null && food.Model != null && food.Model.State.freshwaterMl >= 250 && food.Model.State.hydration < 8500)
+                {
+                    CurrentPickupTargetLabel = $"Water container: {food.Model.State.freshwaterMl}ml [E: Drink]";
                 }
                 else
                 {
@@ -696,6 +704,7 @@ namespace CityLife.World
                 {
                     var s = food.Model.State;
                     s.hydration = Mathf.Min(10000, s.hydration + 2500);
+                    s.freshwaterMl = 2000;
                     Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1800);
                     if (Brain.Survival != null)
                     {
@@ -763,6 +772,24 @@ namespace CityLife.World
                     UpdatePickupTargetLabel();
                 }
                 return;
+            }
+
+            // If pressing E with nothing targeted and thirsty, drink from carried freshwater container
+            if (!isDropKey && CurrentPickupTarget == null && currentNearbyResource == NearbyResourceType.None)
+            {
+                var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+                if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                if (food != null && food.Model != null && food.Model.State.freshwaterMl >= 250 && food.Model.State.hydration < 8500)
+                {
+                    var s = food.Model.State;
+                    s.freshwaterMl -= 250;
+                    s.hydration = Mathf.Min(10000, s.hydration + 2000);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                    UpdatePickupTargetLabel();
+                    return;
+                }
             }
 
             // Otherwise, interact with physical item (pick up or drop)
@@ -1315,7 +1342,7 @@ namespace CityLife.World
                     "\nHold right mouse: look. R: pause/resume autonomy in observation modes." +
                     "\nC: container panel / roast at hearth. E: gather/drink/roast. H: eat. G: drop. B: moonbag. X: toggle club. T: cycle target. L: show/hide decisions. M: map/beliefs. Escape: back/resume.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
-                if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
+                if (Brain.OptionalPlanner != null || Brain.Survival != null) Option("Local thoughts", () => ShowPage("Thoughts"));
                 if (PersistentMouseCapture) Option("Mouse look sensitivity", () => ShowPage("Mouse"));
                 Option("Back", () => ShowPage("Root"));
             }
@@ -1333,12 +1360,22 @@ namespace CityLife.World
             else if (page == "Thoughts")
             {
                 var planner = Brain.OptionalPlanner;
+                var surv = Brain.Survival;
+                bool isEnabled = (planner != null && planner.EnabledByUser) || (surv != null && surv.LocalModelEnabled);
+                string status = surv != null
+                    ? (surv.LocalModelEnabled ? "Survival local thoughts / model: ON" : "Survival local thoughts: OFF (deterministic rules active)")
+                    : (planner != null ? planner.Status : "Local thoughts off");
                 PageTitle.text = "PAUSED / Local thoughts";
-                PageBody.text = planner.Status + "\nOptional local goals, plans and fictional dialogue. Rules validate every action." +
-                    "\nOff by default. A configured, already-loaded model is required. Unavailable or invalid replies use rules." +
-                    "\nAt most 12 requests per session; short timeout and cancellation on control changes." +
-                    "\nL shows the decision log and last model text. Reflection is generated text, not learning.";
-                Option(planner.EnabledByUser ? "Turn local thoughts off" : "Turn local thoughts on", () => { planner.SetEnabled(!planner.EnabledByUser); ShowPage("Thoughts"); });
+                PageBody.text = status + "\nOptional local goals, plans and fictional dialogue. Grounded rules validate every action." +
+                    "\nA configured local model endpoint is used when enabled; otherwise deterministic grounded survival rules govern the inhabitant." +
+                    "\nL shows the decision log and thoughts modal. Reflection summarizes vital drives, memory, and terrain.";
+                Option(isEnabled ? "Turn local thoughts off" : "Turn local thoughts on", () =>
+                {
+                    bool nextState = !isEnabled;
+                    if (planner != null) planner.SetEnabled(nextState);
+                    if (surv != null) surv.LocalModelEnabled = nextState;
+                    ShowPage("Thoughts");
+                });
                 Option("Back", () => ShowPage("Controls"));
             }
             else

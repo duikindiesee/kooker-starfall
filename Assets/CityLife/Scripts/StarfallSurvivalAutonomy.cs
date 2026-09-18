@@ -49,7 +49,8 @@ namespace CityLife.World
         private readonly HashSet<string> visiblePlaceIds=new HashSet<string>(StringComparer.Ordinal);
         private Vector2Int? lastOccupiedCell;
         private List<string> offered;
-        private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond;
+        private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond, blockedTicks;
+        public bool LocalModelEnabled { get; set; } = true;
         public string routePurpose;
         private string recentVerifiedOutcome;
         private Vector3 routeOrigin;
@@ -334,6 +335,10 @@ namespace CityLife.World
             if(s.hydration<8500&&inRiver)
                 foodChoices.Add("drink river");
 
+            // 2b. Carried freshwater container
+            if (s.hydration < 8500 && s.freshwaterMl >= 250)
+                foodChoices.Add("drink water");
+
             // 3. Berry bushes (primary + all distributed bushes: berry-food, berry-food-2..8)
             NpcObservation nearestBush = null;
             float nearestBushDist = float.MaxValue;
@@ -431,16 +436,30 @@ namespace CityLife.World
             // 6. Starvation route-to-known-food when hungry and no food in immediate view
             if ((s.satiety < 6500 || s.body.stomach <= 4000) && !foodChoices.Any(x => x.StartsWith("eat") || x.StartsWith("feast") || x.StartsWith("gather")))
             {
-                if (s.observedPlaces != null && s.observedPlaces.Any(x => x != null && (x.id.StartsWith("berry-food") || x.id == "first-refuge" || x.id == "freshwater-river")))
+                if (s.observedPlaces != null && s.observedPlaces.Any(x => x != null && x.id.StartsWith("berry-food")))
                 {
                     foodChoices.Add("seek food");
                 }
             }
 
+            // 6b. Dehydration route-to-river when thirsty and not at river and container empty or low
+            if (s.hydration < 7500 && !inRiver && (s.freshwaterMl < 250 || s.hydration < 4000) && !foodChoices.Contains("drink water"))
+            {
+                foodChoices.Add("seek water");
+            }
+
             // Urgency ranking:
-            // Top priority: Eating when hungry!
             string urgent = null;
-            if (s.satiety < 8500)
+            // Life-critical dehydration: drinking or seeking water immediately before starvation or foraging
+            if (s.hydration < 3500)
+            {
+                if (foodChoices.Contains("drink river")) urgent = "drink river";
+                else if (foodChoices.Contains("drink spring")) urgent = "drink spring";
+                else if (foodChoices.Contains("drink water")) urgent = "drink water";
+                else if (foodChoices.Contains("seek water")) urgent = "seek water";
+            }
+            // Eating when hungry!
+            if (urgent == null && s.satiety < 8500)
             {
                 if (foodChoices.Contains("feast catch")) urgent = "feast catch";
                 else if (foodChoices.Contains("feast roasted catch")) urgent = "feast roasted catch";
@@ -451,14 +470,24 @@ namespace CityLife.World
                 urgent = "roast catch";
             if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast food on hearth"))
                 urgent = "roast food on hearth";
-            if (urgent == null && s.hydration < 6500)
-                urgent = foodChoices.FirstOrDefault(x => x == "drink river" || x.EndsWith("spring"));
+            if (urgent == null && s.hydration < 7500)
+            {
+                if (foodChoices.Contains("drink water")) urgent = "drink water";
+                else if (foodChoices.Contains("drink river")) urgent = "drink river";
+                else if (foodChoices.Contains("drink spring")) urgent = "drink spring";
+                else if (foodChoices.Contains("seek water")) urgent = "seek water";
+            }
             if (urgent == null && s.satiety < 7500)
                 urgent = foodChoices.FirstOrDefault(x => x.StartsWith("gather") || x.StartsWith("catch") || x == "seek food");
             if (urgent == null)
                 urgent = foodChoices.FirstOrDefault();
 
             var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
+            foreach (var other in foodChoices)
+            {
+                if (other != urgent && !choices.Contains(other) && choices.Count < 3)
+                    choices.Add(other);
+            }
             var directions=new [] {("explore north",Vector3.forward),("explore east",Vector3.right),
                 ("explore south",Vector3.back),("explore west",Vector3.left)};
             var candidates=new List<(string action,int score)>();
@@ -478,7 +507,7 @@ namespace CityLife.World
                 int visits=PlaceLedger.Cell(s,cell.x,cell.y)?.visits??0;
                 candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
             }
-            foreach(var candidate in candidates.OrderBy(c=>c.score).Take(2-choices.Count))
+            foreach(var candidate in candidates.OrderBy(c=>c.score).Take(4-choices.Count))
                 choices.Add(candidate.action);
             return choices;
         }
@@ -495,7 +524,7 @@ namespace CityLife.World
         private bool MoveRoute()
         {
             while(route.Count>0&&Vector2.Distance(new Vector2(Brain.transform.position.x,Brain.transform.position.z),
-                new Vector2(route.Peek().x,route.Peek().z))<.20f)route.Dequeue();
+                new Vector2(route.Peek().x,route.Peek().z))<.50f)route.Dequeue();
             if(route.Count==0)
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
@@ -507,6 +536,7 @@ namespace CityLife.World
                 if (Brain != null) Brain.LastResult = LastOutcome;
                 SynthesizeGroundedNarrative(routePurpose);
                 routePurpose=null;
+                blockedTicks=0;
                 nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
             if(Brain.Tick-routeStartTick>1000)
@@ -514,17 +544,31 @@ namespace CityLife.World
                 route.Clear();Record("route","bounded-route-timeout",routePurpose,null);
                 if (Brain != null && Brain.Log != null)
                     Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), routePurpose ?? "patrol", "Route timeout", "clearing route");
-                routePurpose=null;nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
+                routePurpose=null;blockedTicks=0;nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
             Vector3 delta=route.Peek()-Brain.transform.position;delta.y=0;
             Vector3 direction=Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position,delta.normalized,
                 Brain.Actor.WalkSpeed*NpcAutonomy.StepSeconds);
             if(direction==Vector3.zero)
             {
-                route.Clear();Record("route","live-terrain-blocked",routePurpose,null);
-                if (Brain != null && Brain.Log != null)
-                    Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), routePurpose ?? "patrol", "Live terrain blocked", "clearing route");
-                routePurpose=null;nextRequestTick=Brain.Tick+50;
+                blockedTicks++;
+                if (Vector2.Distance(new Vector2(Brain.transform.position.x, Brain.transform.position.z),
+                    new Vector2(route.Peek().x, route.Peek().z)) < 1.0f)
+                {
+                    route.Dequeue();
+                    blockedTicks = 0;
+                }
+                else if (blockedTicks > 5)
+                {
+                    route.Clear();Record("route","live-terrain-blocked",routePurpose,null);
+                    if (Brain != null && Brain.Log != null)
+                        Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), routePurpose ?? "patrol", "Live terrain blocked", "clearing route");
+                    routePurpose=null;blockedTicks=0;nextRequestTick=Brain.Tick+50;
+                }
+            }
+            else
+            {
+                blockedTicks=0;
             }
             Brain.Actor.Step(direction,NpcAutonomy.StepSeconds);return true;
         }
@@ -659,6 +703,8 @@ namespace CityLife.World
                 Dialogue = "\"Sustenance at last. The food restores my focus and strength.\"";
             else if (currentAction == "drink river" || currentAction == "drink spring")
                 Dialogue = "\"Cold, sweet freshwater. My head is clearing.\"";
+            else if (currentAction == "drink water")
+                Dialogue = "\"Carried water quenches the burn in my throat. Strength returning.\"";
             else if (currentAction != null && currentAction.StartsWith("approach berry"))
                 Dialogue = "\"Sourfig bushes ahead on the rock shelf. Ripe fruit to gather.\"";
             else if (currentAction == "catch fish" || currentAction == "catch crab")
@@ -669,7 +715,7 @@ namespace CityLife.World
                 Dialogue = "\"Warm wind off the sea. The canyon is calm today.\"";
 
             // Generated reflection
-            string driveSummary = $"Health: {healthPct}% | Energy: {hungerPct}% | Hydration: {thirstPct}%";
+            string driveSummary = $"Health: {healthPct}% | Energy: {hungerPct}% | Hydration: {thirstPct}% | Water: {s.freshwaterMl}ml";
             int placeCount = s.observedPlaces != null ? s.observedPlaces.Count : 0;
             int cellCount = s.exploredCells != null ? s.exploredCells.Count : 0;
             string memorySummary = $"{cellCount} cells mapped, {placeCount} landmarks remembered.";
@@ -757,7 +803,7 @@ namespace CityLife.World
                 {
                     foreach (var place in s.observedPlaces)
                     {
-                        if (place != null && (place.id.StartsWith("berry-food") || place.id == "first-refuge" || place.id == "freshwater-river"))
+                        if (place != null && place.id.StartsWith("berry-food"))
                         {
                             float d = Vector3.Distance(Brain.transform.position, place.position);
                             if (d < bestDist && d > 3f)
@@ -782,13 +828,45 @@ namespace CityLife.World
                     recentVerifiedOutcome = "seek food started";
                 }
             }
+            else if (accepted == "seek water")
+            {
+                Vector3 riverBank = Brain.TerrainNavigation != null ? Brain.TerrainNavigation.FindNearestRiverBank(Brain.transform.position) : new Vector3(0f, CoastalTerrain.Height(0f, -15f), -15f);
+                routePurpose = "seek water";
+                if (!StartRoute(riverBank))
+                {
+                    routePurpose = null;
+                    Record("route", "seek-water-route-failed", accepted, result);
+                }
+                else
+                {
+                    LastOutcome = "Routing to freshwater river to quench dehydration";
+                    recentVerifiedOutcome = "seek water started";
+                }
+            }
+            else if (accepted == "drink water")
+            {
+                var s = Food.Model.State;
+                if (s.freshwaterMl >= 250)
+                {
+                    s.freshwaterMl -= 250;
+                    s.hydration = Mathf.Min(10000, s.hydration + 2000);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    BoostPlaceAffinity("freshwater-river", 5);
+                    LastOutcome = $"Drank carried freshwater +2000 water ({s.freshwaterMl}ml remaining) [Drive reduced: Endorphin {s.body.endorphin}]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "drink water succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
             else if (accepted == "drink river")
             {
                 var s = Food.Model.State;
                 s.hydration = Mathf.Min(10000, s.hydration + 2500);
+                s.freshwaterMl = 2000;
                 Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1800);
                 BoostPlaceAffinity("freshwater-river", 15);
-                LastOutcome = "Drank fresh river water +2500 water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                LastOutcome = "Drank fresh river water +2500 water & refilled water container [Drive reduced: Endorphin " + s.body.endorphin + "]";
                 FoodOutcomes++;
                 Persist();
                 recentVerifiedOutcome = "drink river succeeded";
@@ -1086,6 +1164,13 @@ namespace CityLife.World
             if(Brain.Tick<nextRequestTick){Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
             offered=Eligible();
             if(offered.Count==0){Record("model","no-current-walkable-or-observed-options",null,null);nextRequestTick=Brain.Tick+100;return true;}
+            if (!LocalModelEnabled || string.IsNullOrWhiteSpace(endpoint))
+            {
+                Execute(offered[0], new StarfallSurvivalThought.Result { status = "grounded-rule-executed", answer = offered[0] });
+                LastChoiceByModel = false;
+                Status = "Grounded survival mind: " + offered[0];
+                return true;
+            }
             if(modelRequestSequence==int.MaxValue)
             {Enabled=false;Status="Survival model request sequence exhausted";return true;}
             modelRequestSequence++;

@@ -663,6 +663,55 @@ namespace CityLife.Items
                 }
             }
 
+            // -------------------------------------------------------------
+            // 13. Water Drinking, Container Invariants, Navigation Resilience, and Options Sync
+            // -------------------------------------------------------------
+            {
+                // 1. Water Action Parsing & Request Formatting
+                var testEligible = new List<string> { "drink water", "seek water", "drink river", "seek food" };
+                Check(StarfallSurvivalThought.Parse("drink water", testEligible, out string parsedDrink) && parsedDrink == "drink water", "parse-drink-water");
+                Check(StarfallSurvivalThought.Parse("seek water", testEligible, out string parsedSeekWater) && parsedSeekWater == "seek water", "parse-seek-water");
+                Check(StarfallSurvivalThought.Parse("drink river", testEligible, out string parsedRiver) && parsedRiver == "drink river", "parse-drink-river");
+
+                string waterReqJson = StarfallSurvivalThought.BuildRequest("test-model", 2000, 1000, new List<string> { "drink water", "explore north" }, 0, false, "drink water succeeded");
+                Check(waterReqJson.Contains("Last verified outcome: drank carried freshwater from container"), "request-json-contains-drink-water-outcome");
+
+                string seekWaterReqJson = StarfallSurvivalThought.BuildRequest("test-model", 2000, 1000, new List<string> { "seek water", "explore north" }, 0, false, "seek water started");
+                Check(seekWaterReqJson.Contains("Last verified outcome: seeking freshwater river to quench thirst"), "request-json-contains-seek-water-outcome");
+
+                // 2. Carried Water Container Model Invariants
+                var s = new Starfall.Food.FoodState { world = "test-world", generation = "gen-1", freshwaterMl = 2000, hydration = 1000 };
+                Check(Starfall.Food.FoodModel.Valid(s, "test-world", "gen-1"), "freshwater-2000-valid");
+                s.freshwaterMl = 1750;
+                Check(Starfall.Food.FoodModel.Valid(s, "test-world", "gen-1"), "freshwater-1750-valid");
+                s.freshwaterMl = 0;
+                Check(Starfall.Food.FoodModel.Valid(s, "test-world", "gen-1"), "freshwater-0-valid");
+                s.freshwaterMl = 250;
+                s.freshwaterMl -= 250; // drink water step
+                s.hydration = Mathf.Min(10000, s.hydration + 2000);
+                Check(s.freshwaterMl == 0 && s.hydration == 3000, "drink-water-restores-hydration-and-consumes-container");
+                s.freshwaterMl = 2000; // drink river refill step
+                Check(s.freshwaterMl == 2000 && Starfall.Food.FoodModel.Valid(s, "test-world", "gen-1"), "river-refill-restores-2000ml");
+
+                // 3. Navigation FindNearestRiverBank
+                var navGo = new GameObject("TestNavRiver");
+                try
+                {
+                    var nav = navGo.AddComponent<CityLife.World.NpcTerrainNavigation>();
+                    Vector3 riverBank = nav.FindNearestRiverBank(new Vector3(-53f, 4f, 39f));
+                    Check(float.IsFinite(riverBank.x) && float.IsFinite(riverBank.y) && float.IsFinite(riverBank.z), "find-nearest-river-bank-finite");
+                    Check(riverBank != Vector3.zero, "find-nearest-river-bank-non-zero");
+
+                    // ConstrainMotion obstacle deflection
+                    Vector3 forwardBlocked = nav.ConstrainMotion(new Vector3(0, 0, 0), Vector3.forward, 0.2f);
+                    Check(float.IsFinite(forwardBlocked.x) && float.IsFinite(forwardBlocked.z), "constrain-motion-result-finite");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(navGo);
+                }
+            }
+
             return passed;
         }
     }

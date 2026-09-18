@@ -48,9 +48,49 @@ namespace CityLife.World
         }
         public Vector3 ConstrainMotion(Vector3 position, Vector3 direction, float distance)
         {
-            var next = position + Vector3.ClampMagnitude(direction, 1) * (distance + .3f);
-            if (!Walkable(next, out Vector3 floor) || floor.y - position.y > .28f) return Vector3.zero;
-            return direction;
+            var next = position + Vector3.ClampMagnitude(direction, 1) * (distance + .2f);
+            if (Walkable(next, out Vector3 floor) && floor.y - position.y <= .45f)
+                return direction;
+
+            // Try slight left/right deflections (30 degrees) to step around small obstacles/rocks
+            Vector3 leftDeflect = Quaternion.Euler(0, -30f, 0) * direction;
+            var nextLeft = position + Vector3.ClampMagnitude(leftDeflect, 1) * (distance + .2f);
+            if (Walkable(nextLeft, out Vector3 floorLeft) && floorLeft.y - position.y <= .45f)
+                return leftDeflect;
+
+            Vector3 rightDeflect = Quaternion.Euler(0, 30f, 0) * direction;
+            var nextRight = position + Vector3.ClampMagnitude(rightDeflect, 1) * (distance + .2f);
+            if (Walkable(nextRight, out Vector3 floorRight) && floorRight.y - position.y <= .45f)
+                return rightDeflect;
+
+            return Vector3.zero;
+        }
+
+        public Vector3 FindNearestRiverBank(Vector3 origin)
+        {
+            float bestDist = float.MaxValue;
+            Vector3 bestBank = new Vector3(0f, CoastalTerrain.Height(0f, -15f), -15f); // Shallow river ford default
+            for (float z = -250f; z <= 380f; z += 15f)
+            {
+                for (float x = -60f; x <= 80f; x += 10f)
+                {
+                    float y = CoastalTerrain.Height(x, z);
+                    if (y >= CoastalWater.Level - 0.25f && y <= CoastalWater.Level + 2.5f &&
+                        CoastalTerrain.IsFreshwaterRiver(x, z, y, CoastalWater.CurrentLevel))
+                    {
+                        if (Walkable(new Vector3(x, y, z), out Vector3 floor))
+                        {
+                            float d = Vector3.Distance(origin, floor);
+                            if (d < bestDist)
+                            {
+                                bestDist = d;
+                                bestBank = floor;
+                            }
+                        }
+                    }
+                }
+            }
+            return bestBank;
         }
         public Queue<Vector3> Plan(Vector3 origin, Vector3 goal) => PlanInternal(origin, goal, null);
 

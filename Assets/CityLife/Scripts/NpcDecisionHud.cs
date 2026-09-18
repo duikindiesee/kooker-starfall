@@ -208,7 +208,7 @@ namespace CityLife.World
                     Summary.text = mode + " | Tick " + Brain.Tick +
                         "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
                         $"\nHealth: {healthPct}%  |  Stamina: {staminaPct}%  |  Strength: {strengthPct}%" +
-                        $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%" + airAlert +
+                        $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%  |  Water: {food.freshwaterMl}ml" + airAlert +
                         $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Moonbag: {mbCount}/2";
                 }
                 footer.text = "M map · Shift sprint · X holster club · B moonbag\nE pick/fish/drink · G drop · H eat from hand · Tab possess";
