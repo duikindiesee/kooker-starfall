@@ -19,6 +19,12 @@ namespace CityLife.World
         private Text footer, thoughts;
         private GameObject thoughtsBackground;
         public string LivingMemoryText;
+        private GameObject panelGroup;
+        private Canvas decisionCanvas;
+        public Canvas DecisionCanvas => decisionCanvas;
+        public GameObject PanelGroup => panelGroup;
+        public bool IsDecisionActive => panelGroup != null && panelGroup.activeSelf;
+        public void StepLateUpdate() => LateUpdate();
         private void Awake()
         {
             var root = new GameObject("NPC decision panel", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -28,9 +34,17 @@ namespace CityLife.World
             var scaler = root.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1600, 900); scaler.matchWidthOrHeight = .5f;
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            panelGroup = new GameObject("Decision panel content", typeof(RectTransform), typeof(Canvas));
+            decisionCanvas = panelGroup.GetComponent<Canvas>();
+            var groupRt = panelGroup.GetComponent<RectTransform>();
+            groupRt.SetParent(root.transform, false);
+            groupRt.anchorMin = Vector2.zero; groupRt.anchorMax = Vector2.one;
+            groupRt.offsetMin = Vector2.zero; groupRt.offsetMax = Vector2.zero;
+
             RectTransform Rect(GameObject o, float x, float y, float w, float h)
             {
-                var rect = o.GetComponent<RectTransform>(); rect.SetParent(root.transform, false);
+                var rect = o.GetComponent<RectTransform>(); rect.SetParent(panelGroup.transform, false);
                 rect.anchorMin = rect.anchorMax = new Vector2(0, 1); rect.pivot = new Vector2(0, 1);
                 rect.anchoredPosition = new Vector2(x, -y); rect.sizeDelta = new Vector2(w, h); return rect;
             }
@@ -44,11 +58,11 @@ namespace CityLife.World
                 return t;
             }
             var title = Label("Title", 35, 50, 28, new Color(.6f, .93f, .93f)); title.text = "STARFALL / Inhabitant decisions";
-            Summary = Label("Current decision", 92, 130, 22, Color.white);
-            Perceptions = Label("Perceived objects", 230, 200, 19, new Color(.78f, .86f, .91f));
+            Summary = Label("Current decision", 90, 160, 20, Color.white);
+            Perceptions = Label("Perceived objects", 260, 170, 19, new Color(.78f, .86f, .91f));
             History = Label("Action log", 442, 346, 18, new Color(.94f, .88f, .73f));
             footer = Label("Controls", 798, 72, 17, new Color(.65f, .75f, .82f)); footerRect = footer.rectTransform;
-            footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nDeterministic rules; no LLM or learning.";
+            footer.text = "P options · Tab possess · F spectator · M map\nE interact/drink · C container/roast · H eat · G drop\nL decisions · R autonomy · Shift run · RMB look";
             if (Brain.OptionalPlanner != null)
             {
                 // Keep memory/reflection inside the centre lane, clear of the
@@ -59,12 +73,19 @@ namespace CityLife.World
                 var o = new GameObject("Optional local thoughts", typeof(RectTransform), typeof(Text)); Rect(o, 555, 35, 510, 390);
                 thoughts = o.GetComponent<Text>(); thoughts.font = font; thoughts.fontSize = 20; thoughts.color = new Color(.8f, .94f, .97f);
                 thoughts.supportRichText = false; thoughts.horizontalOverflow = HorizontalWrapMode.Wrap;
-                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts off by default";
+                footer.text = "P options · Tab possess · F spectator · M map\nE interact/drink · C container/roast · H eat · G drop\nL decisions · R autonomy · Shift run · F11 display";
             }
         }
         private void LateUpdate() => Refresh();
         public void Refresh()
         {
+            bool modal = Brain != null && Brain.MenuPaused;
+            if (panelGroup != null && panelGroup.activeSelf == modal)
+            {
+                panelGroup.SetActive(!modal);
+                if (decisionCanvas != null) decisionCanvas.enabled = !modal;
+            }
+            if (modal) return;
             if (!Brain.Ready || Summary == null) return;
             if (thoughts != null)
             {
@@ -93,29 +114,66 @@ namespace CityLife.World
                     (!string.IsNullOrEmpty(LivingMemoryText) ? " · memory status shown" : "");
             }
             Perceptions.gameObject.SetActive(Detailed); History.gameObject.SetActive(Detailed);
-            backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 310);
-            footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -238);
+            backgroundRect.sizeDelta = new Vector2(500, Detailed ? 855 : 340);
+            footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -260);
             string mode = Brain.MenuPaused ? "PAUSED / " : "";
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
+            string currentGoal = Brain.GoalId.Length > 0 ? Brain.GoalId :
+                (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId) ? Brain.Foraging.TargetResourceId : "observe / wait");
+            string FormatCargo()
+            {
+                if (Brain.Actions == null) return "none";
+                var r = Brain.Actions.HeldRight;
+                var l = Brain.Actions.HeldLeft;
+                if (r != null && l != null) return $"R:{r.StableId} | L:{l.StableId}";
+                if (r != null) return $"R:{r.StableId}";
+                if (l != null) return $"L:{l.StableId}";
+                return "none";
+            }
+            string cargo = FormatCargo();
             Summary.text = mode + "  |  " + (Brain.Possessed ? "Autonomy suspended" : Brain.Running ? "Autonomy on" : "Autonomy stopped") +
                 "\nTick " + Brain.Tick + "  |  " + Brain.Phase +
-                "\nGoal: " + (Brain.GoalId.Length > 0 ? Brain.GoalId : "observe / wait") +
-                "\nCargo: " + (Brain.Actions.Held != null ? Brain.Actions.Held.StableId : "none") +
+                "\nGoal: " + currentGoal +
+                "\nCargo: " + cargo +
                 "\nResult: " + Brain.LastResult;
-            if(Brain.Survival!=null && Brain.Survival.Enabled && Brain.Phase.StartsWith("Survive"))
+            var foodRuntime = Brain.Survival != null ? Brain.Survival.Food : null;
+            if (foodRuntime == null) foodRuntime = FindAnyObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+            if (foodRuntime != null && foodRuntime.Model != null)
             {
-                var food=Brain.Survival.Food.Model.State;
-                Summary.text=mode+" survivor | Tick "+Brain.Tick+
-                    "\nEnergy "+food.satiety+" / water "+food.hydration+" / fruit "+food.carriedFruit+
-                    "\n"+(Brain.Survival.LastChoiceByModel?"Model chose: ":"System state: ")+Brain.Survival.LastChoice+
-                    "\nOutcome: "+Brain.Survival.LastOutcome;
-                if(food.body.dead)
-                    Summary.text=mode+" survivor | Tick "+Brain.Tick+
-                        "\nBODY DEAD: "+food.body.cause+
-                        "\nWorld and death record retained"
-                        +"\nAwaiting verified safe return";
-                footer.text="P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nPlanner "+
-                    (Brain.OptionalPlanner.EnabledByUser?"on":"off")+" · Survival model on";
+                var food = foodRuntime.Model.State;
+                int visitedCount = food.observedPlaces != null ? food.observedPlaces.Count : 0;
+                int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
+                int healthPct = Mathf.Clamp(food.body.health / 100, 0, 100);
+                int strengthPct = Mathf.Clamp((10000 - food.body.fatigue) / 100, 0, 100);
+                int hungerPct = Mathf.Clamp(food.satiety / 100, 0, 100);
+                int thirstPct = Mathf.Clamp(food.hydration / 100, 0, 100);
+
+                string airAlert = "";
+                if (food.body.submerged)
+                {
+                    int airSec = Mathf.Max(0, 15 - food.body.submergedSeconds);
+                    airAlert = airSec > 0 ? $"  |  AIR: {airSec}s [SUBMERGED]" : "  |  AIR: 0s [DROWNING!]";
+                }
+
+                if (food.body.dead)
+                {
+                    Summary.text = mode + " | Tick " + Brain.Tick +
+                        "\nBODY DEAD: " + food.body.cause +
+                        "\nHealth: 0%  |  World & memory preserved" +
+                        "\nAwaiting verified safe return to refuge";
+                }
+                else
+                {
+                    int staminaPct = Brain.Actor != null ? Mathf.Clamp(Mathf.RoundToInt(Brain.Actor.Stamina), 0, 100) : 100;
+                    var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+                    int mbCount = moonbag != null ? moonbag.StoredCount : 0;
+                    Summary.text = mode + " | Tick " + Brain.Tick +
+                        "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
+                        $"\nHealth: {healthPct}%  |  Stamina: {staminaPct}%  |  Strength: {strengthPct}%" +
+                        $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%" + airAlert +
+                        $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Moonbag: {mbCount}/2";
+                }
+                footer.text = "M map · Shift sprint · X holster club · B moonbag\nE pick/fish/drink · G drop · H eat from hand · Tab possess";
             }
             var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
             foreach (var x in Brain.Perception.Current)

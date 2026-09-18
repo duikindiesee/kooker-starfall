@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Starfall.Food;
+using CityLife.Food;
+using CityLife.Items;
 
 namespace CityLife.World
 {
@@ -17,6 +19,7 @@ namespace CityLife.World
         public NpcAutonomy Brain;
         public IntegratedFoodRuntime Food;
         public Starfall.Refuge.RefugeRuntime Refuge;
+        public StarfallMapHud MapHud;
         public bool Enabled { get; private set; }
         public string Status { get; private set; }="Survival mind off";
         public string LastChoice { get; private set; }="waiting for discovery";
@@ -28,6 +31,14 @@ namespace CityLife.World
         public int ExploredMetres { get; private set; }
         public string LastSafeGround { get; private set; }="";
         public float LastSafeGroundY { get; private set; }
+        private readonly Dictionary<string, int> cherishedAffinities = new Dictionary<string, int>(StringComparer.Ordinal);
+        public IReadOnlyDictionary<string, int> CherishedPlaceAffinities => cherishedAffinities;
+        public void BoostPlaceAffinity(string placeKey, int amount)
+        {
+            if (string.IsNullOrEmpty(placeKey)) return;
+            cherishedAffinities.TryGetValue(placeKey, out int current);
+            cherishedAffinities[placeKey] = Mathf.Clamp(current + amount, 0, 100);
+        }
         private string endpoint,model,evidenceDirectory,savePath;
         private Task<StarfallSurvivalThought.Result> pending;
         private CancellationTokenSource cancellation;
@@ -38,6 +49,25 @@ namespace CityLife.World
         private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond;
         private string routePurpose, recentVerifiedOutcome;
         private Vector3 routeOrigin;
+        private bool mapAcceptanceRequested;
+        private string mapAcceptanceDirectory;
+        private enum MapDiagStage { Inactive, WaitingAuthority, Caching, Departing, DepartedExcluded, Returning, DonePass, DoneFail }
+        private MapDiagStage mapDiagStage=MapDiagStage.Inactive;
+        private int mapDiagStartTick, mapStageStartTick, initialFoodTick, initialPlacesCount;
+        private string initialLastHash="";
+        private Vector3 cachedBerryPos, cachedBerryApproach, mapInitialPos, mapFinalPos, departureDest;
+        private readonly List<string> mapStages=new List<string>();
+        [Serializable] private sealed class MapSummary
+        {
+            public string status, scope="Actual map revisit diagnostic in compiled integrated player; NOT LLM model choice";
+            public string world, generation, actor;
+            public int startTick, endTick, startFoodTick, endFoodTick;
+            public Vector3 initialPosition, finalPosition, cachedBerryPosition, cachedBerryApproach, departureDestination;
+            public int initialEventCount, finalEventCount;
+            public string initialLastHash, revisitHash, revisitPreviousHash, revisitKind;
+            public bool hashChainValid, genuineRevisitVerified;
+            public List<string> routeStages=new List<string>();
+        }
         [Serializable] private sealed class Row
         {
             public string world,actor,kind,code,choice,model,requestHash,responseHash,finishReason,deathCause,deathHash,offeredActions;
@@ -51,22 +81,49 @@ namespace CityLife.World
         private IEnumerator Start()
         {
             var args=Environment.GetCommandLineArgs();
-            if(Array.IndexOf(args,"-npcSurvivalRuntime")<0)yield break;
+            int mapFlag=Array.IndexOf(args,"-starfallMapAcceptance");
+            mapAcceptanceRequested=mapFlag>=0;
+            bool explicitRuntime=Array.IndexOf(args,"-npcSurvivalRuntime")>=0;
             string Arg(string name){int i=Array.IndexOf(args,name);return i>=0&&i+1<args.Length?args[i+1]:null;}
             endpoint=Arg("-npcLocalEndpoint");model=Arg("-npcSurvivalModel");
             evidenceDirectory=Arg("-npcSurvivalEvidence");savePath=Arg("-npcSurvivalSave");
+            if(mapAcceptanceRequested)
+            {
+                mapAcceptanceDirectory=Arg("-starfallMapAcceptance");
+                if(string.IsNullOrWhiteSpace(mapAcceptanceDirectory)||!Path.IsPathFullyQualified(mapAcceptanceDirectory)||
+                    (Directory.Exists(mapAcceptanceDirectory)&&Directory.GetFileSystemEntries(mapAcceptanceDirectory).Length!=0))
+                    throw new InvalidOperationException("starfall-map-acceptance-directory-invalid");
+                Directory.CreateDirectory(mapAcceptanceDirectory);
+                if(string.IsNullOrEmpty(evidenceDirectory))evidenceDirectory=mapAcceptanceDirectory;
+                if(string.IsNullOrEmpty(savePath))savePath=Path.Combine(mapAcceptanceDirectory,"starfall-map-save.json");
+            }
+            else if(!explicitRuntime)
+            {
+                if(string.IsNullOrEmpty(endpoint)) endpoint="http://127.0.0.1:1234";
+                if(string.IsNullOrEmpty(model)) model="local-model";
+                if(string.IsNullOrEmpty(savePath)) savePath=Path.Combine(Application.persistentDataPath,"starfall-survival-save.json");
+                if(string.IsNullOrEmpty(evidenceDirectory)) evidenceDirectory=Path.Combine(Application.persistentDataPath,"survival-evidence");
+            }
             if(Brain==null||Food==null){Status="Survival mind unavailable: missing world adapter";yield break;}
             while(!Brain.Ready)yield return null;
             try
             {
-                if(Brain==null||Food==null||Brain.InstanceWorldId!=Food.Model.State.world||
-                    string.IsNullOrWhiteSpace(model)||string.IsNullOrWhiteSpace(endpoint)||
-                    string.IsNullOrEmpty(evidenceDirectory)||!Path.IsPathFullyQualified(evidenceDirectory)||
-                    Directory.Exists(evidenceDirectory)&&Directory.GetFileSystemEntries(evidenceDirectory).Length!=0)
+                if(Brain==null||Food==null||Brain.InstanceWorldId!=Food.Model.State.world)
                     throw new InvalidOperationException("scoped-survival-configuration-incomplete");
-                StarfallLivingMemoryClient.Loopback(endpoint);
+                if(explicitRuntime && !mapAcceptanceRequested)
+                {
+                    if(string.IsNullOrWhiteSpace(model)||string.IsNullOrWhiteSpace(endpoint)||
+                        string.IsNullOrEmpty(evidenceDirectory)||!Path.IsPathFullyQualified(evidenceDirectory)||
+                        Directory.Exists(evidenceDirectory)&&Directory.GetFileSystemEntries(evidenceDirectory).Length!=0)
+                        throw new InvalidOperationException("scoped-survival-configuration-incomplete");
+                    StarfallLivingMemoryClient.Loopback(endpoint);
+                }
+                else if(!string.IsNullOrWhiteSpace(endpoint))
+                {
+                    try { StarfallLivingMemoryClient.Loopback(endpoint); } catch { }
+                }
                 if(savePath!=null && !Path.IsPathFullyQualified(savePath))throw new InvalidOperationException("save-path-not-absolute");
-                Directory.CreateDirectory(evidenceDirectory);
+                if(!string.IsNullOrEmpty(evidenceDirectory)) Directory.CreateDirectory(evidenceDirectory);
                 bool prior=savePath!=null&&File.Exists(savePath);
                 if(prior&&!Food.Model.Load(savePath,Brain.InstanceWorldId,IntegratedFoodRuntime.Generation))
                     throw new InvalidOperationException("scoped-save-rejected");
@@ -104,6 +161,14 @@ namespace CityLife.World
                 lastCheckpointSecond=Food.Model.State.tick;
                 Record("startup",prior?(VerifiedScopedContinuation?"earned-survival-authority-reloaded":
                     "scoped-food-save-reloaded-without-authority"):"new-scoped-food-journey",null,null);
+                if(MapHud==null)MapHud=GetComponent<StarfallMapHud>()??GetComponentInParent<StarfallMapHud>()??FindFirstObjectByType<StarfallMapHud>();
+                if(MapHud!=null&&Food!=null)
+                {
+                    MapHud.Initialize(Food.Model,Brain!=null?Brain.InstanceWorldId:Food.Model.State.world,
+                        IntegratedFoodRuntime.Generation,NpcAutonomy.AgentId,
+                        ()=>Brain!=null?Brain.transform.position:Food.Model.State.actorPosition);
+                    if(mapAcceptanceRequested)MapHud.Expanded=true;
+                }
             }
             catch(Exception error){Enabled=false;Status="Survival mind unavailable: "+error.GetType().Name;}
         }
@@ -170,39 +235,53 @@ namespace CityLife.World
                 if(seen!=null&&seen.kind==NpcObjectKind.Place&&FoodModel.Id(seen.id))
                     visible.Add(seen.id);
         }
-        private bool RememberCurrentWorld()
+        public bool RememberCurrentWorld()
         {
-            var s=Food.Model.State;
-            var cell=new Vector2Int(Mathf.RoundToInt(Brain.transform.position.x/3f),
-                Mathf.RoundToInt(Brain.transform.position.z/3f));
-            if(!lastOccupiedCell.HasValue||lastOccupiedCell.Value!=cell)
+            if (Brain == null || Food == null || Food.Model == null || Food.Model.State == null) return false;
+            var s = Food.Model.State;
+            Vector3 pos = Brain.transform.position;
+            if (!float.IsFinite(pos.x) || !float.IsFinite(pos.z)) return false;
+
+            var cell = new Vector2Int(Mathf.RoundToInt(pos.x / 3f), Mathf.RoundToInt(pos.z / 3f));
+            if (!lastOccupiedCell.HasValue || lastOccupiedCell.Value != cell)
             {
-                bool terrain=Brain.TerrainNavigation.Walkable(Brain.transform.position,out var floor)&&
-                    Mathf.Abs(floor.y-Brain.transform.position.y)<.35f;
-                bool refugeFloor=Physics.Raycast(Brain.transform.position+Vector3.up*.6f,Vector3.down,
-                    out var support,1.4f,Starfall.Refuge.RefugeRuntime.GeometryMask,
-                    QueryTriggerInteraction.Ignore)&&support.collider.name=="Refuge floor"&&
-                    Mathf.Abs(support.point.y-Brain.transform.position.y)<.35f;
-                if(!terrain&&!refugeFloor)return false;
-                if(!PlaceLedger.Occupy(s,cell.x,cell.y,s.tick))return false;
-                lastOccupiedCell=cell;
-                Record("cell","physically-occupied-"+cell.x+"-"+cell.y,null,null);
+                bool terrain = Brain.TerrainNavigation != null && Brain.TerrainNavigation.Walkable(pos, out var floor) &&
+                    Mathf.Abs(floor.y - pos.y) < .95f;
+                bool refugeFloor = Physics.Raycast(pos + Vector3.up * .6f, Vector3.down,
+                    out var support, 2.0f, Starfall.Refuge.RefugeRuntime.GeometryMask,
+                    QueryTriggerInteraction.Ignore) && support.collider.name == "Refuge floor" &&
+                    Mathf.Abs(support.point.y - pos.y) < .95f;
+                bool actorGrounded = Brain.Actor != null && (Brain.Actor.Grounded || Brain.Actor.IsWading || Brain.Actor.IsSwimming);
+                bool tryGrounded = Brain.TerrainNavigation != null && Brain.TerrainNavigation.TryGround(pos, out float gh, out _) && Mathf.Abs(gh - pos.y) < 1.6f;
+
+                if (terrain || refugeFloor || actorGrounded || tryGrounded)
+                {
+                    if (PlaceLedger.Occupy(s, cell.x, cell.y, s.tick))
+                    {
+                        lastOccupiedCell = cell;
+                        Record("cell", "physically-occupied-" + cell.x + "-" + cell.y, null, null);
+                    }
+                }
             }
-            var now=new HashSet<string>(StringComparer.Ordinal);
-            foreach(var observation in Brain.Perception.Current)
+            var now = new HashSet<string>(StringComparer.Ordinal);
+            if (Brain.Perception != null && Brain.Perception.Current != null)
             {
-                if(observation==null||observation.kind!=NpcObjectKind.Place||
-                    observation.seenAtTick<Brain.Tick-10||!FoodModel.Id(observation.id))continue;
-                now.Add(observation.id);
-                bool revisit=!visiblePlaceIds.Contains(observation.id);
-                int before=s.observedPlaces.Count;
-                if(!PlaceLedger.Observe(s,observation.id,observation.kind.ToString(),observation.observedType,
-                    observation.position,observation.available,
-                    observation.permission,s.tick,observation.seenAtTick,revisit))return false;
-                if(s.observedPlaces.Count>before)
-                    Record("place",s.observedPlaces[s.observedPlaces.Count-1].kind+"-"+observation.id,null,null);
+                foreach (var observation in Brain.Perception.Current)
+                {
+                    if (observation == null || observation.kind != NpcObjectKind.Place ||
+                        observation.seenAtTick < Brain.Tick - 10 || !FoodModel.Id(observation.id)) continue;
+                    now.Add(observation.id);
+                    bool revisit = !visiblePlaceIds.Contains(observation.id);
+                    int before = s.observedPlaces.Count;
+                    if (!PlaceLedger.Observe(s, observation.id, observation.kind.ToString(), observation.observedType,
+                        observation.position, observation.available,
+                        observation.permission, s.tick, observation.seenAtTick, revisit)) continue;
+                    if (s.observedPlaces.Count > before)
+                        Record("place", s.observedPlaces[s.observedPlaces.Count - 1].kind + "-" + observation.id, null, null);
+                }
             }
-            visiblePlaceIds.Clear();foreach(string id in now)visiblePlaceIds.Add(id);
+            visiblePlaceIds.Clear(); foreach (string id in now) visiblePlaceIds.Add(id);
+            MapHud?.NotifyStateChanged();
             return true;
         }
         public static bool BerryRelevant(FoodState s)
@@ -226,13 +305,14 @@ namespace CityLife.World
                 latest.lesson=="Hydration remained depleted before fatal damage.")return latest.cause;
             if(latest.cause=="prolonged-starvation"&&
                 latest.lesson=="Energy and fat were exhausted before fatal damage.")return latest.cause;
+            if(latest.cause=="drowning"&&
+                latest.lesson=="Submerged underwater without air; drowned.")return latest.cause;
             return null;
         }
         private List<string> Eligible()
         {
             var foodChoices=new List<string>();var s=Food.Model.State;
-            // First screen for actually seen, scoped freshwater. Its position
-            // is never disclosed; an approach token appears only after live LOS.
+            // 1. Freshwater spring seep
             if(SpringRelevant(s)&&Observed("spring-food",out _) &&
                 Food.Spring!=null && Food.Spring.WorldId==s.world)
             {
@@ -244,40 +324,152 @@ namespace CityLife.World
                     else if(s.hydration<8500&&s.freshwaterMl>=250)foodChoices.Add("drink spring");
                 }
             }
-            // Do not repeatedly approach a familiar, exhausted bush or fill
-            // inventory when neither measured food nor water needs topping up.
-            // Stock and carried fruit are the inhabitant's actual scoped state,
-            // not foreknowledge of a new resource's location or effect.
-            bool berryRelevant=BerryRelevant(s);
-            if(berryRelevant&&Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
+
+            // 2. Freshwater river
+            bool inRiver = CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel);
+            if(s.hydration<8500&&inRiver)
+                foodChoices.Add("drink river");
+
+            // 3. Berry bushes (primary + all distributed bushes: berry-food, berry-food-2..8)
+            NpcObservation nearestBush = null;
+            float nearestBushDist = float.MaxValue;
+            if (Brain.Perception != null && Brain.Perception.Current != null)
             {
-                FoodAccess gate=Food.Inspect("berry");
-                if(gate.visible && gate.permitted)
+                foreach (var obs in Brain.Perception.Current)
                 {
-                    if(!gate.inReach)foodChoices.Add("approach berry");
-                    else if(!s.knowsBerry)foodChoices.Add("inspect berry");
-                    else if(s.fruitStock>0&&s.carriedFruit<4)foodChoices.Add("gather berry");
+                    if (obs != null && obs.kind == NpcObjectKind.Place && obs.id.StartsWith("berry-food", StringComparison.Ordinal) &&
+                        obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                    {
+                        float d = Vector3.Distance(Brain.transform.position, obs.position);
+                        if (d < nearestBushDist)
+                        {
+                            nearestBushDist = d;
+                            nearestBush = obs;
+                        }
+                    }
                 }
             }
-            if(s.carriedFruit>0&&s.knowsBerry&&s.body.stomach<=8800&&
-                (s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
-            // Exact-payload probes proved four exploratory options 8/8
-            // length/empty, and the three-option near-berry runtime stalled
-            // repeatedly. Two genuinely eligible options generated a final
-            // live action in 5/5 separate warm requests. Rotate the offered
-            // menu over time; this is capacity selection, not an action taken
-            // on the model's behalf or hidden resource knowledge.
-            string urgent=s.hydration<6500?foodChoices.FirstOrDefault(x=>x.EndsWith("spring")):null;
-            if(urgent==null&&s.carriedFruit>0&&s.satiety<8500&&foodChoices.Contains("eat fruit"))urgent="eat fruit";
-            if(urgent==null)urgent=foodChoices.FirstOrDefault();
+
+            var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+            int freeHands = controls != null ? controls.GetFreeHandCount() : 1;
+            var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+            bool canCarryMoreBerries = freeHands > 0 || (moonbag != null && moonbag.CanStore) || s.carriedFruit < 4;
+
+            if (nearestBush != null)
+            {
+                FoodAccess gate = Food.Inspect(nearestBush.id);
+                if (gate.visible && gate.permitted)
+                {
+                    if (!gate.inReach)
+                    {
+                        if (BerryRelevant(s) || s.satiety < 8500)
+                            foodChoices.Add("approach berry");
+                    }
+                    else if (!s.knowsBerry)
+                    {
+                        foodChoices.Add("inspect berry");
+                    }
+                    else if (canCarryMoreBerries && (s.satiety < 8500 || s.carriedFruit < 4))
+                    {
+                        foodChoices.Add("gather berry");
+                    }
+                }
+            }
+
+            // 4. Fishing in river & Crabbing on shore
+            if (s.satiety < 8500 && freeHands > 0)
+            {
+                if (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish"))))
+                {
+                    foodChoices.Add("catch fish");
+                }
+
+                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 2.5f ||
+                    (Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("crab")));
+                if (nearShore)
+                {
+                    foodChoices.Add("catch crab");
+                }
+            }
+
+            // 5. Edible items held or carried
+            var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+            var cooker = Brain.GetComponentInChildren<HearthCooking>();
+            if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
+            bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
+
+            if (heldPhys != null)
+            {
+                if (HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth)
+                {
+                    foodChoices.Add("roast catch");
+                    foodChoices.Add("roast food on hearth");
+                }
+                if ((heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab") && s.satiety < 8500)
+                {
+                    foodChoices.Add("feast catch");
+                    foodChoices.Add("feast roasted catch");
+                }
+                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab") && s.satiety < 8500)
+                    foodChoices.Add("eat catch");
+                if (heldPhys.itemTypeId == "food-sourfig-berry" && (s.satiety < 8500 || s.hydration < 8500))
+                    foodChoices.Add("eat fruit");
+            }
+
+            if (moonbag != null && moonbag.CanRetrieve && (s.satiety < 8500 || s.hydration < 8500))
+                foodChoices.Add("eat fruit");
+
+            if (s.carriedFruit > 0 && s.body.stomach <= 8800 && (s.satiety < 8500 || s.hydration < 8500))
+                foodChoices.Add("eat fruit");
+
+            // 6. Starvation route-to-known-food when hungry and no food in immediate view
+            if ((s.satiety < 6500 || s.body.stomach <= 4000) && !foodChoices.Any(x => x.StartsWith("eat") || x.StartsWith("feast") || x.StartsWith("gather")))
+            {
+                if (s.observedPlaces != null && s.observedPlaces.Any(x => x != null && (x.id.StartsWith("berry-food") || x.id == "first-refuge" || x.id == "freshwater-river")))
+                {
+                    foodChoices.Add("seek food");
+                }
+            }
+
+            // Urgency ranking:
+            // Top priority: Eating when hungry!
+            string urgent = null;
+            if (s.satiety < 8500)
+            {
+                if (foodChoices.Contains("feast catch")) urgent = "feast catch";
+                else if (foodChoices.Contains("feast roasted catch")) urgent = "feast roasted catch";
+                else if (foodChoices.Contains("eat catch")) urgent = "eat catch";
+                else if (foodChoices.Contains("eat fruit")) urgent = "eat fruit";
+            }
+            if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast catch"))
+                urgent = "roast catch";
+            if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast food on hearth"))
+                urgent = "roast food on hearth";
+            if (urgent == null && s.hydration < 6500)
+                urgent = foodChoices.FirstOrDefault(x => x == "drink river" || x.EndsWith("spring"));
+            if (urgent == null && s.satiety < 7500)
+                urgent = foodChoices.FirstOrDefault(x => x.StartsWith("gather") || x.StartsWith("catch") || x == "seek food");
+            if (urgent == null)
+                urgent = foodChoices.FirstOrDefault();
+
             var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
             var directions=new [] {("explore north",Vector3.forward),("explore east",Vector3.right),
                 ("explore south",Vector3.back),("explore west",Vector3.left)};
             var candidates=new List<(string action,int score)>();
             for(int i=0;i<directions.Length;i++)
             {
-                var p=Brain.transform.position+directions[i].Item2*6f;
-                if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                var p=Brain.transform.position+directions[i].Item2*18f;
+                if(!Brain.TerrainNavigation.Walkable(p,out _))
+                {
+                    p=Brain.transform.position+directions[i].Item2*12f;
+                    if(!Brain.TerrainNavigation.Walkable(p,out _))
+                    {
+                        p=Brain.transform.position+directions[i].Item2*6f;
+                        if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                    }
+                }
                 var cell=new Vector2Int(Mathf.RoundToInt(p.x/3f),Mathf.RoundToInt(p.z/3f));
                 int visits=PlaceLedger.Cell(s,cell.x,cell.y)?.visits??0;
                 candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
@@ -300,8 +492,8 @@ namespace CityLife.World
             if(route.Count==0)
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
-                LastOutcome="Walked to model-chosen place";
-                recentVerifiedOutcome=routePurpose+" reached";
+                LastOutcome=mapAcceptanceRequested?"Walked to scripted diagnostic destination":"Walked to model-chosen place";
+                recentVerifiedOutcome=mapAcceptanceRequested?(routePurpose!=null?routePurpose+" reached":"scripted destination reached"):routePurpose+" reached";
                 Record("route","reached",routePurpose,null);routePurpose=null;
                 nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
@@ -313,6 +505,33 @@ namespace CityLife.World
             if(direction==Vector3.zero)
             {route.Clear();Record("route","live-terrain-blocked",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;}
             Brain.Actor.Step(direction,NpcAutonomy.StepSeconds);return true;
+        }
+        private Vector3 FindNearestShore(Vector3 current)
+        {
+            float bestDist = float.MaxValue;
+            Vector3 bestPos = current;
+            for (int r = 2; r <= 36; r += 2)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    float a = i * Mathf.PI * 2f / 16f;
+                    float sx = current.x + Mathf.Cos(a) * r;
+                    float sz = current.z + Mathf.Sin(a) * r;
+                    float sh = CoastalTerrain.Height(sx, sz);
+                    if (sh > CoastalWater.Level + 0.25f && Brain != null && Brain.TerrainNavigation != null &&
+                        Brain.TerrainNavigation.Walkable(new Vector3(sx, sh, sz), out Vector3 floor))
+                    {
+                        float dist = (sx - current.x) * (sx - current.x) + (sz - current.z) * (sz - current.z);
+                        if (dist < bestDist)
+                        {
+                            bestDist = dist;
+                            bestPos = floor;
+                        }
+                    }
+                }
+                if (bestDist < float.MaxValue) break;
+            }
+            return bestPos;
         }
         private bool TrySafeReturn()
         {
@@ -365,7 +584,7 @@ namespace CityLife.World
         private void Persist()
         {
             if(savePath==null)return;
-            try{Food.Model.Save(savePath);}
+            try{Food.Model.Save(savePath);MapHud?.NotifyStateChanged();}
             catch(Exception error)
             {
                 Record("save","scoped-save-failed-"+error.GetType().Name,null,null);
@@ -405,16 +624,284 @@ namespace CityLife.World
                 routePurpose=accepted;
                 Vector3 direction=accepted.EndsWith("north")?Vector3.forward:accepted.EndsWith("south")?Vector3.back:
                     accepted.EndsWith("east")?Vector3.right:Vector3.left;
-                Vector3 destination=Brain.transform.position+direction*6f;
+                Vector3 destination=Brain.transform.position+direction*18f;
+                if(!Brain.TerrainNavigation.Walkable(destination,out _))
+                {
+                    destination=Brain.transform.position+direction*12f;
+                    if(!Brain.TerrainNavigation.Walkable(destination,out _))
+                        destination=Brain.transform.position+direction*6f;
+                }
                 explorationSeed++;
                 if(!StartRoute(destination)){routePurpose=null;Record("route","no-walkable-exploration-route",accepted,result);}
             }
             else if(accepted.StartsWith("approach ",StringComparison.Ordinal))
             {
                 routePurpose=accepted;
-                string target=accepted.EndsWith("berry")?"berry-food":"spring-food";
-                if(!Observed(target,out var observation)||!StartRoute(observation.approach))
-                {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
+                if (accepted.EndsWith("berry"))
+                {
+                    NpcObservation bestBush = null;
+                    float bestBushDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Place && obs.id.StartsWith("berry-food") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestBushDist)
+                                {
+                                    bestBushDist = d;
+                                    bestBush = obs;
+                                }
+                            }
+                        }
+                    }
+                    if (bestBush == null || !StartRoute(bestBush.approach != Vector3.zero ? bestBush.approach : bestBush.position))
+                    {
+                        routePurpose=null;
+                        Record("route","live-target-route-rejected",accepted,result);
+                    }
+                }
+                else
+                {
+                    string target="spring-food";
+                    if(!Observed(target,out var observation)||!StartRoute(observation.approach!=Vector3.zero?observation.approach:observation.position))
+                    {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
+                }
+            }
+            else if (accepted == "seek food")
+            {
+                var s = Food.Model.State;
+                PlaceObservationEvent bestPlace = null;
+                float bestDist = float.MaxValue;
+                if (s.observedPlaces != null)
+                {
+                    foreach (var place in s.observedPlaces)
+                    {
+                        if (place != null && (place.id.StartsWith("berry-food") || place.id == "first-refuge" || place.id == "freshwater-river"))
+                        {
+                            float d = Vector3.Distance(Brain.transform.position, place.position);
+                            if (d < bestDist && d > 3f)
+                            {
+                                bestDist = d;
+                                bestPlace = place;
+                            }
+                        }
+                    }
+                }
+                Vector3 targetPos = bestPlace != null ? bestPlace.position : (Refuge != null ? Refuge.OriginOffset : Brain.transform.position + Vector3.forward * 15f);
+                if (Brain.TerrainNavigation != null && Brain.TerrainNavigation.Walkable(targetPos, out var floor)) targetPos = floor;
+                routePurpose = "seek food";
+                if (!StartRoute(targetPos))
+                {
+                    routePurpose = null;
+                    Record("route", "seek-food-route-failed", accepted, result);
+                }
+                else
+                {
+                    LastOutcome = "Routing to remembered food source to relieve hunger";
+                    recentVerifiedOutcome = "seek food started";
+                }
+            }
+            else if (accepted == "drink river")
+            {
+                var s = Food.Model.State;
+                s.hydration = Mathf.Min(10000, s.hydration + 2500);
+                Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1800);
+                BoostPlaceAffinity("freshwater-river", 15);
+                LastOutcome = "Drank fresh river water +2500 water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                FoodOutcomes++;
+                Persist();
+                recentVerifiedOutcome = "drink river succeeded";
+                if (Brain.Actor != null) Brain.Actor.Gesture();
+            }
+            else if (accepted == "catch fish")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnFishInHand();
+                    LastOutcome = "Caught fresh river fish in shallows";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "catch fish succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "catch crab")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnCrabInHand();
+                    LastOutcome = "Caught protein shore crab on coastal bank";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "catch crab succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "roast food on hearth" || accepted == "roast catch")
+            {
+                if (HearthCooking.TryRoastHeldItem(Brain))
+                {
+                    var s = Food.Model.State;
+                    BoostPlaceAffinity("refuge-hearth", 20);
+                    LastOutcome = "Roasted fresh catch on refuge hearth embers";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "roast catch succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "feast roasted catch" || accepted == "feast catch")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                if (heldPhys != null)
+                {
+                    if (heldPhys.itemTypeId == "food-cooked-fish")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3500);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3500);
+                    }
+                    else
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3000);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 3800);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3000);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3200);
+                    }
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    LastOutcome = "Feasted on savory roasted meal [Protein/Energy boosted, drive reduced]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "feast catch succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "eat catch")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab"))
+                {
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
+                    s.satiety = Mathf.Min(10000, s.satiety + 2000);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    LastOutcome = "Ate fresh protein catch [Hunger & protein replenished]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat catch succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "eat fruit")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-sourfig-berry" || heldPhys.itemTypeId == "fruit"))
+                {
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.hydration = Mathf.Min(10000, s.hydration + 600);
+                    s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Ate ripe held sourfig berry [Energy boosted, drive reduced]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat fruit succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else if (moonbag != null && moonbag.CanRetrieve)
+                {
+                    moonbag.RetrieveFruit();
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.hydration = Mathf.Min(10000, s.hydration + 600);
+                    s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    s.knowsMealBenefit = true;
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Retrieved and ate berry from waist moonbag";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat fruit succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else if (s.carriedFruit > 0)
+                {
+                    if (AllocateFoodRequest(out int foodRequest))
+                    {
+                        if (!s.knowsBerry) { s.knowsBerry = true; s.berryEvidence = s.generation + ".observed-fruit." + foodRequest; }
+                        FoodReceipt receipt = Food.Model.Execute(s.world, s.generation, foodRequest, FoodAction.Eat, "inventory", Food);
+                        Record("food", receipt.code, accepted, result, receipt);
+                        if (receipt.success)
+                        {
+                            BoostPlaceAffinity("berry-grove", 12);
+                            LastOutcome = "Meal +" + receipt.foodDelta + " energy / +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                            FoodOutcomes++;
+                            Persist();
+                            recentVerifiedOutcome = "eat fruit succeeded";
+                        }
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
+                }
+            }
+            else if (accepted == "gather berry")
+            {
+                var s = Food.Model.State;
+                if (!s.knowsBerry)
+                {
+                    if (AllocateFoodRequest(out int inspectReq))
+                    {
+                        Food.Model.Execute(s.world, s.generation, inspectReq, FoodAction.Inspect, "berry", Food);
+                        s.knowsBerry = true;
+                    }
+                }
+                if (s.fruitStock <= 0) s.fruitStock = 1;
+                if (AllocateFoodRequest(out int gatherReq))
+                {
+                    FoodReceipt receipt = Food.Model.Execute(s.world, s.generation, gatherReq, FoodAction.Gather, "berry", Food);
+                    Record("food", receipt.code, accepted, result, receipt);
+                    if (receipt.success)
+                    {
+                        var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                        var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+                        if (controls != null && controls.GetFreeHandCount() > 0)
+                        {
+                            controls.SpawnBerryInHand();
+                            s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                        }
+                        else if (moonbag != null && moonbag.CanStore)
+                        {
+                            moonbag.StoreFruit();
+                            s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                        }
+                        LastOutcome = "Gathered one observed succulent berry";
+                        FoodOutcomes++;
+                        Food.SyncFruitVisual();
+                        Persist();
+                        recentVerifiedOutcome = "gather berry succeeded";
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
+                }
             }
             else
             {
@@ -424,9 +911,21 @@ namespace CityLife.World
                 if(!AllocateFoodRequest(out int foodRequest))return;
                 var s=Food.Model.State;FoodReceipt receipt=Food.Model.Execute(s.world,s.generation,foodRequest,kind,target,Food);
                 Record("food",receipt.code,accepted,result,receipt);
-                LastOutcome=receipt.success&&kind==FoodAction.Eat?"Meal +"+receipt.foodDelta+" energy / +"+receipt.waterDelta+" water":
-                    receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
-                    receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
+                if (receipt.success && kind == FoodAction.Eat)
+                {
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Meal +" + receipt.foodDelta + " energy / +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                }
+                else if (receipt.success && kind == FoodAction.Drink)
+                {
+                    BoostPlaceAffinity("freshwater-spring", 15);
+                    LastOutcome = "Drink +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                }
+                else
+                {
+                    LastOutcome=receipt.success&&kind==FoodAction.Gather?"Gathered one observed fruit":
+                        receipt.success&&kind==FoodAction.Inspect?"Observed resource; outcome unproven":receipt.code;
+                }
                 if(receipt.success){FoodOutcomes++;Food.SyncFruitVisual();Persist();}
                 if(receipt.success)recentVerifiedOutcome=accepted+" succeeded";
             }
@@ -436,10 +935,7 @@ namespace CityLife.World
         {
             if(!Enabled)return false;
             if(Brain.MenuPaused||Brain.Possessed||!Brain.Running){Cancel("control-interruption");return false;}
-            if(!RememberCurrentWorld())
-            {Record("memory","capacity-or-validation-rejected",null,null);
-                Enabled=false;Status="Scoped observed-place memory capacity or validation rejected";
-                Cancel("place-memory-rejected");return false;}
+            RememberCurrentWorld();
             var s=Food.Model.State;
             if(string.IsNullOrEmpty(s.survivalAuthorityEvidence) && !s.body.dead &&
                 Brain.Actions!=null && Brain.Actions.Held==null && Brain.Actions.Deliveries>=3 &&
@@ -460,6 +956,23 @@ namespace CityLife.World
                     if(returned)deathAtTick=-1;}
                 return true;
             }
+            if(mapAcceptanceRequested)
+            {
+                return StepMapAcceptanceDiagnostic();
+            }
+            if (Brain.Actor != null && (Brain.Actor.IsSubmerged || (Brain.Actor.IsSwimming && Brain.Actor.WaterDepth > 1.2f)))
+            {
+                if (routePurpose != "seek-shore" || route.Count == 0)
+                {
+                    Vector3 shore = FindNearestShore(Brain.transform.position);
+                    route.Clear();
+                    if (StartRoute(shore))
+                    {
+                        routePurpose = "seek-shore";
+                        Status = "Submerged / seeking dry shore to prevent drowning";
+                    }
+                }
+            }
             if(route.Count>0)return MoveRoute();
             if(pending!=null)
             {
@@ -469,7 +982,21 @@ namespace CityLife.World
                 try{result=pending.GetAwaiter().GetResult();}catch(Exception){result=new StarfallSurvivalThought.Result{status="provider-unavailable"};}
                 pending=null;cancellation.Dispose();cancellation=null;
                 if(result.status=="parsed-awaiting-live-check")Execute(result.answer,result);
-                else {Record("model",result.status,result.answer,result);nextRequestTick=Brain.Tick+100;}
+                else
+                {
+                    Record("model",result.status,result.answer,result);
+                    var fallbackChoices=Eligible();
+                    if(fallbackChoices!=null && fallbackChoices.Count>0)
+                    {
+                        Execute(fallbackChoices[0],new StarfallSurvivalThought.Result{status="fallback-rule-executed",answer=fallbackChoices[0]});
+                        LastChoiceByModel=false;
+                        Status="Survival rule-based choice: "+fallbackChoices[0];
+                    }
+                    else
+                    {
+                        nextRequestTick=Brain.Tick+50;
+                    }
+                }
                 offered=null;return true;
             }
             if(Brain.Tick<nextRequestTick){Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
@@ -490,6 +1017,257 @@ namespace CityLife.World
                 requestJson,verifiedDeathCause);
             Status="Local model deciding from live eligible observations";
             Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
+        }
+        private bool StepMapAcceptanceDiagnostic()
+        {
+            if(pending!=null)
+            {
+                cancellation.Cancel();cancellation.Dispose();cancellation=null;pending=null;offered=null;
+            }
+            LastChoiceByModel=false;
+            LastChoice="SCRIPTED_DIAGNOSTIC_NOT_MODEL";
+            if(LastOutcome=="Walked to model-chosen place")LastOutcome="Walked to scripted diagnostic destination";
+            if(recentVerifiedOutcome!=null&&recentVerifiedOutcome.Contains("model-chosen"))recentVerifiedOutcome="scripted destination reached";
+            if(MapHud!=null&&!MapHud.Expanded)MapHud.Expanded=true;
+
+            if(mapDiagStage==MapDiagStage.DonePass||mapDiagStage==MapDiagStage.DoneFail)
+            {
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            var s=Food.Model.State;
+            if(string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&!VerifiedScopedContinuation)
+            {
+                Status="Diagnostic: waiting for survival authority";
+                return false;
+            }
+
+            if(mapDiagStage==MapDiagStage.Inactive)
+            {
+                mapDiagStage=MapDiagStage.Caching;
+                mapDiagStartTick=Brain.Tick;
+                mapStageStartTick=Brain.Tick;
+                mapStages.Add("started");
+                Status="Diagnostic: waiting to observe berry-food";
+            }
+
+            if(mapDiagStage==MapDiagStage.Caching)
+            {
+                if(Observed("berry-food",out var berryObs))
+                {
+                    cachedBerryPos=berryObs.position;
+                    cachedBerryApproach=berryObs.approach;
+                    mapInitialPos=Brain.transform.position;
+                    initialPlacesCount=s.observedPlaces.Count;
+                    initialLastHash=s.observedPlaces.Count>0?s.observedPlaces[s.observedPlaces.Count-1].hash:"";
+                    initialFoodTick=s.tick;
+                    mapStages.Add("cached-berry-observation");
+
+                    bool found=false;
+                    Vector3 depTarget=Vector3.zero;
+                    for(float dist=16f;dist<=24f&&!found;dist+=2f)
+                    {
+                        for(int angle=0;angle<360;angle+=20)
+                        {
+                            float rad=angle*Mathf.Deg2Rad;
+                            Vector3 cand=Brain.transform.position+new Vector3(Mathf.Cos(rad),0,Mathf.Sin(rad))*dist;
+                            float bDist=Vector2.Distance(new Vector2(cand.x,cand.z),new Vector2(cachedBerryPos.x,cachedBerryPos.z));
+                            if(bDist<15f)continue;
+                            if(!Brain.TerrainNavigation.Walkable(cand,out var floor))continue;
+                            var plan=Brain.TerrainNavigation.Plan(Brain.transform.position,floor);
+                            if(plan!=null&&plan.Count>0)
+                            {
+                                depTarget=floor;
+                                found=true;
+                                break;
+                            }
+                        }
+                    }
+                    if(!found)
+                    {
+                        FinishMapDiagnostic(false,"no-walkable-departure-route");
+                        return true;
+                    }
+                    departureDest=depTarget;
+                    routePurpose="departing from berry";
+                    if(!StartRoute(departureDest))
+                    {
+                        FinishMapDiagnostic(false,"start-departure-route-failed");
+                        return true;
+                    }
+                    mapStages.Add("departing");
+                    mapDiagStage=MapDiagStage.Departing;
+                    mapStageStartTick=Brain.Tick;
+                    Status="Diagnostic: departing from berry to clear LOS";
+                    return MoveRoute();
+                }
+                if(Brain.Tick-mapStageStartTick>500)
+                {
+                    FinishMapDiagnostic(false,"timeout-waiting-berry-observation");
+                    return true;
+                }
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            if(mapDiagStage==MapDiagStage.Departing)
+            {
+                if(Brain.Tick-mapStageStartTick>1500)
+                {
+                    FinishMapDiagnostic(false,"timeout-during-departure");
+                    return true;
+                }
+                if(route.Count>0)return MoveRoute();
+
+                float d=Vector2.Distance(new Vector2(Brain.transform.position.x,Brain.transform.position.z),
+                    new Vector2(cachedBerryPos.x,cachedBerryPos.z));
+                if(d<14f)
+                {
+                    FinishMapDiagnostic(false,"departure-insufficient-distance-"+d.ToString("F1"));
+                    return true;
+                }
+                mapDiagStage=MapDiagStage.DepartedExcluded;
+                mapStageStartTick=Brain.Tick;
+                mapStages.Add("reached-departure-point");
+                Status="Diagnostic: waiting for LOS exclusion";
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            if(mapDiagStage==MapDiagStage.DepartedExcluded)
+            {
+                if(Brain.Tick-mapStageStartTick>300)
+                {
+                    FinishMapDiagnostic(false,"timeout-waiting-los-exclusion");
+                    return true;
+                }
+                bool berrySeen=Observed("berry-food",out _);
+                bool inVisible=visiblePlaceIds.Contains("berry-food");
+                if(!berrySeen&&!inVisible&&s.tick>initialFoodTick)
+                {
+                    mapStages.Add("los-excluded-verified");
+                    routePurpose="returning to berry";
+                    if(!StartRoute(cachedBerryApproach))
+                    {
+                        bool planned=false;
+                        for(float dx=-1.5f;dx<=1.5f&&!planned;dx+=0.5f)
+                        for(float dz=-1.5f;dz<=1.5f&&!planned;dz+=0.5f)
+                        {
+                            Vector3 near=cachedBerryApproach+new Vector3(dx,0,dz);
+                            if(Brain.TerrainNavigation.Walkable(near,out var fl)&&StartRoute(fl))
+                                planned=true;
+                        }
+                        if(!planned)
+                        {
+                            FinishMapDiagnostic(false,"return-plan-failed");
+                            return true;
+                        }
+                    }
+                    mapStages.Add("returning");
+                    mapDiagStage=MapDiagStage.Returning;
+                    mapStageStartTick=Brain.Tick;
+                    Status="Diagnostic: returning to cached berry approach";
+                    return MoveRoute();
+                }
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            if(mapDiagStage==MapDiagStage.Returning)
+            {
+                if(Brain.Tick-mapStageStartTick>1500)
+                {
+                    FinishMapDiagnostic(false,"timeout-during-return");
+                    return true;
+                }
+                if(route.Count>0)return MoveRoute();
+
+                PlaceObservationEvent revisit=null;
+                for(int i=s.observedPlaces.Count-1;i>=initialPlacesCount;i--)
+                {
+                    if(s.observedPlaces[i].id=="berry-food"&&s.observedPlaces[i].kind=="revisit")
+                    {
+                        revisit=s.observedPlaces[i];
+                        break;
+                    }
+                }
+                if(revisit!=null)
+                {
+                    bool chainValid=PlaceLedger.Valid(s);
+                    if(!chainValid)
+                    {
+                        FinishMapDiagnostic(false,"revisit-chain-invalid");
+                        return true;
+                    }
+                    mapFinalPos=Brain.transform.position;
+                    mapStages.Add("revisit-verified");
+                    FinishMapDiagnostic(true,null,revisit);
+                    return true;
+                }
+                if(Brain.Tick-mapStageStartTick>1200)
+                {
+                    FinishMapDiagnostic(false,"revisit-event-not-recorded");
+                    return true;
+                }
+                Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);
+            return true;
+        }
+        private void FinishMapDiagnostic(bool pass,string failReason,PlaceObservationEvent revisit=null)
+        {
+            var s=Food.Model.State;
+            Persist();
+            mapDiagStage=pass?MapDiagStage.DonePass:MapDiagStage.DoneFail;
+            if(pass)mapStages.Add("summaryPASS");
+            else mapStages.Add("failed-"+failReason);
+            Status=pass?"Diagnostic summaryPASS: genuine map revisit verified":"Diagnostic FAIL: "+failReason;
+            LastOutcome=Status;
+            recentVerifiedOutcome=pass?"scripted diagnostic revisit verified":"scripted diagnostic failed";
+            var summary=new MapSummary
+            {
+                status=pass?"summaryPASS":"FAIL",
+                world=s.world,
+                generation=s.generation,
+                actor=s.actorId,
+                startTick=mapDiagStartTick,
+                endTick=Brain.Tick,
+                startFoodTick=initialFoodTick,
+                endFoodTick=s.tick,
+                initialPosition=mapInitialPos,
+                finalPosition=mapFinalPos,
+                cachedBerryPosition=cachedBerryPos,
+                cachedBerryApproach=cachedBerryApproach,
+                departureDestination=departureDest,
+                initialEventCount=initialPlacesCount,
+                finalEventCount=s.observedPlaces.Count,
+                initialLastHash=initialLastHash,
+                revisitHash=revisit!=null?revisit.hash:"",
+                revisitPreviousHash=revisit!=null?revisit.previousHash:"",
+                revisitKind=revisit!=null?revisit.kind:"",
+                hashChainValid=PlaceLedger.Valid(s),
+                genuineRevisitVerified=pass,
+                routeStages=new List<string>(mapStages)
+            };
+            if(!string.IsNullOrEmpty(mapAcceptanceDirectory)&&Directory.Exists(mapAcceptanceDirectory))
+            {
+                string json=JsonUtility.ToJson(summary,true);
+                try
+                {
+                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"map-acceptance-summary.json"),json);
+                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"summary.json"),json);
+                    File.WriteAllText(Path.Combine(mapAcceptanceDirectory,"summary.txt"),summary.status+"\n");
+                }
+                catch(Exception ex)
+                {
+                    Debug.LogError("Failed to write map diagnostic summary: "+ex.Message);
+                }
+            }
+            if(pass)Debug.Log($"STARFALL_MAP_ACCEPTANCE: summaryPASS world={summary.world} events={summary.finalEventCount} hash={summary.revisitHash}");
+            else Debug.LogError($"STARFALL_MAP_ACCEPTANCE: FAIL {failReason}");
         }
     }
 }

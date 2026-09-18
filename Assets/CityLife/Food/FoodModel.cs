@@ -64,6 +64,7 @@ namespace Starfall.Food
             var s=State;string lesson="";
             if(s.body.cause=="prolonged-starvation")lesson="Energy and fat were exhausted before fatal damage.";
             else if(s.body.cause=="prolonged-dehydration")lesson="Hydration remained depleted before fatal damage.";
+            else if(s.body.cause=="drowning")lesson="Submerged underwater without air; drowned.";
             s.causalMemory=lesson;
             var d=new FoodDeath{id=s.generation+".death."+(s.deaths.Count+1),world=s.world,generation=s.generation,actor=s.actorId,tick=s.tick,incarnation=s.incarnation,cause=s.body.cause,lesson=lesson,energy=s.satiety,hydration=s.hydration,fat=s.body.fat,health=s.body.health,deficitSeconds=s.body.deficitSeconds,drySeconds=s.body.drySeconds,previousHash=s.deaths.Count==0?"":s.deaths[s.deaths.Count-1].hash,hash=""};
             d.hash=Hash(JsonUtility.ToJson(d));s.deaths.Add(d);s.bags.Add(new RecoveryBag{death=s.deaths.Count,owner=s.actorId,berries=s.carriedFruit,seeds=s.seeds});s.carriedFruit=s.seeds=0;
@@ -105,13 +106,15 @@ namespace Starfall.Food
                     if(s.carriedFruit<1)return End("no-food");
                     if(s.body.stomach>8800)return End("comfortably-full");
                     s.body.stomach+=1200;s.body.protein=Math.Min(10000,s.body.protein+20);s.knowsMealBenefit=true;
+                    FoodPhysiology.ApplyDriveReduction(s.body,1500);
                     s.carriedFruit--;s.satiety=Math.Min(10000,s.satiety+1200);s.hydration=Math.Min(10000,s.hydration+400);s.lastMealEvidence=s.generation+".ate."+request;if(s.seeds<4)s.seeds++;code="ate-ripe-berry-and-kept-visible-seed";break;
                 case FoodAction.Drink:
                     if(target=="sea"||!gate.verifiedFreshwater)return End("unsafe-water");
                     if(target!="spring")return End("wrong-target");
                     if(!s.knowsSpring)return End("unverified-source");
                     if(s.freshwaterMl<250)return End("source-empty");
-                    s.freshwaterMl-=250;s.hydration=Math.Min(10000,s.hydration+2000);code="drank-250ml-freshwater";break;
+                    s.freshwaterMl-=250;s.hydration=Math.Min(10000,s.hydration+2000);
+                    FoodPhysiology.ApplyDriveReduction(s.body,1800);code="drank-250ml-freshwater";break;
                 case FoodAction.Plant:
                     if(target!="bed")return End("wrong-target");
                     if(!s.knowsPlanting)return End("unknown-cultivation");
@@ -187,7 +190,7 @@ namespace Starfall.Food
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);
         public bool Restore(string json,string world,string generation)
         {
-            if(json==null||json.Length>512000)return false;
+            if(json==null||json.Length>2048000)return false;
             try{var candidate=JsonUtility.FromJson<FoodState>(json);if(!Valid(candidate,world,generation)||candidate.seed!=State.seed||candidate.actorId!=State.actorId)return false;
                 if(candidate.exploredCells==null)candidate.exploredCells=new List<PlaceCell>();
                 if(candidate.observedPlaces==null)candidate.observedPlaces=new List<PlaceObservationEvent>();
@@ -210,9 +213,9 @@ namespace Starfall.Food
         {
             try
             {
-                if(new FileInfo(path).Length>160000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
+                if(new FileInfo(path).Length>480000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
                 if(pointer!=null&&pointer.schema=="starfall.food-pointer.v1")
-                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>600000)return false;text=File.ReadAllText(snapshot);}
+                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>2400000)return false;text=File.ReadAllText(snapshot);}
                 var e=JsonUtility.FromJson<SaveEnvelope>(text);return e!=null&&e.schema=="starfall.food-save.v1"&&e.payload!=null&&e.sha256==Hash(e.payload)&&Restore(e.payload,world,generation);
             }catch{return false;}
         }
@@ -233,7 +236,7 @@ namespace Starfall.Food
     // by Unity. This ledger never consults the authored resource registry.
     public static class PlaceLedger
     {
-        public const int MaximumCells=512,MaximumEvents=256;
+        public const int MaximumCells=4096,MaximumEvents=512;
         static bool Finite(float value)=>!float.IsNaN(value)&&!float.IsInfinity(value);
         public static PlaceCell Cell(FoodState s,int x,int z)=>s?.exploredCells?.Find(c=>c.x==x&&c.z==z);
         public static PlaceObservationEvent LastSeen(FoodState s,string id)

@@ -55,18 +55,32 @@ namespace CityLife.World
                 "Last verified outcome: approach berry reached observed fruit. Gathering stores one fruit for a test; food benefit unknown. ":
                 recentVerifiedOutcome=="gather berry succeeded"?
                 "Last verified outcome: gather berry put one observed fruit in inventory. Eating it would test an unknown meal effect. ":
+                recentVerifiedOutcome=="catch fish succeeded"?
+                "Last verified outcome: caught freshwater fish in shallows. ":
+                recentVerifiedOutcome=="catch crab succeeded"?
+                "Last verified outcome: caught protein crab on shore. ":
+                recentVerifiedOutcome=="eat catch succeeded"?
+                "Last verified outcome: ate fresh catch to reduce hunger. ":
+                recentVerifiedOutcome=="eat fruit succeeded"?
+                "Last verified outcome: ate ripe fruit to reduce hunger. ":
+                recentVerifiedOutcome=="feast catch succeeded"?
+                "Last verified outcome: feasted on savory roasted meal. ":
                 recentVerifiedOutcome=="approach spring reached"?
                 "Last verified outcome: approach spring reached observed seep. ":
                 recentVerifiedOutcome=="inspect spring succeeded"?
                 "Last verified outcome: inspected the observed maintained freshwater seep. ":
-                recentVerifiedOutcome!=null&&recentVerifiedOutcome.StartsWith("explore ",StringComparison.Ordinal)&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
+                recentVerifiedOutcome=="drink river succeeded"?
+                "Last verified outcome: drank fresh river water. ":
+                recentVerifiedOutcome!=null&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
                 "Last verified outcome: "+recentVerifiedOutcome+". ":"";
             // Only the two measured, hash-validated own-death causes can enter
             // the request. Never forward arbitrary saved text as a model fact.
             string death=verifiedDeathCause=="prolonged-dehydration"?
                 "Prior verified own death: Hydration remained depleted before fatal damage. ":
                 verifiedDeathCause=="prolonged-starvation"?
-                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":"";
+                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":
+                verifiedDeathCause=="drowning"?
+                "Prior verified own death: Submerged underwater without air; drowned. ":"";
             string energyLabel=hunger<2000?"severe low energy":hunger<8500?"below replenish target":"at replenish target";
             string waterLabel=thirst<2000?"severe low hydration":thirst<8500?"below replenish target":"at replenish target";
             string user=explorationOnly?death+prior+"Eligible: "+string.Join(", ",eligible)+".":

@@ -221,10 +221,16 @@ namespace CityLife.World
         {
             // Bottom is embedded, while the visible top and collider come from the same mesh.
             var go = MeshObject("Stratified shore rock " + id,RockMesh(width,height,depth,id),material,parent,true);
-            // R01 camera03 exposed an excessive downslope overhang on this one block.
-            // Its sampled lower face stood 1.02 m above the field despite upslope contact.
+            float hCenter = CoastalTerrain.Height(x, z);
+            float h1 = CoastalTerrain.Height(x - width * 0.4f, z - depth * 0.4f);
+            float h2 = CoastalTerrain.Height(x + width * 0.4f, z - depth * 0.4f);
+            float h3 = CoastalTerrain.Height(x - width * 0.4f, z + depth * 0.4f);
+            float h4 = CoastalTerrain.Height(x + width * 0.4f, z + depth * 0.4f);
+            float minH = Mathf.Min(hCenter, Mathf.Min(Mathf.Min(h1, h2), Mathf.Min(h3, h4)));
+            float slopeDrop = Mathf.Max(0f, hCenter - minH);
             float placementCorrection = id == 209 ? 1.15f : 0;
-            go.transform.localPosition = new Vector3(x,CoastalTerrain.Height(x,z) - height*.13f-placementCorrection,z);
+            float embed = height * 0.14f + slopeDrop * 0.85f + placementCorrection;
+            go.transform.localPosition = new Vector3(x, hCenter - embed, z);
             go.transform.localRotation = Quaternion.Euler(0,Lerp(-180,180,id,90),0);
         }
 

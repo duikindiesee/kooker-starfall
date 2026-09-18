@@ -73,22 +73,27 @@ Shader "CityLife/CoastalTerrain"
                 float seamDistance=abs(frac(strata*.69)-.46);
                 float seam=1-smoothstep(.025,.08,seamDistance);
                 seam*=smoothstep(.53,.76,weather);
-                float cliff=smoothstep(.10,.60,1-saturate(n.y));
-                float high=smoothstep(3,16,p.y);
-                float3 rock=lerp(_Ochre.rgb,_Pale.rgb,saturate(.20+layer*.48+seam*.06));
-                rock=lerp(rock,_Rust.rgb,smoothstep(.47,.81,broad)*.23);
+                // Walkable ground vs. steep cliff slope blending:
+                // Gentle slopes (n.y > 0.88, slope < 28 deg) form warm, walkable sand/gravel paths.
+                // Steep cliffs (n.y < 0.78, slope > 38 deg) form layered ochre/pale rock faces.
+                float slopeFactor = 1 - saturate(n.y);
+                float cliff = smoothstep(.12, .28, slopeFactor);
+                // High-mesa rock exposure only at extreme heights (> 45m), preserving flat terraces as walkable sand
+                float highMesa = smoothstep(45, 80, p.y) * .25;
+                float3 rock = lerp(_Ochre.rgb, _Pale.rgb, saturate(.20 + layer * .48 + seam * .06));
+                rock = lerp(rock, _Rust.rgb, smoothstep(.47, .81, broad) * .23);
                 // Dark recessed seams and warm ledge caps make metre-scale strata
                 // readable at player distance without displacing collision geometry.
-                float ledgeBand=1-smoothstep(.035,.12,abs(frac(p.y*.115+weather*.08)-.5));
-                float ledgeTop=saturate(n.y)*ledgeBand;
-                rock*=1-seam*cliff*.24;
-                rock=lerp(rock,_Pale.rgb,ledgeTop*.20);
-                float crackField=Noise(p*float3(.16,.045,.16)+59);
-                float crackWidth=max(.018,fwidth(crackField)*1.1);
-                float cracks=(1-smoothstep(crackWidth,crackWidth+.045,abs(crackField-.50)))*smoothstep(.30,.65,weather)*cliff;
-                rock*=1-cracks*.24;
-                float3 sand=_Sand.rgb*lerp(.91,1.07,broad);
-                float3 albedo=lerp(sand,rock,saturate(cliff*.88+high*.40));
+                float ledgeBand = 1 - smoothstep(.035, .12, abs(frac(p.y * .115 + weather * .08) - .5));
+                float ledgeTop = saturate(n.y) * ledgeBand;
+                rock *= 1 - seam * cliff * .24;
+                rock = lerp(rock, _Pale.rgb, ledgeTop * .20);
+                float crackField = Noise(p * float3(.16, .045, .16) + 59);
+                float crackWidth = max(.018, fwidth(crackField) * 1.1);
+                float cracks = (1 - smoothstep(crackWidth, crackWidth + .045, abs(crackField - .50))) * smoothstep(.30, .65, weather) * cliff;
+                rock *= 1 - cracks * .24;
+                float3 sand = _Sand.rgb * lerp(.91, 1.07, broad);
+                float3 albedo = lerp(sand, rock, saturate(cliff * .92 + highMesa));
                 // Grain is filtered toward its mean at distance; no sparkling screen-space noise.
                 float fineVisibility=1-saturate(length(fwidth(p))*2);
                 albedo*=1+(grain-.5)*.035*fineVisibility;

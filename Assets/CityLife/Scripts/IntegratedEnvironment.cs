@@ -59,24 +59,5 @@ namespace CityLife.World
                 var velocity = Rain.velocityOverLifetime; velocity.x = s.wind.x * .3f; velocity.z = s.wind.z * .3f;
             }
         }
-        private void OnGUI()
-        {
-            if (Brain.MenuPaused) return;
-            var controls = View.GetComponent<NpcPlayerControls>();
-            var textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22 };
-            float panelWidth = Mathf.Min(570, Screen.width * .48f);
-            float panelLeft = Screen.width - panelWidth - 12;
-            GUI.Box(new Rect(panelLeft, 12, panelWidth, 154), "");
-            GUI.Label(new Rect(panelLeft + 12, 18, panelWidth - 24, 108),
-                controls.Mode + "\n" + (!Application.isFocused ? "Click this window to focus controls" : controls.Looking ? "Mouse captured / Escape releases and pauses" : "Click or right-click in the world to look") +
-                "\nTab: possess | F: spectator | P: options | F11: display\nSensitivity: P > Controls > Mouse look", textStyle);
-            if (GUI.Button(new Rect(panelLeft + 12, 130, panelWidth - 24, 30), "Options", new GUIStyle(GUI.skin.button) { fontSize = 22 })) controls.OpenMenu();
-            GUI.Box(new Rect(panelLeft, Screen.height - 140, panelWidth, 128), "");
-            GUI.Label(new Rect(panelLeft + 12, Screen.height - 134, panelWidth - 24, 116),
-                "STARFALL / Coastal preview" +
-                "\n" + Weather + " | wind " + Clock.Sample.wind.magnitude.ToString("F1") + " m/s | " + Clock.Sample.temperature.ToString("F0") + " C" +
-                "\nInhabitant wetness " + Exposure.Wetness01.ToString("P0") + " | " + (Exposure.Cold ? "cold exposure" : "comfortable") +
-                "\nSwimming, boats and full saves: planned", textStyle);
-        }
     }
 }

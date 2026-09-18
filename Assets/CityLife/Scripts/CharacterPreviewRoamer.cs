@@ -65,9 +65,41 @@ namespace CityLife.World
                 if (!Carrying || Vector3.Distance(transform.position, DestinationStand.position) > .6f)
                 { Fail("Deposit preconditions not satisfied."); return; }
                 Crystal.SetParent(DestinationSocket, false); Crystal.localPosition = Vector3.zero;
-                Crystal.localRotation = Quaternion.identity; Carrying = false; Complete = true; Running = false;
-                Activity = "Crystal delivered";
-                Record("Carried crystal and destination are within reach.", "Place the crystal on the destination.", "Source empty; destination occupied. Expedition complete.");
+                Crystal.localRotation = Quaternion.identity; Carrying = false;
+                Activity = "Crystal delivered; continuing continuous exploration";
+                Record("Carried crystal and destination are within reach.", "Place the crystal on the destination.", "Source empty; destination occupied. Expedition complete; roaming the terrace.");
+                phase = 4; delay = 1.8f; route = null;
+                return;
+            }
+            if (phase >= 4)
+            {
+                Activity = "Exploring the living world";
+                if (route == null || route.Count == 0)
+                {
+                    Vector3 roamTarget = new Vector3(
+                        UnityEngine.Random.Range(-7f, 7f),
+                        0,
+                        UnityEngine.Random.Range(-7f, 7f)
+                    );
+                    route = Plan(roamTarget);
+                    if (route == null)
+                    {
+                        route = new Queue<Vector3>();
+                        route.Enqueue(transform.position + transform.forward * 1.5f);
+                    }
+                }
+                while (route.Count > 0 && FlatDistance(transform.position, route.Peek()) < .2f) route.Dequeue();
+                if (route.Count == 0)
+                {
+                    Actor.Gesture(); delay = 2.0f; stalled = 0; route = null;
+                    Record("Completed exploration stroll.", "Look across the canyon.", "Resting briefly before next movement.");
+                    return;
+                }
+                Vector3 diff = route.Peek() - transform.position; diff.y = 0;
+                Direction = diff.normalized * Mathf.Min(1, diff.magnitude / Mathf.Max(.001f, Actor.WalkSpeed * Mathf.Min(Time.deltaTime, .05f)));
+                if (FlatDistance(previous, transform.position) < .001f) stalled += Time.deltaTime; else stalled = 0;
+                previous = transform.position;
+                if (stalled > 2) { route = null; stalled = 0; }
                 return;
             }
             Vector3 goal = phase == 0 ? SourceStand.position : DestinationStand.position;

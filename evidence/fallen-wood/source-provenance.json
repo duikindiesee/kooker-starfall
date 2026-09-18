@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "label": "SOURCE ONLY",
+  "status": "Unity visual/physics validation pending",
+  "repairModel": "Gemini 3.8 Flash (High)",
+  "task": "fallen-wood",
+  "checkout": "tasks/fallen-wood/checkout",
+  "contractReference": {
+    "source": "Assets/CityLife/Items/ItemDefinition.cs",
+    "dependency": "CityLife.Items.PhysicalDimensions"
+  },
+  "authoredFiles": [
+    "Assets/CityLife/Wood/FallenWoodProfile.cs",
+    "Assets/CityLife/Wood/FallenWoodProfile.cs.meta",
+    "Assets/CityLife/Wood/FallenWoodAssetMetadata.cs",
+    "Assets/CityLife/Wood/FallenWoodAssetMetadata.cs.meta",
+    "Assets/CityLife/Wood/FallenWoodGenerator.cs",
+    "Assets/CityLife/Wood/FallenWoodGenerator.cs.meta",
+    "Assets/CityLife/Wood/FallenWoodInstance.cs",
+    "Assets/CityLife/Wood/FallenWoodInstance.cs.meta",
+    "Assets/CityLife/Wood/FallenWoodChecks.cs",
+    "Assets/CityLife/Wood/FallenWoodChecks.cs.meta",
+    "docs/fallen-wood/README.md",
+    "evidence/fallen-wood/source-provenance.json",
+    "evidence/fallen-wood/SOURCE-ONLY-VALIDATION.md"
+  ],
+  "invariants": {
+    "geometryVersion": 2,
+    "winding": "Consistently outward triangle winding for tube sides and caps",
+    "coincidence": "UV seam duplicate vertices coincide with j=0; base and tip cap perimeters copy rough tube rim positions",
+    "finiteValidation": "All morphology, dimensions, and fork parameters checked for finite bounds before list/mesh allocation",
+    "geometryUnits": "Local metre units (1.0 = 1 metre)",
+    "scalePolicy": "Fail closed before generation/mutation for unsupported non-unit, non-uniform, mirrored, or sheared hierarchy",
+    "meshOwnership": "Track owned procedural mesh only, atomic replacement on successful generation, safe destruction on cleanup, external meshes preserved",
+    "determinism": "Algorithmic explicit seed-driven 32-bit XorShift PRNG stream on same runtime; zero UnityEngine.Random, clock time, or frame rate dependence; no cross-platform bit-for-bit guarantee",
+    "colorVariation": "Authored bark and end-grain vertex colors and procedural textures generated via existing Unity APIs with guarded dimensions",
+    "physicsIntegration": "Explicitly NONE; stated dimensions, volume, and dry mass are authored estimates for staging, not measured species data",
+    "siblingBoundaries": "Independent asset generator; explicit conversion bridge depending on CityLife.Items.PhysicalDimensions; no inventory, save, or fuel adapters"
+  },
+  "remainingValidationGaps": [
+    "Unity Editor domain compilation unverified in this pass (no editor process executed)",
+    "In-memory check suite (FallenWoodChecks.Run) authored but unrun in active Unity process",
+    "In-engine visual fidelity, vertex color inspection, and screenshots/media in Scene/Game view pending",
+    "Future integration with AG2 Items core and AG4 fire systems pending their verified contracts"
+  ]
+}
