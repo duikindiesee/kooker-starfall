@@ -183,8 +183,8 @@ namespace CityLife.World
                 int exploredCount = food.exploredCells != null ? food.exploredCells.Count : 0;
                 int healthPct = Mathf.Clamp(food.body.health / 100, 0, 100);
                 int strengthPct = Mathf.Clamp((10000 - food.body.fatigue) / 100, 0, 100);
-                int hungerPct = Mathf.Clamp(food.satiety / 100, 0, 100);
-                int thirstPct = Mathf.Clamp(food.hydration / 100, 0, 100);
+                int fullnessPct = Mathf.Clamp(food.satiety / 100, 0, 100);
+                int hydrationPct = Mathf.Clamp(food.hydration / 100, 0, 100);
 
                 string airAlert = "";
                 if (food.body.submerged)
@@ -208,7 +208,7 @@ namespace CityLife.World
                     Summary.text = mode + " | Tick " + Brain.Tick +
                         "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
                         $"\nHealth: {healthPct}%  |  Stamina: {staminaPct}%  |  Strength: {strengthPct}%" +
-                        $"\nHunger: {hungerPct}%  |  Thirst: {thirstPct}%  |  Water: {food.freshwaterMl}ml" + airAlert +
+                        $"\nFullness: {fullnessPct}%  |  Hydration: {hydrationPct}%  |  Water: {food.freshwaterMl}ml" + airAlert +
                         $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Moonbag: {mbCount}/2";
                 }
                 footer.text = "M map · Shift sprint · X holster club · B moonbag\nE pick/fish/drink · G drop · H eat from hand · Tab possess";

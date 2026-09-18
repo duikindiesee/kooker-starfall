@@ -239,6 +239,100 @@ namespace Starfall.Food
                 if (collider.gameObject != Berry.gameObject) count++;
             return count;
         }
+        public int GetBushActiveFruitCount(NpcInteractable bush)
+        {
+            if (bush == null) return 0;
+            int count = 0;
+            for (int visual = 0; visual < 4; visual++)
+            {
+                int named = visual * 2;
+                var berry = bush.transform.Find("Visible ripe sourfig fruit " + named);
+                if (berry != null && berry.gameObject.activeSelf) count++;
+            }
+            return count;
+        }
+
+        public NpcInteractable FindNearestBush(Vector3 pos, float maxDist = 999f)
+        {
+            NpcInteractable best = null;
+            float bestDist = maxDist;
+            if (Berry != null)
+            {
+                float d = Vector3.Distance(pos, Berry.transform.position);
+                if (d < bestDist) { bestDist = d; best = Berry; }
+            }
+            for (int i = 0; i < AdditionalBerryBushes.Count; i++)
+            {
+                var b = AdditionalBerryBushes[i];
+                if (b != null)
+                {
+                    float d = Vector3.Distance(pos, b.transform.position);
+                    if (d < bestDist) { bestDist = d; best = b; }
+                }
+            }
+            return best;
+        }
+
+        public bool HarvestBerry(NpcInteractable targetBush = null)
+        {
+            if (targetBush == null && Actor != null)
+            {
+                targetBush = FindNearestBush(Actor.position, 3.5f);
+            }
+            if (targetBush == null) targetBush = Berry;
+            if (targetBush == null) return false;
+
+            for (int visual = 3; visual >= 0; visual--)
+            {
+                int named = visual * 2;
+                var berry = targetBush.transform.Find("Visible ripe sourfig fruit " + named);
+                var crown = targetBush.transform.Find("Sourfig fruit crown " + named);
+                if (berry != null && berry.gameObject.activeSelf)
+                {
+                    berry.gameObject.SetActive(false);
+                    if (crown != null) crown.gameObject.SetActive(false);
+
+                    int remaining = GetBushActiveFruitCount(targetBush);
+                    if (remaining == 0)
+                    {
+                        targetBush.Occupant = "depleted";
+                    }
+                    if (targetBush == Berry && Model != null)
+                    {
+                        Model.State.fruitStock = Mathf.Clamp(remaining / 2, 0, 2);
+                        shownFruitStock = Model.State.fruitStock;
+                    }
+                    return true;
+                }
+            }
+            targetBush.Occupant = "depleted";
+            return false;
+        }
+
+        public void RegrowOneFruit(NpcInteractable bush)
+        {
+            if (bush == null) return;
+            for (int visual = 0; visual < 4; visual++)
+            {
+                int named = visual * 2;
+                var berry = bush.transform.Find("Visible ripe sourfig fruit " + named);
+                var crown = bush.transform.Find("Sourfig fruit crown " + named);
+                if (berry != null && !berry.gameObject.activeSelf)
+                {
+                    berry.gameObject.SetActive(true);
+                    if (crown != null) crown.gameObject.SetActive(true);
+                    bush.Occupant = "";
+                    if (bush == Berry && Model != null)
+                    {
+                        int cnt = GetBushActiveFruitCount(Berry);
+                        Model.State.fruitStock = Mathf.Clamp(cnt / 2, 0, 2);
+                        shownFruitStock = Model.State.fruitStock;
+                    }
+                    return;
+                }
+            }
+        }
+
         public void SyncFruitVisual()
         {
             if(Berry==null||Model==null||shownFruitStock==Model.State.fruitStock)return;
@@ -445,6 +539,17 @@ namespace Starfall.Food
             }
             Model.FixedStep(paused);
             if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;
-            SyncFruitVisual(); } }
+            SyncFruitVisual();
+            if (Application.isPlaying && Time.time >= nextBushRegrowthTime)
+            {
+                nextBushRegrowthTime = Time.time + 45f;
+                RegrowOneFruit(Berry);
+                for (int i = 0; i < AdditionalBerryBushes.Count; i++)
+                {
+                    RegrowOneFruit(AdditionalBerryBushes[i]);
+                }
+            }
+        } }
+        float nextBushRegrowthTime;
     }
 }

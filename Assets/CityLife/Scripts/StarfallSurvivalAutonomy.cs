@@ -1097,6 +1097,7 @@ namespace CityLife.World
                             }
                         }
                         FoodOutcomes++;
+                        Food.HarvestBerry();
                         Food.SyncFruitVisual();
                         Persist();
                         if (Brain.Actor != null) Brain.Actor.Gesture();

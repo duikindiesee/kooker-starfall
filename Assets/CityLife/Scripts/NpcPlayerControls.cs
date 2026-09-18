@@ -744,6 +744,7 @@ namespace CityLife.World
                             if (receipt.success)
                             {
                                 s.knowsBerry = true;
+                                food.HarvestBerry();
                                 food.SyncFruitVisual();
                                 SpawnBerryInHand();
                                 if (Brain.Actor != null) Brain.Actor.Gesture();
@@ -756,6 +757,7 @@ namespace CityLife.World
                             if (receipt.success)
                             {
                                 s.knowsBerry = true;
+                                food.HarvestBerry();
                                 moonbag.StoreFruit();
                                 food.SyncFruitVisual();
                                 if (Brain.Actor != null) Brain.Actor.Gesture();
@@ -895,15 +897,22 @@ namespace CityLife.World
             if (targetHand == null) return null;
 
             string berryId = $"held-sourfig-berry-{++dynamicBerryIdCounter}";
-            var berryGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            berryGo.name = berryId;
-            berryGo.transform.localScale = new Vector3(0.09f, 0.09f, 0.09f);
+            var berryGo = new GameObject(berryId);
             berryGo.layer = 11;
 
-            var col = berryGo.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
+            var col = berryGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.09f, 0.09f, 0.09f);
+            col.isTrigger = true;
 
-            var mr = berryGo.GetComponent<MeshRenderer>();
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            visual.name = "Visual";
+            var vCol = visual.GetComponent<Collider>();
+            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            visual.transform.SetParent(berryGo.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localScale = new Vector3(0.08f, 0.09f, 0.08f);
+
+            var mr = visual.GetComponent<MeshRenderer>();
             Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             var berryMat = new Material(litShader) { name = "Sourfig Berry Prop" };
             berryMat.SetColor("_BaseColor", new Color(0.72f, 0.18f, 0.52f, 1f));
@@ -911,11 +920,11 @@ namespace CityLife.World
 
             var crownGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             crownGo.name = "Crown";
-            crownGo.transform.SetParent(berryGo.transform, false);
-            crownGo.transform.localPosition = new Vector3(0, 0.05f, 0);
-            crownGo.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
             var crownCol = crownGo.GetComponent<Collider>();
-            if (crownCol != null) Destroy(crownCol);
+            if (crownCol != null) UnityEngine.Object.DestroyImmediate(crownCol);
+            crownGo.transform.SetParent(visual.transform, false);
+            crownGo.transform.localPosition = new Vector3(0, 0.52f, 0);
+            crownGo.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
             var crownMat = new Material(litShader) { name = "Sourfig Crown Prop" };
             crownMat.SetColor("_BaseColor", new Color(0.38f, 0.55f, 0.22f, 1f));
             crownGo.GetComponent<MeshRenderer>().sharedMaterial = crownMat;

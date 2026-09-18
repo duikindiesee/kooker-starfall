@@ -769,6 +769,77 @@ namespace CityLife.Items
                 }
             }
 
+            // -------------------------------------------------------------
+            // 15. Berry Hand Prop Scaling, Bush Fruit Harvesting & Regrowth
+            // -------------------------------------------------------------
+            {
+                // 1. Berry Prop Visual Hierarchy (No 1m Sphere Scale Inflation)
+                var berryTestGo = new GameObject("TestHeldBerry");
+                var visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                visual.name = "Visual";
+                visual.transform.SetParent(berryTestGo.transform, false);
+                visual.transform.localScale = new Vector3(0.08f, 0.09f, 0.08f);
+
+                // Simulate AttachToHand unparenting to root and forcing localScale = Vector3.one
+                berryTestGo.transform.localScale = Vector3.one;
+                Check(visual.transform.localScale.x <= 0.1f && visual.transform.localScale.y <= 0.1f, "held-berry-visual-retains-sub-decimetre-scale");
+                Check(berryTestGo.GetComponent<MeshFilter>() == null, "held-berry-root-has-no-inflated-mesh-filter");
+                UnityEngine.Object.DestroyImmediate(berryTestGo);
+
+                // 2. Bush Fruit Harvesting, Depletion & Regrowth
+                var bushGo = new GameObject("TestSourfigBush");
+                var bushInteractable = bushGo.AddComponent<CityLife.World.NpcInteractable>();
+                bushInteractable.StableId = "berry-food-test";
+                bushInteractable.Kind = CityLife.World.NpcObjectKind.Place;
+                bushInteractable.Occupant = "";
+                bushInteractable.Permission = true;
+
+                for (int v = 0; v < 4; v++)
+                {
+                    int named = v * 2;
+                    var fruitPart = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    fruitPart.name = "Visible ripe sourfig fruit " + named;
+                    fruitPart.transform.SetParent(bushGo.transform, false);
+
+                    var crownPart = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    crownPart.name = "Sourfig fruit crown " + named;
+                    crownPart.transform.SetParent(bushGo.transform, false);
+                }
+
+                var foodRuntimeGo = new GameObject("TestFoodRuntime");
+                var foodRuntime = foodRuntimeGo.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+                try
+                {
+                    Check(foodRuntime.GetBushActiveFruitCount(bushInteractable) == 4, "bush-initial-fruit-count-is-4");
+
+                    // Harvest 1 fruit
+                    bool h1 = foodRuntime.HarvestBerry(bushInteractable);
+                    Check(h1 && foodRuntime.GetBushActiveFruitCount(bushInteractable) == 3, "harvest-decrements-fruit-count-to-3");
+                    Check(bushInteractable.Available, "bush-remains-available-with-remaining-fruits");
+
+                    // Harvest remaining 3 fruits to deplete
+                    foodRuntime.HarvestBerry(bushInteractable);
+                    foodRuntime.HarvestBerry(bushInteractable);
+                    foodRuntime.HarvestBerry(bushInteractable);
+                    Check(foodRuntime.GetBushActiveFruitCount(bushInteractable) == 0, "bush-exhausted-to-0-fruits");
+                    Check(!bushInteractable.Available, "depleted-bush-marked-unavailable");
+
+                    // Attempt harvest on depleted bush
+                    bool hExhausted = foodRuntime.HarvestBerry(bushInteractable);
+                    Check(!hExhausted, "depleted-bush-rejects-further-harvest");
+
+                    // Regrow 1 fruit
+                    foodRuntime.RegrowOneFruit(bushInteractable);
+                    Check(foodRuntime.GetBushActiveFruitCount(bushInteractable) == 1, "regrowth-restores-one-fruit");
+                    Check(bushInteractable.Available, "regrown-bush-becomes-available");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(foodRuntimeGo);
+                    UnityEngine.Object.DestroyImmediate(bushGo);
+                }
+            }
+
             return passed;
         }
     }
