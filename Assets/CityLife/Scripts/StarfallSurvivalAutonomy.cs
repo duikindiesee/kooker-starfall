@@ -29,6 +29,9 @@ namespace CityLife.World
         public bool VerifiedScopedContinuation { get; private set; }
         public int FoodOutcomes { get; private set; }
         public int ExploredMetres { get; private set; }
+        public string Plan { get; private set; } = "";
+        public string Dialogue { get; private set; } = "";
+        public string Reflection { get; private set; } = "";
         public string LastSafeGround { get; private set; }="";
         public float LastSafeGroundY { get; private set; }
         private readonly Dictionary<string, int> cherishedAffinities = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -47,7 +50,8 @@ namespace CityLife.World
         private Vector2Int? lastOccupiedCell;
         private List<string> offered;
         private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond;
-        private string routePurpose, recentVerifiedOutcome;
+        public string routePurpose;
+        private string recentVerifiedOutcome;
         private Vector3 routeOrigin;
         private bool mapAcceptanceRequested;
         private string mapAcceptanceDirectory;
@@ -385,7 +389,7 @@ namespace CityLife.World
                     foodChoices.Add("catch fish");
                 }
 
-                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 2.5f ||
+                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 3.2f ||
                     (Brain.Perception != null && Brain.Perception.Current != null &&
                     Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("crab")));
                 if (nearShore)
@@ -483,7 +487,10 @@ namespace CityLife.World
             var planned=Brain.TerrainNavigation.Plan(Brain.transform.position,destination);
             if(planned==null||planned.Count==0)return false;
             route.Clear();foreach(var waypoint in planned)route.Enqueue(waypoint);
-            routeStartTick=Brain.Tick;routeOrigin=Brain.transform.position;return true;
+            routeStartTick=Brain.Tick;routeOrigin=Brain.transform.position;
+            if (Brain != null && Brain.Log != null)
+                Brain.Log.Record(Brain.Tick, "ROUTE", Brain.DescribePerception(), routePurpose ?? "navigate", "Plot waypoint route", $"{planned.Count} waypoints queued");
+            return true;
         }
         private bool MoveRoute()
         {
@@ -494,16 +501,31 @@ namespace CityLife.World
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
                 LastOutcome=mapAcceptanceRequested?"Walked to scripted diagnostic destination":"Walked to model-chosen place";
                 recentVerifiedOutcome=mapAcceptanceRequested?(routePurpose!=null?routePurpose+" reached":"scripted destination reached"):routePurpose+" reached";
-                Record("route","reached",routePurpose,null);routePurpose=null;
+                Record("route","reached",routePurpose,null);
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "OUTCOME", Brain.DescribePerception(), routePurpose ?? "patrol", "Destination reached", LastOutcome);
+                if (Brain != null) Brain.LastResult = LastOutcome;
+                SynthesizeGroundedNarrative(routePurpose);
+                routePurpose=null;
                 nextRequestTick=Brain.Tick+10;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
             }
             if(Brain.Tick-routeStartTick>1000)
-            {route.Clear();Record("route","bounded-route-timeout",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;}
+            {
+                route.Clear();Record("route","bounded-route-timeout",routePurpose,null);
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), routePurpose ?? "patrol", "Route timeout", "clearing route");
+                routePurpose=null;nextRequestTick=Brain.Tick+50;Brain.Actor.Step(Vector3.zero,NpcAutonomy.StepSeconds);return true;
+            }
             Vector3 delta=route.Peek()-Brain.transform.position;delta.y=0;
             Vector3 direction=Brain.TerrainNavigation.ConstrainMotion(Brain.transform.position,delta.normalized,
                 Brain.Actor.WalkSpeed*NpcAutonomy.StepSeconds);
             if(direction==Vector3.zero)
-            {route.Clear();Record("route","live-terrain-blocked",routePurpose,null);routePurpose=null;nextRequestTick=Brain.Tick+50;}
+            {
+                route.Clear();Record("route","live-terrain-blocked",routePurpose,null);
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), routePurpose ?? "patrol", "Live terrain blocked", "clearing route");
+                routePurpose=null;nextRequestTick=Brain.Tick+50;
+            }
             Brain.Actor.Step(direction,NpcAutonomy.StepSeconds);return true;
         }
         private Vector3 FindNearestShore(Vector3 current)
@@ -608,6 +630,52 @@ namespace CityLife.World
             if(previous<0||previous==int.MaxValue)return false;
             next=previous+1;return true;
         }
+        public void SynthesizeGroundedNarrative(string currentAction)
+        {
+            if (Food == null || Food.Model == null || Food.Model.State == null) return;
+            var s = Food.Model.State;
+            int hungerPct = Mathf.Clamp(s.satiety / 100, 0, 100);
+            int thirstPct = Mathf.Clamp(s.hydration / 100, 0, 100);
+            int healthPct = Mathf.Clamp(s.body.health / 100, 0, 100);
+
+            // Advisory plan
+            if (s.hydration < 4000)
+                Plan = "Reach freshwater river or seep > Quench dehydration > Scout food";
+            else if (s.satiety < 4000)
+                Plan = "Locate sourfig berries or river catch > Eat to restore stamina > Survey terrain";
+            else if (currentAction != null && currentAction.StartsWith("explore"))
+                Plan = "Survey coastal terrain > Map unexplored cells > Maintain safe line to refuge";
+            else
+                Plan = "Sustain hydration and satiety > Gather provisions > Scout territory";
+
+            // Fictional dialogue / inner monologue
+            if (s.body.submerged)
+                Dialogue = "\"Water in my lungs... need dry shore immediately!\"";
+            else if (s.hydration < 2000)
+                Dialogue = "\"My mouth is parched and burning... I must reach fresh water.\"";
+            else if (s.satiety < 2000)
+                Dialogue = "\"Stomach is hollow and aching. I need food before my strength fails.\"";
+            else if (currentAction == "eat fruit" || currentAction == "eat catch" || currentAction == "feast catch" || currentAction == "feast roasted catch")
+                Dialogue = "\"Sustenance at last. The food restores my focus and strength.\"";
+            else if (currentAction == "drink river" || currentAction == "drink spring")
+                Dialogue = "\"Cold, sweet freshwater. My head is clearing.\"";
+            else if (currentAction != null && currentAction.StartsWith("approach berry"))
+                Dialogue = "\"Sourfig bushes ahead on the rock shelf. Ripe fruit to gather.\"";
+            else if (currentAction == "catch fish" || currentAction == "catch crab")
+                Dialogue = "\"Movement in the shallows. Quick hands bring protein.\"";
+            else if (s.satiety < 6000)
+                Dialogue = "\"The canyon trail is long. I should forage along the banks.\"";
+            else
+                Dialogue = "\"Warm wind off the sea. The canyon is calm today.\"";
+
+            // Generated reflection
+            string driveSummary = $"Health: {healthPct}% | Energy: {hungerPct}% | Hydration: {thirstPct}%";
+            int placeCount = s.observedPlaces != null ? s.observedPlaces.Count : 0;
+            int cellCount = s.exploredCells != null ? s.exploredCells.Count : 0;
+            string memorySummary = $"{cellCount} cells mapped, {placeCount} landmarks remembered.";
+            string lastEvent = !string.IsNullOrEmpty(LastOutcome) ? $" {LastOutcome}." : "";
+            Reflection = $"{driveSummary}. {memorySummary}{lastEvent}";
+        }
         private void Execute(string action,StarfallSurvivalThought.Result result)
         {
             // Re-sense after the asynchronous answer. No target survives a world,
@@ -615,10 +683,20 @@ namespace CityLife.World
             Brain.Perception.Sense(Brain.Tick);
             var live=Eligible();
             if(!StarfallSurvivalThought.Parse(action,live,out string accepted))
-            {Record("decision","stale-or-ineligible",action,result);nextRequestTick=Brain.Tick+50;return;}
+            {
+                Record("decision","stale-or-ineligible",action,result);
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "FALLBACK", Brain.DescribePerception(), action, "Stale action rejected", "re-evaluating next tick");
+                nextRequestTick=Brain.Tick+50;
+                return;
+            }
             AcceptedDecisions++;Record("decision","live-admitted",accepted,result);
-            LastChoice=accepted;LastChoiceByModel=true;
-            Status="Local model choice admitted after live validation";
+            LastChoice=accepted;
+            LastChoiceByModel=result != null && result.status == "parsed-awaiting-live-check";
+            Status = LastChoiceByModel ? "Local model choice admitted after live validation" : "Survival rule-based choice: " + accepted;
+            SynthesizeGroundedNarrative(accepted);
+            if (Brain != null && Brain.Log != null)
+                Brain.Log.Record(Brain.Tick, "DECISION", Brain.DescribePerception(), accepted, LastChoiceByModel ? "Local model choice" : "Deterministic survival rule", accepted);
             if(accepted.StartsWith("explore ",StringComparison.Ordinal))
             {
                 routePurpose=accepted;
@@ -930,6 +1008,12 @@ namespace CityLife.World
                 if(receipt.success)recentVerifiedOutcome=accepted+" succeeded";
             }
             nextRequestTick=Brain.Tick+25;
+            if (Brain != null) Brain.LastResult = LastOutcome;
+            SynthesizeGroundedNarrative(accepted);
+            if (Brain != null && Brain.Log != null && !accepted.StartsWith("explore ") && !accepted.StartsWith("approach ") && accepted != "seek food")
+            {
+                Brain.Log.Record(Brain.Tick, "SURVIVAL", Brain.DescribePerception(), accepted, accepted, LastOutcome);
+            }
         }
         public bool StepTick()
         {

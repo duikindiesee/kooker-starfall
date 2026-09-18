@@ -16,7 +16,12 @@ namespace CityLife.World.Editor
         public static bool Requested => System.Environment.GetCommandLineArgs().Contains("-starfallIntegrated");
         public static void Run()
         {
-            if (!Requested || !Application.isBatchMode) throw new InvalidOperationException("Explicit isolated integrated batch required.");
+            ExecuteAllChecks();
+            KokerboomRender.BuildCoastalPlayableSlice();
+        }
+
+        public static int ExecuteAllChecks()
+        {
             UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
             IslandValidation.Run(); NpcMilestoneValidation.Run(); NpcHybridValidation.Run();
             string foodChecksFolder=Path.Combine("evidence/local/food-checks","integrated-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
@@ -111,8 +116,15 @@ namespace CityLife.World.Editor
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
                               woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 14;
             Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, and waist moonbag with zero errors.");
+            return totalPassed;
+        }
 
-            KokerboomRender.BuildCoastalPlayableSlice();
+        public static void RunValidationOnly()
+        {
+            if (!Requested || !Application.isBatchMode) throw new InvalidOperationException("Explicit isolated integrated batch required.");
+            int passed = ExecuteAllChecks();
+            Debug.Log($"[RunValidationOnly] SUCCESS: {passed} named checks verified in memory.");
+            EditorApplication.Exit(0);
         }
         public static void Attach(Camera camera, GameObject ground, string folder)
         {

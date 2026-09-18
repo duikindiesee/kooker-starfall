@@ -91,9 +91,30 @@ namespace CityLife.World
             {
                 var planner = Brain.OptionalPlanner; thoughts.gameObject.SetActive(Detailed);
                 if(thoughtsBackground!=null)thoughtsBackground.SetActive(Detailed);
-                thoughts.text = "OPTIONAL LOCAL THOUGHTS\n" + planner.Status + "\nAdvisory plan: " + planner.Plan +
-                    "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
-                    "\n\nActions use deterministic checks. No learning.";
+                if (Brain.Survival != null && Brain.Survival.Enabled)
+                {
+                    string survStatus = Brain.Survival.Status;
+                    string survPlan = Brain.Survival.Plan;
+                    string survDialogue = Brain.Survival.Dialogue;
+                    string survReflection = Brain.Survival.Reflection;
+                    if (string.IsNullOrEmpty(survPlan))
+                    {
+                        Brain.Survival.SynthesizeGroundedNarrative(Brain.Survival.LastChoice);
+                        survPlan = Brain.Survival.Plan;
+                        survDialogue = Brain.Survival.Dialogue;
+                        survReflection = Brain.Survival.Reflection;
+                    }
+                    string providerInfo = Brain.Survival.LastChoiceByModel ? "Local model active" : "Grounded survival mind active";
+                    thoughts.text = "SURVIVAL MIND / LOCAL THOUGHTS\n" + survStatus + " (" + providerInfo + ")\nAdvisory plan: " + survPlan +
+                        "\n\nInner monologue: " + survDialogue + "\n\nGenerated reflection: " + survReflection +
+                        "\n\nActions use deterministic checks & physics.";
+                }
+                else
+                {
+                    thoughts.text = "OPTIONAL LOCAL THOUGHTS\n" + planner.Status + "\nAdvisory plan: " + planner.Plan +
+                        "\n\nFictional dialogue: " + planner.Dialogue + "\n\nGenerated reflection: " + planner.Reflection +
+                        "\n\nActions use deterministic checks. No learning.";
+                }
                 if (!string.IsNullOrEmpty(LivingMemoryText)) thoughts.text = LivingMemoryText;
                 if(thoughtsBackground!=null && !string.IsNullOrEmpty(LivingMemoryText))
                 {
@@ -118,8 +139,25 @@ namespace CityLife.World
             footerRect.anchoredPosition = new Vector2(40, Detailed ? -798 : -260);
             string mode = Brain.MenuPaused ? "PAUSED / " : "";
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
-            string currentGoal = Brain.GoalId.Length > 0 ? Brain.GoalId :
-                (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId) ? Brain.Foraging.TargetResourceId : "observe / wait");
+            string currentGoal;
+            if (Brain.GoalId.Length > 0)
+            {
+                currentGoal = Brain.GoalId;
+            }
+            else if (Brain.Survival != null && Brain.Survival.Enabled)
+            {
+                currentGoal = !string.IsNullOrEmpty(Brain.Survival.routePurpose)
+                    ? Brain.Survival.routePurpose
+                    : (!string.IsNullOrEmpty(Brain.Survival.LastChoice) ? Brain.Survival.LastChoice : "survive");
+            }
+            else if (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId))
+            {
+                currentGoal = Brain.Foraging.TargetResourceId;
+            }
+            else
+            {
+                currentGoal = "observe / wait";
+            }
             string FormatCargo()
             {
                 if (Brain.Actions == null) return "none";

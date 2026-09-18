@@ -934,15 +934,23 @@ namespace CityLife.World
             if (targetHand == null) return null;
 
             string fishId = $"held-river-fish-{++dynamicFishIdCounter}";
-            var fishGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            fishGo.name = fishId;
-            fishGo.transform.localScale = new Vector3(0.08f, 0.18f, 0.08f);
+            var fishGo = new GameObject(fishId);
             fishGo.layer = 11;
 
-            var col = fishGo.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
+            var col = fishGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.12f, 0.12f, 0.22f);
+            col.isTrigger = true;
 
-            var mr = fishGo.GetComponent<MeshRenderer>();
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            var vCol = visual.GetComponent<Collider>();
+            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            visual.transform.SetParent(fishGo.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(90f, 0, 0); // Orient horizontally in hand
+            visual.transform.localScale = new Vector3(0.06f, 0.12f, 0.06f); // 12cm length, 6cm thickness
+
+            var mr = visual.GetComponent<MeshRenderer>();
             Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             var fishMat = new Material(litShader) { name = "River Fish Prop" };
             fishMat.SetColor("_BaseColor", new Color(0.24f, 0.48f, 0.52f, 1f));
@@ -963,7 +971,7 @@ namespace CityLife.World
             phys.itemId = fishId;
             phys.itemTypeId = "food-river-fish";
             phys.massKg = 0.65f;
-            phys.dimensions = new PhysicalDimensions(0.35f, 0.12f, 0.08f);
+            phys.dimensions = new PhysicalDimensions(0.22f, 0.12f, 0.12f);
 
             Brain.Actions.HoldItemDirect(ni, isLeft);
 
@@ -989,15 +997,23 @@ namespace CityLife.World
             if (targetHand == null) return null;
 
             string crabId = $"held-protein-crab-{++dynamicCrabIdCounter}";
-            var crabGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            crabGo.name = crabId;
-            crabGo.transform.localScale = new Vector3(0.14f, 0.04f, 0.12f);
+            var crabGo = new GameObject(crabId);
             crabGo.layer = 11;
 
-            var col = crabGo.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
+            var col = crabGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.16f, 0.08f, 0.14f);
+            col.isTrigger = true;
 
-            var mr = crabGo.GetComponent<MeshRenderer>();
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            visual.name = "Visual";
+            var vCol = visual.GetComponent<Collider>();
+            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            visual.transform.SetParent(crabGo.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.identity;
+            visual.transform.localScale = new Vector3(0.14f, 0.035f, 0.12f); // 14cm wide, 3.5cm tall
+
+            var mr = visual.GetComponent<MeshRenderer>();
             Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             var crabMat = new Material(litShader) { name = "Shore Crab Prop" };
             crabMat.SetColor("_BaseColor", new Color(0.78f, 0.32f, 0.14f, 1f));
@@ -1018,7 +1034,7 @@ namespace CityLife.World
             phys.itemId = crabId;
             phys.itemTypeId = "food-protein-crab";
             phys.massKg = 0.45f;
-            phys.dimensions = new PhysicalDimensions(0.22f, 0.16f, 0.09f);
+            phys.dimensions = new PhysicalDimensions(0.16f, 0.08f, 0.14f);
 
             Brain.Actions.HoldItemDirect(ni, isLeft);
 

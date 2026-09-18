@@ -140,7 +140,7 @@ namespace CityLife.World
                 }
             }
 
-            Vector2Int targetReached = parent.ContainsKey(end) ? end : (closestDist <= 3.0f ? closest : start);
+            Vector2Int targetReached = parent.ContainsKey(end) ? end : (closest != start ? closest : start);
             if (targetReached == start && start != end) return null;
 
             var path = new List<Vector3>();

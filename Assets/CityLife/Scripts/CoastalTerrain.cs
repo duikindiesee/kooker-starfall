@@ -39,11 +39,11 @@ namespace CityLife.World
             if (z > 420f) return false; // North of 420m opens into the broad saline sea
             float groundY = Height(x, z);
             float depth = waterLevel - groundY;
-            if (depth < 0.02f && (y - waterLevel > 1.4f || y < waterLevel - 2.2f)) return false;
+            if (depth < 0.02f && (y - waterLevel > 2.6f || y < waterLevel - 2.2f)) return false;
             float dFeed = DistanceToFeed(x, z);
             float dOutlet = DistanceToOutlet(x, z);
             float dCenter = Mathf.Sqrt(x * x + z * z);
-            return dFeed < 36f || dOutlet < 48f || (dCenter < 38f && depth > 0.02f);
+            return dFeed < 42f || dOutlet < 48f || (dCenter < 38f && depth > 0.02f);
         }
 
         /// <summary>Metre-space surface height; outside this finite patch, returns the nearest edge height.</summary>

@@ -29,7 +29,7 @@ namespace CityLife.World
         public void SetActionsForTesting(NpcActionApi actions) => Actions = actions;
         public int FailureCount { get; private set; }
         public bool Ready { get; private set; }
-        public string LastResult { get; private set; } = "Waiting for perception";
+        public string LastResult { get; set; } = "Waiting for perception";
         public string LastFailureDiagnostic { get; private set; } = "none";
         public List<string> ChosenGoals = new List<string>();
         public StarfallMemoryExport MemoryExport;
@@ -244,13 +244,22 @@ namespace CityLife.World
             }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
             bool hasAuthoredLegacyItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item && x.GetComponent<CityLife.Items.PhysicalItem>() == null);
+            bool isHoldingFood = Actions != null && Actions.Held != null && (
+                Actions.Held.StableId.Contains("fish") || Actions.Held.StableId.Contains("crab") ||
+                Actions.Held.StableId.Contains("berry") || Actions.Held.StableId.Contains("food") ||
+                Actions.Held.StableId.Contains("fruit") ||
+                (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
+                 (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("food") ||
+                  Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId == "fruit")));
             bool survivalPriority = Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
-                (Survival.Food.Model.State.satiety < 7000 && Actions.Held == null) ||
-                (Survival.Food.Model.State.hydration < 7000 && Actions.Held == null) ||
+                isHoldingFood ||
+                (Survival.Food.Model.State.satiety < 7000 && (Actions.Held == null || isHoldingFood)) ||
+                (Survival.Food.Model.State.hydration < 7000 && (Actions.Held == null || isHoldingFood)) ||
                 // A scoped continuation earned in a prior real delivery cycle
                 // resumes survival without inventing delivery state in this
-                // reconstructed world. Never override a currently held item.
-                (Survival.VerifiedScopedContinuation && Actions.Held == null) ||
+                // reconstructed world. Never override a currently held item unless it's food.
+                (Survival.VerifiedScopedContinuation && (Actions.Held == null || isHoldingFood)) ||
+                (!hasAuthoredLegacyItems && (Actions.Held == null || isHoldingFood)) ||
                 (goal == null && Actions.Held == null && (!hasAuthoredLegacyItems || (Actions.Deliveries >= 3 &&
                     Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0)))));
             if (survivalPriority)

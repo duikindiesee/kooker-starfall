@@ -98,7 +98,13 @@ namespace CityLife.World
             }
             else
             {
+                Vector3 worldScaleBefore = interactable.transform.lossyScale;
                 interactable.transform.SetParent(targetHand, false);
+                Vector3 parentLossy = targetHand.lossyScale;
+                interactable.transform.localScale = new Vector3(
+                    worldScaleBefore.x / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.x)),
+                    worldScaleBefore.y / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.y)),
+                    worldScaleBefore.z / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.z)));
                 interactable.transform.localPosition = new Vector3(.06f, .04f, 0);
                 interactable.transform.localRotation = Quaternion.identity;
             }
