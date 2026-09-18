@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CityLife.World;
+using CityLife.Food;
+using Starfall.Food;
 
 namespace CityLife.Items
 {
@@ -545,6 +547,55 @@ namespace CityLife.Items
 
                 Check(catalog.TryGet("container-waist-bag", out var waistDef), "catalog-contains-waist-moonbag");
                 Check(waistDef.maxContainedSlots == 2, "waist-moonbag-slots-equals-2");
+
+                // Cooked items catalog checks
+                Check(catalog.TryGet("food-cooked-fish", out var cookedFishDef), "catalog-contains-cooked-fish");
+                Check(Mathf.Approximately(cookedFishDef.massKg, 0.55f), "cooked-fish-mass-matches-0.55kg");
+                Check(cookedFishDef.dimensions.height > 0f, "cooked-fish-has-valid-dimensions");
+
+                Check(catalog.TryGet("food-cooked-crab", out var cookedCrabDef), "catalog-contains-cooked-crab");
+                Check(Mathf.Approximately(cookedCrabDef.massKg, 0.40f), "cooked-crab-mass-matches-0.40kg");
+                Check(cookedCrabDef.dimensions.height > 0f, "cooked-crab-has-valid-dimensions");
+
+                // HearthCooking transformation logic checks
+                Check(HearthCooking.CanRoast("food-river-fish"), "can-roast-river-fish");
+                Check(HearthCooking.CanRoast("food-protein-crab"), "can-roast-protein-crab");
+                Check(!HearthCooking.CanRoast("canyon-stone"), "cannot-roast-stone");
+                Check(HearthCooking.GetCookedTypeId("food-river-fish") == "food-cooked-fish", "fish-cooked-type-id-matches");
+                Check(HearthCooking.GetCookedTypeId("food-protein-crab") == "food-cooked-crab", "crab-cooked-type-id-matches");
+
+                var testHearthGo = new GameObject("TestHearthCooking");
+                var testFishGo = new GameObject("TestFishItem");
+                try
+                {
+                    var cooker = testHearthGo.AddComponent<HearthCooking>();
+                    cooker.AuthoredHearthPosition = Vector3.zero;
+
+                    var fishPhys = testFishGo.AddComponent<PhysicalItem>();
+                    fishPhys.itemId = "fish-01";
+                    fishPhys.itemTypeId = "food-river-fish";
+                    fishPhys.massKg = 0.65f;
+                    fishPhys.ConfigureComponents();
+
+                    var fishInteractable = testFishGo.AddComponent<NpcInteractable>();
+                    fishInteractable.StableId = "item-food-river-fish-01";
+
+                    var mr = testFishGo.AddComponent<MeshRenderer>();
+
+                    Check(cooker.RoastItem(testFishGo), "cooker-roasts-raw-fish");
+                    Check(fishPhys.itemTypeId == "food-cooked-fish", "fish-type-id-updated-to-cooked");
+                    Check(Mathf.Approximately(fishPhys.massKg, 0.55f), "fish-mass-updated-to-0.55kg");
+                    Check(fishInteractable.StableId.Contains("food-cooked-fish"), "fish-interactable-id-updated");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(testFishGo);
+                    UnityEngine.Object.DestroyImmediate(testHearthGo);
+                }
+
+                // PlaceLedger expanded capacity check (4096 cells)
+                Check(PlaceLedger.MaximumCells == 4096, "place-ledger-maximum-cells-equals-4096");
+                Check(PlaceLedger.MaximumEvents == 512, "place-ledger-maximum-events-equals-512");
             }
 
             return passed;

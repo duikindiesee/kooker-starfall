@@ -62,7 +62,7 @@ namespace CityLife.World
             Perceptions = Label("Perceived objects", 260, 170, 19, new Color(.78f, .86f, .91f));
             History = Label("Action log", 442, 346, 18, new Color(.94f, .88f, .73f));
             footer = Label("Controls", 798, 72, 17, new Color(.65f, .75f, .82f)); footerRect = footer.rectTransform;
-            footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nDeterministic rules; no LLM or learning.";
+            footer.text = "P options · Tab possess · F spectator · M map\nE interact/drink · C container/roast · H eat · G drop\nL decisions · R autonomy · Shift run · RMB look";
             if (Brain.OptionalPlanner != null)
             {
                 // Keep memory/reflection inside the centre lane, clear of the
@@ -73,7 +73,7 @@ namespace CityLife.World
                 var o = new GameObject("Optional local thoughts", typeof(RectTransform), typeof(Text)); Rect(o, 555, 35, 510, 390);
                 thoughts = o.GetComponent<Text>(); thoughts.font = font; thoughts.fontSize = 20; thoughts.color = new Color(.8f, .94f, .97f);
                 thoughts.supportRichText = false; thoughts.horizontalOverflow = HorizontalWrapMode.Wrap;
-                footer.text = "P options · Tab possess/release · F spectator\nL decisions · R autonomy · RMB look\nF11 display · Local thoughts off by default";
+                footer.text = "P options · Tab possess · F spectator · M map\nE interact/drink · C container/roast · H eat · G drop\nL decisions · R autonomy · Shift run · F11 display";
             }
         }
         private void LateUpdate() => Refresh();

@@ -259,6 +259,9 @@ namespace CityLife.World.Editor
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
             place.Kind = NpcObjectKind.Place; place.Approach = refuge.transform;
+            var hearthCooker = refuge.AddComponent<CityLife.Food.HearthCooking>();
+            hearthCooker.Refuge = refugeRuntime;
+            hearthCooker.AuthoredHearthPosition = refugeRuntime.Hearth;
             brain.Registry = brain.Registry.Concat(new[] { place }).ToArray();
             var foodObject = new GameObject("Food and ecology / integrated adapter"); foodObject.transform.SetParent(ground.transform);
             var food = foodObject.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
@@ -272,6 +275,7 @@ namespace CityLife.World.Editor
                 throw new InvalidOperationException("Authored freshwater and regional water require a measured refuge freeboard.");
             var survival = actorObject.AddComponent<StarfallSurvivalAutonomy>();
             survival.Brain=brain;survival.Food=food;survival.Refuge=refugeRuntime;brain.Survival=survival;
+            actorObject.AddComponent<CityLife.Food.HearthCooking>().Refuge = refugeRuntime;
             var mapHud = camera.gameObject.AddComponent<StarfallMapHud>();
             mapHud.Brain=brain;mapHud.Survival=survival;mapHud.Food=food;mapHud.View=camera;survival.MapHud=mapHud;
             var deathDiagnostic=camera.gameObject.AddComponent<StarfallSurvivalDeathAcceptance>();

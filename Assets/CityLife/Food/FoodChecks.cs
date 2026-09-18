@@ -114,9 +114,13 @@ namespace Starfall.Food
                 oldReload.State.exploredCells!=null&&oldReload.State.observedPlaces!=null&&
                 oldReload.State.exploredCells.Count==0&&oldReload.State.observedPlaces.Count==0,
                 "additive place ledger restores old food snapshot without inventing knowledge");
-            var capacity=new FoodModel("large-place","large-gen",4242);capacity.State.tick=512;
+            var capacity=new FoodModel("large-place","large-gen",4242);capacity.State.tick=PlaceLedger.MaximumCells;
             for(int i=0;i<PlaceLedger.MaximumCells;i++)
-                if(!PlaceLedger.Occupy(capacity.State,i,0,512))throw new Exception("capacity cell fixture failed");
+            {
+                int cx = (i % 64) - 32;
+                int cz = (i / 64) - 32;
+                if(!PlaceLedger.Occupy(capacity.State,cx,cz,capacity.State.tick))throw new Exception("capacity cell fixture failed at " + i);
+            }
             for(int i=0;i<PlaceLedger.MaximumEvents;i++)
                 if(!PlaceLedger.Observe(capacity.State,"site-"+i,"Place","observed-site",new Vector3(i,4,0),true,true,i+1,i+1,false))
                     throw new Exception("capacity event fixture failed");
@@ -125,7 +129,7 @@ namespace Starfall.Food
             Check(capacityReload.Load(capacityPath,"large-place","large-gen")&&
                 capacityReload.State.exploredCells.Count==PlaceLedger.MaximumCells&&
                 capacityReload.State.observedPlaces.Count==PlaceLedger.MaximumEvents&&
-                !PlaceLedger.Occupy(capacityReload.State,600,0,512),
+                !PlaceLedger.Occupy(capacityReload.State,100,100,capacityReload.State.tick),
                 "maximum bounded place payload reloads and capacity surfaces refusal rather than dropping knowledge");
             Check(!Do(FoodAction.Gather,"berry").success,"unknown berry not edible/gatherable");
             var exactModel=new Dictionary<string,object>{{"model","starfall-local-e4b"}};

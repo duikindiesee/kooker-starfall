@@ -286,6 +286,24 @@ namespace CityLife.Items
                 maxContainedMassKg = 1.0f
             });
 
+            // Roasted River Fish (Tender smoked trout roasted over refuge hearth embers)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-cooked-fish",
+                dimensions = new PhysicalDimensions(0.32f, 0.12f, 0.08f),
+                massKg = 0.55f,
+                isContainer = false
+            });
+
+            // Roasted Shore Crab (Crisp succulent roasted crab prepared over hearth embers)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-cooked-crab",
+                dimensions = new PhysicalDimensions(0.20f, 0.15f, 0.09f),
+                massKg = 0.40f,
+                isContainer = false
+            });
+
             return catalog;
         }
     }

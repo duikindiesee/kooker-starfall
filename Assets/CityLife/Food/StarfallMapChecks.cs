@@ -587,6 +587,19 @@ namespace Starfall.Food
                 {
                     UnityEngine.Object.DestroyImmediate(navGo);
                 }
+
+                // Verification of map exploration capacity beyond 512 cells (4096 cells capacity)
+                var expandedCapacityModel = new FoodModel("cap-world", "cap-gen", 1234);
+                expandedCapacityModel.State.tick = 1000;
+                for (int i = 0; i < 600; i++)
+                {
+                    PlaceLedger.Occupy(expandedCapacityModel.State, i, 0, 1000);
+                }
+                Check(expandedCapacityModel.State.exploredCells.Count == 600, "place ledger successfully explores 600 cells past previous 512 limit");
+
+                var capVm = new StarfallMapViewModel("cap-world", "cap-gen", "inhabitant-1");
+                Check(capVm.Update(expandedCapacityModel.State, new Vector3(0, 0, 0)), "map view model updates cleanly with 600 cells");
+                Check(capVm.ExploredCellCount == 600, "view model accurately reports 600 explored cells without freezing");
             }
 
             return passed;

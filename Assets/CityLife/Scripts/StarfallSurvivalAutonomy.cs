@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Starfall.Food;
+using CityLife.Food;
+using CityLife.Items;
 
 namespace CityLife.World
 {
@@ -342,6 +344,17 @@ namespace CityLife.World
                 (s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
             if(s.hydration<8500&&CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel))
                 foodChoices.Add("drink river");
+
+            var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+            var cooker = Brain.GetComponentInChildren<HearthCooking>();
+            if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
+            bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
+
+            if (heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth)
+                foodChoices.Add("roast food on hearth");
+            if (heldPhys != null && (heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab") && s.satiety < 8500)
+                foodChoices.Add("feast roasted catch");
+
             // Exact-payload probes proved four exploratory options 8/8
             // length/empty, and the three-option near-berry runtime stalled
             // repeatedly. Two genuinely eligible options generated a final
@@ -349,6 +362,8 @@ namespace CityLife.World
             // menu over time; this is capacity selection, not an action taken
             // on the model's behalf or hidden resource knowledge.
             string urgent=s.hydration<6500?(foodChoices.FirstOrDefault(x=>x.EndsWith("spring"))??foodChoices.FirstOrDefault(x=>x=="drink river")):null;
+            if(urgent==null&&foodChoices.Contains("roast food on hearth"))urgent="roast food on hearth";
+            if(urgent==null&&foodChoices.Contains("feast roasted catch"))urgent="feast roasted catch";
             if(urgent==null&&s.carriedFruit>0&&s.satiety<8500&&foodChoices.Contains("eat fruit"))urgent="eat fruit";
             if(urgent==null)urgent=foodChoices.FirstOrDefault();
             var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
@@ -548,6 +563,50 @@ namespace CityLife.World
                 FoodOutcomes++;
                 Persist();
                 recentVerifiedOutcome = "drink river succeeded";
+            }
+            else if (accepted == "roast food on hearth")
+            {
+                if (HearthCooking.TryRoastHeldItem(Brain))
+                {
+                    var s = Food.Model.State;
+                    BoostPlaceAffinity("refuge-hearth", 20);
+                    LastOutcome = "Roasted fresh catch on refuge hearth embers";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "roast food on hearth succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "feast roasted catch")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                if (heldPhys != null)
+                {
+                    if (heldPhys.itemTypeId == "food-cooked-fish")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3500);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3500);
+                    }
+                    else
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3000);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 3800);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3000);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3200);
+                    }
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    LastOutcome = "Feasted on savory roasted meal [Protein/Energy boosted, drive reduced]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "feast roasted catch succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
             }
             else
             {

@@ -190,7 +190,7 @@ namespace Starfall.Food
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);
         public bool Restore(string json,string world,string generation)
         {
-            if(json==null||json.Length>512000)return false;
+            if(json==null||json.Length>2048000)return false;
             try{var candidate=JsonUtility.FromJson<FoodState>(json);if(!Valid(candidate,world,generation)||candidate.seed!=State.seed||candidate.actorId!=State.actorId)return false;
                 if(candidate.exploredCells==null)candidate.exploredCells=new List<PlaceCell>();
                 if(candidate.observedPlaces==null)candidate.observedPlaces=new List<PlaceObservationEvent>();
@@ -213,9 +213,9 @@ namespace Starfall.Food
         {
             try
             {
-                if(new FileInfo(path).Length>160000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
+                if(new FileInfo(path).Length>480000)return false;string text=File.ReadAllText(path);var pointer=JsonUtility.FromJson<SavePointer>(text);
                 if(pointer!=null&&pointer.schema=="starfall.food-pointer.v1")
-                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>600000)return false;text=File.ReadAllText(snapshot);}
+                {if(string.IsNullOrEmpty(pointer.snapshot)||!System.Text.RegularExpressions.Regex.IsMatch(pointer.snapshot,@"\Asnap-[0-9a-f]{64}\.json\z"))return false;string snapshot=Path.Combine(Path.GetDirectoryName(path),pointer.snapshot);if(new FileInfo(snapshot).Length>2400000)return false;text=File.ReadAllText(snapshot);}
                 var e=JsonUtility.FromJson<SaveEnvelope>(text);return e!=null&&e.schema=="starfall.food-save.v1"&&e.payload!=null&&e.sha256==Hash(e.payload)&&Restore(e.payload,world,generation);
             }catch{return false;}
         }
@@ -236,7 +236,7 @@ namespace Starfall.Food
     // by Unity. This ledger never consults the authored resource registry.
     public static class PlaceLedger
     {
-        public const int MaximumCells=512,MaximumEvents=256;
+        public const int MaximumCells=4096,MaximumEvents=512;
         static bool Finite(float value)=>!float.IsNaN(value)&&!float.IsInfinity(value);
         public static PlaceCell Cell(FoodState s,int x,int z)=>s?.exploredCells?.Find(c=>c.x==x&&c.z==z);
         public static PlaceObservationEvent LastSeen(FoodState s,string id)

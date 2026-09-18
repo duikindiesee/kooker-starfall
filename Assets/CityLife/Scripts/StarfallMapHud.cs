@@ -87,6 +87,7 @@ namespace CityLife.World
         private readonly System.Collections.Generic.List<(Vector3 worldPos, string label, RectTransform rt, Text txt)> poiBadges = new System.Collections.Generic.List<(Vector3, string, RectTransform, Text)>();
         private bool showVisualMap = true;
         private int lastRevealedCellCount = -1;
+        private Vector3 lastRevealedPos = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
         private int activeTab = 0; // 0: Tactical Map / Grid, 1: Beliefs, 2: History
         private int lastScreenWidth = -1;
@@ -269,6 +270,7 @@ namespace CityLife.World
                 fogTexture = StarfallVisualMapGenerator.CreateFogOfWarTexture();
                 fogPixels = fogTexture.GetPixels32();
                 lastRevealedCellCount = -1;
+                lastRevealedPos = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             }
         }
 
@@ -405,10 +407,12 @@ namespace CityLife.World
                 RefreshUi();
             }
 
-            // Update dynamic Fog of War reveal on cell changes
+            // Update dynamic Fog of War reveal on cell changes or actor movement
             if (fogPixels != null && fogTexture != null && ViewModel != null && ViewModel.IsValid)
             {
-                if (ViewModel.ExploredCellCount != lastRevealedCellCount)
+                bool cellCountChanged = ViewModel.ExploredCellCount != lastRevealedCellCount;
+                bool posMoved = (pos - lastRevealedPos).sqrMagnitude > (1.2f * 1.2f);
+                if (cellCountChanged || posMoved)
                 {
                     var cells = ViewModel.GetExploredCells();
                     if (cells != null)
@@ -417,10 +421,17 @@ namespace CityLife.World
                         {
                             StarfallVisualMapGenerator.RevealCell(fogPixels, cells[i].X, cells[i].Z, 22f);
                         }
-                        fogTexture.SetPixels32(fogPixels);
-                        fogTexture.Apply();
-                        lastRevealedCellCount = cells.Length;
                     }
+
+                    // Dynamically reveal around current actor position in real time
+                    int curCellX = Mathf.RoundToInt(pos.x / 3f);
+                    int curCellZ = Mathf.RoundToInt(pos.z / 3f);
+                    StarfallVisualMapGenerator.RevealCell(fogPixels, curCellX, curCellZ, 22f);
+
+                    fogTexture.SetPixels32(fogPixels);
+                    fogTexture.Apply();
+                    lastRevealedCellCount = cells != null ? cells.Length : 0;
+                    lastRevealedPos = pos;
                 }
             }
 

@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using CityLife.Items;
+using CityLife.Food;
 
 namespace CityLife.World
 {
@@ -140,6 +141,17 @@ namespace CityLife.World
             if (key.lKey.wasPressedThisFrame) Hud.Detailed = !Hud.Detailed;
             if (key.cKey.wasPressedThisFrame && Brain.Possessed)
             {
+                if (Brain.Actions != null && Brain.Actions.Held != null)
+                {
+                    var heldTarget = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
+                    if (heldTarget != null && HearthCooking.CanRoast(heldTarget.itemTypeId) && HearthCooking.TryRoastHeldItem(Brain))
+                    {
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                        if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                        UpdatePickupTargetLabel();
+                        return;
+                    }
+                }
                 if (ContainerPanel != null)
                 {
                     ContainerPanel.Open();
@@ -444,7 +456,24 @@ namespace CityLife.World
                 var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
                 int mbCount = moonbag != null ? moonbag.StoredCount : 0;
 
-                if (heldTarget != null && heldTarget.itemTypeId == "food-protein-crab")
+                var cooker = Brain.GetComponentInChildren<HearthCooking>();
+                if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
+                bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
+
+                if (heldTarget != null && HearthCooking.CanRoast(heldTarget.itemTypeId) && nearHearth)
+                {
+                    string name = HearthCooking.GetItemDisplayName(heldTarget.itemTypeId);
+                    CurrentPickupTargetLabel = $"Held: {name} [C / E: Roast on Hearth Fire | H: Eat | G: Drop]";
+                }
+                else if (heldTarget != null && heldTarget.itemTypeId == "food-cooked-fish")
+                {
+                    CurrentPickupTargetLabel = "Held: Roasted River Trout [H: Feast | G: Drop]";
+                }
+                else if (heldTarget != null && heldTarget.itemTypeId == "food-cooked-crab")
+                {
+                    CurrentPickupTargetLabel = "Held: Roasted Shore Crab [H: Feast | G: Drop]";
+                }
+                else if (heldTarget != null && heldTarget.itemTypeId == "food-protein-crab")
                 {
                     CurrentPickupTargetLabel = "Held: Protein Shore Crab [H: Eat | G: Drop]";
                 }
@@ -624,6 +653,19 @@ namespace CityLife.World
             {
                 InteractPhysicalItem();
                 return;
+            }
+
+            // If near hearth holding raw roastable item, roast it on E
+            if (!isDropKey && Brain.Actions != null && Brain.Actions.Held != null)
+            {
+                var heldPhys = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
+                if (heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && HearthCooking.TryRoastHeldItem(Brain))
+                {
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                    UpdatePickupTargetLabel();
+                    return;
+                }
             }
 
             // If near survival resource, interact with it on E (or G if nothing held)
@@ -900,7 +942,21 @@ namespace CityLife.World
                 if (food != null && food.Model != null)
                 {
                     var s = food.Model.State;
-                    if (typeId == "food-protein-crab")
+                    if (typeId == "food-cooked-fish")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3500);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3500);
+                    }
+                    else if (typeId == "food-cooked-crab")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3000);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 3800);
+                        s.satiety = Mathf.Min(10000, s.satiety + 3000);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3200);
+                    }
+                    else if (typeId == "food-protein-crab")
                     {
                         s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
                         s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
@@ -975,7 +1031,9 @@ namespace CityLife.World
             if (phys != null)
             {
                 return phys.itemTypeId == "food-protein-crab" ||
+                       phys.itemTypeId == "food-cooked-crab" ||
                        phys.itemTypeId == "food-river-fish" ||
+                       phys.itemTypeId == "food-cooked-fish" ||
                        phys.itemTypeId == "food-sourfig-berry" ||
                        phys.itemTypeId == "fruit";
             }
@@ -1127,7 +1185,7 @@ namespace CityLife.World
                     "\nSpectator: WASD or arrows move the camera; Q/E down/up. NPC autonomy continues." +
                     "\nPossession: WASD or arrows move the NPC. Autonomy is suspended." +
                     "\nHold right mouse: look. R: pause/resume autonomy in observation modes." +
-                    "\nC: container panel. G: pick up or drop. T: cycle target (container in panel). L: show/hide decisions. P: pause/options. Escape: back/resume; outside menus, pause and release pointer.";
+                    "\nC: container panel / roast at hearth. E: gather/drink/roast. H: eat. G: drop. B: moonbag. X: toggle club. T: cycle target. L: show/hide decisions. M: map/beliefs. Escape: back/resume.";
                 Option(Brain.Possessed ? "Release NPC and resume autonomy" : "Possess this NPC", TogglePossession);
                 if (Brain.OptionalPlanner != null) Option("Local thoughts", () => ShowPage("Thoughts"));
                 if (PersistentMouseCapture) Option("Mouse look sensitivity", () => ShowPage("Mouse"));
