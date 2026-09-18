@@ -372,7 +372,36 @@ namespace Starfall.Food
             if (acceptanceAccess) return new FoodAccess { visible = true, inReach = true, permitted = true, verifiedFreshwater = target == "spring" };
             bool inventory = target == "inventory";
             if(Actor==null) return new FoodAccess();
-            NpcInteractable item = target == "berry" ? Berry : target == "spring" ? Spring : null;
+            NpcInteractable item = null;
+            if (target == "spring")
+            {
+                item = Spring;
+            }
+            else if (target == "berry" || (target != null && target.StartsWith("berry")))
+            {
+                item = Berry;
+                float bestDist = (item != null && Actor != null) ? Vector3.Distance(Actor.position, item.transform.position) : float.MaxValue;
+                if (AdditionalBerryBushes != null && Actor != null)
+                {
+                    foreach (var bush in AdditionalBerryBushes)
+                    {
+                        if (bush != null && bush.isActiveAndEnabled)
+                        {
+                            if (target == bush.StableId)
+                            {
+                                item = bush;
+                                break;
+                            }
+                            float d = Vector3.Distance(Actor.position, bush.transform.position);
+                            if (d < bestDist)
+                            {
+                                bestDist = d;
+                                item = bush;
+                            }
+                        }
+                    }
+                }
+            }
             if(!inventory && item==null) return new FoodAccess();
             bool visible=inventory;
             if(item!=null && item.isActiveAndEnabled && item.WorldId==Model.State.world && item.Permission)
@@ -409,6 +438,10 @@ namespace Starfall.Food
                 Model.State.body.resting=Refuge!=null && Refuge.Resting && Refuge.Body!=null && Refuge.Body.transform==Actor;
                 Model.State.body.sheltered=Refuge!=null && Refuge.GeometryVerified && Refuge.Sample(Actor.position+Vector3.up).RainMultiplier<.05f;
                 Model.State.body.submerged=Brain!=null && Brain.Actor!=null && Brain.Actor.IsSubmerged;
+                if (Model.State.wetSeason && Model.State.soilWater < 40)
+                {
+                    Model.State.soilWater = Mathf.Max(Model.State.soilWater, 40);
+                }
             }
             Model.FixedStep(paused);
             if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;

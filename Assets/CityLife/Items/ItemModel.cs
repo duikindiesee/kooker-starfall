@@ -303,6 +303,36 @@ namespace CityLife.Items
             return true;
         }
 
+        public bool RegisterCarriedItem(string itemId, string itemTypeId, string holderActorId)
+        {
+            if (!IsValidId(itemId) || items.ContainsKey(itemId) || tombstones.ContainsKey(itemId))
+                return false;
+            if (!definitions.TryGetValue(itemTypeId, out var def))
+                return false;
+            if (string.IsNullOrEmpty(holderActorId) || !IsValidId(holderActorId))
+                return false;
+            if (def.isAnchored)
+                return false;
+
+            var state = new ItemStateSnapshot
+            {
+                itemId = itemId,
+                itemTypeId = itemTypeId,
+                location = ItemLocationKind.Carried,
+                holderActorId = holderActorId,
+                containerItemId = null,
+                containerSlot = -1,
+                placedSupportId = null,
+                position = Vector3.zero,
+                rotation = Quaternion.identity,
+                lastUpdatedTick = Tick
+            };
+
+            items.Add(itemId, state);
+            BumpRevision();
+            return true;
+        }
+
         public bool SetActorCarryLimits(string actorId, ActorCarryLimits limits)
         {
             if (!IsValidId(actorId) || !limits.IsValid())

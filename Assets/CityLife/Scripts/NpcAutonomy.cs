@@ -25,7 +25,8 @@ namespace CityLife.World
         public int Tick { get; private set; }
         public string Phase { get; private set; } = "Observe";
         public string GoalId => goal != null ? goal.id : "";
-        public NpcActionApi Actions { get; private set; }
+        public NpcActionApi Actions { get; internal set; }
+        public void SetActionsForTesting(NpcActionApi actions) => Actions = actions;
         public int FailureCount { get; private set; }
         public bool Ready { get; private set; }
         public string LastResult { get; private set; } = "Waiting for perception";

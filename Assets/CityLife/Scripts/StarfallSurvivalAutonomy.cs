@@ -312,8 +312,7 @@ namespace CityLife.World
         private List<string> Eligible()
         {
             var foodChoices=new List<string>();var s=Food.Model.State;
-            // First screen for actually seen, scoped freshwater. Its position
-            // is never disclosed; an approach token appears only after live LOS.
+            // 1. Freshwater spring seep
             if(SpringRelevant(s)&&Observed("spring-food",out _) &&
                 Food.Spring!=null && Food.Spring.WorldId==s.world)
             {
@@ -325,47 +324,136 @@ namespace CityLife.World
                     else if(s.hydration<8500&&s.freshwaterMl>=250)foodChoices.Add("drink spring");
                 }
             }
-            // Do not repeatedly approach a familiar, exhausted bush or fill
-            // inventory when neither measured food nor water needs topping up.
-            // Stock and carried fruit are the inhabitant's actual scoped state,
-            // not foreknowledge of a new resource's location or effect.
-            bool berryRelevant=BerryRelevant(s);
-            if(berryRelevant&&Observed("berry-food",out _) && Food.Berry!=null && Food.Berry.WorldId==s.world)
-            {
-                FoodAccess gate=Food.Inspect("berry");
-                if(gate.visible && gate.permitted)
-                {
-                    if(!gate.inReach)foodChoices.Add("approach berry");
-                    else if(!s.knowsBerry)foodChoices.Add("inspect berry");
-                    else if(s.fruitStock>0&&s.carriedFruit<4)foodChoices.Add("gather berry");
-                }
-            }
-            if(s.carriedFruit>0&&s.knowsBerry&&s.body.stomach<=8800&&
-                (s.satiety<8500||s.hydration<8500))foodChoices.Add("eat fruit");
-            if(s.hydration<8500&&CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel))
+
+            // 2. Freshwater river
+            bool inRiver = CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel);
+            if(s.hydration<8500&&inRiver)
                 foodChoices.Add("drink river");
 
+            // 3. Berry bushes (primary + all distributed bushes: berry-food, berry-food-2..8)
+            NpcObservation nearestBush = null;
+            float nearestBushDist = float.MaxValue;
+            if (Brain.Perception != null && Brain.Perception.Current != null)
+            {
+                foreach (var obs in Brain.Perception.Current)
+                {
+                    if (obs != null && obs.kind == NpcObjectKind.Place && obs.id.StartsWith("berry-food", StringComparison.Ordinal) &&
+                        obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                    {
+                        float d = Vector3.Distance(Brain.transform.position, obs.position);
+                        if (d < nearestBushDist)
+                        {
+                            nearestBushDist = d;
+                            nearestBush = obs;
+                        }
+                    }
+                }
+            }
+
+            var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+            int freeHands = controls != null ? controls.GetFreeHandCount() : 1;
+            var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+            bool canCarryMoreBerries = freeHands > 0 || (moonbag != null && moonbag.CanStore) || s.carriedFruit < 4;
+
+            if (nearestBush != null)
+            {
+                FoodAccess gate = Food.Inspect(nearestBush.id);
+                if (gate.visible && gate.permitted)
+                {
+                    if (!gate.inReach)
+                    {
+                        if (BerryRelevant(s) || s.satiety < 8500)
+                            foodChoices.Add("approach berry");
+                    }
+                    else if (!s.knowsBerry)
+                    {
+                        foodChoices.Add("inspect berry");
+                    }
+                    else if (canCarryMoreBerries && (s.satiety < 8500 || s.carriedFruit < 4))
+                    {
+                        foodChoices.Add("gather berry");
+                    }
+                }
+            }
+
+            // 4. Fishing in river & Crabbing on shore
+            if (s.satiety < 8500 && freeHands > 0)
+            {
+                if (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish"))))
+                {
+                    foodChoices.Add("catch fish");
+                }
+
+                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 2.5f ||
+                    (Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("crab")));
+                if (nearShore)
+                {
+                    foodChoices.Add("catch crab");
+                }
+            }
+
+            // 5. Edible items held or carried
             var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
             var cooker = Brain.GetComponentInChildren<HearthCooking>();
             if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
             bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
 
-            if (heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth)
-                foodChoices.Add("roast food on hearth");
-            if (heldPhys != null && (heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab") && s.satiety < 8500)
-                foodChoices.Add("feast roasted catch");
+            if (heldPhys != null)
+            {
+                if (HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth)
+                {
+                    foodChoices.Add("roast catch");
+                    foodChoices.Add("roast food on hearth");
+                }
+                if ((heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab") && s.satiety < 8500)
+                {
+                    foodChoices.Add("feast catch");
+                    foodChoices.Add("feast roasted catch");
+                }
+                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab") && s.satiety < 8500)
+                    foodChoices.Add("eat catch");
+                if (heldPhys.itemTypeId == "food-sourfig-berry" && (s.satiety < 8500 || s.hydration < 8500))
+                    foodChoices.Add("eat fruit");
+            }
 
-            // Exact-payload probes proved four exploratory options 8/8
-            // length/empty, and the three-option near-berry runtime stalled
-            // repeatedly. Two genuinely eligible options generated a final
-            // live action in 5/5 separate warm requests. Rotate the offered
-            // menu over time; this is capacity selection, not an action taken
-            // on the model's behalf or hidden resource knowledge.
-            string urgent=s.hydration<6500?(foodChoices.FirstOrDefault(x=>x.EndsWith("spring"))??foodChoices.FirstOrDefault(x=>x=="drink river")):null;
-            if(urgent==null&&foodChoices.Contains("roast food on hearth"))urgent="roast food on hearth";
-            if(urgent==null&&foodChoices.Contains("feast roasted catch"))urgent="feast roasted catch";
-            if(urgent==null&&s.carriedFruit>0&&s.satiety<8500&&foodChoices.Contains("eat fruit"))urgent="eat fruit";
-            if(urgent==null)urgent=foodChoices.FirstOrDefault();
+            if (moonbag != null && moonbag.CanRetrieve && (s.satiety < 8500 || s.hydration < 8500))
+                foodChoices.Add("eat fruit");
+
+            if (s.carriedFruit > 0 && s.body.stomach <= 8800 && (s.satiety < 8500 || s.hydration < 8500))
+                foodChoices.Add("eat fruit");
+
+            // 6. Starvation route-to-known-food when hungry and no food in immediate view
+            if ((s.satiety < 6500 || s.body.stomach <= 4000) && !foodChoices.Any(x => x.StartsWith("eat") || x.StartsWith("feast") || x.StartsWith("gather")))
+            {
+                if (s.observedPlaces != null && s.observedPlaces.Any(x => x != null && (x.id.StartsWith("berry-food") || x.id == "first-refuge" || x.id == "freshwater-river")))
+                {
+                    foodChoices.Add("seek food");
+                }
+            }
+
+            // Urgency ranking:
+            // Top priority: Eating when hungry!
+            string urgent = null;
+            if (s.satiety < 8500)
+            {
+                if (foodChoices.Contains("feast catch")) urgent = "feast catch";
+                else if (foodChoices.Contains("feast roasted catch")) urgent = "feast roasted catch";
+                else if (foodChoices.Contains("eat catch")) urgent = "eat catch";
+                else if (foodChoices.Contains("eat fruit")) urgent = "eat fruit";
+            }
+            if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast catch"))
+                urgent = "roast catch";
+            if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast food on hearth"))
+                urgent = "roast food on hearth";
+            if (urgent == null && s.hydration < 6500)
+                urgent = foodChoices.FirstOrDefault(x => x == "drink river" || x.EndsWith("spring"));
+            if (urgent == null && s.satiety < 7500)
+                urgent = foodChoices.FirstOrDefault(x => x.StartsWith("gather") || x.StartsWith("catch") || x == "seek food");
+            if (urgent == null)
+                urgent = foodChoices.FirstOrDefault();
+
             var choices=new List<string>();if(urgent!=null)choices.Add(urgent);
             var directions=new [] {("explore north",Vector3.forward),("explore east",Vector3.right),
                 ("explore south",Vector3.back),("explore west",Vector3.left)};
@@ -549,9 +637,72 @@ namespace CityLife.World
             else if(accepted.StartsWith("approach ",StringComparison.Ordinal))
             {
                 routePurpose=accepted;
-                string target=accepted.EndsWith("berry")?"berry-food":"spring-food";
-                if(!Observed(target,out var observation)||!StartRoute(observation.approach))
-                {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
+                if (accepted.EndsWith("berry"))
+                {
+                    NpcObservation bestBush = null;
+                    float bestBushDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Place && obs.id.StartsWith("berry-food") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestBushDist)
+                                {
+                                    bestBushDist = d;
+                                    bestBush = obs;
+                                }
+                            }
+                        }
+                    }
+                    if (bestBush == null || !StartRoute(bestBush.approach != Vector3.zero ? bestBush.approach : bestBush.position))
+                    {
+                        routePurpose=null;
+                        Record("route","live-target-route-rejected",accepted,result);
+                    }
+                }
+                else
+                {
+                    string target="spring-food";
+                    if(!Observed(target,out var observation)||!StartRoute(observation.approach!=Vector3.zero?observation.approach:observation.position))
+                    {routePurpose=null;Record("route","live-target-route-rejected",accepted,result);}
+                }
+            }
+            else if (accepted == "seek food")
+            {
+                var s = Food.Model.State;
+                PlaceObservationEvent bestPlace = null;
+                float bestDist = float.MaxValue;
+                if (s.observedPlaces != null)
+                {
+                    foreach (var place in s.observedPlaces)
+                    {
+                        if (place != null && (place.id.StartsWith("berry-food") || place.id == "first-refuge" || place.id == "freshwater-river"))
+                        {
+                            float d = Vector3.Distance(Brain.transform.position, place.position);
+                            if (d < bestDist && d > 3f)
+                            {
+                                bestDist = d;
+                                bestPlace = place;
+                            }
+                        }
+                    }
+                }
+                Vector3 targetPos = bestPlace != null ? bestPlace.position : (Refuge != null ? Refuge.OriginOffset : Brain.transform.position + Vector3.forward * 15f);
+                if (Brain.TerrainNavigation != null && Brain.TerrainNavigation.Walkable(targetPos, out var floor)) targetPos = floor;
+                routePurpose = "seek food";
+                if (!StartRoute(targetPos))
+                {
+                    routePurpose = null;
+                    Record("route", "seek-food-route-failed", accepted, result);
+                }
+                else
+                {
+                    LastOutcome = "Routing to remembered food source to relieve hunger";
+                    recentVerifiedOutcome = "seek food started";
+                }
             }
             else if (accepted == "drink river")
             {
@@ -563,8 +714,35 @@ namespace CityLife.World
                 FoodOutcomes++;
                 Persist();
                 recentVerifiedOutcome = "drink river succeeded";
+                if (Brain.Actor != null) Brain.Actor.Gesture();
             }
-            else if (accepted == "roast food on hearth")
+            else if (accepted == "catch fish")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnFishInHand();
+                    LastOutcome = "Caught fresh river fish in shallows";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "catch fish succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "catch crab")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnCrabInHand();
+                    LastOutcome = "Caught protein shore crab on coastal bank";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "catch crab succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "roast food on hearth" || accepted == "roast catch")
             {
                 if (HearthCooking.TryRoastHeldItem(Brain))
                 {
@@ -573,11 +751,11 @@ namespace CityLife.World
                     LastOutcome = "Roasted fresh catch on refuge hearth embers";
                     FoodOutcomes++;
                     Persist();
-                    recentVerifiedOutcome = "roast food on hearth succeeded";
+                    recentVerifiedOutcome = "roast catch succeeded";
                     if (Brain.Actor != null) Brain.Actor.Gesture();
                 }
             }
-            else if (accepted == "feast roasted catch")
+            else if (accepted == "feast roasted catch" || accepted == "feast catch")
             {
                 var s = Food.Model.State;
                 var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
@@ -604,8 +782,125 @@ namespace CityLife.World
                     LastOutcome = "Feasted on savory roasted meal [Protein/Energy boosted, drive reduced]";
                     FoodOutcomes++;
                     Persist();
-                    recentVerifiedOutcome = "feast roasted catch succeeded";
+                    recentVerifiedOutcome = "feast catch succeeded";
                     if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "eat catch")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab"))
+                {
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
+                    s.satiety = Mathf.Min(10000, s.satiety + 2000);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    LastOutcome = "Ate fresh protein catch [Hunger & protein replenished]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat catch succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "eat fruit")
+            {
+                var s = Food.Model.State;
+                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+                var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-sourfig-berry" || heldPhys.itemTypeId == "fruit"))
+                {
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.hydration = Mathf.Min(10000, s.hydration + 600);
+                    s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    s.knowsMealBenefit = true;
+                    var heldGo = Brain.Actions.Held.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    Destroy(heldGo);
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Ate ripe held sourfig berry [Energy boosted, drive reduced]";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat fruit succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else if (moonbag != null && moonbag.CanRetrieve)
+                {
+                    moonbag.RetrieveFruit();
+                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                    s.hydration = Mathf.Min(10000, s.hydration + 600);
+                    s.satiety = Mathf.Min(10000, s.satiety + 1500);
+                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                    s.knowsMealBenefit = true;
+                    BoostPlaceAffinity("berry-grove", 12);
+                    LastOutcome = "Retrieved and ate berry from waist moonbag";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "eat fruit succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else if (s.carriedFruit > 0)
+                {
+                    if (AllocateFoodRequest(out int foodRequest))
+                    {
+                        if (!s.knowsBerry) { s.knowsBerry = true; s.berryEvidence = s.generation + ".observed-fruit." + foodRequest; }
+                        FoodReceipt receipt = Food.Model.Execute(s.world, s.generation, foodRequest, FoodAction.Eat, "inventory", Food);
+                        Record("food", receipt.code, accepted, result, receipt);
+                        if (receipt.success)
+                        {
+                            BoostPlaceAffinity("berry-grove", 12);
+                            LastOutcome = "Meal +" + receipt.foodDelta + " energy / +" + receipt.waterDelta + " water [Drive reduced: Endorphin " + s.body.endorphin + "]";
+                            FoodOutcomes++;
+                            Persist();
+                            recentVerifiedOutcome = "eat fruit succeeded";
+                        }
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
+                }
+            }
+            else if (accepted == "gather berry")
+            {
+                var s = Food.Model.State;
+                if (!s.knowsBerry)
+                {
+                    if (AllocateFoodRequest(out int inspectReq))
+                    {
+                        Food.Model.Execute(s.world, s.generation, inspectReq, FoodAction.Inspect, "berry", Food);
+                        s.knowsBerry = true;
+                    }
+                }
+                if (s.fruitStock <= 0) s.fruitStock = 1;
+                if (AllocateFoodRequest(out int gatherReq))
+                {
+                    FoodReceipt receipt = Food.Model.Execute(s.world, s.generation, gatherReq, FoodAction.Gather, "berry", Food);
+                    Record("food", receipt.code, accepted, result, receipt);
+                    if (receipt.success)
+                    {
+                        var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                        var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
+                        if (controls != null && controls.GetFreeHandCount() > 0)
+                        {
+                            controls.SpawnBerryInHand();
+                            s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                        }
+                        else if (moonbag != null && moonbag.CanStore)
+                        {
+                            moonbag.StoreFruit();
+                            s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                        }
+                        LastOutcome = "Gathered one observed succulent berry";
+                        FoodOutcomes++;
+                        Food.SyncFruitVisual();
+                        Persist();
+                        recentVerifiedOutcome = "gather berry succeeded";
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
                 }
             }
             else

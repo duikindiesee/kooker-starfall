@@ -55,11 +55,23 @@ namespace CityLife.World
                 "Last verified outcome: approach berry reached observed fruit. Gathering stores one fruit for a test; food benefit unknown. ":
                 recentVerifiedOutcome=="gather berry succeeded"?
                 "Last verified outcome: gather berry put one observed fruit in inventory. Eating it would test an unknown meal effect. ":
+                recentVerifiedOutcome=="catch fish succeeded"?
+                "Last verified outcome: caught freshwater fish in shallows. ":
+                recentVerifiedOutcome=="catch crab succeeded"?
+                "Last verified outcome: caught protein crab on shore. ":
+                recentVerifiedOutcome=="eat catch succeeded"?
+                "Last verified outcome: ate fresh catch to reduce hunger. ":
+                recentVerifiedOutcome=="eat fruit succeeded"?
+                "Last verified outcome: ate ripe fruit to reduce hunger. ":
+                recentVerifiedOutcome=="feast catch succeeded"?
+                "Last verified outcome: feasted on savory roasted meal. ":
                 recentVerifiedOutcome=="approach spring reached"?
                 "Last verified outcome: approach spring reached observed seep. ":
                 recentVerifiedOutcome=="inspect spring succeeded"?
                 "Last verified outcome: inspected the observed maintained freshwater seep. ":
-                recentVerifiedOutcome!=null&&recentVerifiedOutcome.StartsWith("explore ",StringComparison.Ordinal)&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
+                recentVerifiedOutcome=="drink river succeeded"?
+                "Last verified outcome: drank fresh river water. ":
+                recentVerifiedOutcome!=null&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
                 "Last verified outcome: "+recentVerifiedOutcome+". ":"";
             // Only the two measured, hash-validated own-death causes can enter
             // the request. Never forward arbitrary saved text as a model fact.

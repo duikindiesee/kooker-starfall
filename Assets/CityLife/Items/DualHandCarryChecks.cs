@@ -598,6 +598,71 @@ namespace CityLife.Items
                 Check(PlaceLedger.MaximumEvents == 512, "place-ledger-maximum-events-equals-512");
             }
 
+            // -------------------------------------------------------------
+            // 12. Starvation Prevention, Multi-Bush Foraging, and Fishing Checks
+            // -------------------------------------------------------------
+            {
+                // Verify 2-word parse and build request for new actions
+                var testEligible = new List<string> { "eat fruit", "catch fish", "catch crab", "eat catch", "seek food", "gather berry" };
+                Check(StarfallSurvivalThought.Parse("eat fruit", testEligible, out string parsedFruit) && parsedFruit == "eat fruit", "parse-eat-fruit");
+                Check(StarfallSurvivalThought.Parse("catch fish", testEligible, out string parsedFish) && parsedFish == "catch fish", "parse-catch-fish");
+                Check(StarfallSurvivalThought.Parse("catch crab", testEligible, out string parsedCrab) && parsedCrab == "catch crab", "parse-catch-crab");
+                Check(StarfallSurvivalThought.Parse("eat catch", testEligible, out string parsedEatCatch) && parsedEatCatch == "eat catch", "parse-eat-catch");
+                Check(StarfallSurvivalThought.Parse("seek food", testEligible, out string parsedSeek) && parsedSeek == "seek food", "parse-seek-food");
+                Check(StarfallSurvivalThought.Parse("gather berry", testEligible, out string parsedGather) && parsedGather == "gather berry", "parse-gather-berry");
+
+                string reqJson = StarfallSurvivalThought.BuildRequest("test-model", 2000, 5000, new List<string> { "eat fruit", "explore north" }, 1, true, "eat fruit succeeded");
+                Check(reqJson.Contains("eat fruit"), "request-json-contains-eat-fruit");
+                Check(reqJson.Contains("Last verified outcome: ate ripe fruit to reduce hunger"), "request-json-contains-fruit-outcome");
+
+                string fishReqJson = StarfallSurvivalThought.BuildRequest("test-model", 2000, 5000, new List<string> { "catch fish", "explore north" }, 0, false, "catch fish succeeded");
+                Check(fishReqJson.Contains("Last verified outcome: caught freshwater fish in shallows"), "request-json-contains-fish-outcome");
+
+                // Test spawning fish & crab in hand
+                var testActorGo = new GameObject("TestInhabitantForaging");
+                try
+                {
+                    var brain = testActorGo.AddComponent<CityLife.World.NpcAutonomy>();
+                    var controls = testActorGo.AddComponent<CityLife.World.NpcPlayerControls>();
+
+                    var rHandGo = new GameObject("RightHand");
+                    rHandGo.transform.SetParent(testActorGo.transform);
+
+                    var lHandGo = new GameObject("LeftHand");
+                    lHandGo.transform.SetParent(testActorGo.transform);
+
+                    var actions = new CityLife.World.NpcActionApi("test-agent", "test-world", testActorGo.transform, rHandGo.transform, lHandGo.transform, Array.Empty<CityLife.World.NpcInteractable>());
+                    brain.SetActionsForTesting(actions);
+                    controls.Brain = brain;
+
+                    var fishGo = controls.SpawnFishInHand();
+                    Check(fishGo != null, "controls-spawns-fish-in-hand");
+                    var fishPhys = fishGo.GetComponent<PhysicalItem>();
+                    Check(fishPhys != null && fishPhys.itemTypeId == "food-river-fish", "spawned-fish-has-river-fish-type");
+                    Check(actions.Held != null, "actions-held-is-not-null-after-fish-spawn");
+                    UnityEngine.Object.DestroyImmediate(fishGo);
+                    actions.HoldItemDirect(null, false);
+
+                    var crabGo = controls.SpawnCrabInHand();
+                    Check(crabGo != null, "controls-spawns-crab-in-hand");
+                    var crabPhys = crabGo.GetComponent<PhysicalItem>();
+                    Check(crabPhys != null && crabPhys.itemTypeId == "food-protein-crab", "spawned-crab-has-protein-crab-type");
+                    UnityEngine.Object.DestroyImmediate(crabGo);
+                    actions.HoldItemDirect(null, false);
+
+                    var berryGo = controls.SpawnBerryInHand();
+                    Check(berryGo != null, "controls-spawns-berry-in-hand");
+                    var berryPhys = berryGo.GetComponent<PhysicalItem>();
+                    Check(berryPhys != null && berryPhys.itemTypeId == "food-sourfig-berry", "spawned-berry-has-sourfig-type");
+                    UnityEngine.Object.DestroyImmediate(berryGo);
+                    actions.HoldItemDirect(null, false);
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(testActorGo);
+                }
+            }
+
             return passed;
         }
     }

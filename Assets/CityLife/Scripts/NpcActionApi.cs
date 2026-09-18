@@ -53,6 +53,68 @@ namespace CityLife.World
                    reg == interactable;
         }
 
+        public bool RegisterInteractable(NpcInteractable interactable)
+        {
+            if (interactable == null || string.IsNullOrEmpty(interactable.StableId)) return false;
+            objects[interactable.StableId] = interactable;
+            return true;
+        }
+
+        public bool HoldItemDirect(NpcInteractable interactable, bool isLeftHand = false)
+        {
+            if (interactable == null)
+            {
+                if (isLeftHand)
+                {
+                    HeldLeft = null;
+                    OnLeftHandOccupiedChanged?.Invoke(false);
+                }
+                else
+                {
+                    HeldRight = null;
+                }
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(interactable.StableId)) return false;
+            objects[interactable.StableId] = interactable;
+            Transform targetHand = isLeftHand ? leftHand : (rightHand ?? leftHand);
+            if (targetHand == null) return false;
+
+            interactable.HeldBy = agentId;
+            var phys = interactable.GetComponent<PhysicalItem>();
+            if (phys != null)
+            {
+                phys.ConfigureComponents();
+                if (PhysicalModel != null)
+                {
+                    if (!PhysicalModel.TryGetItem(interactable.StableId, out _))
+                    {
+                        PhysicalModel.RegisterCarriedItem(interactable.StableId, phys.itemTypeId, agentId);
+                    }
+                    phys.Bind(PhysicalModel, worldId, PhysicalModel.GenerationId);
+                }
+                phys.AttachToHand(targetHand);
+            }
+            else
+            {
+                interactable.transform.SetParent(targetHand, false);
+                interactable.transform.localPosition = new Vector3(.06f, .04f, 0);
+                interactable.transform.localRotation = Quaternion.identity;
+            }
+
+            if (isLeftHand)
+            {
+                HeldLeft = interactable;
+                OnLeftHandOccupiedChanged?.Invoke(true);
+            }
+            else
+            {
+                HeldRight = interactable;
+            }
+            return true;
+        }
+
         public NpcActionApi(string agentId, string worldId, Transform actor, Transform hand, IEnumerable<NpcInteractable> registry)
             : this(agentId, worldId, actor, hand, null, registry)
         {

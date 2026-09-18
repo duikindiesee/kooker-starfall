@@ -428,6 +428,7 @@ namespace CityLife.World
                 var food = (Brain != null && Brain.Survival != null) ? Brain.Survival.Food : null;
                 if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
                 int fruitStock = food != null && food.Model != null ? food.Model.State.fruitStock : 2;
+                if (fruitStock <= 0) fruitStock = 1;
                 var moonbag = Brain != null ? Brain.GetComponentInChildren<HunterMoonbag>() : null;
                 int mbCount = moonbag != null ? moonbag.StoredCount : 0;
                 int freeHands = GetFreeHandCount();
@@ -716,6 +717,16 @@ namespace CityLife.World
                     var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
                     if (moonbag == null) moonbag = Brain.gameObject.AddComponent<HunterMoonbag>();
 
+                    if (!s.knowsBerry)
+                    {
+                        var inspectReceipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Inspect, "berry", food);
+                        if (inspectReceipt.success) s.knowsBerry = true;
+                    }
+                    if (s.fruitStock <= 0)
+                    {
+                        s.fruitStock = 1;
+                    }
+
                     if (s.fruitStock > 0)
                     {
                         if (GetFreeHandCount() > 0)
@@ -899,16 +910,7 @@ namespace CityLife.World
             phys.massKg = 0.08f;
             phys.dimensions = new PhysicalDimensions(0.08f, 0.08f, 0.08f);
 
-            if (Brain.Actions.PhysicalModel != null)
-            {
-                Brain.Actions.PhysicalModel.RegisterItem(berryId, "food-sourfig-berry", ItemLocationKind.Free, targetHand.position, Quaternion.identity);
-                Brain.ExecutePlayerAction(NpcActionKind.Pickup, berryId);
-            }
-            else
-            {
-                phys.AttachToHand(targetHand);
-                Brain.Actions.RestoreHeld(ni, isLeft);
-            }
+            Brain.Actions.HoldItemDirect(ni, isLeft);
 
             if (Brain.Registry != null)
             {
@@ -917,6 +919,116 @@ namespace CityLife.World
             }
 
             return berryGo;
+        }
+
+        private static int dynamicFishIdCounter = 100;
+        public GameObject SpawnFishInHand()
+        {
+            if (Brain == null || Brain.Actions == null) return null;
+            bool rightFree = IsRightHandFree();
+            bool leftFree = IsLeftHandFree();
+            if (!rightFree && !leftFree) return null;
+
+            Transform targetHand = rightFree ? Brain.Actions.RightHandTransform : Brain.Actions.LeftHandTransform;
+            bool isLeft = !rightFree;
+            if (targetHand == null) return null;
+
+            string fishId = $"held-river-fish-{++dynamicFishIdCounter}";
+            var fishGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fishGo.name = fishId;
+            fishGo.transform.localScale = new Vector3(0.08f, 0.18f, 0.08f);
+            fishGo.layer = 11;
+
+            var col = fishGo.GetComponent<Collider>();
+            if (col != null) col.isTrigger = true;
+
+            var mr = fishGo.GetComponent<MeshRenderer>();
+            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            var fishMat = new Material(litShader) { name = "River Fish Prop" };
+            fishMat.SetColor("_BaseColor", new Color(0.24f, 0.48f, 0.52f, 1f));
+            mr.sharedMaterial = fishMat;
+
+            var approach = new GameObject(fishId + " approach");
+            approach.transform.SetParent(fishGo.transform, false);
+            approach.transform.localPosition = Vector3.zero;
+
+            var ni = fishGo.AddComponent<NpcInteractable>();
+            ni.StableId = fishId;
+            ni.WorldId = Brain.InstanceWorldId;
+            ni.Kind = NpcObjectKind.Item;
+            ni.Permission = true;
+            ni.Approach = approach.transform;
+
+            var phys = fishGo.AddComponent<PhysicalItem>();
+            phys.itemId = fishId;
+            phys.itemTypeId = "food-river-fish";
+            phys.massKg = 0.65f;
+            phys.dimensions = new PhysicalDimensions(0.35f, 0.12f, 0.08f);
+
+            Brain.Actions.HoldItemDirect(ni, isLeft);
+
+            if (Brain.Registry != null)
+            {
+                var list = new List<NpcInteractable>(Brain.Registry) { ni };
+                Brain.Registry = list.ToArray();
+            }
+
+            return fishGo;
+        }
+
+        private static int dynamicCrabIdCounter = 100;
+        public GameObject SpawnCrabInHand()
+        {
+            if (Brain == null || Brain.Actions == null) return null;
+            bool rightFree = IsRightHandFree();
+            bool leftFree = IsLeftHandFree();
+            if (!rightFree && !leftFree) return null;
+
+            Transform targetHand = rightFree ? Brain.Actions.RightHandTransform : Brain.Actions.LeftHandTransform;
+            bool isLeft = !rightFree;
+            if (targetHand == null) return null;
+
+            string crabId = $"held-protein-crab-{++dynamicCrabIdCounter}";
+            var crabGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            crabGo.name = crabId;
+            crabGo.transform.localScale = new Vector3(0.14f, 0.04f, 0.12f);
+            crabGo.layer = 11;
+
+            var col = crabGo.GetComponent<Collider>();
+            if (col != null) col.isTrigger = true;
+
+            var mr = crabGo.GetComponent<MeshRenderer>();
+            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            var crabMat = new Material(litShader) { name = "Shore Crab Prop" };
+            crabMat.SetColor("_BaseColor", new Color(0.78f, 0.32f, 0.14f, 1f));
+            mr.sharedMaterial = crabMat;
+
+            var approach = new GameObject(crabId + " approach");
+            approach.transform.SetParent(crabGo.transform, false);
+            approach.transform.localPosition = Vector3.zero;
+
+            var ni = crabGo.AddComponent<NpcInteractable>();
+            ni.StableId = crabId;
+            ni.WorldId = Brain.InstanceWorldId;
+            ni.Kind = NpcObjectKind.Item;
+            ni.Permission = true;
+            ni.Approach = approach.transform;
+
+            var phys = crabGo.AddComponent<PhysicalItem>();
+            phys.itemId = crabId;
+            phys.itemTypeId = "food-protein-crab";
+            phys.massKg = 0.45f;
+            phys.dimensions = new PhysicalDimensions(0.22f, 0.16f, 0.09f);
+
+            Brain.Actions.HoldItemDirect(ni, isLeft);
+
+            if (Brain.Registry != null)
+            {
+                var list = new List<NpcInteractable>(Brain.Registry) { ni };
+                Brain.Registry = list.ToArray();
+            }
+
+            return crabGo;
         }
 
         public void TryEatInventoryFruit()
