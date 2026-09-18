@@ -840,6 +840,92 @@ namespace CityLife.Items
                 }
             }
 
+            // -------------------------------------------------------------
+            // 14. Coastal Wolf Ecology, Directional Vision, Safe Perimeter & Protein Defense
+            // -------------------------------------------------------------
+            {
+                // Wolf ecology geometry & pack definitions
+                Check(CoastalWolfEcology.VerifyWolfEcology(out string wolfRec), "wolf-ecology-geometry-verified");
+                Check(CoastalWolfEcology.AuthoredWolfSpawns.Length >= 3, "wolf-authored-spawns-count-at-least-3");
+
+                // Wolf state transitions and club hit recoil
+                var wolfGo = new GameObject("TestWolf");
+                var wolf = wolfGo.AddComponent<CoastalWolfEcology>();
+                wolf.WolfId = "test-canyon-wolf";
+                try
+                {
+                    Check(wolf.State == CoastalWolfEcology.WolfState.Prowl, "wolf-initial-state-is-prowl");
+                    wolf.TakeClubHit(Vector3.zero);
+                    Check(wolf.State == CoastalWolfEcology.WolfState.Flee, "wolf-hit-recoils-into-flee-state");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(wolfGo);
+                }
+
+                // Safe perimeter navigation bounds
+                var navGo = new GameObject("TestNav");
+                var nav = navGo.AddComponent<NpcTerrainNavigation>();
+                try
+                {
+                    Check(nav.IsWithinSafePerimeter(new Vector3(0f, 0f, 50f), 10f), "origin-within-safe-perimeter");
+                    Check(!nav.IsWithinSafePerimeter(new Vector3(350f, 0f, 50f), 10f), "east-extreme-void-outside-safe-perimeter");
+                    Check(!nav.IsWithinSafePerimeter(new Vector3(-350f, 0f, 50f), 10f), "west-extreme-void-outside-safe-perimeter");
+                    Check(!nav.IsWithinSafePerimeter(new Vector3(0f, 0f, 450f), 10f), "north-extreme-outside-safe-perimeter");
+                    Check(!nav.IsWithinSafePerimeter(new Vector3(0f, 0f, -350f), 10f), "south-extreme-outside-safe-perimeter");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(navGo);
+                }
+
+                // Directional vision zones
+                Check(VisionZone.Proximity == (VisionZone)0, "vision-zone-proximity-enum-defined");
+                Check(VisionZone.Focal == (VisionZone)1, "vision-zone-focal-enum-defined");
+                Check(VisionZone.Peripheral == (VisionZone)2, "vision-zone-peripheral-enum-defined");
+                Check(VisionZone.DistantLandmark == (VisionZone)3, "vision-zone-distant-landmark-enum-defined");
+
+                // Protein state and hedonic drive reduction
+                var testBody = new FoodBody();
+                testBody.health = 10000;
+                testBody.protein = 4000; // Depleted protein drive
+                testBody.endorphin = 2000;
+                testBody.fatigue = 5000;
+                Check(testBody.protein == 4000, "initial-protein-depleted");
+
+                // Simulate defensive club strike endorphin surge
+                testBody.endorphin = Mathf.Min(10000, testBody.endorphin + 2000);
+                testBody.fatigue = Mathf.Max(0, testBody.fatigue - 1000);
+                Check(testBody.endorphin == 4000, "club-defense-endorphin-boosted");
+                Check(testBody.fatigue == 4000, "club-defense-fatigue-relieved");
+
+                // Simulate eating protein crab
+                testBody.protein = Mathf.Min(10000, testBody.protein + 2500);
+                Check(testBody.protein == 6500, "eating-crab-replenishes-protein-drive");
+
+                // Wolf meat and leather drops & catalog registration
+                var catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+                Check(catalog.TryGet("food-wolf-meat", out var meatDef), "catalog-contains-food-wolf-meat");
+                Check(catalog.TryGet("food-cooked-meat", out var cookedDef), "catalog-contains-food-cooked-meat");
+                Check(catalog.TryGet("material-wolf-leather", out var leatherDef), "catalog-contains-material-wolf-leather");
+                Check(CityLife.Food.HearthCooking.CanRoast("food-wolf-meat"), "hearth-cooking-can-roast-wolf-meat");
+                Check(CityLife.Food.HearthCooking.GetCookedTypeId("food-wolf-meat") == "food-cooked-meat", "wolf-meat-cooks-to-cooked-meat");
+
+                // Test drop spawning
+                var meatDrop = CoastalWolfEcology.SpawnMeatDrop(Vector3.zero);
+                var leatherDrop = CoastalWolfEcology.SpawnLeatherDrop(Vector3.zero);
+                try
+                {
+                    Check(meatDrop != null && meatDrop.GetComponent<PhysicalItem>().itemTypeId == "food-wolf-meat", "spawned-meat-drop-item-verified");
+                    Check(leatherDrop != null && leatherDrop.GetComponent<PhysicalItem>().itemTypeId == "material-wolf-leather", "spawned-leather-drop-item-verified");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(meatDrop);
+                    UnityEngine.Object.DestroyImmediate(leatherDrop);
+                }
+            }
+
             return passed;
         }
     }

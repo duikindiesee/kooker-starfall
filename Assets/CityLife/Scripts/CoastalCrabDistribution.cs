@@ -36,8 +36,14 @@ namespace CityLife.World
             new CrabSpawnDef { position = new Vector3(32f, -2.3f, 85f), scale = 0.9f, yaw = 195f },
             new CrabSpawnDef { position = new Vector3(0f, -2.6f, 100f), scale = 1.1f, yaw = 135f },
             new CrabSpawnDef { position = new Vector3(-10f, -2.5f, 125f), scale = 1.0f, yaw = 285f },
-            new CrabSpawnDef { position = new Vector3(18f, -2.5f, 140f), scale = 1.05f, yaw = 55f },
-            new CrabSpawnDef { position = new Vector3(-25f, -2.4f, 155f), scale = 1.2f, yaw = 175f }
+            new CrabSpawnDef { position = new Vector3(-25f, -2.4f, 155f), scale = 1.2f, yaw = 175f },
+            // Riverbank shallows & ford crabs (accessible during daily river foraging)
+            new CrabSpawnDef { position = new Vector3(-14f, -2.1f, -18f), scale = 1.0f, yaw = 65f },
+            new CrabSpawnDef { position = new Vector3(16f, -2.1f, -12f), scale = 1.05f, yaw = 210f },
+            new CrabSpawnDef { position = new Vector3(-8f, -2.2f, 10f), scale = 0.95f, yaw = 145f },
+            new CrabSpawnDef { position = new Vector3(12f, -2.2f, 25f), scale = 1.1f, yaw = 330f },
+            new CrabSpawnDef { position = new Vector3(-18f, -2.3f, 40f), scale = 1.0f, yaw = 95f },
+            new CrabSpawnDef { position = new Vector3(5f, -2.2f, -32f), scale = 1.15f, yaw = 280f }
         };
 
         private static Mesh sharedCrabMesh;

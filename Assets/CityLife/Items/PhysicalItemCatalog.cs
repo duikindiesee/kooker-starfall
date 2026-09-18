@@ -304,6 +304,33 @@ namespace CityLife.Items
                 isContainer = false
             });
 
+            // Raw Wolf Venison (Harvested protein from wilderness wolf encounters)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-wolf-meat",
+                dimensions = new PhysicalDimensions(0.24f, 0.16f, 0.10f),
+                massKg = 1.4f,
+                isContainer = false
+            });
+
+            // Roasted Wolf Meat (Nutrient-dense savory steak roasted over hearth embers)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-cooked-meat",
+                dimensions = new PhysicalDimensions(0.22f, 0.14f, 0.09f),
+                massKg = 1.2f,
+                isContainer = false
+            });
+
+            // Cured Wolf Leather (Supple wilderness pelt for crafting, tailoring, and gear expansion)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "material-wolf-leather",
+                dimensions = new PhysicalDimensions(0.35f, 0.22f, 0.08f),
+                massKg = 0.95f,
+                isContainer = false
+            });
+
             return catalog;
         }
     }

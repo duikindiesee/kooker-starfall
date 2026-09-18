@@ -180,7 +180,7 @@ namespace CityLife.World
             {
                 TryEatInventoryFruit();
             }
-            if (Brain.Possessed && key.xKey.wasPressedThisFrame)
+            if (key.xKey.wasPressedThisFrame)
             {
                 ToggleClubHolster();
             }
@@ -826,11 +826,17 @@ namespace CityLife.World
             if (!carry.Stowed)
             {
                 carry.SetStowed(true);
+                if (Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "DECISION", Brain.DescribePerception(), "holster club", "Player key X input", "Club holstered onto back");
+                Brain.LastResult = "Holstered hunter's club onto back";
             }
             else
             {
                 if (Brain.Actions != null && Brain.Actions.HeldLeft != null) return;
                 carry.SetStowed(false);
+                if (Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "DECISION", Brain.DescribePerception(), "draw club", "Player key X input", "Club drawn to left hand");
+                Brain.LastResult = "Drew hunter's club from back";
             }
             UpdatePickupTargetLabel();
         }
@@ -1083,6 +1089,131 @@ namespace CityLife.World
             return crabGo;
         }
 
+        private static int dynamicMeatIdCounter = 100;
+        public GameObject SpawnMeatInHand()
+        {
+            if (Brain == null || Brain.Actions == null) return null;
+            bool rightFree = IsRightHandFree();
+            bool leftFree = IsLeftHandFree();
+            if (!rightFree && !leftFree) return null;
+
+            Transform targetHand = rightFree ? Brain.Actions.RightHandTransform : Brain.Actions.LeftHandTransform;
+            bool isLeft = !rightFree;
+            if (targetHand == null) return null;
+
+            string meatId = $"held-wolf-meat-{++dynamicMeatIdCounter}";
+            var meatGo = new GameObject(meatId);
+            meatGo.layer = 11;
+
+            var col = meatGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.18f, 0.10f, 0.14f);
+            col.isTrigger = true;
+
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.name = "Visual";
+            var vCol = visual.GetComponent<Collider>();
+            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            visual.transform.SetParent(meatGo.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localScale = new Vector3(0.16f, 0.08f, 0.12f);
+
+            var mr = visual.GetComponent<MeshRenderer>();
+            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            var meatMat = new Material(litShader) { name = "Venison Hand Prop" };
+            meatMat.SetColor("_BaseColor", new Color(0.68f, 0.14f, 0.12f, 1f));
+            mr.sharedMaterial = meatMat;
+
+            var approach = new GameObject(meatId + " approach");
+            approach.transform.SetParent(meatGo.transform, false);
+            approach.transform.localPosition = Vector3.zero;
+
+            var ni = meatGo.AddComponent<NpcInteractable>();
+            ni.StableId = meatId;
+            ni.WorldId = Brain.InstanceWorldId;
+            ni.Kind = NpcObjectKind.Item;
+            ni.Permission = true;
+            ni.Approach = approach.transform;
+
+            var phys = meatGo.AddComponent<PhysicalItem>();
+            phys.itemId = meatId;
+            phys.itemTypeId = "food-wolf-meat";
+            phys.massKg = 1.4f;
+            phys.dimensions = new PhysicalDimensions(0.24f, 0.16f, 0.10f);
+
+            Brain.Actions.HoldItemDirect(ni, isLeft);
+
+            if (Brain.Registry != null)
+            {
+                var list = new List<NpcInteractable>(Brain.Registry) { ni };
+                Brain.Registry = list.ToArray();
+            }
+
+            return meatGo;
+        }
+
+        private static int dynamicLeatherIdCounter = 100;
+        public GameObject SpawnLeatherInHand()
+        {
+            if (Brain == null || Brain.Actions == null) return null;
+            bool rightFree = IsRightHandFree();
+            bool leftFree = IsLeftHandFree();
+            if (!rightFree && !leftFree) return null;
+
+            Transform targetHand = rightFree ? Brain.Actions.RightHandTransform : Brain.Actions.LeftHandTransform;
+            bool isLeft = !rightFree;
+            if (targetHand == null) return null;
+
+            string leatherId = $"held-wolf-leather-{++dynamicLeatherIdCounter}";
+            var leatherGo = new GameObject(leatherId);
+            leatherGo.layer = 11;
+
+            var col = leatherGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.22f, 0.12f, 0.14f);
+            col.isTrigger = true;
+
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            visual.name = "Visual";
+            var vCol = visual.GetComponent<Collider>();
+            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            visual.transform.SetParent(leatherGo.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0, 0, 90f);
+            visual.transform.localScale = new Vector3(0.10f, 0.14f, 0.10f);
+
+            var mr = visual.GetComponent<MeshRenderer>();
+            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            var leatherMat = new Material(litShader) { name = "Leather Hand Prop" };
+            leatherMat.SetColor("_BaseColor", new Color(0.55f, 0.42f, 0.30f, 1f));
+            mr.sharedMaterial = leatherMat;
+
+            var approach = new GameObject(leatherId + " approach");
+            approach.transform.SetParent(leatherGo.transform, false);
+            approach.transform.localPosition = Vector3.zero;
+
+            var ni = leatherGo.AddComponent<NpcInteractable>();
+            ni.StableId = leatherId;
+            ni.WorldId = Brain.InstanceWorldId;
+            ni.Kind = NpcObjectKind.Item;
+            ni.Permission = true;
+            ni.Approach = approach.transform;
+
+            var phys = leatherGo.AddComponent<PhysicalItem>();
+            phys.itemId = leatherId;
+            phys.itemTypeId = "material-wolf-leather";
+            phys.massKg = 0.95f;
+            phys.dimensions = new PhysicalDimensions(0.35f, 0.22f, 0.08f);
+
+            Brain.Actions.HoldItemDirect(ni, isLeft);
+
+            if (Brain.Registry != null)
+            {
+                var list = new List<NpcInteractable>(Brain.Registry) { ni };
+                Brain.Registry = list.ToArray();
+            }
+
+            return leatherGo;
+        }
+
         public void TryEatInventoryFruit()
         {
             if (Brain == null || !Brain.Possessed) return;
@@ -1106,7 +1237,21 @@ namespace CityLife.World
                 if (food != null && food.Model != null)
                 {
                     var s = food.Model.State;
-                    if (typeId == "food-cooked-fish")
+                    if (typeId == "food-cooked-meat")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 4500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 5000);
+                        s.satiety = Mathf.Min(10000, s.satiety + 4500);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 4000);
+                    }
+                    else if (typeId == "food-wolf-meat")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 3200);
+                        s.satiety = Mathf.Min(10000, s.satiety + 2200);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
+                    }
+                    else if (typeId == "food-cooked-fish")
                     {
                         s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
                         s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
@@ -1198,10 +1343,12 @@ namespace CityLife.World
                        phys.itemTypeId == "food-cooked-crab" ||
                        phys.itemTypeId == "food-river-fish" ||
                        phys.itemTypeId == "food-cooked-fish" ||
+                       phys.itemTypeId == "food-wolf-meat" ||
+                       phys.itemTypeId == "food-cooked-meat" ||
                        phys.itemTypeId == "food-sourfig-berry" ||
                        phys.itemTypeId == "fruit";
             }
-            return item.StableId.Contains("berry") || item.StableId.Contains("fish") || item.StableId.Contains("crab");
+            return item.StableId.Contains("berry") || item.StableId.Contains("fish") || item.StableId.Contains("crab") || item.StableId.Contains("meat");
         }
         public void OpenMenu()
         {

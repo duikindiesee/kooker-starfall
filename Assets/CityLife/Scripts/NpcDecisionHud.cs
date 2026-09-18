@@ -203,20 +203,40 @@ namespace CityLife.World
                 else
                 {
                     int staminaPct = Brain.Actor != null ? Mathf.Clamp(Mathf.RoundToInt(Brain.Actor.Stamina), 0, 100) : 100;
+                    int proteinPct = food.body != null ? Mathf.Clamp(food.body.protein / 100, 0, 100) : 100;
                     var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
                     int mbCount = moonbag != null ? moonbag.StoredCount : 0;
+                    var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                    string weaponStatus = carry != null ? (carry.Stowed ? "Back" : "In Hand") : "None";
+
+                    string wolfAlert = "";
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        var nearWolf = Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("wolf") && x.distanceMillimetres <= 18000);
+                        if (nearWolf != null)
+                        {
+                            wolfAlert = $"\n<color=#FF4444><b>[PREDATOR ALERT: Coastal Timber Wolf {(nearWolf.distanceMillimetres / 1000f):F1}m away! Press X to ready club]</b></color>";
+                        }
+                    }
+
                     Summary.text = mode + " | Tick " + Brain.Tick +
-                        "\nGoal: " + currentGoal + "  |  Cargo: " + cargo +
+                        "\nGoal: " + currentGoal + "  |  Cargo: " + cargo + "  |  Club: " + weaponStatus +
                         $"\nHealth: {healthPct}%  |  Stamina: {staminaPct}%  |  Strength: {strengthPct}%" +
-                        $"\nFullness: {fullnessPct}%  |  Hydration: {hydrationPct}%  |  Water: {food.freshwaterMl}ml" + airAlert +
+                        $"\nFullness: {fullnessPct}%  |  Protein: {proteinPct}%  |  Hydration: {hydrationPct}%  |  Water: {food.freshwaterMl}ml" + airAlert + wolfAlert +
                         $"\nExplored: {exploredCount} cells  |  Places: {visitedCount}  |  Moonbag: {mbCount}/2";
                 }
                 footer.text = "M map · Shift sprint · X holster club · B moonbag\nE pick/fish/drink · G drop · H eat from hand · Tab possess";
             }
-            var perceived = new StringBuilder("PERCEPTION / radius + line of sight\n");
+            var perceived = new StringBuilder("PERCEPTION / directional FOV + line of sight\n");
             foreach (var x in Brain.Perception.Current)
-                perceived.Append(x.id).Append("  ").Append(x.distanceMillimetres / 1000f).Append("m  ")
+            {
+                string zoneStr = x.visionZone == VisionZone.Focal ? "FOCAL" :
+                                 x.visionZone == VisionZone.Peripheral ? "PERIPHERAL" :
+                                 x.visionZone == VisionZone.DistantLandmark ? "LANDMARK" : "PROXIMITY";
+                perceived.Append(x.id).Append("  ").Append(x.distanceMillimetres / 1000f).Append("m  [")
+                    .Append(zoneStr).Append("]  ")
                     .Append(!x.permission ? "DENIED" : !x.available ? "UNAVAILABLE" : "ELIGIBLE").Append('\n');
+            }
             perceived.Append("Occluded contacts: ").Append(Brain.Perception.OccludedCount);
             Perceptions.text = perceived.ToString();
             var history = new StringBuilder("DECISIONS / ACTIONS / OUTCOMES\n");

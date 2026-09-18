@@ -386,22 +386,88 @@ namespace CityLife.World
                 }
             }
 
-            // 4. Fishing in river & Crabbing on shore
-            if (s.satiety < 8500 && freeHands > 0)
+            // 3b. Predator Danger & Club Defense (Coastal Wolves)
+            var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+            bool hasClubInHand = carry != null && !carry.Stowed;
+            bool hasClubOnBack = carry != null && carry.Stowed;
+
+            var nearestWolf = Brain.Perception != null && Brain.Perception.Current != null
+                ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("wolf"))
+                : null;
+            float wolfDist = nearestWolf != null ? Vector3.Distance(Brain.transform.position, nearestWolf.position) : 999f;
+            bool wolfThreat = nearestWolf != null && wolfDist <= 18f;
+
+            if (wolfThreat)
             {
+                if (hasClubOnBack)
+                {
+                    foodChoices.Add("draw club");
+                }
+                else if (hasClubInHand)
+                {
+                    foodChoices.Add("defend with club");
+                }
+            }
+            else
+            {
+                // Autonomous weapon management: holster club to free hands for carrying/foraging, or draw when traveling
+                if (hasClubInHand && (freeHands == 0 || (s.satiety < 8500 && nearestBush != null)))
+                {
+                    foodChoices.Add("holster club");
+                }
+                else if (hasClubOnBack && (s.satiety >= 8500 && s.hydration >= 7500))
+                {
+                    foodChoices.Add("draw club");
+                }
+            }
+
+            // 4. Marine Protein & Tidal Crab Foraging
+            bool lowProtein = s.body.protein < 6500;
+            var nearestCrab = Brain.Perception != null && Brain.Perception.Current != null
+                ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("crab"))
+                : null;
+            float crabDist = nearestCrab != null ? Vector3.Distance(Brain.transform.position, nearestCrab.position) : 999f;
+
+            if ((lowProtein || s.satiety < 8500) && freeHands > 0)
+            {
+                if (nearestCrab != null)
+                {
+                    if (crabDist > 1.8f) foodChoices.Add("approach crab");
+                    else foodChoices.Add("catch crab");
+                }
+
                 if (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
                     Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish"))))
                 {
                     foodChoices.Add("catch fish");
                 }
 
-                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 3.2f ||
-                    (Brain.Perception != null && Brain.Perception.Current != null &&
-                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("crab")));
-                if (nearShore)
+                bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 3.2f || nearestCrab != null;
+                if (nearShore && !foodChoices.Contains("catch crab") && crabDist <= 2.2f)
                 {
                     foodChoices.Add("catch crab");
                 }
+            }
+
+            // 4b. Wilderness Meat & Leather Drops on Ground
+            var nearestMeat = Brain.Perception != null && Brain.Perception.Current != null
+                ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("meat") && x.permission && x.available)
+                : null;
+            float meatDist = nearestMeat != null ? Vector3.Distance(Brain.transform.position, nearestMeat.position) : 999f;
+            if (nearestMeat != null && (lowProtein || s.satiety < 8500) && freeHands > 0)
+            {
+                if (meatDist > 1.8f) foodChoices.Add("approach meat");
+                else foodChoices.Add("pick meat");
+            }
+
+            var nearestLeather = Brain.Perception != null && Brain.Perception.Current != null
+                ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("leather") && x.permission && x.available)
+                : null;
+            float leatherDist = nearestLeather != null ? Vector3.Distance(Brain.transform.position, nearestLeather.position) : 999f;
+            if (nearestLeather != null && freeHands > 0)
+            {
+                if (leatherDist > 1.8f) foodChoices.Add("approach leather");
+                else foodChoices.Add("pick leather");
             }
 
             // 5. Edible items held or carried
@@ -417,12 +483,12 @@ namespace CityLife.World
                     foodChoices.Add("roast catch");
                     foodChoices.Add("roast food on hearth");
                 }
-                if ((heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab") && s.satiety < 8500)
+                if ((heldPhys.itemTypeId == "food-cooked-fish" || heldPhys.itemTypeId == "food-cooked-crab" || heldPhys.itemTypeId == "food-cooked-meat") && (s.satiety < 8500 || lowProtein))
                 {
                     foodChoices.Add("feast catch");
                     foodChoices.Add("feast roasted catch");
                 }
-                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab") && s.satiety < 8500)
+                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat") && (s.satiety < 8500 || s.body.protein < 7500))
                     foodChoices.Add("eat catch");
                 if (heldPhys.itemTypeId == "food-sourfig-berry" && (s.satiety < 8500 || s.hydration < 8500))
                     foodChoices.Add("eat fruit");
@@ -453,13 +519,35 @@ namespace CityLife.World
 
             // Urgency ranking:
             string urgent = null;
+            // Immediate predator defense takes precedence over foraging
+            if (wolfThreat)
+            {
+                if (hasClubInHand && wolfDist <= 5.5f && foodChoices.Contains("defend with club"))
+                    urgent = "defend with club";
+                else if (hasClubOnBack && foodChoices.Contains("draw club"))
+                    urgent = "draw club";
+                else if (hasClubInHand && foodChoices.Contains("defend with club"))
+                    urgent = "defend with club";
+            }
             // Life-critical dehydration: drinking or seeking water immediately before starvation or foraging
-            if (s.hydration < 3500)
+            if (urgent == null && s.hydration < 3500)
             {
                 if (foodChoices.Contains("drink river")) urgent = "drink river";
                 else if (foodChoices.Contains("drink spring")) urgent = "drink spring";
                 else if (foodChoices.Contains("drink water")) urgent = "drink water";
                 else if (foodChoices.Contains("seek water")) urgent = "seek water";
+            }
+            // Critical protein hunger drive
+            if (urgent == null && lowProtein)
+            {
+                if (foodChoices.Contains("feast roasted catch")) urgent = "feast roasted catch";
+                else if (foodChoices.Contains("feast catch")) urgent = "feast catch";
+                else if (foodChoices.Contains("eat catch")) urgent = "eat catch";
+                else if (foodChoices.Contains("pick meat")) urgent = "pick meat";
+                else if (foodChoices.Contains("approach meat")) urgent = "approach meat";
+                else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
+                else if (foodChoices.Contains("approach crab")) urgent = "approach crab";
+                else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
             }
             // Eating when hungry!
             if (urgent == null && s.satiety < 8500)
@@ -484,8 +572,9 @@ namespace CityLife.World
             {
                 if (foodChoices.Contains("gather berry")) urgent = "gather berry";
                 else if (foodChoices.Contains("approach berry")) urgent = "approach berry";
-                else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
                 else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
+                else if (foodChoices.Contains("approach crab")) urgent = "approach crab";
+                else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
                 else if (foodChoices.Contains("seek food")) urgent = "seek food";
             }
             if (urgent == null)
@@ -503,18 +592,45 @@ namespace CityLife.World
             for(int i=0;i<directions.Length;i++)
             {
                 var p=Brain.transform.position+directions[i].Item2*18f;
-                if(!Brain.TerrainNavigation.Walkable(p,out _))
+                if(!Brain.TerrainNavigation.Walkable(p,out _) || !Brain.TerrainNavigation.IsWithinSafePerimeter(p, 10f))
                 {
                     p=Brain.transform.position+directions[i].Item2*12f;
-                    if(!Brain.TerrainNavigation.Walkable(p,out _))
+                    if(!Brain.TerrainNavigation.Walkable(p,out _) || !Brain.TerrainNavigation.IsWithinSafePerimeter(p, 10f))
                     {
                         p=Brain.transform.position+directions[i].Item2*6f;
-                        if(!Brain.TerrainNavigation.Walkable(p,out _))continue;
+                        if(!Brain.TerrainNavigation.Walkable(p,out _) || !Brain.TerrainNavigation.IsWithinSafePerimeter(p, 10f))continue;
                     }
                 }
                 var cell=new Vector2Int(Mathf.RoundToInt(p.x/3f),Mathf.RoundToInt(p.z/3f));
                 int visits=PlaceLedger.Cell(s,cell.x,cell.y)?.visits??0;
-                candidates.Add((directions[i].Item1,visits*10+(i+explorationSeed)%4));
+                int score = visits * 10 + (i + explorationSeed) % 4;
+
+                // Boundary reflection bias: when approaching canyon edge, steer back inward
+                Vector3 toCenter = new Vector3(-Brain.transform.position.x, 0, -Brain.transform.position.z).normalized;
+                float dotInward = Vector3.Dot(directions[i].Item2, toCenter);
+                if (Mathf.Abs(Brain.transform.position.x) > 180f || Brain.transform.position.z < -180f || Brain.transform.position.z > 280f)
+                {
+                    if (dotInward > 0.3f) score -= 40; // Reward heading inward
+                    else if (dotInward < -0.3f) score += 80; // Penalize heading toward edge of the world
+                }
+
+                // Distant landmark visual attraction: reward exploring toward visible distant landmarks
+                if (Brain.Perception != null && Brain.Perception.Current != null)
+                {
+                    foreach (var obs in Brain.Perception.Current)
+                    {
+                        if (obs != null && obs.visionZone == VisionZone.DistantLandmark)
+                        {
+                            Vector3 toLandmark = (obs.position - Brain.transform.position).normalized;
+                            if (Vector3.Dot(directions[i].Item2, toLandmark) > 0.6f)
+                            {
+                                score -= 25; // Visual attraction toward landmark
+                            }
+                        }
+                    }
+                }
+
+                candidates.Add((directions[i].Item1, score));
             }
             foreach(var candidate in candidates.OrderBy(c=>c.score).Take(4-choices.Count))
                 choices.Add(candidate.action);
@@ -690,12 +806,20 @@ namespace CityLife.World
             int hungerPct = Mathf.Clamp(s.satiety / 100, 0, 100);
             int thirstPct = Mathf.Clamp(s.hydration / 100, 0, 100);
             int healthPct = Mathf.Clamp(s.body.health / 100, 0, 100);
+            int proteinPct = s.body != null ? Mathf.Clamp(s.body.protein / 100, 0, 100) : 100;
+
+            var nearWolf = Brain != null && Brain.Perception != null && Brain.Perception.Current != null
+                ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("wolf") && x.distanceMillimetres <= 18000)
+                : null;
+            bool wolfNearby = nearWolf != null;
 
             // Advisory plan
-            if (s.hydration < 4000)
+            if (wolfNearby)
+                Plan = "Ready hunter's club > Defend against coastal timber wolf > Secure safety";
+            else if (s.hydration < 4000)
                 Plan = "Reach freshwater river or seep > Quench dehydration > Scout food";
-            else if (s.satiety < 4000)
-                Plan = "Locate sourfig berries or river catch > Eat to restore stamina > Survey terrain";
+            else if (s.satiety < 4000 || s.body.protein < 5000)
+                Plan = "Locate sourfig berries or marine crabs > Eat to restore stamina > Survey terrain";
             else if (currentAction != null && currentAction.StartsWith("explore"))
                 Plan = "Survey coastal terrain > Map unexplored cells > Maintain safe line to refuge";
             else
@@ -704,6 +828,14 @@ namespace CityLife.World
             // Fictional dialogue / inner monologue
             if (s.body.submerged)
                 Dialogue = "\"Water in my lungs... need dry shore immediately!\"";
+            else if (currentAction == "defend with club")
+                Dialogue = "\"Back off! This club has teeth!\"";
+            else if (currentAction == "draw club")
+                Dialogue = "\"Hearing rustling in the scrub... better ready my weapon.\"";
+            else if (currentAction == "holster club")
+                Dialogue = "\"Coast seems clear. Stowing my club so I can gather with both hands.\"";
+            else if (wolfNearby)
+                Dialogue = "\"A timber wolf is stalking the ridge. I need my club ready.\"";
             else if (s.hydration < 2000)
                 Dialogue = "\"My mouth is parched and burning... I must reach fresh water.\"";
             else if (s.satiety < 2000)
@@ -716,6 +848,12 @@ namespace CityLife.World
                 Dialogue = "\"Carried water quenches the burn in my throat. Strength returning.\"";
             else if (currentAction != null && currentAction.StartsWith("approach berry"))
                 Dialogue = "\"Sourfig bushes ahead on the rock shelf. Ripe fruit to gather.\"";
+            else if (currentAction != null && currentAction.StartsWith("approach crab"))
+                Dialogue = "\"Spotted a shore crab scuttling on the wet stones. That's good protein.\"";
+            else if (currentAction == "pick meat" || (currentAction != null && currentAction.StartsWith("approach meat")))
+                Dialogue = "\"Rich wolf venison on the stones. Hearty meat to roast and feast upon.\"";
+            else if (currentAction == "pick leather" || (currentAction != null && currentAction.StartsWith("approach leather")))
+                Dialogue = "\"Thick wolf leather pelt. Durable hide for camp tailoring and gear.\"";
             else if (currentAction == "catch fish" || currentAction == "catch crab")
                 Dialogue = "\"Movement in the shallows. Quick hands bring protein.\"";
             else if (s.satiety < 6000)
@@ -724,7 +862,7 @@ namespace CityLife.World
                 Dialogue = "\"Warm wind off the sea. The canyon is calm today.\"";
 
             // Generated reflection
-            string driveSummary = $"Health: {healthPct}% | Energy: {hungerPct}% | Hydration: {thirstPct}% | Water: {s.freshwaterMl}ml";
+            string driveSummary = $"Health: {healthPct}% | Energy: {hungerPct}% | Protein: {proteinPct}% | Hydration: {thirstPct}% | Water: {s.freshwaterMl}ml";
             int placeCount = s.observedPlaces != null ? s.observedPlaces.Count : 0;
             int cellCount = s.exploredCells != null ? s.exploredCells.Count : 0;
             string memorySummary = $"{cellCount} cells mapped, {placeCount} landmarks remembered.";
@@ -800,6 +938,102 @@ namespace CityLife.World
                     {
                         LastOutcome = "Approaching nearby ripe berry bush to forage";
                         recentVerifiedOutcome = "approach berry started";
+                    }
+                }
+                else if (accepted.EndsWith("crab"))
+                {
+                    NpcObservation bestCrab = null;
+                    float bestCrabDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Item && obs.id.Contains("crab") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestCrabDist)
+                                {
+                                    bestCrabDist = d;
+                                    bestCrab = obs;
+                                }
+                            }
+                        }
+                    }
+                    Vector3 targetDest = bestCrab != null && bestCrab.approach != Vector3.zero ? bestCrab.approach : (bestCrab != null ? bestCrab.position : Vector3.zero);
+                    if (bestCrab == null || (!StartRoute(targetDest) && !StartRoute(bestCrab.position)))
+                    {
+                        routePurpose = null;
+                        Record("route", "live-target-route-rejected", accepted, result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching nearby shore crab to harvest marine protein";
+                        recentVerifiedOutcome = "approach crab started";
+                    }
+                }
+                else if (accepted.EndsWith("meat"))
+                {
+                    NpcObservation bestMeat = null;
+                    float bestMeatDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Item && obs.id.Contains("meat") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestMeatDist)
+                                {
+                                    bestMeatDist = d;
+                                    bestMeat = obs;
+                                }
+                            }
+                        }
+                    }
+                    Vector3 targetDest = bestMeat != null && bestMeat.approach != Vector3.zero ? bestMeat.approach : (bestMeat != null ? bestMeat.position : Vector3.zero);
+                    if (bestMeat == null || (!StartRoute(targetDest) && !StartRoute(bestMeat.position)))
+                    {
+                        routePurpose = null;
+                        Record("route", "live-target-route-rejected", accepted, result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching fresh wolf venison meat on ground";
+                        recentVerifiedOutcome = "approach meat started";
+                    }
+                }
+                else if (accepted.EndsWith("leather"))
+                {
+                    NpcObservation bestLeather = null;
+                    float bestLeatherDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Item && obs.id.Contains("leather") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestLeatherDist)
+                                {
+                                    bestLeatherDist = d;
+                                    bestLeather = obs;
+                                }
+                            }
+                        }
+                    }
+                    Vector3 targetDest = bestLeather != null && bestLeather.approach != Vector3.zero ? bestLeather.approach : (bestLeather != null ? bestLeather.position : Vector3.zero);
+                    if (bestLeather == null || (!StartRoute(targetDest) && !StartRoute(bestLeather.position)))
+                    {
+                        routePurpose = null;
+                        Record("route", "live-target-route-rejected", accepted, result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching cured wolf leather pelt on ground";
+                        recentVerifiedOutcome = "approach leather started";
                     }
                 }
                 else
@@ -913,6 +1147,100 @@ namespace CityLife.World
                     if (Brain.Actor != null) Brain.Actor.Gesture();
                 }
             }
+            else if (accepted == "pick meat")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnMeatInHand();
+                    LastOutcome = "Gathered fresh raw wolf venison meat from ground";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "pick meat succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "pick leather")
+            {
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                if (controls != null)
+                {
+                    controls.SpawnLeatherInHand();
+                    LastOutcome = "Collected cured wolf leather pelt from ground";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "pick leather succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "holster club")
+            {
+                var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                if (carry != null)
+                {
+                    carry.SetStowed(true);
+                    LastOutcome = "Holstered heavy club onto back to free hands";
+                    Persist();
+                    recentVerifiedOutcome = "holster club succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "draw club")
+            {
+                var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                if (carry != null)
+                {
+                    carry.SetStowed(false);
+                    LastOutcome = "Drew heavy club from back, ready for defense";
+                    Persist();
+                    recentVerifiedOutcome = "draw club succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+            }
+            else if (accepted == "defend with club")
+            {
+                var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                if (carry != null && carry.Stowed)
+                {
+                    carry.SetStowed(false);
+                }
+                if (Brain.Actor != null) Brain.Actor.Gesture();
+
+                var wolves = FindObjectsByType<CoastalWolfEcology>(FindObjectsInactive.Exclude);
+                CoastalWolfEcology nearestWolf = null;
+                float bestWolfDist = 8.5f;
+                foreach (var w in wolves)
+                {
+                    if (w != null)
+                    {
+                        float d = Vector3.Distance(Brain.transform.position, w.transform.position);
+                        if (d < bestWolfDist)
+                        {
+                            bestWolfDist = d;
+                            nearestWolf = w;
+                        }
+                    }
+                }
+
+                if (nearestWolf != null)
+                {
+                    nearestWolf.TakeClubHit(Brain.transform.position);
+                    LastOutcome = "Struck prowling timber wolf with club, driving it away and yielding venison & leather!";
+                    var s = Food != null ? Food.Model.State : null;
+                    if (s != null)
+                    {
+                        s.body.endorphin = Mathf.Min(10000, s.body.endorphin + 2000);
+                        s.body.fatigue = Mathf.Max(0, s.body.fatigue - 1000);
+                    }
+                }
+                else
+                {
+                    LastOutcome = "Brandished club defensively against predator";
+                }
+
+                Persist();
+                recentVerifiedOutcome = "defend with club succeeded";
+            }
             else if (accepted == "roast food on hearth" || accepted == "roast catch")
             {
                 if (HearthCooking.TryRoastHeldItem(Brain))
@@ -932,7 +1260,14 @@ namespace CityLife.World
                 var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
                 if (heldPhys != null)
                 {
-                    if (heldPhys.itemTypeId == "food-cooked-fish")
+                    if (heldPhys.itemTypeId == "food-cooked-meat")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 4500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 5000);
+                        s.satiety = Mathf.Min(10000, s.satiety + 4500);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 4000);
+                    }
+                    else if (heldPhys.itemTypeId == "food-cooked-fish")
                     {
                         s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
                         s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
@@ -961,12 +1296,22 @@ namespace CityLife.World
             {
                 var s = Food.Model.State;
                 var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
-                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab"))
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat"))
                 {
-                    s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
-                    s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
-                    s.satiety = Mathf.Min(10000, s.satiety + 2000);
-                    Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
+                    if (heldPhys.itemTypeId == "food-wolf-meat")
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2500);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 3200);
+                        s.satiety = Mathf.Min(10000, s.satiety + 2200);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
+                    }
+                    else
+                    {
+                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
+                        s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
+                        s.satiety = Mathf.Min(10000, s.satiety + 2000);
+                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
+                    }
                     s.knowsMealBenefit = true;
                     var heldGo = Brain.Actions.Held.gameObject;
                     Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);

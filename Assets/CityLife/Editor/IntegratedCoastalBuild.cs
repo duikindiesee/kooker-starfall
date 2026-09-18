@@ -112,10 +112,14 @@ namespace CityLife.World.Editor
             if (!RiverFishSchool.VerifyFishEcology(out string fishReceipt))
                 throw new InvalidOperationException($"River fish ecology verification failed: {fishReceipt}");
 
+            // Coastal Timber Wolf Ecology verification
+            if (!CoastalWolfEcology.VerifyWolfEcology(out string wolfReceipt))
+                throw new InvalidOperationException($"Wolf ecology verification failed: {wolfReceipt}");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 14;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, and waist moonbag with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 15;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, waist moonbag, and coastal timber wolf ecology with zero errors.");
             return totalPassed;
         }
 
@@ -630,6 +634,16 @@ namespace CityLife.World.Editor
                 if (f.interactable != null) fishInteractables.Add(f.interactable);
             }
             brain.Registry = brain.Registry.Concat(fishInteractables).ToArray();
+
+            // Autonomous Coastal Timber Wolves in rugged upper canyon slopes
+            var wolfObjects = CoastalWolfEcology.SpawnWolves(ground.transform);
+            var wolfInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < wolfObjects.Count; i++)
+            {
+                var wolfNi = wolfObjects[i].GetComponent<NpcInteractable>();
+                if (wolfNi != null) wolfInteractables.Add(wolfNi);
+            }
+            brain.Registry = brain.Registry.Concat(wolfInteractables).ToArray();
 
             // Secondary Cave Hearth Station at Refuge Cave entrance
             var caveHearthObj = new GameObject("Refuge Cave Hearth Station");

@@ -22,13 +22,14 @@ namespace CityLife.Food
         public static bool CanRoast(string itemTypeId)
         {
             if (string.IsNullOrEmpty(itemTypeId)) return false;
-            return itemTypeId == "food-river-fish" || itemTypeId == "food-protein-crab";
+            return itemTypeId == "food-river-fish" || itemTypeId == "food-protein-crab" || itemTypeId == "food-wolf-meat";
         }
 
         public static string GetCookedTypeId(string rawTypeId)
         {
             if (rawTypeId == "food-river-fish") return "food-cooked-fish";
             if (rawTypeId == "food-protein-crab") return "food-cooked-crab";
+            if (rawTypeId == "food-wolf-meat") return "food-cooked-meat";
             return null;
         }
 
@@ -40,6 +41,9 @@ namespace CityLife.Food
                 case "food-cooked-fish": return "Roasted River Trout";
                 case "food-protein-crab": return "Protein Shore Crab";
                 case "food-cooked-crab": return "Roasted Shore Crab";
+                case "food-wolf-meat": return "Raw Wolf Venison";
+                case "food-cooked-meat": return "Roasted Wolf Steak";
+                case "material-wolf-leather": return "Cured Wolf Leather";
                 default: return itemTypeId;
             }
         }

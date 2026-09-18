@@ -59,13 +59,23 @@ namespace CityLife.World
             // Hip waist pouch position: left hip
             Vector3 pouchAnchor = new Vector3(0.208f, -0.05f, -0.085f);
 
+            Vector3 parentLossy = hipsBone.lossyScale;
+            Vector3 targetScale1 = new Vector3(
+                0.055f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.x)),
+                0.055f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.y)),
+                0.055f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.z)));
+            Vector3 targetScale2 = new Vector3(
+                0.050f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.x)),
+                0.050f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.y)),
+                0.050f / Mathf.Max(0.0001f, Mathf.Abs(parentLossy.z)));
+
             if (VisualSlot1 == null)
             {
                 var f1 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 f1.name = "Moonbag Fruit Indicator 1";
                 f1.transform.SetParent(hipsBone, false);
                 f1.transform.localPosition = pouchAnchor + new Vector3(0.012f, 0.025f, -0.012f);
-                f1.transform.localScale = new Vector3(0.055f, 0.055f, 0.055f);
+                f1.transform.localScale = targetScale1;
                 var col = f1.GetComponent<Collider>();
                 if (col != null) DestroyImmediate(col);
                 if (fruitMaterial != null) f1.GetComponent<MeshRenderer>().sharedMaterial = fruitMaterial;
@@ -78,7 +88,7 @@ namespace CityLife.World
                 f2.name = "Moonbag Fruit Indicator 2";
                 f2.transform.SetParent(hipsBone, false);
                 f2.transform.localPosition = pouchAnchor + new Vector3(-0.012f, 0.020f, 0.015f);
-                f2.transform.localScale = new Vector3(0.050f, 0.050f, 0.050f);
+                f2.transform.localScale = targetScale2;
                 var col = f2.GetComponent<Collider>();
                 if (col != null) DestroyImmediate(col);
                 if (fruitMaterial != null) f2.GetComponent<MeshRenderer>().sharedMaterial = fruitMaterial;

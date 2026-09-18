@@ -37,6 +37,20 @@ namespace CityLife.World
         }
         public float WaterLevel(Vector3 p) => IslandField != null ? 0f : CoastalWater.CurrentLevel;
         public float WaterDepth(Vector3 p) => TryGround(p, out float h, out _) ? Mathf.Max(0, WaterLevel(p) - h) : 0;
+        public const float SafeMinX = -260f, SafeMaxX = 260f, SafeMinZ = -260f, SafeMaxZ = 380f;
+
+        public bool IsWithinSafePerimeter(Vector3 p, float margin = 10f)
+        {
+            if (IslandField != null) return PhysicalBounds.Contains(p);
+            if (p.x < SafeMinX + margin || p.x > SafeMaxX - margin ||
+                p.z < SafeMinZ + margin || p.z > SafeMaxZ - margin)
+                return false;
+            if (p.x < CoastalTerrain.MinX + 25f || p.x > CoastalTerrain.MaxX - 25f ||
+                p.z < CoastalTerrain.MinZ + 25f || p.z > CoastalTerrain.MaxZ - 25f)
+                return false;
+            return true;
+        }
+
         public Vector3 Current(Vector3 p) => Vector3.zero;
         public bool Walkable(Vector3 p, out Vector3 floor)
         {
@@ -49,18 +63,18 @@ namespace CityLife.World
         public Vector3 ConstrainMotion(Vector3 position, Vector3 direction, float distance)
         {
             var next = position + Vector3.ClampMagnitude(direction, 1) * (distance + .2f);
-            if (Walkable(next, out Vector3 floor) && floor.y - position.y <= .45f)
+            if (Walkable(next, out Vector3 floor) && floor.y - position.y <= .45f && IsWithinSafePerimeter(floor, 5f))
                 return direction;
 
             // Try slight left/right deflections (30 degrees) to step around small obstacles/rocks
             Vector3 leftDeflect = Quaternion.Euler(0, -30f, 0) * direction;
             var nextLeft = position + Vector3.ClampMagnitude(leftDeflect, 1) * (distance + .2f);
-            if (Walkable(nextLeft, out Vector3 floorLeft) && floorLeft.y - position.y <= .45f)
+            if (Walkable(nextLeft, out Vector3 floorLeft) && floorLeft.y - position.y <= .45f && IsWithinSafePerimeter(floorLeft, 5f))
                 return leftDeflect;
 
             Vector3 rightDeflect = Quaternion.Euler(0, 30f, 0) * direction;
             var nextRight = position + Vector3.ClampMagnitude(rightDeflect, 1) * (distance + .2f);
-            if (Walkable(nextRight, out Vector3 floorRight) && floorRight.y - position.y <= .45f)
+            if (Walkable(nextRight, out Vector3 floorRight) && floorRight.y - position.y <= .45f && IsWithinSafePerimeter(floorRight, 5f))
                 return rightDeflect;
 
             return Vector3.zero;

@@ -67,6 +67,22 @@ namespace CityLife.World
                 "Last verified outcome: caught freshwater fish in shallows. ":
                 recentVerifiedOutcome=="catch crab succeeded"?
                 "Last verified outcome: caught protein crab on shore. ":
+                recentVerifiedOutcome=="approach crab started"?
+                "Last verified outcome: approaching shore crab to harvest marine protein. ":
+                recentVerifiedOutcome=="holster club succeeded"?
+                "Last verified outcome: holstered heavy club onto back to free hands. ":
+                recentVerifiedOutcome=="draw club succeeded"?
+                "Last verified outcome: drew heavy club from back, ready for defense. ":
+                recentVerifiedOutcome=="defend with club succeeded"?
+                "Last verified outcome: defended with club strike, repelling predatory wolf. ":
+                recentVerifiedOutcome=="pick meat succeeded"?
+                "Last verified outcome: gathered raw wolf venison meat from ground. ":
+                recentVerifiedOutcome=="pick leather succeeded"?
+                "Last verified outcome: collected cured wolf leather pelt from ground. ":
+                recentVerifiedOutcome=="approach meat started"?
+                "Last verified outcome: approaching wolf meat on stones to gather protein. ":
+                recentVerifiedOutcome=="approach leather started"?
+                "Last verified outcome: approaching wolf leather hide on ground. ":
                 recentVerifiedOutcome=="eat catch succeeded"?
                 "Last verified outcome: ate fresh catch to reduce hunger. ":
                 recentVerifiedOutcome=="eat fruit succeeded"?
