@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Starfall.EnvironmentFoundation;
@@ -184,7 +185,8 @@ namespace CityLife.World
             var parent = new Dictionary<Vector2Int, Vector2Int> { [start] = start };
             var positions = new Dictionary<Vector2Int, Vector3> { [start] = origin };
             var blocked = new HashSet<Vector2Int>();
-            var open = new List<(Vector2Int pos, float fScore)> { (start, Vector2.Distance(start, end)) };
+            var open = new AStarMinHeap();
+            open.Push(start, Vector2.Distance(start, end));
 
             Vector2Int closest = start;
             float closestDist = Vector2.Distance(start, end);
@@ -192,14 +194,7 @@ namespace CityLife.World
 
             while (open.Count > 0 && parent.Count < 16384)
             {
-                int bestIdx = 0;
-                float bestF = open[0].fScore;
-                for (int i = 1; i < open.Count; i++)
-                {
-                    if (open[i].fScore < bestF) { bestF = open[i].fScore; bestIdx = i; }
-                }
-                var p = open[bestIdx].pos;
-                open.RemoveAt(bestIdx);
+                if (!open.TryPop(out var p, out float currentF)) break;
 
                 if (p == end) { closest = end; break; }
 
@@ -211,6 +206,9 @@ namespace CityLife.World
                 }
 
                 float currentG = gScore[p];
+                // Lazy deletion check: skip stale entries whose G-score has already been improved
+                if (currentF > currentG + currentDist + 0.001f) continue;
+
                 foreach (var step in steps)
                 {
                     var q = p + step;
@@ -235,7 +233,7 @@ namespace CityLife.World
                         parent[q] = p;
                         positions[q] = floor;
                         float f = tentativeG + Vector2.Distance(q, end);
-                        open.Add((q, f));
+                        open.Push(q, f);
                     }
                 }
             }
@@ -248,6 +246,64 @@ namespace CityLife.World
             while (curr != start) { path.Add(positions[curr]); curr = parent[curr]; }
             path.Reverse();
             return new Queue<Vector3>(path);
+        }
+
+        private sealed class AStarMinHeap
+        {
+            private struct HeapNode
+            {
+                public Vector2Int pos;
+                public float fScore;
+            }
+
+            private HeapNode[] heap = new HeapNode[256];
+            public int Count { get; private set; }
+
+            public void Push(Vector2Int pos, float fScore)
+            {
+                if (Count == heap.Length)
+                {
+                    Array.Resize(ref heap, heap.Length * 2);
+                }
+                int i = Count++;
+                heap[i] = new HeapNode { pos = pos, fScore = fScore };
+                while (i > 0)
+                {
+                    int parent = (i - 1) >> 1;
+                    if (heap[i].fScore >= heap[parent].fScore) break;
+                    HeapNode tmp = heap[i]; heap[i] = heap[parent]; heap[parent] = tmp;
+                    i = parent;
+                }
+            }
+
+            public bool TryPop(out Vector2Int pos, out float fScore)
+            {
+                if (Count == 0)
+                {
+                    pos = default;
+                    fScore = 0f;
+                    return false;
+                }
+                pos = heap[0].pos;
+                fScore = heap[0].fScore;
+                Count--;
+                if (Count > 0)
+                {
+                    heap[0] = heap[Count];
+                    int i = 0;
+                    while (true)
+                    {
+                        int left = (i << 1) + 1;
+                        if (left >= Count) break;
+                        int right = left + 1;
+                        int best = (right < Count && heap[right].fScore < heap[left].fScore) ? right : left;
+                        if (heap[best].fScore >= heap[i].fScore) break;
+                        HeapNode tmp = heap[i]; heap[i] = heap[best]; heap[best] = tmp;
+                        i = best;
+                    }
+                }
+                return true;
+            }
         }
     }
 }

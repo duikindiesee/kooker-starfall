@@ -250,16 +250,22 @@ namespace CityLife.World
                 (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
                  (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("food") ||
                   Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId == "fruit")));
+            bool isHoldingTool = Actions != null && Actions.Held != null && (
+                Actions.Held.StableId.Contains("club") || Actions.Held.StableId.Contains("rod") ||
+                Actions.Held.StableId.Contains("tool") ||
+                (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
+                 Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("tool")));
+            bool allowSurvival = Actions == null || Actions.Held == null || isHoldingFood || isHoldingTool;
             bool survivalPriority = Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
                 isHoldingFood ||
-                (Survival.Food.Model.State.satiety < 7000 && (Actions.Held == null || isHoldingFood)) ||
-                (Survival.Food.Model.State.hydration < 7000 && (Actions.Held == null || isHoldingFood)) ||
+                (Survival.Food.Model.State.satiety < 7000 && allowSurvival) ||
+                (Survival.Food.Model.State.hydration < 7000 && allowSurvival) ||
                 // A scoped continuation earned in a prior real delivery cycle
                 // resumes survival without inventing delivery state in this
                 // reconstructed world. Never override a currently held item unless it's food.
-                (Survival.VerifiedScopedContinuation && (Actions.Held == null || isHoldingFood)) ||
-                (!hasAuthoredLegacyItems && (Actions.Held == null || isHoldingFood)) ||
-                (goal == null && Actions.Held == null && (!hasAuthoredLegacyItems || (Actions.Deliveries >= 3 &&
+                (Survival.VerifiedScopedContinuation && allowSurvival) ||
+                (!hasAuthoredLegacyItems && allowSurvival) ||
+                (goal == null && allowSurvival && (!hasAuthoredLegacyItems || (Actions.Deliveries >= 3 &&
                     Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0)))));
             if (survivalPriority)
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }

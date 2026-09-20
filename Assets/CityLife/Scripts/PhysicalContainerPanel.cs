@@ -37,7 +37,50 @@ namespace CityLife.World
         private Button saveButton;
         private Text saveButtonText;
         private Button cycleButton;
+        private Button handButton;
+        private Text handButtonText;
         private bool initialized;
+
+        public enum StoreHandTarget { Auto, Right, Left }
+        public StoreHandTarget HandTarget = StoreHandTarget.Auto;
+
+        public NpcInteractable GetItemToStore()
+        {
+            if (Controls == null || Controls.Brain == null || Controls.Brain.Actions == null) return null;
+            var actions = Controls.Brain.Actions;
+            var right = actions.HeldRight;
+            var left = actions.HeldLeft;
+
+            if (HandTarget == StoreHandTarget.Right) return right;
+            if (HandTarget == StoreHandTarget.Left) return left;
+
+            // Auto prioritization:
+            if (right != null && left != null)
+            {
+                var rPhys = right.GetComponent<PhysicalItem>();
+                var lPhys = left.GetComponent<PhysicalItem>();
+                // If right hand holds a fishing rod (or large tool), and left holds fish/catch/food/stone, store from left!
+                if (rPhys != null && (rPhys.itemTypeId == FishingRodItem.ItemTypeId || rPhys.dimensions.depth > 1.0f))
+                {
+                    return left;
+                }
+                if (lPhys != null && (lPhys.itemTypeId.StartsWith("food-") || lPhys.itemTypeId.StartsWith("stone-") || lPhys.itemTypeId.StartsWith("wood-") || lPhys.itemTypeId.StartsWith("material-")))
+                {
+                    return left;
+                }
+                return right;
+            }
+
+            return right ?? left;
+        }
+
+        public void CycleStoreHand()
+        {
+            if (HandTarget == StoreHandTarget.Auto) HandTarget = StoreHandTarget.Left;
+            else if (HandTarget == StoreHandTarget.Left) HandTarget = StoreHandTarget.Right;
+            else HandTarget = StoreHandTarget.Auto;
+            UpdateContent();
+        }
 
         private void Start()
         {
@@ -165,7 +208,7 @@ namespace CityLife.World
 
             // Store button
             var storeObj = new GameObject("StoreButton", typeof(RectTransform), typeof(Image), typeof(Button));
-            Rect(storeObj, 20, 280, 460, 42);
+            Rect(storeObj, 20, 280, 280, 42);
             storeObj.GetComponent<Image>().color = new Color(0.12f, 0.35f, 0.40f, 1f);
             storeButton = storeObj.GetComponent<Button>();
             storeButton.onClick.AddListener(OnStoreClicked);
@@ -181,6 +224,26 @@ namespace CityLife.World
             storeButtonText.fontSize = 16;
             storeButtonText.color = Color.white;
             storeButtonText.alignment = TextAnchor.MiddleCenter;
+
+            // Hand selection toggle button
+            var handObj = new GameObject("HandButton", typeof(RectTransform), typeof(Image), typeof(Button));
+            Rect(handObj, 310, 280, 170, 42);
+            handObj.GetComponent<Image>().color = new Color(0.14f, 0.28f, 0.36f, 1f);
+            handButton = handObj.GetComponent<Button>();
+            handButton.onClick.AddListener(CycleStoreHand);
+
+            var hTextObj = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            var hRect = hTextObj.GetComponent<RectTransform>();
+            hRect.SetParent(handObj.transform, false);
+            hRect.anchorMin = Vector2.zero;
+            hRect.anchorMax = Vector2.one;
+            hRect.offsetMin = hRect.offsetMax = Vector2.zero;
+            handButtonText = hTextObj.GetComponent<Text>();
+            handButtonText.font = font;
+            handButtonText.fontSize = 14;
+            handButtonText.color = Color.white;
+            handButtonText.alignment = TextAnchor.MiddleCenter;
+            handButtonText.text = "Hand: Auto (Y)";
 
             // Cycle container button
             var cycleObj = new GameObject("CycleButton", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -231,7 +294,7 @@ namespace CityLife.World
 
             // Footer navigation hint
             var hintLabel = Label("Hint", 20, 435, 460, 45, 14, new Color(0.60f, 0.70f, 0.78f));
-            hintLabel.text = "C / Esc: close panel · T: cycle container · Click slot: retrieve · Click Store: store\nMouse pointer active for container interaction.";
+            hintLabel.text = "C / Esc: close panel · T: cycle container · Y: toggle hand · Click slot: retrieve · Click Store: store\nMouse pointer active for container interaction.";
 
             panelRoot.SetActive(false);
         }
@@ -468,10 +531,13 @@ namespace CityLife.World
                 }
 
                 // Store button state
-                if (Controls != null && Controls.Brain != null && Controls.Brain.Actions != null && Controls.Brain.Actions.Held != null)
+                var itemToStore = GetItemToStore();
+                if (itemToStore != null && !string.IsNullOrEmpty(SelectedContainerId))
                 {
-                    string heldId = Controls.Brain.Actions.Held.StableId;
-                    if (storeButtonText != null) storeButtonText.text = $"Store Held Item: {heldId} -> {SelectedContainerId}";
+                    string heldId = itemToStore.StableId;
+                    bool isLeft = (Controls.Brain.Actions != null && Controls.Brain.Actions.HeldLeft == itemToStore);
+                    string handTag = isLeft ? "[Left Hand]" : "[Right Hand]";
+                    if (storeButtonText != null) storeButtonText.text = $"Store {handTag}: {heldId} -> {SelectedContainerId}";
                     if (storeButton != null)
                     {
                         storeButton.interactable = true;
@@ -509,6 +575,11 @@ namespace CityLife.World
                 }
             }
 
+            if (handButtonText != null)
+            {
+                handButtonText.text = $"Hand: {HandTarget} (Y)";
+            }
+
             if (receiptLabel != null)
             {
                 if (string.Equals(LastReceipt, "idle", StringComparison.Ordinal) && Bootstrap != null)
@@ -540,6 +611,8 @@ namespace CityLife.World
         public Button SaveButton => saveButton;
         public Text SaveButtonText => saveButtonText;
         public Button CycleButton => cycleButton;
+        public Button HandButton => handButton;
+        public Text HandButtonText => handButtonText;
         public Text StatusLabel => statusLabel;
         public Text StatsLabel => statsLabel;
         public Text ReceiptLabel => receiptLabel;
@@ -567,10 +640,13 @@ namespace CityLife.World
         private void OnStoreClicked()
         {
             if (Bootstrap == null || Controls == null || Controls.Brain == null || Controls.Brain.Actions == null ||
-                Controls.Brain.Actions.Held == null || string.IsNullOrEmpty(SelectedContainerId))
+                string.IsNullOrEmpty(SelectedContainerId))
                 return;
 
-            string heldId = Controls.Brain.Actions.Held.StableId;
+            var itemToStore = GetItemToStore();
+            if (itemToStore == null) return;
+
+            string heldId = itemToStore.StableId;
             var res = Controls.Brain.ExecutePlayerAction(NpcActionKind.Store, heldId, SelectedContainerId);
             LastReceipt = res.success
                 ? $"store-success: {heldId} into {SelectedContainerId} ({res.code})"

@@ -94,7 +94,7 @@ namespace CityLife.World
                     }
                     phys.Bind(PhysicalModel, worldId, PhysicalModel.GenerationId);
                 }
-                phys.AttachToHand(targetHand);
+                phys.AttachToHand(targetHand, isLeftHand);
             }
             else
             {
@@ -601,7 +601,7 @@ namespace CityLife.World
                     if (!modelReceipt.success)
                         return Finish(Deny(modelReceipt.code));
 
-                    phys.AttachToHand(targetHand);
+                    phys.AttachToHand(targetHand, isPickupLeft);
                     target.HeldBy = agentId;
                     if (isPickupLeft)
                     {
@@ -913,7 +913,7 @@ namespace CityLife.World
                 }
                 else // Retrieve
                 {
-                    itemPhys.AttachToHand(targetActionHand);
+                    itemPhys.AttachToHand(targetActionHand, isActionLeft);
                     itemInteractable.HeldBy = agentId;
                     if (isActionLeft)
                     {

@@ -10,6 +10,7 @@ namespace CityLife.Items
     /// and authoritative model synchronization.
     /// </summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(100)]
     public sealed class PhysicalItem : MonoBehaviour
     {
         public string itemId;
@@ -23,7 +24,7 @@ namespace CityLife.Items
 
         public bool IsCarried { get; private set; }
         public Transform CarriedHand { get; private set; }
-        public Vector3 GripLocalOffset = new Vector3(0.06f, 0.04f, 0f);
+        public Vector3 GripLocalOffset = new Vector3(0.018f, 0.065f, 0.012f);
         public Quaternion GripLocalRotation = Quaternion.identity;
 
         public bool IsStored { get; private set; }
@@ -270,9 +271,39 @@ namespace CityLife.Items
         /// from the animated avatar rig, preserving declared metre dimensions.
         /// Restores renderers if transitioning out of Stored state.
         /// </summary>
-        public void AttachToHand(Transform hand)
+        public bool IsLeftHand { get; set; }
+
+        public static bool DetectLeftHand(Transform hand)
+        {
+            if (hand == null) return false;
+            var anim = hand.GetComponentInParent<Animator>();
+            if (anim != null && anim.isHuman)
+            {
+                Transform leftBone = anim.GetBoneTransform(HumanBodyBones.LeftHand);
+                if (leftBone != null && (hand == leftBone || hand.IsChildOf(leftBone)))
+                    return true;
+                Transform rightBone = anim.GetBoneTransform(HumanBodyBones.RightHand);
+                if (rightBone != null && (hand == rightBone || hand.IsChildOf(rightBone)))
+                    return false;
+            }
+            string n = hand.name;
+            if (n.IndexOf("left", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            if (n.EndsWith("_l", StringComparison.OrdinalIgnoreCase) || n.EndsWith(".l", StringComparison.OrdinalIgnoreCase)) return true;
+            if (n.Contains("hand_l") || n.Contains("Hand_L")) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Sets velocities to zero while still dynamic, then switches to kinematic carry
+        /// with trigger collider following actor hand via scale-neutral kinematic follower.
+        /// Unparents to root level to avoid inheriting non-uniform scale or bone rotation shear
+        /// from the animated avatar rig, preserving declared metre dimensions.
+        /// Restores renderers if transitioning out of Stored state.
+        /// </summary>
+        public void AttachToHand(Transform hand, bool? isLeft = null)
         {
             CarriedHand = hand;
+            IsLeftHand = isLeft ?? DetectLeftHand(hand);
             bool wasStored = IsStored;
             IsStored = false;
             BoundContainerItemId = null;
@@ -313,7 +344,12 @@ namespace CityLife.Items
         public void UpdateGripPose()
         {
             if (!IsCarried || CarriedHand == null) return;
-            transform.position = CarriedHand.TransformPoint(GripLocalOffset);
+            Vector3 offset = GripLocalOffset;
+            if (IsLeftHand)
+            {
+                offset.x = -GripLocalOffset.x;
+            }
+            transform.position = CarriedHand.TransformPoint(offset);
             transform.rotation = CarriedHand.rotation * GripLocalRotation;
             transform.localScale = Vector3.one;
         }

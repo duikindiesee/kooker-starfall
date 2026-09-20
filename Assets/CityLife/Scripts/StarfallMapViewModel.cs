@@ -258,7 +258,6 @@ namespace CityLife.World
                 state.actorId != lastValidatedActorId ||
                 cellCount != lastCellCount ||
                 eventCount != lastEventCount ||
-                cellTick != lastCellTick ||
                 eventHash != lastEventHash;
 
             if (memoryNeedsRevalidation)

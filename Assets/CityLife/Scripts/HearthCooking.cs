@@ -201,12 +201,39 @@ namespace CityLife.Food
             }
         }
 
+        public static bool CanRoastHeldItem(NpcAutonomy brain)
+        {
+            if (brain == null || brain.Actions == null) return false;
+            if (brain.Actions.HeldRight != null)
+            {
+                var p = brain.Actions.HeldRight.GetComponent<PhysicalItem>();
+                if (p != null && CanRoast(p.itemTypeId)) return true;
+            }
+            if (brain.Actions.HeldLeft != null)
+            {
+                var p = brain.Actions.HeldLeft.GetComponent<PhysicalItem>();
+                if (p != null && CanRoast(p.itemTypeId)) return true;
+            }
+            return false;
+        }
+
         public static bool TryRoastHeldItem(NpcAutonomy brain)
         {
-            if (brain == null || brain.Actions == null || brain.Actions.Held == null) return false;
-            var held = brain.Actions.Held;
-            var phys = held.GetComponent<PhysicalItem>();
-            if (phys == null || !CanRoast(phys.itemTypeId)) return false;
+            if (brain == null || brain.Actions == null) return false;
+
+            // Dual-hand check: inspect both hands for a roastable catch or food item
+            NpcInteractable roastCandidate = null;
+            if (brain.Actions.HeldRight != null)
+            {
+                var phys = brain.Actions.HeldRight.GetComponent<PhysicalItem>();
+                if (phys != null && CanRoast(phys.itemTypeId)) roastCandidate = brain.Actions.HeldRight;
+            }
+            if (roastCandidate == null && brain.Actions.HeldLeft != null)
+            {
+                var phys = brain.Actions.HeldLeft.GetComponent<PhysicalItem>();
+                if (phys != null && CanRoast(phys.itemTypeId)) roastCandidate = brain.Actions.HeldLeft;
+            }
+            if (roastCandidate == null) return false;
 
             var cooker = brain.GetComponentInChildren<HearthCooking>();
             if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
@@ -217,7 +244,7 @@ namespace CityLife.Food
 
             if (!cooker.IsNearHearth(brain.transform.position, out _)) return false;
 
-            return cooker.RoastItem(held.gameObject);
+            return cooker.RoastItem(roastCandidate.gameObject);
         }
     }
 }

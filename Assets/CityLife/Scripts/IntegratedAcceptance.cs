@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using Starfall.Food;
+using CityLife.Items;
 
 namespace CityLife.World
 {
@@ -751,15 +752,17 @@ namespace CityLife.World
                 string videoDir = Path.Combine(directory, "carp-swimming-frames");
                 Directory.CreateDirectory(videoDir);
 
+                // 4. Clean FPS Benchmark (48 frames without disk I/O)
+                // Warmup 2 frames
+                yield return null;
+                yield return null;
+
                 var frameTimes = new List<float>();
                 for (int f = 0; f < 48; f++)
                 {
                     float dt = Time.unscaledDeltaTime;
                     if (dt > 0.0001f) frameTimes.Add(1f / dt);
-
-                    yield return new WaitForEndOfFrame();
-                    RenderWorldNow(Path.Combine("carp-swimming-frames", $"carp-swim-{f + 1:D3}"));
-                    yield return new WaitForSeconds(1f / 24f);
+                    yield return null;
                 }
 
                 if (frameTimes.Count > 0)
@@ -774,8 +777,117 @@ namespace CityLife.World
 
                     string perfJson = $"{{\"minFps\":{minFps:F1},\"maxFps\":{maxFps:F1},\"meanFps\":{meanFps:F1},\"p01Fps\":{p01Fps:F1},\"samples\":{frameTimes.Count}}}";
                     File.WriteAllText(Path.Combine(directory, "carp-performance.json"), perfJson);
-                    CheckThat("river-carp-performance-stable", minFps >= 3.0f && meanFps >= 4.0f,
-                        $"FPS distribution: min={minFps:F1}, max={maxFps:F1}, mean={meanFps:F1}, 99th%={p01Fps:F1} across {frameTimes.Count} frames");
+                    CheckThat("river-carp-performance-stable", minFps >= 5.0f && meanFps >= 8.0f,
+                        $"Clean FPS distribution: min={minFps:F1}, max={maxFps:F1}, mean={meanFps:F1}, 99th%={p01Fps:F1} across {frameTimes.Count} frames");
+                }
+
+                // Capture video sequence after clean benchmark
+                for (int f = 0; f < 24; f++)
+                {
+                    yield return new WaitForEndOfFrame();
+                    RenderWorldNow(Path.Combine("carp-swimming-frames", $"carp-swim-{f + 1:D3}"));
+                    yield return new WaitForSeconds(1f / 24f);
+                }
+
+                // -----------------------------------------------------------------
+                // 5. End-to-End Fishing Scenario: Equip, Cast, Strike, Offhand Catch, Basket Store
+                // -----------------------------------------------------------------
+                var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
+                var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                CheckThat("fishing-runtime-components-present", school != null && fishing != null, "school and fishing interaction present");
+
+                if (school != null && fishing != null && Brain.Actions != null)
+                {
+                    // Move actor to river bank overlooking shallow pool where fish swim
+                    Vector3 bankPos = new Vector3(-6.5f, CoastalTerrain.Height(-6.5f, -28f), -28f);
+                    Brain.transform.position = bankPos;
+                    if (Brain.Actor != null) Brain.Actor.transform.position = bankPos;
+
+                    // A. Equip rod in right hand
+                    var rodNi = Brain.Registry != null ? Brain.Registry.FirstOrDefault(x => x != null && x.StableId.Contains("rod")) : null;
+                    if (rodNi != null)
+                    {
+                        Brain.Actions.HoldItemDirect(rodNi, false);
+                    }
+                    CheckThat("e2e-fishing-rod-equipped-in-right-hand", Brain.Actions.HeldRight != null && Brain.Actions.HeldRight.StableId.Contains("rod"),
+                        "Right hand holds fishing rod");
+
+                    // B. Cast into river water
+                    Vector3 castPos = new Vector3(-3.5f, CoastalWater.CurrentLevel, -28f);
+                    fishing.StartCast(castPos);
+                    CheckThat("e2e-fishing-cast-initiated", fishing.IsFishingActive, "Fishing cast is active");
+
+                    // C. Catch & Land into left hand while retaining rod in right hand
+                    fishing.Tick(FishingInteraction.CastDuration + 0.1f);
+                    if (school.TryReserveFishNear(castPos, 12.0f, out var reservedFish))
+                    {
+                        bool transferred = fishing.TryTransferCatch(reservedFish, out string catchCode);
+                        CheckThat("e2e-fishing-catch-transferred-to-left-hand", transferred && Brain.Actions.HeldLeft != null,
+                            $"Catch transferred to left hand ({catchCode})");
+                        CheckThat("e2e-fishing-rod-retained-in-right-hand", Brain.Actions.HeldRight != null && Brain.Actions.HeldRight == rodNi,
+                            "Right hand firmly retains fishing rod while left hand holds catch");
+
+                        if (transferred)
+                        {
+                            school.CompleteCatch(reservedFish);
+
+                            // D. Store catch into basket while retaining rod
+                            var basketNi = Brain.Registry != null ? Brain.Registry.FirstOrDefault(x => x != null && x.StableId.Contains("basket")) : null;
+                            if (basketNi == null)
+                            {
+                                Vector3 bPos = bankPos + Vector3.right * 0.8f;
+                                var bGo = new GameObject("container-basket-riverside");
+                                bGo.transform.position = bPos;
+                                basketNi = bGo.AddComponent<NpcInteractable>();
+                                basketNi.StableId = "container-basket-riverside";
+                                basketNi.Kind = NpcObjectKind.Item;
+                                var bPhys = bGo.AddComponent<PhysicalItem>();
+                                bPhys.itemId = "container-basket-riverside";
+                                bPhys.itemTypeId = "container-basket";
+                                if (Brain.Actions != null && Brain.Actions.PhysicalModel != null)
+                                {
+                                    Brain.Actions.PhysicalModel.RegisterItem("container-basket-riverside", "container-basket", ItemLocationKind.Free, bPos, Quaternion.identity);
+                                }
+                            }
+                            if (basketNi != null && Brain.Survival != null && Brain.Survival.TryGetHeldFoodOrCatch(out var catchHeldNi, out var catchPhys, out bool isLeft))
+                            {
+                                var model = Brain.Actions.PhysicalModel;
+                                if (model != null)
+                                {
+                                    if (model.TryGetItem(basketNi.StableId, out _) == false)
+                                    {
+                                        model.RegisterItem(basketNi.StableId, "container-basket", ItemLocationKind.Free, basketNi.transform.position, Quaternion.identity);
+                                    }
+                                    if (Brain.TryAllocateRequestId(out int storeReqId))
+                                    {
+                                        var auth = new BasicItemActionAuthority();
+                                        var storeReq = new ItemActionRequest
+                                        {
+                                            requestId = storeReqId,
+                                            action = ItemActionKind.Store,
+                                            actorId = NpcAutonomy.AgentId,
+                                            itemId = catchPhys.itemId,
+                                            targetId = basketNi.StableId
+                                        };
+                                        var storeRes = model.Execute(model.WorldId, model.GenerationId, storeReq, auth);
+                                        CheckThat("e2e-fishing-catch-stored-in-basket", storeRes.success,
+                                            $"Stored catch into basket: {storeRes.code}");
+                                        if (storeRes.success)
+                                        {
+                                            Brain.Actions.HoldItemDirect(null, isLeft);
+                                            catchPhys.gameObject.SetActive(false);
+                                            CheckThat("e2e-fishing-rod-still-retained-after-store", Brain.Actions.HeldRight == rodNi && Brain.Actions.HeldLeft == null,
+                                                "Offhand catch stored into basket, right hand rod retained");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            school.ReleaseReservation(reservedFish);
+                        }
+                    }
                 }
             }
 

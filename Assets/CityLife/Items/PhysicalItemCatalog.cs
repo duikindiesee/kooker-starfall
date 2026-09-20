@@ -75,6 +75,8 @@ namespace CityLife.Items
             }
         }
 
+        public static PhysicalItemCatalog CreateAuthoritativeCatalog() => CreateDefaultCatalog();
+
         public static PhysicalItemCatalog CreateDefaultCatalog()
         {
             var catalog = new PhysicalItemCatalog();
@@ -279,6 +281,15 @@ namespace CityLife.Items
             {
                 itemTypeId = "food-river-carp",
                 dimensions = new PhysicalDimensions(0.42f, 0.16f, 0.10f),
+                massKg = 0.85f,
+                isContainer = false
+            });
+
+            // Handcrafted River Fishing Rod (Flexible ash wood blank, cork grip, carved line guides, buoyant bobber)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "tool-fishing-rod",
+                dimensions = new PhysicalDimensions(0.08f, 0.08f, 2.10f),
                 massKg = 0.85f,
                 isContainer = false
             });

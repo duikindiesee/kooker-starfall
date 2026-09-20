@@ -80,7 +80,7 @@ namespace CityLife.World
             }
         }
 
-        public const string BuildVersion = "STARFALL v0.0.11 · round-311-fishriver";
+        public const string BuildVersion = "STARFALL v0.0.11 · round-313-fishing";
 
         private void Awake()
         {
@@ -377,8 +377,28 @@ namespace CityLife.World
                         wolfAlert = $"  |  <color=#FF4444><b>[WOLF {(nearWolf.distanceMillimetres / 1000f):F1}m - Press X]</b></color>";
                     }
                 }
+                string fishingAlert = "";
+                var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fishing != null && fishing.IsFishingActive)
+                {
+                    if (fishing.State == FishingState.Bite)
+                    {
+                        fishingAlert = "  |  <color=#FFFF00><b>[FISH BITING! Press F to Strike]</b></color>";
+                    }
+                    else
+                    {
+                        fishingAlert = $"  |  <color=#80D0FF><b>[FISHING: {fishing.State}]</b></color>";
+                    }
+                }
 
-                Summary.text = $"<b>{mode}</b>  |  Tick {Brain.Tick}  |  Goal: <color=#FFE680>{currentGoal}</color>  |  Cargo: {cargo}  |  Club: {weaponStatus}{airAlert}{wolfAlert}";
+                string commandAlert = "";
+                if (Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                {
+                    int pct = Mathf.RoundToInt(Brain.Survival.ActiveCommandProgress * 100f);
+                    commandAlert = $"  |  <color=#55FF88><b>[CMD: {Brain.Survival.ActiveCommandTitle}] Step {Brain.Survival.ActiveCommandStepIndex + 1}/{Brain.Survival.ActiveCommandTotalSteps}: {Brain.Survival.ActiveCommandCurrentStep} ({pct}%) [Cancel: C]</b></color>";
+                }
+
+                Summary.text = $"<b>{mode}</b>  |  Tick {Brain.Tick}  |  Goal: <color=#FFE680>{currentGoal}</color>  |  Cargo: {cargo}  |  Club: {weaponStatus}{airAlert}{wolfAlert}{fishingAlert}{commandAlert}";
 
                 // Update Vitals Gauge Bar Fills
                 void UpdateBar(RectTransform fillRt, Text valTxt, string label, int pct)
@@ -473,6 +493,18 @@ namespace CityLife.World
             if (milestonesText != null && diary != null)
             {
                 milestonesText.text = diary.GetMilestonesSummary();
+            }
+
+            if (footer != null)
+            {
+                if (Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                {
+                    footer.text = "[C] Cancel Command  ·  [1] River  ·  [2] Fish  ·  [3] Roast  ·  [4] Basket  ·  [5] Eat  ·  [6] Catch->Eat  ·  [7] Catch->Store  ·  [Tab] Possess";
+                }
+                else
+                {
+                    footer.text = "[Tab] Possess  ·  [1-7] Grounded Commands  ·  [E] Gather/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [M] Map  ·  [L] Drawer";
+                }
             }
 
             UnityEngine.Canvas.ForceUpdateCanvases();

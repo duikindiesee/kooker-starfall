@@ -12,7 +12,20 @@ namespace CityLife.World
     /// </summary>
     public sealed class RiverFishSchool : MonoBehaviour
     {
+        private static RiverFishSchool instance;
+        public static RiverFishSchool Instance
+        {
+            get
+            {
+                if (instance != null) return instance;
+                instance = UnityEngine.Object.FindAnyObjectByType<RiverFishSchool>();
+                return instance;
+            }
+            set => instance = value;
+        }
+
         public const int DefaultFishCount = 16;
+        public const float MinWaterDepth = 0.40f;
         public const float NutritionProtein = 2500f;
         public const float NutritionSatiety = 2000f;
         public const float DriveReductionEndorphins = 2200f;
@@ -144,8 +157,14 @@ namespace CityLife.World
 
         private void Awake()
         {
+            Instance = this;
             EnsureSharedAssets();
             ReconstructActiveFishIfEmpty();
+        }
+
+        private void OnEnable()
+        {
+            Instance = this;
         }
 
         private void Start()
@@ -294,6 +313,7 @@ namespace CityLife.World
             public NpcInteractable interactable;
             public PhysicalItem physicalItem;
             public Animation animation;
+            public bool isReserved;
         }
 
         [SerializeField]
@@ -313,16 +333,29 @@ namespace CityLife.World
             float currentX = swimCenter.x + Mathf.Cos(angle) * swimRadius;
             float currentZ = swimCenter.z + Mathf.Sin(angle) * (swimRadius * 1.6f);
 
+            // Ford shallows avoidance: deflect fish away from crossing ford (z in [-20, -8]) into deeper channel runs
+            if (currentZ >= -20f && currentZ <= -8f)
+            {
+                if (currentZ > -14f) currentZ = Mathf.Lerp(currentZ, -6.5f, 0.75f);
+                else currentZ = Mathf.Lerp(currentZ, -21.5f, 0.75f);
+            }
+
+            float channelX = CoastalTerrain.RiverCenterlineX(currentZ);
             float groundY = CoastalTerrain.Height(currentX, currentZ);
             float localDepth = waterY - groundY;
 
-            // Lateral bank containment: steer back toward deep river channel if orbit nears shore
-            if (localDepth < 0.28f)
+            // Lateral bank containment: steer back toward deep river channel if orbit nears shore or clay banks
+            if (localDepth < MinWaterDepth)
             {
-                float channelX = CoastalTerrain.RiverCenterlineX(currentZ);
-                currentX = Mathf.Lerp(currentX, channelX, 0.75f);
+                currentX = Mathf.Lerp(currentX, channelX, 0.85f);
                 groundY = CoastalTerrain.Height(currentX, currentZ);
                 localDepth = waterY - groundY;
+                if (localDepth < MinWaterDepth)
+                {
+                    currentX = channelX;
+                    groundY = CoastalTerrain.Height(currentX, currentZ);
+                    localDepth = waterY - groundY;
+                }
             }
 
             float effectiveScale = scale;
@@ -349,7 +382,11 @@ namespace CityLife.World
                 fishY = (groundY + waterY) * 0.5f;
             }
 
-            fishY = Mathf.Clamp(fishY, groundY + 0.03f, waterY - 0.02f);
+            // Invariant: dorsal fin must stay strictly submerged below water surface, never above dry ground
+            float maxAllowedY = waterY - hTop - 0.015f;
+            if (fishY > maxAllowedY) fishY = maxAllowedY;
+            if (fishY < groundY + 0.02f) fishY = Mathf.Min(groundY + 0.02f, maxAllowedY);
+
             return new Vector3(currentX, fishY, currentZ);
         }
 
@@ -363,8 +400,8 @@ namespace CityLife.World
                 var fish = ActiveFish[i];
                 if (fish == null || fish.gameObject == null || !fish.gameObject.activeSelf) continue;
 
-                // If carried in hand, stowed in satchel, or undergoing eating/cooking, don't simulate swimming orbit
-                if (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored))
+                // If reserved on fishing line, carried in hand, stowed in satchel, or undergoing eating/cooking, don't simulate swimming orbit
+                if (fish.isReserved || (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored)))
                 {
                     continue;
                 }
@@ -547,9 +584,9 @@ namespace CityLife.World
                 (new Vector3(-8f, -2.7f, -85f), 6.0f, 0.48f, 0.30f, 0.92f),
                 (new Vector3(6f, -2.8f, -55f), 5.2f, 0.40f, 0.25f, 0.85f),
                 (new Vector3(-4f, -2.5f, -32f), 4.5f, 0.42f, 0.22f, 0.82f),
-                // River Ford & Central Meanders (prominently visible from crossing terrace)
-                (new Vector3(0f, -2.2f, -12f), 3.2f, 0.40f, 0.12f, 0.52f),
-                (new Vector3(2f, -2.18f, -15f), 3.5f, 0.42f, 0.12f, 0.55f),
+                // Deep River Runs & Central Meanders (away from shallow crossing ford)
+                (new Vector3(-4f, -2.3f, -26f), 4.5f, 0.40f, 0.22f, 0.75f),
+                (new Vector3(2f, -2.25f, 4f), 4.2f, 0.42f, 0.20f, 0.78f),
                 (new Vector3(-8f, -2.3f, 8f), 4.8f, 0.38f, 0.20f, 0.85f),
                 (new Vector3(2f, -2.4f, 20f), 4.5f, 0.40f, 0.22f, 0.90f),
                 (new Vector3(14f, -2.6f, 32f), 5.5f, 0.44f, 0.24f, 0.88f),
@@ -700,10 +737,10 @@ namespace CityLife.World
                 (new Vector3(-2f, -2.25f, -28f), 4.5f, 0.36f, 0.24f, 0.88f),
                 (new Vector3(8f, -2.25f, -22f), 4.2f, 0.40f, 0.22f, 0.84f),
 
-                // Zone 4: River Ford & gravel shallows transition (activity terrace crossing)
-                (new Vector3(1f, -2.18f, -18f), 3.5f, 0.42f, 0.12f, 0.40f),      // Cruising right at the ford crossing!
-                (new Vector3(-2f, -2.18f, -14f), 3.8f, 0.44f, 0.12f, 0.38f),     // Active shallows swimmer
-                (new Vector3(3f, -2.18f, -10f), 3.2f, 0.40f, 0.12f, 0.36f),      // Directly visible from berry bush
+                // Zone 4: River Ford transition & deep pool meanders (away from shallow ford)
+                (new Vector3(1f, -2.25f, -25f), 4.0f, 0.42f, 0.22f, 0.65f),      // Deep run south of terrace
+                (new Vector3(-2f, -2.25f, -21f), 4.2f, 0.44f, 0.20f, 0.68f),     // Deep meander
+                (new Vector3(3f, -2.25f, -5f), 3.8f, 0.40f, 0.20f, 0.62f),       // North terrace deep run
                 (new Vector3(-4f, -2.2f, -8f), 3.5f, 0.38f, 0.14f, 0.42f),
                 (new Vector3(5f, -2.2f, -2f), 3.8f, 0.40f, 0.16f, 0.48f),
                 (new Vector3(-6f, -2.25f, 6f), 4.2f, 0.42f, 0.20f, 0.65f),
@@ -890,6 +927,135 @@ namespace CityLife.World
             }
 
             receipt = $"Verified river fish ecology with {mesh.vertexCount} verts, {mesh.triangles.Length / 3} triangles, and valid freshwater river coordinates.";
+            return true;
+        }
+
+        public bool HasFishNear(Vector3 searchPos, float maxRadius)
+        {
+            if (ActiveFish == null || ActiveFish.Count == 0) return false;
+            float maxDistSq = maxRadius * maxRadius;
+            for (int i = 0; i < ActiveFish.Count; i++)
+            {
+                var f = ActiveFish[i];
+                if (f == null || f.gameObject == null || !f.gameObject.activeSelf) continue;
+                if (f.isReserved) continue;
+                if (f.physicalItem != null && (f.physicalItem.IsCarried || f.physicalItem.IsStored)) continue;
+                if ((f.gameObject.transform.position - searchPos).sqrMagnitude <= maxDistSq) return true;
+            }
+            return false;
+        }
+
+        public bool TryReserveFishNear(
+            Vector3 searchPos, 
+            float maxRadius, 
+            out RiverFishInstance reservedFish)
+        {
+            reservedFish = null;
+            if (ActiveFish == null || ActiveFish.Count == 0) return false;
+
+            int bestIndex = -1;
+            float bestDistSq = maxRadius * maxRadius;
+
+            for (int i = 0; i < ActiveFish.Count; i++)
+            {
+                var f = ActiveFish[i];
+                if (f == null || f.gameObject == null || !f.gameObject.activeSelf) continue;
+                if (f.isReserved) continue;
+                if (f.physicalItem != null && (f.physicalItem.IsCarried || f.physicalItem.IsStored)) continue;
+
+                float dsq = (f.gameObject.transform.position - searchPos).sqrMagnitude;
+                if (dsq < bestDistSq)
+                {
+                    bestDistSq = dsq;
+                    bestIndex = i;
+                }
+            }
+
+            if (bestIndex < 0) return false;
+
+            reservedFish = ActiveFish[bestIndex];
+            reservedFish.isReserved = true;
+            return true;
+        }
+
+        public void ReleaseReservation(RiverFishInstance fish)
+        {
+            if (fish == null) return;
+            fish.isReserved = false;
+            if (fish.gameObject != null && fish.gameObject.activeSelf)
+            {
+                if (fish.physicalItem != null && fish.physicalItem.Body != null)
+                {
+                    fish.physicalItem.Body.linearVelocity = Vector3.zero;
+                    fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    fish.physicalItem.Body.isKinematic = true;
+                    fish.physicalItem.Body.useGravity = false;
+                }
+            }
+        }
+
+        public void CompleteCatch(RiverFishInstance fish)
+        {
+            if (fish == null) return;
+            fish.isReserved = false;
+            if (ActiveFish != null)
+            {
+                ActiveFish.Remove(fish);
+            }
+        }
+
+        public bool TryCatchFish(
+            Vector3 searchPos, 
+            float maxRadius, 
+            out string speciesTypeId, 
+            out float fishScale, 
+            out GameObject caughtGo)
+        {
+            speciesTypeId = null;
+            fishScale = 0.85f;
+            caughtGo = null;
+
+            if (!TryReserveFishNear(searchPos, maxRadius, out var target))
+            {
+                return false;
+            }
+
+            bool isCarp = (target.interactable != null && target.interactable.StableId != null && target.interactable.StableId.Contains("carp")) ||
+                          (target.gameObject != null && target.gameObject.name.Contains("carp"));
+
+            speciesTypeId = isCarp ? "food-river-carp" : "food-river-fish";
+            fishScale = target.scale > 0.05f ? target.scale : (isCarp ? 0.85f : 0.75f);
+            caughtGo = target.gameObject;
+
+            CompleteCatch(target);
+            return true;
+        }
+
+        public static bool CanFishInRiver(Vector3 casterPos, Vector3 castTargetPos, out string reason)
+        {
+            reason = null;
+            float dist = Vector3.Distance(casterPos, castTargetPos);
+            if (dist < 2.0f || dist > 18.0f)
+            {
+                reason = "Cast distance out of range [2m, 18m]";
+                return false;
+            }
+
+            float waterLevel = CoastalWater.CurrentLevel;
+            if (!CoastalTerrain.IsFreshwaterRiver(castTargetPos.x, castTargetPos.z, castTargetPos.y, waterLevel))
+            {
+                reason = "Target location is not in freshwater river";
+                return false;
+            }
+
+            float groundY = CoastalTerrain.Height(castTargetPos.x, castTargetPos.z);
+            float depth = waterLevel - groundY;
+            if (depth < 0.25f)
+            {
+                reason = "Water too shallow for river fishing";
+                return false;
+            }
+
             return true;
         }
     }

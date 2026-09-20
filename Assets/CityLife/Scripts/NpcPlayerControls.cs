@@ -19,6 +19,7 @@ namespace CityLife.World
         public CharacterPreviewCamera View;
         public PreviewDisplayMode Display;
         public PhysicalContainerPanel ContainerPanel;
+        public FishingInteraction Fishing;
         public bool AllowUnfocusedTestInput;
         public bool SuppressInput;
         public bool SuppressView;
@@ -66,6 +67,7 @@ namespace CityLife.World
                 pitch = View.transform.eulerAngles.x; if (pitch > 180) pitch -= 360;
             }
             if (Hud == null) Hud = FindFirstObjectByType<NpcDecisionHud>();
+            if (Fishing == null) Fishing = GetComponent<FishingInteraction>() ?? (Brain != null ? Brain.GetComponent<FishingInteraction>() : null) ?? FindFirstObjectByType<FishingInteraction>();
             BuildMenu();
             initialized = true;
         }
@@ -127,6 +129,10 @@ namespace CityLife.World
                 {
                     ContainerPanel.CycleSelection();
                 }
+                if (key.yKey.wasPressedThisFrame || key.gKey.wasPressedThisFrame)
+                {
+                    ContainerPanel.CycleStoreHand();
+                }
                 if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
                 cameraMotion = Vector3.zero;
                 ReleasePointer();
@@ -138,17 +144,70 @@ namespace CityLife.World
                 FreeSpectator = !FreeSpectator;
                 if (FreeSpectator) freePosition = View.transform.position;
             }
+            if (Brain.Possessed && (key.fKey.wasPressedThisFrame || (Looking && mouse != null && mouse.leftButton.wasPressedThisFrame && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))))
+            {
+                if (Fishing != null && (Fishing.IsHoldingFishingRod(out _) || Fishing.IsFishingActive))
+                {
+                    if (Fishing.State == FishingState.Idle)
+                    {
+                        if (Fishing.CanStartCast(Brain.transform.position, out var targetWater, out _))
+                        {
+                            Fishing.StartCast(targetWater);
+                            if (Brain.Actor != null) Brain.Actor.Gesture();
+                        }
+                    }
+                    else if (Fishing.State == FishingState.Bite || Fishing.State == FishingState.Floating || Fishing.State == FishingState.Nibble)
+                    {
+                        Fishing.StrikeAndReel(out _, out _, out _);
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
+                }
+            }
             if (key.vKey.wasPressedThisFrame && View != null)
             {
                 View.CycleViewMode();
             }
             if (key.lKey.wasPressedThisFrame && Hud != null) Hud.ToggleDetailed();
+            if (!Brain.Possessed && Brain.Survival != null)
+            {
+                if (key.cKey.wasPressedThisFrame && Brain.Survival.HasActiveCommand)
+                {
+                    Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");
+                }
+                else if (key.digit1Key.wasPressedThisFrame || key.numpad1Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("go to river");
+                }
+                else if (key.digit2Key.wasPressedThisFrame || key.numpad2Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("catch a fish");
+                }
+                else if (key.digit3Key.wasPressedThisFrame || key.numpad3Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("roast catch");
+                }
+                else if (key.digit4Key.wasPressedThisFrame || key.numpad4Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("store fish in basket");
+                }
+                else if (key.digit5Key.wasPressedThisFrame || key.numpad5Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("eat catch");
+                }
+                else if (key.digit6Key.wasPressedThisFrame || key.numpad6Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("catch then eat");
+                }
+                else if (key.digit7Key.wasPressedThisFrame || key.numpad7Key.wasPressedThisFrame)
+                {
+                    Brain.Survival.SubmitNaturalLanguageCommand("catch then store");
+                }
+            }
             if (key.cKey.wasPressedThisFrame && Brain.Possessed)
             {
-                if (Brain.Actions != null && Brain.Actions.Held != null)
+                if (Brain.Actions != null && HearthCooking.CanRoastHeldItem(Brain))
                 {
-                    var heldTarget = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
-                    if (heldTarget != null && HearthCooking.CanRoast(heldTarget.itemTypeId) && HearthCooking.TryRoastHeldItem(Brain))
+                    if (HearthCooking.TryRoastHeldItem(Brain))
                     {
                         if (Brain.Actor != null) Brain.Actor.Gesture();
                         if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
@@ -212,6 +271,10 @@ namespace CityLife.World
             Vector3 motion = Quaternion.Euler(0, yaw, 0) * new Vector3(x, 0, z);
             if (Brain.Possessed)
             {
+                if (Fishing != null && Fishing.IsFishingActive && motion.sqrMagnitude > 0.05f)
+                {
+                    Fishing.CancelFishing("player-motion-cancelled");
+                }
                 if (!ExternalMovementInput) Brain.ManualDirection = Vector3.ClampMagnitude(motion, 1);
                 bool wantsSprint = key.leftShiftKey.isPressed || key.rightShiftKey.isPressed;
                 if (Brain.Actor != null)
@@ -716,10 +779,9 @@ namespace CityLife.World
             }
 
             // If near hearth holding raw roastable item, roast it on E
-            if (!isDropKey && Brain.Actions != null && Brain.Actions.Held != null)
+            if (!isDropKey && Brain.Actions != null && HearthCooking.CanRoastHeldItem(Brain))
             {
-                var heldPhys = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
-                if (heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && HearthCooking.TryRoastHeldItem(Brain))
+                if (HearthCooking.TryRoastHeldItem(Brain))
                 {
                     if (Brain.Actor != null) Brain.Actor.Gesture();
                     if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
@@ -1254,6 +1316,12 @@ namespace CityLife.World
             }
 
             return carpGo;
+        }
+
+        public GameObject SpawnCaughtFishInHand(string speciesTypeId, float scale = 0.85f)
+        {
+            if (speciesTypeId == "food-river-carp") return SpawnCarpInHand();
+            return SpawnFishInHand();
         }
 
         private static int dynamicCrabIdCounter = 100;

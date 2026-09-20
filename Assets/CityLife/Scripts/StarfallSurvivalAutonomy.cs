@@ -58,6 +58,35 @@ namespace CityLife.World
             PlayerDirectiveLabel = null;
         }
 
+        // ==========================================
+        // Grounded Natural Language Command Controller
+        // ==========================================
+        public sealed class ActiveCommandStep
+        {
+            public string Title;
+            public float TimeoutSeconds;
+            public float ElapsedSeconds;
+            public Func<StarfallSurvivalAutonomy, bool> Execute;
+        }
+
+        private List<ActiveCommandStep> activeCommandSteps;
+        private int activeCommandStepIndex;
+        public bool HasActiveCommand => activeCommandSteps != null && activeCommandStepIndex < activeCommandSteps.Count;
+        public string ActiveCommandTitle { get; private set; } = "";
+        public string ActiveCommandCurrentStep => HasActiveCommand ? activeCommandSteps[activeCommandStepIndex].Title : "";
+        public int ActiveCommandStepIndex => activeCommandStepIndex;
+        public int ActiveCommandTotalSteps => activeCommandSteps != null ? activeCommandSteps.Count : 0;
+        public float ActiveCommandProgress => ActiveCommandTotalSteps > 0 ? Mathf.Clamp01((float)activeCommandStepIndex / ActiveCommandTotalSteps) : 0f;
+        public int ActiveCommandGeneration { get; private set; }
+        public string ActiveCommandStatus { get; private set; } = "idle";
+        public string LastCommandReceipt { get; private set; } = "none";
+
+        private void Awake()
+        {
+            if (Brain == null) Brain = GetComponent<NpcAutonomy>() ?? GetComponentInParent<NpcAutonomy>();
+            if (Brain != null && Brain.Survival == null) Brain.Survival = this;
+        }
+
         public bool IsWellFulfilled()
         {
             var s = Food != null && Food.Model != null ? Food.Model.State : null;
@@ -90,7 +119,7 @@ namespace CityLife.World
         private int huntingPursuitFailures, huntingHopeLostUntilTick;
         public bool LocalModelEnabled { get; set; } = true;
         public string routePurpose;
-        private string recentVerifiedOutcome;
+        public string recentVerifiedOutcome;
         private Vector3 routeOrigin;
         private bool mapAcceptanceRequested;
         private string mapAcceptanceDirectory;
@@ -180,7 +209,13 @@ namespace CityLife.World
                 if(prior&&!Food.Model.State.body.dead)
                 {
                     Vector3 remembered=Food.Model.State.actorPosition;
-                    if(!Brain.TerrainNavigation.Walkable(remembered,out var floor))throw new InvalidOperationException("saved-actor-ground-rejected");
+                    if(!Brain.TerrainNavigation.Walkable(remembered,out var floor))
+                    {
+                        if (!TryFindWalkableNear(remembered, 8f, out floor))
+                        {
+                            floor = new Vector3(2.5f, CoastalTerrain.Height(2.5f, -10f), -10f);
+                        }
+                    }
                     Brain.Actor.Place(floor+Vector3.up*.06f);
                 }
                 // A restored cell was already occupied in the scoped save;
@@ -215,6 +250,29 @@ namespace CityLife.World
             }
             catch(Exception error){Enabled=false;Status="Survival mind unavailable: "+error.GetType().Name;}
         }
+
+        private bool TryFindWalkableNear(Vector3 center, float maxRadius, out Vector3 floor)
+        {
+            floor = center;
+            if (Brain == null || Brain.TerrainNavigation == null) return false;
+            if (Brain.TerrainNavigation.Walkable(center, out floor)) return true;
+
+            for (float r = 1.0f; r <= maxRadius; r += 1.5f)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    float angle = i * (Mathf.PI * 2f / 8f);
+                    Vector3 offset = new Vector3(Mathf.Cos(angle) * r, 0, Mathf.Sin(angle) * r);
+                    Vector3 testP = center + offset;
+                    if (Brain.TerrainNavigation.Walkable(testP, out floor))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         private void Update()
         {
             if(pending!=null && (Brain==null||Brain.MenuPaused||Brain.Possessed||!Brain.Running||!Enabled))
@@ -236,6 +294,7 @@ namespace CityLife.World
         private void OnApplicationQuit(){if(Enabled&&Food!=null)Persist();}
         public void Cancel(string reason)
         {
+            if (HasActiveCommand) CancelActiveCommand(reason);
             if(pending!=null){cancellation.Cancel();cancellation.Dispose();cancellation=null;pending=null;offered=null;Record("cancel",reason,null,null);}
             route.Clear();routePurpose=null;nextRequestTick=Brain==null?0:Brain.Tick+25;
         }
@@ -508,7 +567,7 @@ namespace CityLife.World
             }
 
             // 4. Marine Protein & Tidal Crab / River Fish Foraging
-            var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+            TryGetHeldFoodOrCatch(out var heldFoodNi, out var heldPhys, out bool isHeldFoodLeft);
             bool lowProtein = s.body.protein < 6500;
             bool huntHopeLost = Brain != null && Brain.Tick < huntingHopeLostUntilTick;
             var nearestCrab = Brain.Perception != null && Brain.Perception.Current != null
@@ -526,18 +585,50 @@ namespace CityLife.World
                 }
 
                 bool holdingFish = heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp");
-                if (!holdingFish && (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
-                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish")))))
-                {
-                    if (hasClubInHand) foodChoices.Add("strike fish with club");
-                    else foodChoices.Add("catch fish");
-                }
-
+                bool hasFishInPerception = Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && (x.id.Contains("river-fish") || x.id.Contains("river-carp")));
                 bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 3.2f || nearestCrab != null;
-                if (nearShore && !foodChoices.Contains("catch crab") && !foodChoices.Contains("strike crab with club") && crabDist <= 2.2f)
+
+                var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                bool isHoldingRod = fishing != null && fishing.IsHoldingFishingRod(out _);
+                var nearestGroundRod = (Brain.Perception != null && Brain.Perception.Current != null)
+                    ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("rod") && x.permission && x.available)
+                    : null;
+                float rodDist = nearestGroundRod != null ? Vector3.Distance(Brain.transform.position, nearestGroundRod.position) : 999f;
+
+                if (fishing != null && isHoldingRod)
                 {
-                    if (hasClubInHand) foodChoices.Add("strike crab with club");
-                    else foodChoices.Add("catch crab");
+                    if (fishing.State == FishingState.Bite)
+                    {
+                        foodChoices.Insert(0, "strike & reel fish");
+                    }
+                    else if (fishing.State == FishingState.Floating || fishing.State == FishingState.Nibble)
+                    {
+                        foodChoices.Add("wait for fish bite");
+                    }
+                    else if ((lowProtein || s.satiety < 8500) && !holdingFish && (inRiver || nearShore || hasFishInPerception))
+                    {
+                        foodChoices.Add("cast fishing rod");
+                    }
+                }
+                else if (!isHoldingRod && nearestGroundRod != null && freeHands > 0 && (lowProtein || s.satiety < 8500) && !holdingFish)
+                {
+                    if (rodDist <= 2.2f) foodChoices.Add("equip fishing rod");
+                    else foodChoices.Add("approach fishing rod");
+                }
+                else
+                {
+                    if (!holdingFish && (inRiver || hasFishInPerception))
+                    {
+                        if (hasClubInHand) foodChoices.Add("strike fish with club");
+                        else foodChoices.Add("catch fish");
+                    }
+
+                    if (nearShore && !foodChoices.Contains("catch crab") && !foodChoices.Contains("strike crab with club") && crabDist <= 2.2f)
+                    {
+                        if (hasClubInHand) foodChoices.Add("strike crab with club");
+                        else foodChoices.Add("catch crab");
+                    }
                 }
             }
 
@@ -563,8 +654,10 @@ namespace CityLife.World
             }
 
             // 5. Edible items held or carried
-            if (heldPhys == null && Brain.Actions != null && Brain.Actions.Held != null)
-                heldPhys = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
+            if (heldPhys == null)
+            {
+                TryGetHeldFoodOrCatch(out heldFoodNi, out heldPhys, out isHeldFoodLeft);
+            }
             var cooker = Brain.GetComponentInChildren<HearthCooking>();
             if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
             bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
@@ -585,6 +678,18 @@ namespace CityLife.World
                     foodChoices.Add("eat catch");
                 if (heldPhys.itemTypeId == "food-sourfig-berry" && (s.satiety < 8500 || s.hydration < 8500))
                     foodChoices.Add("eat fruit");
+
+                // Stash harvested fish or protein into camp storage basket if not starving
+                bool isCatch = heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp" || heldPhys.itemTypeId == "food-cooked-fish";
+                var nearestBasket = (Brain.Perception != null && Brain.Perception.Current != null)
+                    ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("basket") && x.permission && x.available)
+                    : null;
+                float basketDist = nearestBasket != null ? Vector3.Distance(Brain.transform.position, nearestBasket.position) : 999f;
+                if (isCatch && nearestBasket != null && s.satiety >= 6500)
+                {
+                    if (basketDist <= 2.4f) foodChoices.Add("store catch in basket");
+                    else foodChoices.Add("approach basket");
+                }
             }
 
             if (moonbag != null && moonbag.CanRetrieve && (s.satiety < 8500 || s.hydration < 8500))
@@ -643,13 +748,33 @@ namespace CityLife.World
             {
                 urgent = "follow player directive";
             }
-            // Life-critical dehydration: drinking or seeking water immediately before starvation or foraging
-            if (urgent == null && s.hydration < 3500)
+            // Review Item 3: Life-critical dehydration strictly precedes fishing and all other actions!
+            // When dehydrated, prioritize drinking and safely cancel/release active fishing.
+            if (urgent == null && (s.hydration < 3500 || (s.hydration < 4500 && (foodChoices.Contains("drink river") || foodChoices.Contains("drink spring") || foodChoices.Contains("drink water")))))
             {
                 if (foodChoices.Contains("drink river")) urgent = "drink river";
                 else if (foodChoices.Contains("drink spring")) urgent = "drink spring";
                 else if (foodChoices.Contains("drink water")) urgent = "drink water";
                 else if (foodChoices.Contains("seek water")) urgent = "seek water";
+
+                if (urgent != null)
+                {
+                    var fComp = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fComp != null && fComp.IsFishingActive)
+                    {
+                        fComp.CancelFishing("urgent-hydration-quench-thirst");
+                    }
+                }
+            }
+
+            // Active bite window has instantaneous execution urgency (when not critically dehydrated)
+            if (urgent == null && foodChoices.Contains("strike & reel fish"))
+            {
+                urgent = "strike & reel fish";
+            }
+            if (urgent == null && foodChoices.Contains("wait for fish bite"))
+            {
+                urgent = "wait for fish bite";
             }
             // Critical protein hunger drive
             if (urgent == null && lowProtein)
@@ -657,6 +782,9 @@ namespace CityLife.World
                 if (foodChoices.Contains("feast roasted catch")) urgent = "feast roasted catch";
                 else if (foodChoices.Contains("feast catch")) urgent = "feast catch";
                 else if (foodChoices.Contains("eat catch")) urgent = "eat catch";
+                else if (foodChoices.Contains("cast fishing rod")) urgent = "cast fishing rod";
+                else if (foodChoices.Contains("equip fishing rod")) urgent = "equip fishing rod";
+                else if (foodChoices.Contains("approach fishing rod")) urgent = "approach fishing rod";
                 else if (foodChoices.Contains("pick meat")) urgent = "pick meat";
                 else if (foodChoices.Contains("approach meat")) urgent = "approach meat";
                 else if (foodChoices.Contains("strike crab with club")) urgent = "strike crab with club";
@@ -677,6 +805,10 @@ namespace CityLife.World
                 urgent = "roast catch";
             if (urgent == null && heldPhys != null && HearthCooking.CanRoast(heldPhys.itemTypeId) && nearHearth && foodChoices.Contains("roast food on hearth"))
                 urgent = "roast food on hearth";
+            if (urgent == null && foodChoices.Contains("store catch in basket"))
+                urgent = "store catch in basket";
+            else if (urgent == null && foodChoices.Contains("approach basket"))
+                urgent = "approach basket";
             if (urgent == null && s.hydration < 7500)
             {
                 if (foodChoices.Contains("drink water")) urgent = "drink water";
@@ -686,7 +818,10 @@ namespace CityLife.World
             }
             if (urgent == null && (s.satiety < 8500 || s.body.stomach <= 7000))
             {
-                if (foodChoices.Contains("gather berry")) urgent = "gather berry";
+                if (foodChoices.Contains("cast fishing rod")) urgent = "cast fishing rod";
+                else if (foodChoices.Contains("equip fishing rod")) urgent = "equip fishing rod";
+                else if (foodChoices.Contains("approach fishing rod")) urgent = "approach fishing rod";
+                else if (foodChoices.Contains("gather berry")) urgent = "gather berry";
                 else if (foodChoices.Contains("approach berry")) urgent = "approach berry";
                 else if (foodChoices.Contains("strike crab with club")) urgent = "strike crab with club";
                 else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
@@ -1204,6 +1339,70 @@ namespace CityLife.World
                         recentVerifiedOutcome = "approach leather started";
                     }
                 }
+                else if (accepted.EndsWith("rod"))
+                {
+                    NpcObservation bestRod = null;
+                    float bestRodDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Item && obs.id.Contains("rod") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestRodDist)
+                                {
+                                    bestRodDist = d;
+                                    bestRod = obs;
+                                }
+                            }
+                        }
+                    }
+                    Vector3 targetDest = bestRod != null && bestRod.approach != Vector3.zero ? bestRod.approach : (bestRod != null ? bestRod.position : Vector3.zero);
+                    if (bestRod == null || (!StartRoute(targetDest) && !StartRoute(bestRod.position)))
+                    {
+                        routePurpose = null;
+                        Record("route", "live-target-route-rejected", accepted, result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching river fishing rod on ground";
+                        recentVerifiedOutcome = "approach fishing rod started";
+                    }
+                }
+                else if (accepted.EndsWith("basket"))
+                {
+                    NpcObservation bestBasket = null;
+                    float bestBasketDist = float.MaxValue;
+                    if (Brain.Perception != null && Brain.Perception.Current != null)
+                    {
+                        foreach (var obs in Brain.Perception.Current)
+                        {
+                            if (obs != null && obs.kind == NpcObjectKind.Item && obs.id.Contains("basket") &&
+                                obs.permission && obs.available && obs.seenAtTick >= Brain.Tick - 15)
+                            {
+                                float d = Vector3.Distance(Brain.transform.position, obs.position);
+                                if (d < bestBasketDist)
+                                {
+                                    bestBasketDist = d;
+                                    bestBasket = obs;
+                                }
+                            }
+                        }
+                    }
+                    Vector3 targetDest = bestBasket != null && bestBasket.approach != Vector3.zero ? bestBasket.approach : (bestBasket != null ? bestBasket.position : Vector3.zero);
+                    if (bestBasket == null || (!StartRoute(targetDest) && !StartRoute(bestBasket.position)))
+                    {
+                        routePurpose = null;
+                        Record("route", "live-target-route-rejected", accepted, result);
+                    }
+                    else
+                    {
+                        LastOutcome = "Approaching storage basket to store catch";
+                        recentVerifiedOutcome = "approach basket started";
+                    }
+                }
                 else
                 {
                     string target="spring-food";
@@ -1247,6 +1446,9 @@ namespace CityLife.World
             }
             else if (accepted == "seek water")
             {
+                var fComp = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fComp != null && fComp.IsFishingActive) fComp.CancelFishing("urgent-hydration-quench-thirst");
+
                 Vector3 riverBank = Brain.TerrainNavigation != null ? Brain.TerrainNavigation.FindNearestRiverBank(Brain.transform.position) : new Vector3(0f, CoastalTerrain.Height(0f, -15f), -15f);
                 routePurpose = "seek water";
                 if (!StartRoute(riverBank))
@@ -1262,6 +1464,9 @@ namespace CityLife.World
             }
             else if (accepted == "drink water")
             {
+                var fComp = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fComp != null && fComp.IsFishingActive) fComp.CancelFishing("urgent-hydration-quench-thirst");
+
                 var s = Food.Model.State;
                 if (s.freshwaterMl >= 250)
                 {
@@ -1276,8 +1481,11 @@ namespace CityLife.World
                     if (Brain.Actor != null) Brain.Actor.Gesture();
                 }
             }
-            else if (accepted == "drink river")
+            else if (accepted == "drink river" || accepted == "drink spring")
             {
+                var fComp = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fComp != null && fComp.IsFishingActive) fComp.CancelFishing("urgent-hydration-quench-thirst");
+
                 var s = Food.Model.State;
                 s.hydration = Mathf.Min(10000, s.hydration + 2500);
                 s.freshwaterMl = 2000;
@@ -1289,23 +1497,132 @@ namespace CityLife.World
                 recentVerifiedOutcome = "drink river succeeded";
                 if (Brain.Actor != null) Brain.Actor.Gesture();
             }
+            else if (accepted == "cast fishing rod")
+            {
+                var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fishing != null && fishing.CanStartCast(Brain.transform.position, out var targetWater, out _))
+                {
+                    fishing.StartCast(targetWater);
+                    LastOutcome = "Cast fishing rod out into freshwater river run";
+                    recentVerifiedOutcome = "cast fishing rod succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else
+                {
+                    LastOutcome = "Attempted cast but shore angle was unsuitable";
+                    recentVerifiedOutcome = "cast fishing rod failed";
+                }
+            }
+            else if (accepted == "wait for fish bite")
+            {
+                LastOutcome = "Watching bobber float on clear river pool; awaiting bite";
+                recentVerifiedOutcome = "wait for fish bite ongoing";
+            }
+            else if (accepted == "strike & reel fish")
+            {
+                var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                if (fishing != null && fishing.StrikeAndReel(out string species, out float scale, out string receipt))
+                {
+                    LastOutcome = (species == "food-river-carp")
+                        ? "Struck with keen reflex; hooked a trophy Golden River Carp and reeling line!"
+                        : "Struck with keen reflex; hooked a whiskered freshwater Catfish and reeling line!";
+                    recentVerifiedOutcome = "hooked fish reeling";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                }
+                else
+                {
+                    LastOutcome = "Reeled line but fish got away";
+                    recentVerifiedOutcome = "strike & reel fish missed";
+                }
+            }
+            else if (accepted == "equip fishing rod")
+            {
+                var nearestGroundRod = (Brain.Perception != null && Brain.Perception.Current != null)
+                    ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("rod") && x.permission && x.available)
+                    : null;
+                if (nearestGroundRod != null)
+                {
+                    var rodNi = Brain.Registry != null ? Brain.Registry.FirstOrDefault(x => x != null && x.StableId == nearestGroundRod.id) : null;
+                    if (rodNi != null && Brain.Actions != null)
+                    {
+                        Brain.Actions.HoldItemDirect(rodNi, false);
+                        LastOutcome = "Equipped handcrafted river fishing rod in hand";
+                        recentVerifiedOutcome = "equip fishing rod succeeded";
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
+                }
+            }
+            else if (accepted == "store catch in basket")
+            {
+                var nearestBasket = (Brain.Perception != null && Brain.Perception.Current != null)
+                    ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("basket") && x.permission && x.available)
+                    : null;
+                if (nearestBasket != null && TryGetHeldFoodOrCatch(out var heldFoodNi, out var heldPhys, out bool isLeft))
+                {
+                    var model = Brain.Actions != null ? Brain.Actions.PhysicalModel : (Brain.PhysicalItems != null ? Brain.PhysicalItems.Model : null);
+                    if (model != null && Brain.TryAllocateRequestId(out int req))
+                    {
+                        var auth = new BasicItemActionAuthority();
+                        var storeReq = new ItemActionRequest
+                        {
+                            requestId = req,
+                            action = ItemActionKind.Store,
+                            actorId = NpcAutonomy.AgentId,
+                            itemId = heldPhys.itemId,
+                            targetId = nearestBasket.id
+                        };
+                        var storeResult = model.Execute(Brain.InstanceWorldId, Starfall.Food.IntegratedFoodRuntime.Generation, storeReq, auth);
+                        if (storeResult.success)
+                        {
+                            Brain.Actions.HoldItemDirect(null, isLeft);
+                            heldPhys.gameObject.SetActive(false);
+                            LastOutcome = "Safely stored fresh catch into camp basket for future sustenance";
+                            recentVerifiedOutcome = "store catch in basket succeeded";
+                            if (Brain.Actor != null) Brain.Actor.Gesture();
+                        }
+                    }
+                }
+            }
             else if (accepted == "catch fish" || accepted == "strike fish with club")
             {
-                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindAnyObjectByType<NpcPlayerControls>();
-                if (controls != null)
+                var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
+                RiverFishSchool.RiverFishInstance caughtFish = null;
+                if (school != null && school.TryReserveFishNear(Brain.transform.position, 6.0f, out caughtFish))
                 {
-                    controls.SpawnFishInHand();
-                    var carry = Brain.GetComponentInChildren<HunterClubCarry>();
-                    bool usedClub = accepted == "strike fish with club" || (carry != null && !carry.Stowed);
-                    LastOutcome = usedClub ? "Struck whiskered river barber in shallows with hunter's club" : "Caught fresh river barber in shallows";
-                    FoodOutcomes++;
-                    huntingPursuitFailures = 0;
-                    Persist();
-                    recentVerifiedOutcome = usedClub ? "strike fish with club succeeded" : "catch fish succeeded";
-                    if (Brain.Actor != null) Brain.Actor.Gesture();
-                    if (Diary != null) Diary.AddEntry(Brain.Tick, "Hunting", usedClub
-                        ? "Brandished hunter's club and struck a whiskered river barber cruising the shallows. Harvested rich freshwater protein."
-                        : "Landed fresh river barber from the canyon shallows.");
+                    var fishing = Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>();
+                    bool transferred = false;
+                    string transferCode = null;
+                    if (fishing != null)
+                    {
+                        transferred = fishing.TryTransferCatch(caughtFish, out transferCode);
+                    }
+                    if (transferred)
+                    {
+                        school.CompleteCatch(caughtFish);
+                        var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                        bool usedClub = accepted == "strike fish with club" || (carry != null && !carry.Stowed);
+                        string speciesName = (caughtFish.physicalItem != null && caughtFish.physicalItem.itemTypeId == "food-river-carp") ? "Golden River Carp" : "whiskered river barber";
+                        LastOutcome = usedClub ? $"Struck {speciesName} in shallows with hunter's club" : $"Caught fresh {speciesName} in shallows";
+                        FoodOutcomes++;
+                        huntingPursuitFailures = 0;
+                        Persist();
+                        recentVerifiedOutcome = usedClub ? "strike fish with club succeeded" : "catch fish succeeded";
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                        if (Diary != null) Diary.AddEntry(Brain.Tick, "Hunting", usedClub
+                            ? $"Brandished hunter's club and struck a {speciesName} cruising the shallows. Harvested rich freshwater protein."
+                            : $"Caught and retrieved a fresh {speciesName} from the canyon shallows.");
+                    }
+                    else
+                    {
+                        school.ReleaseReservation(caughtFish);
+                        LastOutcome = $"Attempted to harvest fish in shallows but transfer failed ({transferCode})";
+                        recentVerifiedOutcome = "catch fish transfer failed";
+                    }
+                }
+                else
+                {
+                    LastOutcome = "Swiped at shallows but the fish darted away into deep water";
+                    recentVerifiedOutcome = "catch fish missed";
                 }
             }
             else if (accepted == "catch crab" || accepted == "strike crab with club")
@@ -1474,8 +1791,7 @@ namespace CityLife.World
             else if (accepted == "feast roasted catch" || accepted == "feast catch")
             {
                 var s = Food.Model.State;
-                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
-                if (heldPhys != null)
+                if (TryGetHeldFoodOrCatch(out var foodNi, out var heldPhys, out bool isLeft))
                 {
                     if (heldPhys.itemTypeId == "food-cooked-meat")
                     {
@@ -1499,8 +1815,8 @@ namespace CityLife.World
                         Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3200);
                     }
                     s.knowsMealBenefit = true;
-                    var heldGo = Brain.Actions.Held.gameObject;
-                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    var heldGo = foodNi.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, foodNi.StableId);
                     Destroy(heldGo);
                     LastOutcome = "Feasted on savory roasted meal [Protein/Energy boosted, drive reduced]";
                     FoodOutcomes++;
@@ -1512,8 +1828,8 @@ namespace CityLife.World
             else if (accepted == "eat catch")
             {
                 var s = Food.Model.State;
-                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
-                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat"))
+                if (TryGetHeldFoodOrCatch(out var foodNi, out var heldPhys, out bool isLeft) &&
+                    (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat"))
                 {
                     if (heldPhys.itemTypeId == "food-wolf-meat")
                     {
@@ -1530,8 +1846,8 @@ namespace CityLife.World
                         Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
                     }
                     s.knowsMealBenefit = true;
-                    var heldGo = Brain.Actions.Held.gameObject;
-                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    var heldGo = foodNi.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, foodNi.StableId);
                     Destroy(heldGo);
                     LastOutcome = "Ate fresh protein catch [Hunger & protein replenished]";
                     FoodOutcomes++;
@@ -1543,10 +1859,10 @@ namespace CityLife.World
             else if (accepted == "eat fruit")
             {
                 var s = Food.Model.State;
-                var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
                 var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
 
-                if (heldPhys != null && (heldPhys.itemTypeId == "food-sourfig-berry" || heldPhys.itemTypeId == "fruit"))
+                if (TryGetHeldFoodOrCatch(out var foodNi, out var heldPhys, out bool isLeft) &&
+                    (heldPhys.itemTypeId == "food-sourfig-berry" || heldPhys.itemTypeId == "fruit"))
                 {
                     s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
                     s.hydration = Mathf.Min(10000, s.hydration + 600);
@@ -1554,8 +1870,8 @@ namespace CityLife.World
                     Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
                     s.knowsMealBenefit = true;
                     if (string.IsNullOrEmpty(s.lastMealEvidence)) s.lastMealEvidence = s.generation + ".ate." + (Brain != null ? Brain.Tick : 1);
-                    var heldGo = Brain.Actions.Held.gameObject;
-                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
+                    var heldGo = foodNi.gameObject;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, foodNi.StableId);
                     Destroy(heldGo);
                     BoostPlaceAffinity("berry-grove", 12);
                     LastOutcome = "Ate ripe held sourfig berry [Energy boosted, drive reduced]";
@@ -1887,6 +2203,10 @@ namespace CityLife.World
                     }
                 }
             }
+            if (HasActiveCommand)
+            {
+                return StepActiveCommand();
+            }
             if(route.Count>0)return MoveRoute();
             if(pending!=null)
             {
@@ -2188,7 +2508,667 @@ namespace CityLife.World
                 }
             }
             if(pass)Debug.Log($"STARFALL_MAP_ACCEPTANCE: summaryPASS world={summary.world} events={summary.finalEventCount} hash={summary.revisitHash}");
-            else Debug.LogError($"STARFALL_MAP_ACCEPTANCE: FAIL {failReason}");
+        }
+
+        public void RecordCatchLanded(string species, float scale, string transferCode)
+        {
+            FoodOutcomes++;
+            huntingPursuitFailures = 0;
+            LastOutcome = (species == "food-river-carp")
+                ? "Landed a magnificent Golden River Carp safely into hand!"
+                : "Landed a sturdy freshwater Catfish safely into hand!";
+            recentVerifiedOutcome = "land catch succeeded";
+            if (Brain != null && Brain.Actor != null) Brain.Actor.Gesture();
+            if (Diary != null)
+            {
+                Diary.AddEntry(Brain != null ? Brain.Tick : 1, "Fishing", (species == "food-river-carp")
+                    ? "Timed the bite perfectly on the deep pool and landed a glistening Golden River Carp."
+                    : "Patiently worked the river run and landed a sturdy freshwater catfish.");
+            }
+            Persist();
+        }
+
+        public bool TryGetHeldFoodOrCatch(out NpcInteractable foodNi, out PhysicalItem foodPhys, out bool isLeft)
+        {
+            foodNi = null;
+            foodPhys = null;
+            isLeft = false;
+            if (Brain == null || Brain.Actions == null) return false;
+
+            // Check Right Hand for food or catch
+            if (Brain.Actions.HeldRight != null)
+            {
+                var phys = Brain.Actions.HeldRight.GetComponent<PhysicalItem>();
+                if (phys != null && IsFoodOrCatchTypeId(phys.itemTypeId))
+                {
+                    foodNi = Brain.Actions.HeldRight;
+                    foodPhys = phys;
+                    isLeft = false;
+                    return true;
+                }
+            }
+
+            // Check Left Hand for food or catch
+            if (Brain.Actions.HeldLeft != null)
+            {
+                var phys = Brain.Actions.HeldLeft.GetComponent<PhysicalItem>();
+                if (phys != null && IsFoodOrCatchTypeId(phys.itemTypeId))
+                {
+                    foodNi = Brain.Actions.HeldLeft;
+                    foodPhys = phys;
+                    isLeft = true;
+                    return true;
+                }
+            }
+
+            // Fallback: any non-tool physical item in right hand
+            if (Brain.Actions.HeldRight != null)
+            {
+                var phys = Brain.Actions.HeldRight.GetComponent<PhysicalItem>();
+                if (phys != null && phys.itemTypeId != "tool-fishing-rod" && phys.itemTypeId != "tool-club")
+                {
+                    foodNi = Brain.Actions.HeldRight;
+                    foodPhys = phys;
+                    isLeft = false;
+                    return true;
+                }
+            }
+
+            // Fallback: any non-tool physical item in left hand
+            if (Brain.Actions.HeldLeft != null)
+            {
+                var phys = Brain.Actions.HeldLeft.GetComponent<PhysicalItem>();
+                if (phys != null && phys.itemTypeId != "tool-fishing-rod" && phys.itemTypeId != "tool-club")
+                {
+                    foodNi = Brain.Actions.HeldLeft;
+                    foodPhys = phys;
+                    isLeft = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsFoodOrCatchTypeId(string typeId)
+        {
+            if (string.IsNullOrEmpty(typeId)) return false;
+            return typeId == "food-river-fish" ||
+                   typeId == "food-river-carp" ||
+                   typeId == "food-cooked-fish" ||
+                   typeId == "food-protein-crab" ||
+                   typeId == "food-cooked-crab" ||
+                   typeId == "food-wolf-meat" ||
+                   typeId == "food-cooked-meat" ||
+                   typeId == "food-sourfig-berry" ||
+                   typeId == "fruit";
+        }
+
+        // ==========================================
+        // Grounded Command Execution & Helper Methods
+        // ==========================================
+        public bool SubmitNaturalLanguageCommand(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            string raw = text.Trim().ToLowerInvariant();
+            ActiveCommandGeneration++;
+            CancelActiveCommand("new-command-submitted");
+
+            var steps = new List<ActiveCommandStep>();
+            string title = "";
+
+            if (raw.Contains("river") && (raw.Contains("go") || raw.Contains("walk") || raw.Contains("navigate") || raw.Contains("head") || raw == "river"))
+            {
+                title = "Go to river";
+                steps.Add(new ActiveCommandStep
+                {
+                    Title = "Navigate to river bank",
+                    TimeoutSeconds = 25f,
+                    Execute = self =>
+                    {
+                        Vector3 target = self.FindRiverBankTarget(self.Brain.transform.position);
+                        float dist = Vector3.Distance(self.Brain.transform.position, target);
+                        if (dist <= 3.0f)
+                        {
+                            self.ActiveCommandStatus = "Arrived at river bank";
+                            return true;
+                        }
+                        if (self.route.Count == 0 || self.routePurpose != "go-to-river")
+                        {
+                            self.StartRoute(target);
+                            self.routePurpose = "go-to-river";
+                        }
+                        self.ActiveCommandStatus = $"Navigating to river ({dist:F1}m)...";
+                        return false;
+                    }
+                });
+            }
+            else if (raw.Contains("then eat") || raw.Contains("then roast") || raw.Contains("and eat") || (raw.StartsWith("catch") && raw.Contains("eat")))
+            {
+                title = "Catch then eat";
+                AddCatchSteps(steps);
+                AddRoastSteps(steps);
+                AddEatSteps(steps);
+            }
+            else if (raw.Contains("then store") || raw.Contains("and store") || (raw.StartsWith("catch") && raw.Contains("store")))
+            {
+                title = "Catch then store";
+                AddCatchSteps(steps);
+                AddStoreSteps(steps);
+            }
+            else if (raw.Contains("roast") || raw.Contains("cook"))
+            {
+                title = "Roast catch";
+                AddRoastSteps(steps);
+            }
+            else if (raw.Contains("store") || raw.Contains("basket") || raw.Contains("stash") || raw.Contains("put fish"))
+            {
+                title = "Store fish in basket";
+                AddStoreSteps(steps);
+            }
+            else if (raw.Contains("eat") || raw.Contains("feast") || raw.Contains("consume"))
+            {
+                title = "Eat catch";
+                AddEatSteps(steps);
+            }
+            else if (raw.Contains("catch") || raw.Contains("fish") || raw.Contains("fishing"))
+            {
+                title = "Catch a fish";
+                AddCatchSteps(steps);
+            }
+            else
+            {
+                LastCommandReceipt = "unrecognized-command: " + text;
+                ActiveCommandStatus = "Unrecognized command: " + text;
+                return false;
+            }
+
+            activeCommandSteps = steps;
+            activeCommandStepIndex = 0;
+            ActiveCommandTitle = title;
+            ActiveCommandStatus = $"Executing: {title} - Step 1/{steps.Count}: {steps[0].Title}";
+            LastCommandReceipt = "command-started: " + title;
+            if (Brain != null && Brain.Log != null)
+                Brain.Log.Record(Brain.Tick, "COMMAND", Brain.DescribePerception(), title, "Natural language command accepted", text);
+            return true;
+        }
+
+        public void CancelActiveCommand(string reason = "cancelled-by-user")
+        {
+            if (activeCommandSteps != null)
+            {
+                var fishing = Brain != null ? (Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>()) : null;
+                if (fishing != null && fishing.IsFishingActive)
+                {
+                    fishing.CancelFishing(reason);
+                }
+                route.Clear();
+                routePurpose = null;
+                activeCommandSteps = null;
+                activeCommandStepIndex = 0;
+                LastCommandReceipt = "command-cancelled: " + reason;
+                ActiveCommandStatus = "Command cancelled: " + reason;
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "COMMAND", Brain.DescribePerception(), ActiveCommandTitle, "Command cancelled", reason);
+            }
+        }
+
+        public bool StepActiveCommand()
+        {
+            if (!HasActiveCommand) return false;
+
+            var currentStep = activeCommandSteps[activeCommandStepIndex];
+            currentStep.ElapsedSeconds += NpcAutonomy.StepSeconds;
+
+            if (currentStep.TimeoutSeconds > 0 && currentStep.ElapsedSeconds >= currentStep.TimeoutSeconds)
+            {
+                string timeoutCode = $"command-timeout-{currentStep.Title.ToLowerInvariant().Replace(' ', '-')}";
+                CancelActiveCommand(timeoutCode);
+                LastCommandReceipt = timeoutCode;
+                Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
+                return true;
+            }
+
+            bool stepDone = currentStep.Execute(this);
+            if (stepDone)
+            {
+                route.Clear();
+                routePurpose = null;
+                activeCommandStepIndex++;
+                if (activeCommandStepIndex >= activeCommandSteps.Count)
+                {
+                    LastCommandReceipt = "command-completed: " + ActiveCommandTitle;
+                    ActiveCommandStatus = "Command completed: " + ActiveCommandTitle;
+                    if (Brain != null && Brain.Log != null)
+                        Brain.Log.Record(Brain.Tick, "COMMAND", Brain.DescribePerception(), ActiveCommandTitle, "Command completed", LastCommandReceipt);
+                    activeCommandSteps = null;
+                    activeCommandStepIndex = 0;
+                    Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
+                    return true;
+                }
+                else
+                {
+                    ActiveCommandStatus = $"Executing: {ActiveCommandTitle} - Step {activeCommandStepIndex + 1}/{ActiveCommandTotalSteps}: {activeCommandSteps[activeCommandStepIndex].Title}";
+                }
+            }
+
+            if (route.Count > 0)
+            {
+                return MoveRoute();
+            }
+
+            Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
+            return true;
+        }
+
+        public Vector3 FindRiverBankTarget(Vector3 fromPos)
+        {
+            var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
+            if (school != null && school.ActiveFish != null && school.ActiveFish.Count > 0)
+            {
+                float bestDist = float.MaxValue;
+                Vector3 bestFishPos = Vector3.zero;
+                foreach (var f in school.ActiveFish)
+                {
+                    if (f != null && f.gameObject != null)
+                    {
+                        float d = Vector3.Distance(fromPos, f.gameObject.transform.position);
+                        if (d < bestDist)
+                        {
+                            bestDist = d;
+                            bestFishPos = f.gameObject.transform.position;
+                        }
+                    }
+                }
+                if (bestFishPos != Vector3.zero)
+                {
+                    for (float r = 2.5f; r <= 6.0f; r += 0.8f)
+                    {
+                        for (int a = 0; a < 8; a++)
+                        {
+                            float angle = a * Mathf.PI * 2f / 8f;
+                            float bx = bestFishPos.x + Mathf.Cos(angle) * r;
+                            float bz = bestFishPos.z + Mathf.Sin(angle) * r;
+                            float by = CoastalTerrain.Height(bx, bz);
+                            if (by > CoastalWater.Level + 0.15f && Brain != null && Brain.TerrainNavigation != null &&
+                                Brain.TerrainNavigation.Walkable(new Vector3(bx, by, bz), out Vector3 floor))
+                            {
+                                return floor;
+                            }
+                        }
+                    }
+                }
+            }
+
+            float fx = -6.5f;
+            float fz = -20.0f;
+            float fy = CoastalTerrain.Height(fx, fz);
+            return new Vector3(fx, fy, fz);
+        }
+
+        private void AddCatchSteps(List<ActiveCommandStep> steps)
+        {
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Equip fishing rod",
+                TimeoutSeconds = 15f,
+                Execute = self =>
+                {
+                    var fishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fishing != null && fishing.IsHoldingFishingRod(out _)) return true;
+
+                    var groundRod = (self.Brain.Perception != null && self.Brain.Perception.Current != null)
+                        ? self.Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("rod") && x.permission && x.available)
+                        : null;
+                    if (groundRod == null && self.Brain.Registry != null)
+                    {
+                        var rNi = self.Brain.Registry.FirstOrDefault(x => x != null && x.StableId.Contains("rod"));
+                        if (rNi != null) groundRod = new NpcObservation { id = rNi.StableId, position = rNi.transform.position };
+                    }
+                    if (groundRod != null)
+                    {
+                        float dist = Vector3.Distance(self.Brain.transform.position, groundRod.position);
+                        if (dist <= 2.2f)
+                        {
+                            var rNi = self.Brain.Registry != null ? self.Brain.Registry.FirstOrDefault(x => x != null && x.StableId == groundRod.id) : null;
+                            if (rNi != null && self.Brain.Actions != null)
+                            {
+                                self.Brain.Actions.HoldItemDirect(rNi, false);
+                                self.ActiveCommandStatus = "Equipped fishing rod";
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            if (self.route.Count == 0 || self.routePurpose != "approach-rod")
+                            {
+                                self.StartRoute(groundRod.position);
+                                self.routePurpose = "approach-rod";
+                            }
+                            self.ActiveCommandStatus = $"Approaching rod ({dist:F1}m)...";
+                            return false;
+                        }
+                    }
+                    self.ActiveCommandStatus = "Searching for fishing rod...";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Approach river fishing spot",
+                TimeoutSeconds = 20f,
+                Execute = self =>
+                {
+                    var fishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fishing != null && fishing.CanStartCast(self.Brain.transform.position, out _, out _)) return true;
+
+                    Vector3 spot = self.FindRiverBankTarget(self.Brain.transform.position);
+                    float dist = Vector3.Distance(self.Brain.transform.position, spot);
+                    if (dist <= 3.0f && fishing != null && fishing.CanStartCast(self.Brain.transform.position, out _, out _)) return true;
+                    if (self.route.Count == 0 || self.routePurpose != "approach-fishing-spot")
+                    {
+                        self.StartRoute(spot);
+                        self.routePurpose = "approach-fishing-spot";
+                    }
+                    self.ActiveCommandStatus = $"Approaching fishing spot ({dist:F1}m)...";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Cast fishing line",
+                TimeoutSeconds = 10f,
+                Execute = self =>
+                {
+                    var fishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fishing == null) return false;
+                    if (fishing.IsFishingActive) return true;
+                    if (fishing.CanStartCast(self.Brain.transform.position, out Vector3 targetWater, out _))
+                    {
+                        fishing.StartCast(targetWater);
+                        self.ActiveCommandStatus = "Cast fishing rod into water";
+                        if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Wait for fish bite & strike",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    var fishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fishing == null) return false;
+                    if (fishing.State == FishingState.Bite)
+                    {
+                        if (fishing.StrikeAndReel(out string species, out float scale, out string receipt))
+                        {
+                            self.ActiveCommandStatus = $"Struck bite! Hooked {species}!";
+                            if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                            return true;
+                        }
+                    }
+                    else if (fishing.State == FishingState.Reeling)
+                    {
+                        return true;
+                    }
+                    self.ActiveCommandStatus = $"Watching bobber ({fishing.State})...";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Land catch into hand",
+                TimeoutSeconds = 15f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var catchNi, out var catchPhys, out bool isLeft))
+                    {
+                        if (catchPhys.itemTypeId.Contains("fish") || catchPhys.itemTypeId.Contains("carp") || catchPhys.itemTypeId.Contains("crab"))
+                        {
+                            self.ActiveCommandStatus = $"Landed {catchPhys.itemTypeId} into {(isLeft ? "left" : "right")} hand";
+                            return true;
+                        }
+                    }
+                    var fishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
+                    if (fishing != null && fishing.State == FishingState.Reeling)
+                    {
+                        self.ActiveCommandStatus = "Reeling catch to shore...";
+                        return false;
+                    }
+                    var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
+                    if (school != null && school.TryReserveFishNear(self.Brain.transform.position, 6.0f, out var caughtFish))
+                    {
+                        if (fishing != null && fishing.TryTransferCatch(caughtFish, out _))
+                        {
+                            school.CompleteCatch(caughtFish);
+                            self.ActiveCommandStatus = "Retrieved fish into hand";
+                            return true;
+                        }
+                        school.ReleaseReservation(caughtFish);
+                    }
+                    return false;
+                }
+            });
+        }
+
+        private void AddRoastSteps(List<ActiveCommandStep> steps)
+        {
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Ensure holding catch",
+                TimeoutSeconds = 5f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var ni, out var phys, out _))
+                    {
+                        return true;
+                    }
+                    self.ActiveCommandStatus = "Must hold catch to roast";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Navigate to refuge hearth",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    var cooking = self.Brain.GetComponent<HearthCooking>() ?? self.Brain.GetComponentInChildren<HearthCooking>() ?? FindFirstObjectByType<HearthCooking>();
+                    Vector3 hearthPos = cooking != null ? cooking.GetHearthPosition() : new Vector3(CoastalTerrain.RefugeCentre.x, 0f, CoastalTerrain.RefugeCentre.y);
+                    float dist = Vector3.Distance(self.Brain.transform.position, hearthPos);
+                    if (dist <= 2.8f)
+                    {
+                        self.ActiveCommandStatus = "Arrived at refuge hearth";
+                        return true;
+                    }
+                    if (self.route.Count == 0 || self.routePurpose != "go-to-hearth")
+                    {
+                        self.StartRoute(hearthPos);
+                        self.routePurpose = "go-to-hearth";
+                    }
+                    self.ActiveCommandStatus = $"Walking to hearth ({dist:F1}m)...";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Roast on hearth embers",
+                TimeoutSeconds = 10f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var ni, out var phys, out bool isLeft))
+                    {
+                        if (phys.itemTypeId == "food-cooked-fish" || phys.itemTypeId == "food-cooked-meat" || phys.itemTypeId == "food-cooked-crab")
+                        {
+                            self.ActiveCommandStatus = "Catch already roasted";
+                            return true;
+                        }
+                    }
+                    if (HearthCooking.TryRoastHeldItem(self.Brain))
+                    {
+                        self.ActiveCommandStatus = "Roasted catch on hearth embers";
+                        self.recentVerifiedOutcome = "roast catch succeeded";
+                        if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        private void AddStoreSteps(List<ActiveCommandStep> steps)
+        {
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Ensure holding catch",
+                TimeoutSeconds = 5f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var ni, out var phys, out _))
+                    {
+                        return true;
+                    }
+                    self.ActiveCommandStatus = "Must hold catch to store";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Approach storage basket",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    var basket = (self.Brain.Perception != null && self.Brain.Perception.Current != null)
+                        ? self.Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("basket") && x.permission && x.available)
+                        : null;
+                    if (basket == null && self.Brain.Registry != null)
+                    {
+                        var bNi = self.Brain.Registry.FirstOrDefault(x => x != null && x.StableId.Contains("basket"));
+                        if (bNi != null) basket = new NpcObservation { id = bNi.StableId, position = bNi.transform.position };
+                    }
+                    if (basket != null)
+                    {
+                        float dist = Vector3.Distance(self.Brain.transform.position, basket.position);
+                        if (dist <= 2.2f)
+                        {
+                            self.ActiveCommandStatus = "Reached storage basket";
+                            return true;
+                        }
+                        if (self.route.Count == 0 || self.routePurpose != "approach-basket")
+                        {
+                            self.StartRoute(basket.position);
+                            self.routePurpose = "approach-basket";
+                        }
+                        self.ActiveCommandStatus = $"Approaching basket ({dist:F1}m)...";
+                        return false;
+                    }
+                    self.ActiveCommandStatus = "No storage basket found";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Store catch into basket",
+                TimeoutSeconds = 10f,
+                Execute = self =>
+                {
+                    var basket = (self.Brain.Perception != null && self.Brain.Perception.Current != null)
+                        ? self.Brain.Perception.Current.FirstOrDefault(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("basket") && x.permission && x.available)
+                        : null;
+                    if (basket == null && self.Brain.Registry != null)
+                    {
+                        var bNi = self.Brain.Registry.FirstOrDefault(x => x != null && x.StableId.Contains("basket"));
+                        if (bNi != null) basket = new NpcObservation { id = bNi.StableId, position = bNi.transform.position };
+                    }
+                    if (basket != null && self.TryGetHeldFoodOrCatch(out var heldFoodNi, out var heldPhys, out bool isLeft))
+                    {
+                        var model = self.Brain.Actions != null ? self.Brain.Actions.PhysicalModel : (self.Brain.PhysicalItems != null ? self.Brain.PhysicalItems.Model : null);
+                        if (model != null && self.Brain.TryAllocateRequestId(out int req))
+                        {
+                            var auth = new BasicItemActionAuthority();
+                            var storeReq = new ItemActionRequest
+                            {
+                                requestId = req,
+                                action = ItemActionKind.Store,
+                                actorId = NpcAutonomy.AgentId,
+                                itemId = heldPhys.itemId,
+                                targetId = basket.id
+                            };
+                            var storeResult = model.Execute(self.Brain.InstanceWorldId, Starfall.Food.IntegratedFoodRuntime.Generation, storeReq, auth);
+                            if (storeResult.success)
+                            {
+                                self.Brain.Actions.HoldItemDirect(null, isLeft);
+                                heldPhys.gameObject.SetActive(false);
+                                self.ActiveCommandStatus = "Stored catch in basket";
+                                self.recentVerifiedOutcome = "store catch in basket succeeded";
+                                if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+
+        private void AddEatSteps(List<ActiveCommandStep> steps)
+        {
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Ensure holding catch",
+                TimeoutSeconds = 5f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var ni, out var phys, out _))
+                    {
+                        return true;
+                    }
+                    self.ActiveCommandStatus = "Must hold catch to eat";
+                    return false;
+                }
+            });
+
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Consume catch",
+                TimeoutSeconds = 5f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldFoodOrCatch(out var foodNi, out var foodPhys, out bool isLeft))
+                    {
+                        var s = self.Food.Model.State;
+                        bool isCooked = foodPhys.itemTypeId == "food-cooked-fish" || foodPhys.itemTypeId == "food-cooked-meat" || foodPhys.itemTypeId == "food-cooked-crab";
+                        self.Brain.Actions.HoldItemDirect(null, isLeft);
+                        Destroy(foodPhys.gameObject);
+                        s.satiety = Mathf.Min(10000, s.satiety + (isCooked ? 4500 : 2500));
+                        if (s.body != null)
+                        {
+                            s.body.protein = Mathf.Min(10000, s.body.protein + (isCooked ? 4000 : 2500));
+                            s.body.health = Mathf.Min(10000, s.body.health + (isCooked ? 2000 : 1000));
+                            s.body.stomach = Mathf.Min(10000, s.body.stomach + (isCooked ? 3000 : 1500));
+                            if (isCooked) Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
+                        }
+                        self.Persist();
+                        self.FoodOutcomes++;
+                        self.ActiveCommandStatus = isCooked ? "Feasted on roasted catch" : "Consumed raw river catch";
+                        self.recentVerifiedOutcome = "eat catch succeeded";
+                        if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                        return true;
+                    }
+                    return false;
+                }
+            });
         }
     }
 }

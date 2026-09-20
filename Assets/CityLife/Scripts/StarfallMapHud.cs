@@ -137,7 +137,7 @@ namespace CityLife.World
         private bool lastDisplayedValid;
         private string lastDependencyError;
 
-        public static bool ValidateDependencySet(NpcAutonomy brain, IntegratedFoodRuntime food, StarfallSurvivalAutonomy survival, out string error)
+        public static bool ValidateDependencySet(NpcAutonomy brain, IntegratedFoodRuntime food, StarfallSurvivalAutonomy survival, out string error, bool validateAuthoritativeState = true)
         {
             if (food == null || food.Model == null || food.Model.State == null)
             {
@@ -187,7 +187,7 @@ namespace CityLife.World
                 error = $"Generation mismatch: expected {IntegratedFoodRuntime.Generation}, food state has {food.Model.State.generation}";
                 return false;
             }
-            if (!FoodModel.Valid(food.Model.State, brain.InstanceWorldId, IntegratedFoodRuntime.Generation))
+            if (validateAuthoritativeState && !FoodModel.Valid(food.Model.State, brain.InstanceWorldId, IntegratedFoodRuntime.Generation))
             {
                 error = "Food state failed authoritative validation";
                 return false;
@@ -455,7 +455,7 @@ namespace CityLife.World
             if (!dirty && now - lastSampleTime < 0.08f) return;
             lastSampleTime = now;
 
-            if (!ValidateDependencySet(Brain, Food, Survival, out string setErr))
+            if (!ValidateDependencySet(Brain, Food, Survival, out string setErr, validateAuthoritativeState: dirty))
             {
                 dirty = false;
                 if (lastDisplayedValid || lastDependencyError != setErr)
