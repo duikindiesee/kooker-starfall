@@ -117,10 +117,10 @@ namespace CityLife.World
             phys.ConfigureComponents();
             if (phys.Body != null)
             {
-                phys.Body.isKinematic = true;
-                phys.Body.useGravity = false;
                 phys.Body.linearVelocity = Vector3.zero;
                 phys.Body.angularVelocity = Vector3.zero;
+                phys.Body.isKinematic = true;
+                phys.Body.useGravity = false;
             }
 
             var instance = new FloatingLogInstance
@@ -182,10 +182,10 @@ namespace CityLife.World
                 log.isBeached = false;
                 if (log.physicalItem != null && log.physicalItem.Body != null && !log.physicalItem.Body.isKinematic)
                 {
-                    log.physicalItem.Body.isKinematic = true;
-                    log.physicalItem.Body.useGravity = false;
                     log.physicalItem.Body.linearVelocity = Vector3.zero;
                     log.physicalItem.Body.angularVelocity = Vector3.zero;
+                    log.physicalItem.Body.isKinematic = true;
+                    log.physicalItem.Body.useGravity = false;
                 }
 
                 // Advance along downstream river spline

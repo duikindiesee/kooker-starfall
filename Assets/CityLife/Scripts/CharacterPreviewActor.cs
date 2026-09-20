@@ -33,7 +33,7 @@ namespace CityLife.World
 
         public void Gesture()
         {
-            gestureUntil = Time.time + 2f;
+            gestureUntil = Time.time + 1.2f;
             Animate("Interact");
         }
         public void CancelGesture() { gestureUntil = 0; Animate("Idle"); }

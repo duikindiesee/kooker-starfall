@@ -1149,9 +1149,9 @@ namespace CityLife.World
 
             var visual = new GameObject("Visual", typeof(MeshFilter), typeof(MeshRenderer));
             visual.transform.SetParent(fishGo.transform, false);
-            visual.transform.localPosition = new Vector3(0, 0, 0.05f);
-            visual.transform.localRotation = Quaternion.Euler(0, 90f, 0); // Orient horizontally in survivor's grip
-            visual.transform.localScale = Vector3.one * 0.22f; // ~42cm caught freshwater barber
+            visual.transform.localPosition = new Vector3(0, 0, 0.04f);
+            visual.transform.localRotation = Quaternion.Euler(0, 0, 90f); // Orient horizontally across survivor's grip
+            visual.transform.localScale = Vector3.one * 0.25f; // ~48cm caught freshwater barber
 
             var mf = visual.GetComponent<MeshFilter>();
             var mr = visual.GetComponent<MeshRenderer>();

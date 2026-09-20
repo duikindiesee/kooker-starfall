@@ -80,7 +80,7 @@ namespace CityLife.World
             }
         }
 
-        public const string BuildVersion = "STARFALL v0.0.11 · round-297-livingworld";
+        public const string BuildVersion = "STARFALL v0.0.11 · round-309-livingworld";
 
         private void Awake()
         {

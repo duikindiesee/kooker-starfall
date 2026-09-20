@@ -95,9 +95,9 @@ namespace CityLife.World
           Club.SetParent(backBone, false);
           Club.localScale = Vector3.one;
       }
-      // Holster diagonally across back / shoulder blade
-      Club.localPosition = new Vector3(-0.12f, 0.20f, -0.15f);
-      Club.localRotation = Quaternion.Euler(30f, 25f, -40f);
+      // Holster diagonally across back from right shoulder blade to left waist
+      Club.localPosition = new Vector3(-0.08f, 0.14f, 0.135f);
+      Club.localRotation = Quaternion.Euler(-6f, 2f, 22f);
   }
   private void LateUpdate(){
       if(!Animator||!Club)return;

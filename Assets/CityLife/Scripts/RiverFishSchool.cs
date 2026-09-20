@@ -218,9 +218,9 @@ namespace CityLife.World
                 float fishY;
                 if (maxY > minY)
                 {
-                    // Niche depth partitioning: Carp cruise just beneath surface (0.82) with vivid visible scales,
-                    // Catfish cruise mid-depth (0.48) with clear silhouette above gravel bed
-                    float depthFrac = isCarp ? 0.82f : 0.48f;
+                    // Niche depth partitioning: Carp cruise just beneath surface (0.92) with vivid visible scales,
+                    // Catfish cruise mid-to-upper depth (0.65) with clear silhouette above gravel bed
+                    float depthFrac = isCarp ? 0.92f : 0.65f;
                     float undulation = Mathf.Sin(t * 1.2f + fish.phase) * (isCarp ? 0.04f : 0.02f);
                     fishY = Mathf.Clamp(Mathf.Lerp(minY, maxY, depthFrac) + undulation, minY, maxY);
                 }
@@ -374,23 +374,23 @@ namespace CityLife.World
             var poolSpawns = new (Vector3 center, float radius, float speed, float depth, float scale)[]
             {
                 // Waterfall Plunge Pool & South Gorge Basin
-                (new Vector3(25f, -2.18f, -234f), 5.2f, 0.38f, 0.35f, 1.05f),
-                (new Vector3(18f, -2.18f, -225f), 4.8f, 0.42f, 0.30f, 0.95f),
-                (new Vector3(26f, -2.18f, -210f), 4.2f, 0.45f, 0.28f, 0.88f),
-                (new Vector3(16f, -2.18f, -195f), 5.0f, 0.40f, 0.25f, 0.82f),
-                (new Vector3(22f, -2.18f, -170f), 5.8f, 0.44f, 0.32f, 0.90f),
-                (new Vector3(18f, -2.18f, -145f), 6.5f, 0.46f, 0.35f, 0.92f),
-                (new Vector3(10f, -2.18f, -115f), 5.5f, 0.42f, 0.28f, 0.80f),
-                (new Vector3(-8f, -2.7f, -85f), 6.0f, 0.48f, 0.30f, 0.85f),
-                (new Vector3(6f, -2.8f, -55f), 5.2f, 0.40f, 0.25f, 0.70f),
-                (new Vector3(-4f, -2.5f, -32f), 4.5f, 0.42f, 0.22f, 0.62f),
-                // River Ford & Central Meanders
-                (new Vector3(0f, -2.2f, -12f), 2.8f, 0.36f, 0.16f, 0.52f),
-                (new Vector3(2f, -2.18f, -15f), 3.2f, 0.38f, 0.18f, 0.55f),
-                (new Vector3(-12f, -2.3f, 8f), 4.8f, 0.35f, 0.20f, 0.58f),
-                (new Vector3(2f, -2.4f, 20f), 4.5f, 0.40f, 0.22f, 0.60f),
-                (new Vector3(14f, -2.6f, 32f), 5.5f, 0.44f, 0.24f, 0.65f),
-                (new Vector3(24f, -2.8f, 52f), 5.0f, 0.42f, 0.25f, 0.68f)
+                (new Vector3(25f, -2.18f, -234f), 5.2f, 0.38f, 0.35f, 1.15f),
+                (new Vector3(18f, -2.18f, -225f), 4.8f, 0.42f, 0.30f, 1.05f),
+                (new Vector3(26f, -2.18f, -210f), 4.2f, 0.45f, 0.28f, 0.98f),
+                (new Vector3(16f, -2.18f, -195f), 5.0f, 0.40f, 0.25f, 0.92f),
+                (new Vector3(22f, -2.18f, -170f), 5.8f, 0.44f, 0.32f, 1.00f),
+                (new Vector3(18f, -2.18f, -145f), 6.5f, 0.46f, 0.35f, 0.95f),
+                (new Vector3(10f, -2.18f, -115f), 5.5f, 0.42f, 0.28f, 0.88f),
+                (new Vector3(-8f, -2.7f, -85f), 6.0f, 0.48f, 0.30f, 0.92f),
+                (new Vector3(6f, -2.8f, -55f), 5.2f, 0.40f, 0.25f, 0.85f),
+                (new Vector3(-4f, -2.5f, -32f), 4.5f, 0.42f, 0.22f, 0.82f),
+                // River Ford & Central Meanders (prominently visible from crossing terrace)
+                (new Vector3(0f, -2.2f, -12f), 3.2f, 0.38f, 0.18f, 0.88f),
+                (new Vector3(2f, -2.18f, -15f), 3.5f, 0.40f, 0.18f, 0.92f),
+                (new Vector3(-8f, -2.3f, 8f), 4.8f, 0.38f, 0.20f, 0.85f),
+                (new Vector3(2f, -2.4f, 20f), 4.5f, 0.40f, 0.22f, 0.90f),
+                (new Vector3(14f, -2.6f, 32f), 5.5f, 0.44f, 0.24f, 0.88f),
+                (new Vector3(24f, -2.8f, 52f), 5.0f, 0.42f, 0.25f, 0.95f)
             };
 
             var spawnedObjects = new List<GameObject>();
@@ -507,35 +507,38 @@ namespace CityLife.World
             var carpSpawns = new (Vector3 center, float radius, float speed, float depth, float scale)[]
             {
                 // Zone 1: Waterfall lower plunge outflow & deep canyon run
-                (new Vector3(28f, -2.18f, -190f), 4.6f, 0.42f, 0.28f, 0.48f),
-                (new Vector3(20f, -2.18f, -182f), 5.2f, 0.38f, 0.32f, 0.65f),    // Deep plunge-pool monster carp (1.20m)
-                (new Vector3(24f, -2.18f, -165f), 4.8f, 0.45f, 0.30f, 0.42f),
-                (new Vector3(14f, -2.18f, -152f), 5.5f, 0.40f, 0.26f, 0.45f),
-                (new Vector3(26f, -2.18f, -138f), 4.2f, 0.44f, 0.34f, 0.52f),    // Trophy canyon carp (0.96m)
+                (new Vector3(28f, -2.18f, -190f), 4.6f, 0.42f, 0.28f, 0.85f),
+                (new Vector3(20f, -2.18f, -182f), 5.2f, 0.38f, 0.32f, 1.15f),    // Deep plunge-pool monster carp (2.1m)
+                (new Vector3(24f, -2.18f, -165f), 4.8f, 0.45f, 0.30f, 0.82f),
+                (new Vector3(14f, -2.18f, -152f), 5.5f, 0.40f, 0.26f, 0.85f),
+                (new Vector3(26f, -2.18f, -138f), 4.2f, 0.44f, 0.34f, 0.95f),    // Trophy canyon carp
 
                 // Zone 2: South gorge deep pools & rock shelves
-                (new Vector3(12f, -2.18f, -125f), 4.5f, 0.46f, 0.28f, 0.36f),
-                (new Vector3(4f, -2.4f, -100f), 5.0f, 0.42f, 0.30f, 0.44f),
-                (new Vector3(-6f, -2.6f, -75f), 5.8f, 0.40f, 0.32f, 0.55f),     // Deep gorge trophy carp (1.02m)
-                (new Vector3(2f, -2.7f, -65f), 4.6f, 0.44f, 0.25f, 0.38f),
+                (new Vector3(12f, -2.18f, -125f), 4.5f, 0.46f, 0.28f, 0.80f),
+                (new Vector3(4f, -2.4f, -100f), 5.0f, 0.42f, 0.30f, 0.88f),
+                (new Vector3(-6f, -2.6f, -75f), 5.8f, 0.40f, 0.32f, 1.05f),     // Deep gorge trophy carp
+                (new Vector3(2f, -2.7f, -65f), 4.6f, 0.44f, 0.25f, 0.82f),
 
                 // Zone 3: Mid-river reed sanctuary
-                (new Vector3(-6f, -2.4f, -45f), 4.0f, 0.38f, 0.22f, 0.32f),
-                (new Vector3(4f, -2.3f, -38f), 3.8f, 0.42f, 0.20f, 0.34f),
-                (new Vector3(-2f, -2.25f, -28f), 4.5f, 0.36f, 0.24f, 0.42f),
-                (new Vector3(8f, -2.25f, -22f), 4.2f, 0.40f, 0.22f, 0.38f),
+                (new Vector3(-6f, -2.4f, -45f), 4.0f, 0.38f, 0.22f, 0.78f),
+                (new Vector3(4f, -2.3f, -38f), 3.8f, 0.42f, 0.20f, 0.82f),
+                (new Vector3(-2f, -2.25f, -28f), 4.5f, 0.36f, 0.24f, 0.88f),
+                (new Vector3(8f, -2.25f, -22f), 4.2f, 0.40f, 0.22f, 0.84f),
 
-                // Zone 4: River Ford deep pool & gravel shallows transition
-                (new Vector3(-4f, -2.2f, -8f), 3.2f, 0.34f, 0.16f, 0.30f),
-                (new Vector3(6f, -2.2f, -2f), 3.5f, 0.38f, 0.18f, 0.32f),
-                (new Vector3(-8f, -2.25f, 6f), 4.0f, 0.36f, 0.20f, 0.35f),
-                (new Vector3(4f, -2.3f, 12f), 3.6f, 0.40f, 0.22f, 0.36f),
+                // Zone 4: River Ford & gravel shallows transition (activity terrace crossing)
+                (new Vector3(1f, -2.18f, -18f), 3.5f, 0.38f, 0.18f, 0.88f),      // Cruising right at the ford crossing!
+                (new Vector3(-2f, -2.18f, -14f), 3.8f, 0.42f, 0.20f, 0.92f),     // Active shallows swimmer
+                (new Vector3(3f, -2.18f, -10f), 3.2f, 0.40f, 0.18f, 0.82f),      // Directly visible from berry bush
+                (new Vector3(-4f, -2.2f, -8f), 3.5f, 0.36f, 0.18f, 0.78f),
+                (new Vector3(5f, -2.2f, -2f), 3.8f, 0.38f, 0.18f, 0.85f),
+                (new Vector3(-6f, -2.25f, 6f), 4.2f, 0.36f, 0.20f, 0.88f),
+                (new Vector3(4f, -2.3f, 12f), 3.6f, 0.40f, 0.22f, 0.85f),
 
                 // Zone 5: North meanders & delta reach
-                (new Vector3(-6f, -2.35f, 26f), 4.8f, 0.42f, 0.24f, 0.38f),
-                (new Vector3(8f, -2.5f, 38f), 5.2f, 0.44f, 0.26f, 0.45f),
-                (new Vector3(18f, -2.7f, 48f), 5.0f, 0.40f, 0.28f, 0.48f),
-                (new Vector3(26f, -2.8f, 62f), 5.5f, 0.46f, 0.30f, 0.50f)
+                (new Vector3(-6f, -2.35f, 26f), 4.8f, 0.42f, 0.24f, 0.85f),
+                (new Vector3(8f, -2.5f, 38f), 5.2f, 0.44f, 0.26f, 0.90f),
+                (new Vector3(18f, -2.7f, 48f), 5.0f, 0.40f, 0.28f, 0.95f),
+                (new Vector3(26f, -2.8f, 62f), 5.5f, 0.46f, 0.30f, 1.00f)
             };
 
             for (int i = 0; i < carpSpawns.Length; i++)

@@ -508,6 +508,7 @@ namespace CityLife.World
             }
 
             // 4. Marine Protein & Tidal Crab / River Fish Foraging
+            var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
             bool lowProtein = s.body.protein < 6500;
             bool huntHopeLost = Brain != null && Brain.Tick < huntingHopeLostUntilTick;
             var nearestCrab = Brain.Perception != null && Brain.Perception.Current != null
@@ -524,8 +525,9 @@ namespace CityLife.World
                     else foodChoices.Add("approach crab");
                 }
 
-                if (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
-                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish"))))
+                bool holdingFish = heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp");
+                if (!holdingFish && (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
+                    Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish")))))
                 {
                     if (hasClubInHand) foodChoices.Add("strike fish with club");
                     else foodChoices.Add("catch fish");
@@ -561,7 +563,8 @@ namespace CityLife.World
             }
 
             // 5. Edible items held or carried
-            var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
+            if (heldPhys == null && Brain.Actions != null && Brain.Actions.Held != null)
+                heldPhys = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
             var cooker = Brain.GetComponentInChildren<HearthCooking>();
             if (cooker == null) cooker = FindFirstObjectByType<HearthCooking>();
             bool nearHearth = cooker != null && cooker.IsNearHearth(Brain.transform.position, out _);
