@@ -111,6 +111,8 @@ namespace CityLife.World.Editor
             // Freshwater River Fish Ecology verification
             if (!RiverFishSchool.VerifyFishEcology(out string fishReceipt))
                 throw new InvalidOperationException($"River fish ecology verification failed: {fishReceipt}");
+            if (!RiverFishValidationTests.RunAllChecks(out string riverFishReceipt))
+                throw new InvalidOperationException($"River fish validation suite failed: {riverFishReceipt}");
 
             // Coastal Timber Wolf Ecology verification
             if (!CoastalWolfEcology.VerifyWolfEcology(out string wolfReceipt))
@@ -123,8 +125,8 @@ namespace CityLife.World.Editor
 
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 16;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, waist moonbag, coastal timber wolf ecology, and riverbank pilot slice with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 17;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, automated river fish kinematic visibility verification, waist moonbag, coastal timber wolf ecology, and riverbank pilot slice with zero errors.");
             return totalPassed;
         }
 

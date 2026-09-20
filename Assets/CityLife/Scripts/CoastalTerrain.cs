@@ -34,6 +34,26 @@ namespace CityLife.World
         public static float DistanceToFeed(float x, float z) => DistanceToCurve(x, z, Feed);
         public static float DistanceToOutlet(float x, float z) => DistanceToCurve(x, z, Outlet);
 
+        /// <summary>
+        /// Finds the approximate river channel centerline X coordinate for a given Z in the canyon.
+        /// Scans across the canyon width to locate the deepest bathymetric floor.
+        /// </summary>
+        public static float RiverCenterlineX(float z)
+        {
+            float bestX = 0f;
+            float lowestY = float.MaxValue;
+            for (float x = -65f; x <= 65f; x += 1.0f)
+            {
+                float h = Height(x, z);
+                if (h < lowestY)
+                {
+                    lowestY = h;
+                    bestX = x;
+                }
+            }
+            return bestX;
+        }
+
         public static bool IsFreshwaterRiver(float x, float z, float y, float waterLevel)
         {
             if (z > 420f) return false; // North of 420m opens into the broad saline sea

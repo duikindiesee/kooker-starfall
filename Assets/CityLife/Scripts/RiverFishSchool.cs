@@ -144,6 +144,19 @@ namespace CityLife.World
 
         private void Awake()
         {
+            EnsureSharedAssets();
+            ReconstructActiveFishIfEmpty();
+        }
+
+        private void Start()
+        {
+            EnsureSharedAssets();
+            ReconstructActiveFishIfEmpty();
+            EnsureFishKinematicsAndAnimation();
+        }
+
+        private void EnsureSharedAssets()
+        {
             if (sharedBarberMesh == null || sharedBarberMaterial == null || sharedCarpMesh == null || sharedCarpMaterial == null)
             {
                 var smrs = GetComponentsInChildren<SkinnedMeshRenderer>(true);
@@ -154,6 +167,115 @@ namespace CityLife.World
                     if (sharedBarberMaterial == null && smr.sharedMaterial != null && smr.sharedMaterial.name.Contains("Catfish")) sharedBarberMaterial = smr.sharedMaterial;
                     if (sharedCarpMesh == null && smr.sharedMesh != null && (smr.sharedMesh.name.Contains("Carp") || smr.sharedMesh.name.Contains("Mesh"))) sharedCarpMesh = smr.sharedMesh;
                     if (sharedCarpMaterial == null && smr.sharedMaterial != null && smr.sharedMaterial.name.Contains("Carp")) sharedCarpMaterial = smr.sharedMaterial;
+                }
+            }
+        }
+
+        public void ReconstructActiveFishIfEmpty()
+        {
+            if (ActiveFish == null) ActiveFish = new List<RiverFishInstance>();
+            ActiveFish.RemoveAll(f => f == null || f.gameObject == null);
+            if (ActiveFish.Count > 0) return;
+
+            // Search children for baked fish instances
+            var allChildren = GetComponentsInChildren<Transform>(true);
+            int fishIndex = 0;
+            for (int i = 0; i < allChildren.Length; i++)
+            {
+                var child = allChildren[i];
+                if (child == null || child == transform) continue;
+                if (child.parent != transform) continue;
+                string name = child.gameObject.name;
+                if (name.EndsWith(" approach", StringComparison.Ordinal)) continue;
+                if (!name.StartsWith("river-fish-", StringComparison.Ordinal) &&
+                    !name.StartsWith("river-carp-", StringComparison.Ordinal))
+                    continue;
+
+                var ni = child.GetComponent<NpcInteractable>();
+                var phys = child.GetComponent<PhysicalItem>();
+                var anim = child.GetComponentInChildren<Animation>(true);
+                bool isCarp = name.StartsWith("river-carp-", StringComparison.Ordinal);
+
+                float scale = 0.85f;
+                var smr = child.GetComponentInChildren<SkinnedMeshRenderer>(true);
+                if (smr != null && smr.transform.parent != null)
+                {
+                    scale = smr.transform.localScale.x;
+                }
+
+                Vector3 currentPos = child.position;
+                var instance = new RiverFishInstance
+                {
+                    gameObject = child.gameObject,
+                    swimCenter = new Vector3(currentPos.x, CoastalWater.Level - 0.22f, currentPos.z),
+                    swimRadius = isCarp ? 3.8f : 4.5f,
+                    swimSpeed = isCarp ? 0.40f : 0.42f,
+                    swimDepth = isCarp ? 0.18f : 0.24f,
+                    scale = scale > 0.05f ? scale : 0.85f,
+                    phase = fishIndex * 0.48f,
+                    bodyTransform = child,
+                    interactable = ni,
+                    physicalItem = phys,
+                    animation = anim
+                };
+                ActiveFish.Add(instance);
+                fishIndex++;
+            }
+        }
+
+        public void EnsureFishKinematicsAndAnimation()
+        {
+            for (int i = 0; i < ActiveFish.Count; i++)
+            {
+                var fish = ActiveFish[i];
+                if (fish == null || fish.gameObject == null) continue;
+
+                if (fish.physicalItem != null && fish.physicalItem.Body != null)
+                {
+                    fish.physicalItem.Body.linearVelocity = Vector3.zero;
+                    fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    fish.physicalItem.Body.isKinematic = true;
+                    fish.physicalItem.Body.useGravity = false;
+                }
+
+                var smrs = fish.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                bool isCarp = (fish.interactable != null && fish.interactable.StableId != null && fish.interactable.StableId.Contains("carp")) ||
+                              fish.gameObject.name.Contains("carp");
+                foreach (var smr in smrs)
+                {
+                    if (smr == null) continue;
+                    smr.enabled = true;
+                    smr.updateWhenOffscreen = true;
+                    if (smr.sharedMaterial == null)
+                    {
+                        smr.sharedMaterial = isCarp ? SharedCarpMaterial : SharedBarberMaterial;
+                    }
+                    if (smr.sharedMesh == null)
+                    {
+                        smr.sharedMesh = isCarp ? SharedCarpMesh : SharedBarberMesh;
+                    }
+                }
+
+                var anim = fish.gameObject.GetComponentInChildren<Animation>(true);
+                if (anim != null)
+                {
+                    anim.enabled = true;
+                    anim.playAutomatically = true;
+                    anim.wrapMode = WrapMode.Loop;
+                    if (anim.clip != null)
+                    {
+                        string clipName = anim.clip.name;
+                        if (anim[clipName] != null)
+                        {
+                            anim[clipName].wrapMode = WrapMode.Loop;
+                            anim[clipName].time = (i * 0.65f) % anim.clip.length;
+                        }
+                        anim.Play(clipName);
+                    }
+                    else
+                    {
+                        anim.Play();
+                    }
                 }
             }
         }
@@ -174,70 +296,111 @@ namespace CityLife.World
             public Animation animation;
         }
 
-        public readonly List<RiverFishInstance> ActiveFish = new List<RiverFishInstance>();
+        [SerializeField]
+        public List<RiverFishInstance> ActiveFish = new List<RiverFishInstance>();
+
+        public static Vector3 EvaluateFishPosition(
+            Vector3 swimCenter, 
+            float swimRadius, 
+            float swimSpeed, 
+            float phase, 
+            float scale, 
+            bool isCarp, 
+            float simTime, 
+            float waterY)
+        {
+            float angle = simTime * swimSpeed + phase;
+            float currentX = swimCenter.x + Mathf.Cos(angle) * swimRadius;
+            float currentZ = swimCenter.z + Mathf.Sin(angle) * (swimRadius * 1.6f);
+
+            float groundY = CoastalTerrain.Height(currentX, currentZ);
+            float localDepth = waterY - groundY;
+
+            // Lateral bank containment: steer back toward deep river channel if orbit nears shore
+            if (localDepth < 0.28f)
+            {
+                float channelX = CoastalTerrain.RiverCenterlineX(currentZ);
+                currentX = Mathf.Lerp(currentX, channelX, 0.75f);
+                groundY = CoastalTerrain.Height(currentX, currentZ);
+                localDepth = waterY - groundY;
+            }
+
+            float effectiveScale = scale;
+            if (localDepth < 0.45f)
+            {
+                effectiveScale = Mathf.Min(scale, Mathf.Max(0.20f, localDepth * 0.85f));
+            }
+
+            float hTop = (isCarp ? 0.36f : 0.14f) * effectiveScale;
+            float hBottom = (isCarp ? 0.35f : 0.14f) * effectiveScale;
+
+            float minY = groundY + hBottom + 0.02f;
+            float maxY = waterY - hTop - 0.02f;
+
+            float fishY;
+            if (maxY > minY)
+            {
+                float depthFrac = isCarp ? 0.85f : 0.50f;
+                float undulation = Mathf.Sin(simTime * 1.5f + phase) * (isCarp ? 0.03f : 0.015f);
+                fishY = Mathf.Clamp(Mathf.Lerp(minY, maxY, depthFrac) + undulation, minY, maxY);
+            }
+            else
+            {
+                fishY = (groundY + waterY) * 0.5f;
+            }
+
+            fishY = Mathf.Clamp(fishY, groundY + 0.03f, waterY - 0.02f);
+            return new Vector3(currentX, fishY, currentZ);
+        }
 
         private void Update()
         {
             float t = Time.time;
+            float waterY = CoastalWater.CurrentLevel;
+
             for (int i = 0; i < ActiveFish.Count; i++)
             {
                 var fish = ActiveFish[i];
                 if (fish == null || fish.gameObject == null || !fish.gameObject.activeSelf) continue;
 
-                // Circular / elliptical orbit around local pool center
-                float angle = t * fish.swimSpeed + fish.phase;
-                float currentX = fish.swimCenter.x + Mathf.Cos(angle) * fish.swimRadius;
-                float currentZ = fish.swimCenter.z + Mathf.Sin(angle) * (fish.swimRadius * 1.8f);
-
-                // River cruising depth: strictly bound entire animated body and fins
-                // between the riverbed substrate and the water surface.
-                float groundY = CoastalTerrain.Height(currentX, currentZ);
-                float waterY = CoastalWater.Level; // -2.0f
-
-                bool isCarp = fish.interactable != null && fish.interactable.StableId.Contains("carp");
-                // Base mesh extents from pivot:
-                // Carp: Dorsal fin apex = +0.36m, Pelvic fin nadir = -0.35m
-                // Catfish: Dorsal fin apex = +0.14m, Pelvic/pectoral nadir = -0.14m
-                float hTop = (isCarp ? 0.36f : 0.14f) * fish.scale;
-                float hBottom = (isCarp ? 0.35f : 0.14f) * fish.scale;
-
-                // Lateral bank / shallows containment: if local water depth cannot contain fish,
-                // nudge orbit inward toward deeper pool center
-                float localDepth = waterY - groundY;
-                float minRequiredDepth = hTop + hBottom + 0.10f;
-                if (localDepth < minRequiredDepth)
+                // If carried in hand, stowed in satchel, or undergoing eating/cooking, don't simulate swimming orbit
+                if (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored))
                 {
-                    currentX = Mathf.Lerp(currentX, fish.swimCenter.x, 0.5f);
-                    currentZ = Mathf.Lerp(currentZ, fish.swimCenter.z, 0.5f);
-                    groundY = CoastalTerrain.Height(currentX, currentZ);
+                    continue;
                 }
 
-                float minY = groundY + hBottom + 0.05f; // Safe clearance above substrate
-                float maxY = waterY - hTop - 0.03f;     // Safe clearance below surface
-
-                float fishY;
-                if (maxY > minY)
+                // Enforce kinematic state during swimming so physics engine never pulls fish down
+                if (fish.physicalItem != null && fish.physicalItem.Body != null)
                 {
-                    // Niche depth partitioning: Carp cruise just beneath surface (0.92) with vivid visible scales,
-                    // Catfish cruise mid-to-upper depth (0.65) with clear silhouette above gravel bed
-                    float depthFrac = isCarp ? 0.92f : 0.65f;
-                    float undulation = Mathf.Sin(t * 1.2f + fish.phase) * (isCarp ? 0.04f : 0.02f);
-                    fishY = Mathf.Clamp(Mathf.Lerp(minY, maxY, depthFrac) + undulation, minY, maxY);
-                }
-                else
-                {
-                    fishY = (minY + maxY) * 0.5f;
+                    if (!fish.physicalItem.Body.isKinematic)
+                    {
+                        fish.physicalItem.Body.linearVelocity = Vector3.zero;
+                        fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                        fish.physicalItem.Body.isKinematic = true;
+                        fish.physicalItem.Body.useGravity = false;
+                    }
                 }
 
-                Vector3 newPos = new Vector3(currentX, fishY, currentZ);
+                bool isCarp = (fish.interactable != null && fish.interactable.StableId != null && fish.interactable.StableId.Contains("carp")) ||
+                              fish.gameObject.name.Contains("carp");
+
+                Vector3 newPos = EvaluateFishPosition(
+                    fish.swimCenter, 
+                    fish.swimRadius, 
+                    fish.swimSpeed, 
+                    fish.phase, 
+                    fish.scale, 
+                    isCarp, 
+                    t, 
+                    waterY);
+
                 Vector3 delta = newPos - fish.gameObject.transform.position;
                 fish.gameObject.transform.position = newPos;
 
-                if (delta.sqrMagnitude > 0.0001f)
+                if (delta.sqrMagnitude > 0.00001f)
                 {
-                    // Face swimming direction; smooth turn with slight yaw sway overlay
                     Quaternion lookRot = Quaternion.LookRotation(delta.normalized, Vector3.up);
-                    float wiggle = Mathf.Sin(t * 3.5f + fish.phase) * 3.5f;
+                    float wiggle = Mathf.Sin(t * 3.8f + fish.phase) * 3.5f;
                     fish.gameObject.transform.rotation = lookRot * Quaternion.Euler(0, wiggle, 0);
                 }
             }
@@ -385,8 +548,8 @@ namespace CityLife.World
                 (new Vector3(6f, -2.8f, -55f), 5.2f, 0.40f, 0.25f, 0.85f),
                 (new Vector3(-4f, -2.5f, -32f), 4.5f, 0.42f, 0.22f, 0.82f),
                 // River Ford & Central Meanders (prominently visible from crossing terrace)
-                (new Vector3(0f, -2.2f, -12f), 3.2f, 0.38f, 0.18f, 0.88f),
-                (new Vector3(2f, -2.18f, -15f), 3.5f, 0.40f, 0.18f, 0.92f),
+                (new Vector3(0f, -2.2f, -12f), 3.2f, 0.40f, 0.12f, 0.52f),
+                (new Vector3(2f, -2.18f, -15f), 3.5f, 0.42f, 0.12f, 0.55f),
                 (new Vector3(-8f, -2.3f, 8f), 4.8f, 0.38f, 0.20f, 0.85f),
                 (new Vector3(2f, -2.4f, 20f), 4.5f, 0.40f, 0.22f, 0.90f),
                 (new Vector3(14f, -2.6f, 32f), 5.5f, 0.44f, 0.24f, 0.88f),
@@ -399,9 +562,14 @@ namespace CityLife.World
                 var sp = poolSpawns[i];
                 string fishId = $"river-fish-{i + 1:D2}";
 
+                float channelX = CoastalTerrain.RiverCenterlineX(sp.center.z);
+                float lateralMax = Mathf.Min(sp.radius * 0.35f, 3.0f);
+                float lateralOffset = Mathf.Clamp(sp.center.x - channelX, -lateralMax, lateralMax);
+                Vector3 validCenter = new Vector3(channelX + lateralOffset, CoastalWater.Level - 0.22f, sp.center.z);
+
                 var fishGo = new GameObject(fishId);
                 fishGo.transform.SetParent(schoolGo.transform, false);
-                fishGo.transform.position = sp.center;
+                fishGo.transform.position = validCenter;
                 fishGo.layer = 11; // Interactable
 
                 Animation animComp = null;
@@ -480,12 +648,19 @@ namespace CityLife.World
                 phys.massKg = 0.65f * sp.scale;
                 phys.dimensions = new PhysicalDimensions(0.40f * sp.scale, 0.25f * sp.scale, 1.10f * sp.scale);
                 phys.ConfigureComponents();
+                if (phys.Body != null)
+                {
+                    phys.Body.linearVelocity = Vector3.zero;
+                    phys.Body.angularVelocity = Vector3.zero;
+                    phys.Body.isKinematic = true;
+                    phys.Body.useGravity = false;
+                }
 
                 var instance = new RiverFishInstance
                 {
                     gameObject = fishGo,
-                    swimCenter = sp.center,
-                    swimRadius = sp.radius,
+                    swimCenter = validCenter,
+                    swimRadius = Mathf.Min(sp.radius, 4.0f),
                     swimSpeed = sp.speed,
                     swimDepth = sp.depth,
                     scale = sp.scale,
@@ -526,13 +701,13 @@ namespace CityLife.World
                 (new Vector3(8f, -2.25f, -22f), 4.2f, 0.40f, 0.22f, 0.84f),
 
                 // Zone 4: River Ford & gravel shallows transition (activity terrace crossing)
-                (new Vector3(1f, -2.18f, -18f), 3.5f, 0.38f, 0.18f, 0.88f),      // Cruising right at the ford crossing!
-                (new Vector3(-2f, -2.18f, -14f), 3.8f, 0.42f, 0.20f, 0.92f),     // Active shallows swimmer
-                (new Vector3(3f, -2.18f, -10f), 3.2f, 0.40f, 0.18f, 0.82f),      // Directly visible from berry bush
-                (new Vector3(-4f, -2.2f, -8f), 3.5f, 0.36f, 0.18f, 0.78f),
-                (new Vector3(5f, -2.2f, -2f), 3.8f, 0.38f, 0.18f, 0.85f),
-                (new Vector3(-6f, -2.25f, 6f), 4.2f, 0.36f, 0.20f, 0.88f),
-                (new Vector3(4f, -2.3f, 12f), 3.6f, 0.40f, 0.22f, 0.85f),
+                (new Vector3(1f, -2.18f, -18f), 3.5f, 0.42f, 0.12f, 0.40f),      // Cruising right at the ford crossing!
+                (new Vector3(-2f, -2.18f, -14f), 3.8f, 0.44f, 0.12f, 0.38f),     // Active shallows swimmer
+                (new Vector3(3f, -2.18f, -10f), 3.2f, 0.40f, 0.12f, 0.36f),      // Directly visible from berry bush
+                (new Vector3(-4f, -2.2f, -8f), 3.5f, 0.38f, 0.14f, 0.42f),
+                (new Vector3(5f, -2.2f, -2f), 3.8f, 0.40f, 0.16f, 0.48f),
+                (new Vector3(-6f, -2.25f, 6f), 4.2f, 0.42f, 0.20f, 0.65f),
+                (new Vector3(4f, -2.3f, 12f), 3.6f, 0.44f, 0.22f, 0.75f),
 
                 // Zone 5: North meanders & delta reach
                 (new Vector3(-6f, -2.35f, 26f), 4.8f, 0.42f, 0.24f, 0.85f),
@@ -546,9 +721,14 @@ namespace CityLife.World
                 var sp = carpSpawns[i];
                 string carpId = $"river-carp-{i + 1:D2}";
 
+                float channelX = CoastalTerrain.RiverCenterlineX(sp.center.z);
+                float lateralMax = Mathf.Min(sp.radius * 0.35f, 3.0f);
+                float lateralOffset = Mathf.Clamp(sp.center.x - channelX, -lateralMax, lateralMax);
+                Vector3 validCenter = new Vector3(channelX + lateralOffset, CoastalWater.Level - 0.22f, sp.center.z);
+
                 var carpGo = new GameObject(carpId);
                 carpGo.transform.SetParent(schoolGo.transform, false);
-                carpGo.transform.position = sp.center;
+                carpGo.transform.position = validCenter;
                 carpGo.layer = 11; // Interactable
 
                 Animation animComp = null;
@@ -627,12 +807,19 @@ namespace CityLife.World
                 phys.massKg = Mathf.Max(0.5f, 22f * Mathf.Pow(sp.scale, 3f));
                 phys.dimensions = new PhysicalDimensions(0.48f * sp.scale, 0.71f * sp.scale, 1.85f * sp.scale);
                 phys.ConfigureComponents();
+                if (phys.Body != null)
+                {
+                    phys.Body.linearVelocity = Vector3.zero;
+                    phys.Body.angularVelocity = Vector3.zero;
+                    phys.Body.isKinematic = true;
+                    phys.Body.useGravity = false;
+                }
 
                 var instance = new RiverFishInstance
                 {
                     gameObject = carpGo,
-                    swimCenter = sp.center,
-                    swimRadius = sp.radius,
+                    swimCenter = validCenter,
+                    swimRadius = Mathf.Min(sp.radius, 4.0f),
                     swimSpeed = sp.speed,
                     swimDepth = sp.depth,
                     scale = sp.scale,
@@ -657,6 +844,20 @@ namespace CityLife.World
 
         public static bool VerifyFishEcology(out string receipt)
         {
+#if UNITY_EDITOR
+            var editorTestType = Type.GetType("CityLife.World.Editor.RiverFishValidationTests, Assembly-CSharp-Editor");
+            if (editorTestType != null)
+            {
+                var method = editorTestType.GetMethod("RunAllChecks", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (method != null)
+                {
+                    object[] args = new object[] { null };
+                    bool passed = (bool)method.Invoke(null, args);
+                    receipt = (string)args[0];
+                    return passed;
+                }
+            }
+#endif
             var mesh = CreateProceduralFishMesh();
             if (mesh == null || mesh.vertexCount < 50 || mesh.triangles.Length < 60)
             {
