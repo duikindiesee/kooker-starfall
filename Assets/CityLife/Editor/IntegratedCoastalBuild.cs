@@ -233,6 +233,12 @@ namespace CityLife.World.Editor
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
+            var camData = camera.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+            if (camData != null)
+            {
+                camData.requiresDepthTexture = true;
+                camData.requiresColorTexture = true;
+            }
             camera.fieldOfView = 60; actor.View.Yaw = -35; actor.View.Pitch = 12; actor.View.Distance = 4.8f; actor.View.Follow();
             var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
             if (galaxy != null)
@@ -929,43 +935,43 @@ namespace CityLife.World.Editor
                 return m;
             }
 
-            // 1. Tier 1: Upper Hanging Gorge Chute (from Y=27.5m, Z=-260m down to Y=14.5m, Z=-248m)
-            var upperMesh = BuildFlowingCurtain("Upper Gorge Chute", 22, 18, 17f, 33f, 27.5f, 14.5f, -260f, -248f, 0.5f, 3.5f, 6.5f);
+            // 1. Tier 1: Upper Hanging Gorge Chute (from Y=27.5m, Z=-258m down to Y=15.0m, Z=-248m)
+            var upperMesh = BuildFlowingCurtain("Upper Gorge Chute", 22, 18, 17f, 33f, 27.5f, 15.0f, -258f, -248f, 0.5f, 3.5f, 6.0f);
             var upperObj = new GameObject("Waterfall Tier 1 Upper Chute");
             upperObj.transform.SetParent(root.transform, false);
             upperObj.AddComponent<MeshFilter>().sharedMesh = upperMesh;
             upperObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
 
-            // 2. Mid Basalt Churn Ledge Shelf (crashed water boiling horizontally at Y=14.5m to 13.8m)
-            var midShelfMesh = BuildFlowingCurtain("Mid Churn Ledge", 22, 10, 16f, 34f, 14.5f, 13.8f, -248f, -245f, 0.25f, 2.0f, 5.0f);
+            // 2. Mid Basalt Churn Ledge Shelf (crashed water boiling horizontally across rock shelf at Y=15.0m to 13.8m)
+            var midShelfMesh = BuildFlowingCurtain("Mid Churn Ledge", 22, 10, 16.5f, 33.5f, 15.0f, 13.8f, -248f, -245f, 0.25f, 2.0f, 5.0f);
             var midObj = new GameObject("Waterfall Tier 2 Mid Ledge");
             midObj.transform.SetParent(root.transform, false);
             midObj.AddComponent<MeshFilter>().sharedMesh = midShelfMesh;
             midObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
 
             // 3. Tier 3: Main Roaring Plunge (from Y=13.8m down to Y=-2.6m penetrating deep into pool water)
-            var mainMesh = BuildFlowingCurtain("Main Plunge Curtain", 24, 24, 15f, 35f, 13.8f, -2.6f, -245f, -238f, 0.85f, 5.0f, 8.0f);
+            var mainMesh = BuildFlowingCurtain("Main Plunge Curtain", 24, 24, 16.5f, 33.5f, 13.8f, -2.6f, -245f, -237f, 0.85f, 5.0f, 7.5f);
             var mainObj = new GameObject("Waterfall Tier 3 Main Plunge");
             mainObj.transform.SetParent(root.transform, false);
             mainObj.AddComponent<MeshFilter>().sharedMesh = mainMesh;
             mainObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
 
-            // 4. Volumetric Spray & Mist Veil (slightly forward-offset curtain +0.38m)
-            var veilMesh = BuildFlowingCurtain("Volumetric Mist Veil", 20, 20, 14f, 36f, 14.0f, -2.5f, -244.6f, -237.5f, 1.1f, 4.0f, 7.5f);
+            // 4. Volumetric Spray & Mist Veil (slightly forward-offset curtain +0.45m)
+            var veilMesh = BuildFlowingCurtain("Volumetric Mist Veil", 20, 20, 15.8f, 34.2f, 14.0f, -2.5f, -244.5f, -236.4f, 1.15f, 4.0f, 7.0f);
             var veilObj = new GameObject("Waterfall Spray Veil");
             veilObj.transform.SetParent(root.transform, false);
             veilObj.AddComponent<MeshFilter>().sharedMesh = veilMesh;
             veilObj.AddComponent<MeshRenderer>().sharedMaterial = veilMat;
 
-            // 5. Churning Radial Plunge Pool Disc
+            // 5. Churning Radial Plunge Pool Disc (at Y=-1.95m, 5cm above river water level -2.0m)
             int poolSegs = 32;
             var pVerts = new Vector3[poolSegs + 2];
             var pNorms = new Vector3[poolSegs + 2];
             var pUvs = new Vector2[poolSegs + 2];
             var pTris = new int[poolSegs * 3];
 
-            Vector3 poolCenter = new Vector3(25f, -1.98f, -236f);
-            float radiusX = 15.5f, radiusZ = 12.0f;
+            Vector3 poolCenter = new Vector3(25f, -1.95f, -236f);
+            float radiusX = 14.5f, radiusZ = 12.0f;
             pVerts[0] = poolCenter;
             pNorms[0] = Vector3.up;
             pUvs[0] = new Vector2(0.5f, 0.5f);
@@ -1004,9 +1010,9 @@ namespace CityLife.World.Editor
             var basaltMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
             {
                 name = "Basalt rock dark",
-                color = new Color(0.20f, 0.21f, 0.24f, 1f)
+                color = new Color(0.35f, 0.38f, 0.42f, 1f)
             };
-            if (basaltMat.HasProperty("_Smoothness")) basaltMat.SetFloat("_Smoothness", 0.28f);
+            if (basaltMat.HasProperty("_Smoothness")) basaltMat.SetFloat("_Smoothness", 0.15f);
             if (!string.IsNullOrEmpty(folder)) AssetDatabase.CreateAsset(basaltMat, folder + "/BasaltRockDark.mat");
 
             // 7. Flanking Basalt Cliff Walls & Canyon Headwalls (Solid grounded 3D chasm bedrock)
@@ -1027,36 +1033,35 @@ namespace CityLife.World.Editor
                 pObj.layer = 8;
             }
 
-            // West Headwall Buttresses (grounded from Y=-4.5m up to canyon rim)
-            CreateBasaltPillar("West Chasm Buttress North", new Vector3(12.0f, 4.0f, -234f), new Vector3(14f, 18f, 16f), 801);
-            CreateBasaltPillar("West Chasm Buttress South", new Vector3(10.5f, 12.0f, -250f), new Vector3(16f, 26f, 18f), 802);
-            CreateBasaltPillar("West Chasm Upper Rim", new Vector3(9.0f, 24.0f, -260f), new Vector3(18f, 20f, 22f), 803);
-            CreateBasaltPillar("West Plunge Bed Rock", new Vector3(13.5f, -2.5f, -226f), new Vector3(12f, 8f, 14f), 804);
+            // West Flank Buttresses (towering left canyon gorge wall, framing the cascade on west side)
+            CreateBasaltPillar("West Chasm Buttress Lower", new Vector3(8.5f, 2.5f, -236f), new Vector3(6.5f, 13f, 7.0f), 801);
+            CreateBasaltPillar("West Chasm Buttress Mid", new Vector3(7.5f, 13.0f, -250f), new Vector3(7.5f, 16f, 8.0f), 802);
+            CreateBasaltPillar("West Chasm Upper Rim", new Vector3(6.5f, 24.0f, -260f), new Vector3(8.5f, 18f, 9.0f), 803);
+            CreateBasaltPillar("West Plunge Bed Rock", new Vector3(12.5f, -2.2f, -228f), new Vector3(4.0f, 3.5f, 4.5f), 804);
 
-            // East Headwall Buttresses (completely enclosing east gorge and sealing the open dirt trench)
-            CreateBasaltPillar("East Chasm Buttress North", new Vector3(38.0f, 4.0f, -234f), new Vector3(14f, 18f, 16f), 805);
-            CreateBasaltPillar("East Chasm Buttress South", new Vector3(40.5f, 12.0f, -250f), new Vector3(16f, 26f, 18f), 806);
-            CreateBasaltPillar("East Chasm Upper Rim", new Vector3(42.0f, 24.0f, -260f), new Vector3(18f, 20f, 22f), 807);
-            CreateBasaltPillar("East Plunge Bed Rock", new Vector3(36.5f, -2.5f, -226f), new Vector3(12f, 8f, 14f), 808);
-            CreateBasaltPillar("East Canyon Wall Flank North", new Vector3(48.0f, 6.0f, -232f), new Vector3(18f, 20f, 22f), 812);
-            CreateBasaltPillar("East Canyon Wall Flank South", new Vector3(50.0f, 16.0f, -250f), new Vector3(20f, 28f, 24f), 813);
+            // East Flank Buttresses (towering right canyon gorge wall, enclosing east gorge and sealing trench)
+            CreateBasaltPillar("East Chasm Buttress Lower", new Vector3(41.5f, 2.5f, -236f), new Vector3(6.5f, 13f, 7.0f), 805);
+            CreateBasaltPillar("East Chasm Buttress Mid", new Vector3(42.5f, 13.0f, -250f), new Vector3(7.5f, 16f, 8.0f), 806);
+            CreateBasaltPillar("East Chasm Upper Rim", new Vector3(43.5f, 24.0f, -260f), new Vector3(8.5f, 18f, 9.0f), 807);
+            CreateBasaltPillar("East Plunge Bed Rock", new Vector3(37.5f, -2.2f, -228f), new Vector3(4.0f, 3.5f, 4.5f), 808);
+            CreateBasaltPillar("East Canyon Wall Flank North", new Vector3(48.0f, 6.0f, -232f), new Vector3(8.0f, 14f, 10.0f), 812);
+            CreateBasaltPillar("East Canyon Wall Flank South", new Vector3(50.0f, 16.0f, -250f), new Vector3(9.0f, 18f, 11.0f), 813);
 
-            // Solid Rear Basalt Cliff Face (directly behind falling water curtains)
-            CreateBasaltPillar("Rear Cliff Face Lower", new Vector3(25.0f, 5.0f, -248f), new Vector3(28f, 18f, 12f), 809);
-            CreateBasaltPillar("Rear Cliff Face Upper", new Vector3(25.0f, 22.0f, -260f), new Vector3(30f, 22f, 14f), 810);
-            CreateBasaltPillar("Mid Shelf Basalt Support", new Vector3(25.0f, 12.5f, -249f), new Vector3(26f, 7.0f, 10f), 811);
+            // Solid Rear Basalt Cliff Face (directly behind falling water curtains, supporting the headwall)
+            CreateBasaltPillar("Rear Cliff Face Upper Headwall", new Vector3(25.0f, 24.0f, -266f), new Vector3(12.0f, 16f, 5.5f), 810);
+            CreateBasaltPillar("Rear Cliff Face Mid Headwall", new Vector3(25.0f, 14.0f, -255f), new Vector3(11.0f, 12f, 4.5f), 809);
+            CreateBasaltPillar("Mid Shelf Basalt Support", new Vector3(25.0f, 10.5f, -250f), new Vector3(8.0f, 3.5f, 2.5f), 811);
 
-            // 8. Plunge Pool Rim Boulders encircling the churn basin (natural stones along river arc)
+            // 8. Plunge Pool Rim Boulders encircling the side shorelines of the churn basin
             var rimStoneGroup = new GameObject("Plunge Pool Rim Boulders");
             rimStoneGroup.transform.SetParent(root.transform, false);
-            int boulderCount = 18;
+            int boulderCount = 16;
             for (int b = 0; b < boulderCount; b++)
             {
                 float angle = b * (Mathf.PI * 2f / boulderCount);
-                // Only place rim boulders along the northern/front arc facing river and banks
-                // skip the rear rock wall arc (from 210 deg to 330 deg)
+                // Only place rim boulders along the side shorelines (skip river mouth 55-125 deg and rear cliff 215-325 deg)
                 float deg = (angle * Mathf.Rad2Deg + 360f) % 360f;
-                if (deg > 210f && deg < 330f) continue;
+                if ((deg > 55f && deg < 125f) || (deg > 215f && deg < 325f)) continue;
 
                 float bx = poolCenter.x + Mathf.Cos(angle) * (radiusX + 0.8f);
                 float bz = poolCenter.z + Mathf.Sin(angle) * (radiusZ + 0.6f);
@@ -1075,32 +1080,6 @@ namespace CityLife.World.Editor
                 var bCol = bObj.AddComponent<MeshCollider>();
                 bCol.sharedMesh = bMesh;
                 bObj.layer = 8;
-            }
-
-            // 9. Plunge Pool Outflow Stepping Stones
-            var stepStoneGroup = new GameObject("Waterfall Outflow Stepping Stones");
-            stepStoneGroup.transform.SetParent(root.transform, false);
-            var stepPositions = new[]
-            {
-                new Vector3(22f, -1.8f, -226f),
-                new Vector3(25f, -1.8f, -220f),
-                new Vector3(27f, -1.8f, -214f),
-                new Vector3(24f, -1.8f, -208f)
-            };
-            for (int s = 0; s < stepPositions.Length; s++)
-            {
-                var sPos = stepPositions[s];
-                sPos.y = CoastalTerrain.Height(sPos.x, sPos.z) + 0.2f;
-                var sObj = new GameObject($"Waterfall_Step_{s + 1:D2}");
-                sObj.transform.SetParent(stepStoneGroup.transform, false);
-                sObj.transform.position = sPos;
-                var sMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(
-                    CityLife.Stones.StoneShapeKind.FlatSlab, seed: 900 + s, variantIndex: 0, uniformScale: 1.4f, flatShaded: true);
-                sObj.AddComponent<MeshFilter>().sharedMesh = sMesh;
-                sObj.AddComponent<MeshRenderer>().sharedMaterial = basaltMat;
-                var sCol = sObj.AddComponent<MeshCollider>();
-                sCol.sharedMesh = sMesh;
-                sObj.layer = 8;
             }
 
             return root;

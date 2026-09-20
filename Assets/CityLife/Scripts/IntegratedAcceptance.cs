@@ -738,6 +738,11 @@ namespace CityLife.World
                 Controls.View.transform.LookAt(new Vector3(-33f, t3H + 0.7f, 66f));
                 yield return CaptureWorld("10c-waterline-riparian-sedges");
 
+                // 3b. Scenic Waterfall Gorge View: Looking south at the multi-tier cascading waterfall and churning plunge pool
+                Controls.View.transform.position = new Vector3(25f, 4.0f, -195f);
+                Controls.View.transform.LookAt(new Vector3(25f, 10.0f, -245f));
+                yield return CaptureWorld("10d-waterfall-south-cascade");
+
                 // 4. Live Multi-Fish Swimming Video Frame Sequence (48 frames = 2s at 24fps)
                 // Overlook shallow river pool from dry bank where carp school cruises
                 float bankH = CoastalTerrain.Height(-6.5f, -28f);

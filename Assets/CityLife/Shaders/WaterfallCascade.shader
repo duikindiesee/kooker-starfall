@@ -91,12 +91,13 @@ Shader "CityLife/WaterfallCascade"
                 float3 viewDir = normalize(GetCameraPositionWS() - input.positionWS);
 
                 half4 col;
+                float activeFoam = 0.0;
 
                 if (_IsPlungePool > 0.5)
                 {
-                    // Plunge pool churn disc: organic expanding turbulent froth and boiling ripples
+                    // Plunge pool churn disc (radial coords)
                     float2 centeredUV = uv - float2(0.5, 0.5);
-                    float dist = length(centeredUV) * 2.0; // 0 at center, 1 at edge
+                    float dist = length(centeredUV) * 2.0; // 0 at center, 1 at perimeter
                     float2 p = centeredUV * 9.0;
 
                     // Multi-frequency chaotic boiling noise
@@ -111,6 +112,7 @@ Shader "CityLife/WaterfallCascade"
                     float impactBoil = saturate(1.0 - dist * 1.15) * (turbulentNoise * 0.45 + 0.55);
                     float foam = saturate(impactBoil * 0.88 + expandingWaves * 0.22 * (1.0 - dist * 0.65));
                     foam = smoothstep(0.26, 0.72, foam);
+                    activeFoam = foam;
 
                     half4 baseWater = lerp(_DeepColor, _ShallowColor, saturate(dist * 0.75));
                     col = lerp(baseWater, _FoamColor, foam * 0.78);
@@ -134,41 +136,48 @@ Shader "CityLife/WaterfallCascade"
                     float turbulence = (w1 * 0.45 + w2 * 0.35 + w3 * 0.20);
 
                     // Aeration increases progressively toward the bottom plunge
-                    float verticalAeration = saturate(uv.y * 0.55 + 0.15);
-                    float foamMask = saturate(turbulence * 0.7 + _FoamAeration + verticalAeration * 0.35);
-                    foamMask = smoothstep(0.42, 0.78, foamMask);
+                    float verticalAeration = saturate(uv.y * 0.45 + 0.10);
+                    float foamMask = saturate(turbulence * 0.65 + _FoamAeration * 0.65 + verticalAeration * 0.25);
+                    foamMask = smoothstep(0.45, 0.82, foamMask);
+                    activeFoam = foamMask;
 
                     // Translucent rich turquoise water body with dynamic whitewater streaks
-                    half4 waterBody = lerp(_DeepColor, _ShallowColor, saturate(uv.y * 0.4 + 0.2));
-                    col = lerp(waterBody, _FoamColor, foamMask * 0.82);
+                    half4 waterBody = lerp(_DeepColor, _ShallowColor, saturate(uv.y * 0.45 + 0.15));
+                    col = lerp(waterBody, _FoamColor, foamMask * 0.72);
 
                     // Soft lateral edge fade and crest lip fade to prevent hard geometric slice edges
-                    float lateralFade = saturate(min(uv.x, 1.0 - uv.x) * 12.0);
-                    float topFade = smoothstep(0.0, 0.04, uv.y);
-                    col.a = saturate(lerp(0.68, 0.92, foamMask) * lateralFade * topFade);
+                    float lateralFade = saturate(min(uv.x, 1.0 - uv.x) * 16.0);
+                    float topFade = smoothstep(0.0, 0.025, uv.y);
+                    col.a = saturate(lerp(0.80, 0.95, foamMask) * lateralFade * topFade);
                 }
 
-                // Main light directional illumination & sun glints
+                // Main light directional illumination & rapids radiance
                 Light mainLight = GetMainLight();
-                float NdotL = saturate(dot(normWS, mainLight.direction) * 0.5 + 0.5);
-                col.rgb *= (mainLight.color * NdotL + half3(0.25, 0.30, 0.38));
+                float NdotL = saturate(dot(normWS, mainLight.direction) * 0.6 + 0.4);
+                col.rgb *= (mainLight.color * NdotL * 0.65 + half3(0.35, 0.42, 0.48));
+
+                // Foam self-illumination (crisp aerated whitewater highlights without blowing out core)
+                col.rgb += _FoamColor.rgb * (activeFoam * 0.16);
 
                 // Specular sunlight highlights on water rapids
                 float3 halfDir = normalize(viewDir + mainLight.direction);
-                float spec = pow(saturate(dot(normWS, halfDir)), 24.0) * 0.45;
+                float spec = pow(saturate(dot(normWS, halfDir)), 24.0) * 0.35;
                 col.rgb += mainLight.color * spec;
 
-                // Soft scene depth intersection edge blending
-                float2 screenUV = input.screenPos.xy / max(0.0001, input.screenPos.w);
-                if (_CameraDepthTexture_TexelSize.z > 2 && _CameraDepthTexture_TexelSize.w > 2)
+                // Soft scene depth intersection edge blending only for horizontal plunge pool disc
+                if (_IsPlungePool > 0.5)
                 {
-                    float sceneDepth = LinearEyeDepth(SampleSceneDepth(screenUV), _ZBufferParams);
-                    float surfaceDepth = input.screenPos.w;
-                    float depthDiff = sceneDepth - surfaceDepth;
-                    if (depthDiff > 0.0)
+                    float2 screenUV = input.screenPos.xy / max(0.0001, input.screenPos.w);
+                    if (_CameraDepthTexture_TexelSize.z > 2 && _CameraDepthTexture_TexelSize.w > 2)
                     {
-                        float edgeFade = saturate(depthDiff / max(0.05, _EdgeSoftness));
-                        col.a *= edgeFade;
+                        float sceneDepth = LinearEyeDepth(SampleSceneDepth(screenUV), _ZBufferParams);
+                        float surfaceDepth = input.screenPos.w;
+                        float depthDiff = sceneDepth - surfaceDepth;
+                        if (depthDiff > 0.0)
+                        {
+                            float edgeFade = saturate(depthDiff / max(0.05, _EdgeSoftness));
+                            col.a *= edgeFade;
+                        }
                     }
                 }
 
