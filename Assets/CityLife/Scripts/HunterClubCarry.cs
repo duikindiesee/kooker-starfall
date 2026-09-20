@@ -62,8 +62,16 @@ namespace CityLife.World
   }
   public bool Stowed { get; private set; }
   public void ToggleHolster() => SetStowed(!Stowed);
-  public void SetStowed(bool stowed)
+  public bool SetStowed(bool stowed, bool force = false)
   {
+      if (!stowed && !force)
+      {
+          var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+          if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+          {
+              return false;
+          }
+      }
       Stowed = stowed;
       if (Club != null)
       {
@@ -74,6 +82,7 @@ namespace CityLife.World
               AttachToBack();
           }
       }
+      return true;
   }
   public void AttachToBack()
   {
@@ -97,6 +106,12 @@ namespace CityLife.World
           AttachToBack();
           return;
       }
+      var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+      if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+      {
+          AttachToBack();
+          return;
+      }
       if(GripBones==null)return;
    var upper=Animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
    var forearm=Animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
@@ -107,7 +122,7 @@ namespace CityLife.World
    Vector3 upperDirection=(Vector3.down-Actor.right*ElbowOut+Actor.forward*swing).normalized;
    upper.rotation=Quaternion.FromToRotation(forearm.position-upper.position,upperDirection)*upper.rotation;
    float lowPose=Mathf.InverseLerp(1.25f,.85f,upper.position.y-Actor.position.y);
-   float slope=Mathf.Lerp(ForearmSlope,.3f,lowPose);
+   float slope=Mathf.Lerp(ForearmSlope,.46f,lowPose);
    Vector3 forearmDirection=(Actor.forward+Vector3.up*slope).normalized;
    forearm.rotation=Quaternion.FromToRotation(hand.position-forearm.position,forearmDirection)*forearm.rotation;
    Vector3 handDirection=Quaternion.AngleAxis(-WristDeviation,Actor.right)*forearmDirection;

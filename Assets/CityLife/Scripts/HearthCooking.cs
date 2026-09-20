@@ -22,12 +22,12 @@ namespace CityLife.Food
         public static bool CanRoast(string itemTypeId)
         {
             if (string.IsNullOrEmpty(itemTypeId)) return false;
-            return itemTypeId == "food-river-fish" || itemTypeId == "food-protein-crab" || itemTypeId == "food-wolf-meat";
+            return itemTypeId == "food-river-fish" || itemTypeId == "food-river-carp" || itemTypeId == "food-protein-crab" || itemTypeId == "food-wolf-meat";
         }
 
         public static string GetCookedTypeId(string rawTypeId)
         {
-            if (rawTypeId == "food-river-fish") return "food-cooked-fish";
+            if (rawTypeId == "food-river-fish" || rawTypeId == "food-river-carp") return "food-cooked-fish";
             if (rawTypeId == "food-protein-crab") return "food-cooked-crab";
             if (rawTypeId == "food-wolf-meat") return "food-cooked-meat";
             return null;
@@ -37,8 +37,9 @@ namespace CityLife.Food
         {
             switch (itemTypeId)
             {
-                case "food-river-fish": return "Freshwater River Fish";
-                case "food-cooked-fish": return "Roasted River Trout";
+                case "food-river-fish": return "Freshwater River Barber";
+                case "food-river-carp": return "Gauteng Common Carp";
+                case "food-cooked-fish": return "Roasted River Fish";
                 case "food-protein-crab": return "Protein Shore Crab";
                 case "food-cooked-crab": return "Roasted Shore Crab";
                 case "food-wolf-meat": return "Raw Wolf Venison";
@@ -149,21 +150,21 @@ namespace CityLife.Food
             var ni = itemGo.GetComponent<NpcInteractable>();
             if (ni != null)
             {
-                if (ni.StableId.Contains("fish"))
-                    ni.StableId = ni.StableId.Replace("food-river-fish", "food-cooked-fish");
+                if (ni.StableId.Contains("fish") || ni.StableId.Contains("carp"))
+                    ni.StableId = ni.StableId.Replace("food-river-fish", "food-cooked-fish").Replace("food-river-carp", "food-cooked-fish").Replace("carp", "cooked-fish");
                 else if (ni.StableId.Contains("crab"))
                     ni.StableId = ni.StableId.Replace("crab", "cooked-crab");
             }
 
             // Procedurally update materials to look roasted / charred
-            var renderers = itemGo.GetComponentsInChildren<MeshRenderer>();
+            var renderers = itemGo.GetComponentsInChildren<Renderer>();
             foreach (var r in renderers)
             {
                 if (r != null && r.material != null)
                 {
                     if (cookedType == "food-cooked-fish")
                     {
-                        r.material.color = new Color(0.68f, 0.45f, 0.22f); // Golden smoked amber trout
+                        r.material.color = new Color(0.68f, 0.45f, 0.22f); // Golden smoked amber fish
                     }
                     else if (cookedType == "food-cooked-crab")
                     {

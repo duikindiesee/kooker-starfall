@@ -28,7 +28,8 @@ namespace CityLife.World
         public string CurrentPickupTargetLabel { get; private set; }
         public Text TargetPromptText;
         [Range(.04f, .3f)] public float LookSensitivity = .12f;
-        public Vector3 CameraMinimum = new Vector3(-22, .7f, -22), CameraMaximum = new Vector3(22, 18, 22);
+        public Vector3 CameraMinimum = new Vector3(-600f, -10f, -500f), CameraMaximum = new Vector3(600f, 300f, 1000f);
+        public float SpectatorFlightSpeed = 12f;
         private bool resumeCapture;
         private bool resumeCaptureFromPanel;
         private int cyclePickupIndex = -1;
@@ -44,7 +45,7 @@ namespace CityLife.World
         public bool DisplayShortcutActive { get; private set; }
         private float shortcutTimeScale;
         private bool shortcutPaused;
-        public string Mode => ScriptedScenicCapture ? "Scripted scenic observer / actor autonomous" : Brain.Possessed ? "Possession" : FreeSpectator ? "Spectator / free camera" : "Autonomous NPC / follow";
+        public string Mode => ScriptedScenicCapture ? "Scripted scenic observer / actor autonomous" : Brain.Possessed ? "Possession" : FreeSpectator ? $"Spectator / free camera ({SpectatorFlightSpeed:F0}m/s)" : $"Autonomous NPC / {View?.ViewMode}";
         public Text PageTitle, PageBody;
         public Vector3 SpectatorPosition => freePosition;
         private GameObject overlay;
@@ -137,8 +138,11 @@ namespace CityLife.World
                 FreeSpectator = !FreeSpectator;
                 if (FreeSpectator) freePosition = View.transform.position;
             }
-            if (key.rKey.wasPressedThisFrame) Brain.ToggleAutonomy();
-            if (key.lKey.wasPressedThisFrame) Hud.Detailed = !Hud.Detailed;
+            if (key.vKey.wasPressedThisFrame && View != null)
+            {
+                View.CycleViewMode();
+            }
+            if (key.lKey.wasPressedThisFrame && Hud != null) Hud.ToggleDetailed();
             if (key.cKey.wasPressedThisFrame && Brain.Possessed)
             {
                 if (Brain.Actions != null && Brain.Actions.Held != null)
@@ -224,15 +228,30 @@ namespace CityLife.World
             }
             else if (FreeSpectator)
             {
-                motion.y = (key.eKey.isPressed ? 1 : 0) - (key.qKey.isPressed ? 1 : 0);
-                cameraMotion = Vector3.ClampMagnitude(motion, 1) * (key.leftShiftKey.isPressed ? 9 : 4);
+                float up = (key.spaceKey.isPressed || key.eKey.isPressed) ? 1f : 0f;
+                float down = (key.leftCtrlKey.isPressed || key.cKey.isPressed || key.qKey.isPressed) ? 1f : 0f;
+                motion.y = up - down;
+
+                // Mouse wheel adjusts flight speed exponentially
+                float scroll = mouse != null ? mouse.scroll.ReadValue().y : 0f;
+                if (Mathf.Abs(scroll) > 0.01f)
+                {
+                    SpectatorFlightSpeed = Mathf.Clamp(SpectatorFlightSpeed + Mathf.Sign(scroll) * 3.5f, 3f, 80f);
+                }
+
+                float boost = (key.leftShiftKey.isPressed || key.rightShiftKey.isPressed) ? 2.5f : 1.0f;
+                cameraMotion = motion * (SpectatorFlightSpeed * boost);
+
+                freePosition += cameraMotion * Time.unscaledDeltaTime;
+                freePosition = new Vector3(
+                    Mathf.Clamp(freePosition.x, CameraMinimum.x, CameraMaximum.x),
+                    Mathf.Clamp(freePosition.y, CameraMinimum.y, CameraMaximum.y),
+                    Mathf.Clamp(freePosition.z, CameraMinimum.z, CameraMaximum.z));
             }
         }
         private void FixedUpdate()
         {
             if (!initialized || MenuOpen || DisplayShortcutActive || Brain.Possessed || !FreeSpectator) return;
-            freePosition += cameraMotion * NpcAutonomy.StepSeconds;
-            freePosition = new Vector3(Mathf.Clamp(freePosition.x, CameraMinimum.x, CameraMaximum.x), Mathf.Clamp(freePosition.y, CameraMinimum.y, CameraMaximum.y), Mathf.Clamp(freePosition.z, CameraMinimum.z, CameraMaximum.z));
         }
         private void LateUpdate()
         {
@@ -403,8 +422,8 @@ namespace CityLife.World
                 }
             }
 
-            // Check freshwater river
-            if (CoastalTerrain.IsFreshwaterRiver(actorPos.x, actorPos.z, actorPos.y, CoastalWater.CurrentLevel))
+            // Check freshwater river (requires physical contact with shallow water or river waterline)
+            if (CoastalTerrain.CanDrinkFromRiver(actorPos.x, actorPos.z, actorPos.y, CoastalWater.CurrentLevel))
             {
                 currentNearbyResource = NearbyResourceType.River;
                 return;
@@ -432,15 +451,27 @@ namespace CityLife.World
                 var moonbag = Brain != null ? Brain.GetComponentInChildren<HunterMoonbag>() : null;
                 int mbCount = moonbag != null ? moonbag.StoredCount : 0;
                 int freeHands = GetFreeHandCount();
+                var s = food != null && food.Model != null ? food.Model.State : null;
+                int totalCarried = GetTotalCarriedBerries(s, Brain);
 
                 if (fruitStock > 0)
                 {
-                    if (freeHands > 0)
+                    if (totalCarried >= 4)
+                    {
+                        CurrentPickupTargetLabel = "Inventory Full: 4/4 Berries Carried [H: Eat | G: Drop]";
+                    }
+                    else if (freeHands > 0)
+                    {
                         CurrentPickupTargetLabel = "[E] Pick Berry into Hand";
+                    }
                     else if (moonbag != null && moonbag.CanStore)
+                    {
                         CurrentPickupTargetLabel = $"[E] Pick Berry into Moonbag ({mbCount}/2)";
+                    }
                     else
-                        CurrentPickupTargetLabel = "Hands & Moonbag Full [H: Eat | G: Drop]";
+                    {
+                        CurrentPickupTargetLabel = "Hands Full (Club in hand, X: holster) [H: Eat | G: Drop]";
+                    }
                 }
                 else if (mbCount > 0 && freeHands > 0)
                 {
@@ -468,7 +499,7 @@ namespace CityLife.World
                 }
                 else if (heldTarget != null && heldTarget.itemTypeId == "food-cooked-fish")
                 {
-                    CurrentPickupTargetLabel = "Held: Roasted River Trout [H: Feast | G: Drop]";
+                    CurrentPickupTargetLabel = "Held: Roasted River Barber [H: Feast | G: Drop]";
                 }
                 else if (heldTarget != null && heldTarget.itemTypeId == "food-cooked-crab")
                 {
@@ -480,7 +511,11 @@ namespace CityLife.World
                 }
                 else if (heldTarget != null && heldTarget.itemTypeId == "food-river-fish")
                 {
-                    CurrentPickupTargetLabel = "Held: Freshwater River Fish [H: Eat | G: Drop]";
+                    CurrentPickupTargetLabel = "Held: Freshwater River Barber [H: Eat | G: Drop]";
+                }
+                else if (heldTarget != null && heldTarget.itemTypeId == "food-river-carp")
+                {
+                    CurrentPickupTargetLabel = "Held: Gauteng Common Carp [H: Eat | G: Drop]";
                 }
                 else if (heldTarget != null && heldTarget.itemTypeId == "food-sourfig-berry")
                 {
@@ -500,7 +535,11 @@ namespace CityLife.World
                 }
                 else if (targetPickup != null && targetPickup.itemTypeId == "food-river-fish")
                 {
-                    CurrentPickupTargetLabel = "Target: [E: Catch River Fish]";
+                    CurrentPickupTargetLabel = "Target: [E: Catch River Barber]";
+                }
+                else if (targetPickup != null && targetPickup.itemTypeId == "food-river-carp")
+                {
+                    CurrentPickupTargetLabel = "Target: [E: Catch Common Carp]";
                 }
                 else if (targetPickup != null && targetPickup.itemTypeId == "wood-driftwood-log")
                 {
@@ -609,10 +648,22 @@ namespace CityLife.World
             if (Brain == null || Brain.Actions == null || !Brain.Possessed) return;
             if (Brain.Actions.Held != null)
             {
-                if (Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null)
+                var heldPhys = Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>();
+                if (heldPhys != null)
                 {
+                    string heldTypeId = heldPhys.itemTypeId;
                     Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
                     RefreshPickupTarget();
+                    if (heldTypeId == "food-sourfig-berry" || heldTypeId == "fruit")
+                    {
+                        var food = (Brain.Survival != null) ? Brain.Survival.Food : null;
+                        if (food == null) food = FindFirstObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                        if (food != null && food.Model != null)
+                        {
+                            food.Model.State.carriedFruit = Mathf.Max(0, food.Model.State.carriedFruit - 1);
+                            ReconcileCarriedFruit(food.Model.State, Brain, this);
+                        }
+                    }
                     if (ContainerPanel != null && ContainerPanel.IsOpen)
                     {
                         ContainerPanel.UpdateContent();
@@ -723,6 +774,7 @@ namespace CityLife.World
                 if (food != null && food.Model != null)
                 {
                     var s = food.Model.State;
+                    ReconcileCarriedFruit(s, Brain, this);
                     var moonbag = Brain.GetComponentInChildren<HunterMoonbag>();
                     if (moonbag == null) moonbag = Brain.gameObject.AddComponent<HunterMoonbag>();
 
@@ -736,9 +788,16 @@ namespace CityLife.World
                         s.fruitStock = 1;
                     }
 
+                    int totalCarried = GetTotalCarriedBerries(s, Brain);
+                    int freeHands = GetFreeHandCount();
+
                     if (s.fruitStock > 0)
                     {
-                        if (GetFreeHandCount() > 0)
+                        if (totalCarried >= 4)
+                        {
+                            CurrentPickupTargetLabel = "[Cannot pick: Inventory full (4/4 carried) - Press H to eat]";
+                        }
+                        else if (freeHands > 0)
                         {
                             var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Gather, "berry", food);
                             if (receipt.success)
@@ -747,11 +806,17 @@ namespace CityLife.World
                                 food.HarvestBerry();
                                 food.SyncFruitVisual();
                                 SpawnBerryInHand();
+                                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
                                 if (Brain.Actor != null) Brain.Actor.Gesture();
                                 if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                                CurrentPickupTargetLabel = "Picked ripe sourfig berry into hand";
+                            }
+                            else
+                            {
+                                CurrentPickupTargetLabel = $"[Cannot pick: {receipt.code}]";
                             }
                         }
-                        else if (moonbag.CanStore)
+                        else if (moonbag != null && moonbag.CanStore)
                         {
                             var receipt = food.Model.Execute(s.world, s.generation, s.lastRequest + 1, Starfall.Food.FoodAction.Gather, "berry", food);
                             if (receipt.success)
@@ -760,12 +825,22 @@ namespace CityLife.World
                                 food.HarvestBerry();
                                 moonbag.StoreFruit();
                                 food.SyncFruitVisual();
+                                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
                                 if (Brain.Actor != null) Brain.Actor.Gesture();
                                 if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                                CurrentPickupTargetLabel = $"Stored berry in waist moonbag ({moonbag.StoredCount}/2)";
+                            }
+                            else
+                            {
+                                CurrentPickupTargetLabel = $"[Cannot pick: {receipt.code}]";
                             }
                         }
+                        else
+                        {
+                            CurrentPickupTargetLabel = "Hands & Moonbag Full [H: Eat | G: Drop]";
+                        }
                     }
-                    else if (moonbag.CanRetrieve && GetFreeHandCount() > 0)
+                    else if (moonbag.CanRetrieve && freeHands > 0)
                     {
                         moonbag.RetrieveFruit();
                         SpawnBerryInHand();
@@ -817,6 +892,88 @@ namespace CityLife.World
             return (IsRightHandFree() ? 1 : 0) + (IsLeftHandFree() ? 1 : 0);
         }
 
+        public static int GetTotalCarriedBerries(Starfall.Food.FoodState s, NpcAutonomy brain)
+        {
+            if (brain == null) return s != null ? s.carriedFruit : 0;
+            int physicalInHands = 0;
+            if (brain.Actions != null)
+            {
+                if (brain.Actions.HeldRight != null && IsFruitStatic(brain.Actions.HeldRight)) physicalInHands++;
+                if (brain.Actions.HeldLeft != null && IsFruitStatic(brain.Actions.HeldLeft)) physicalInHands++;
+            }
+            var moonbag = brain.GetComponentInChildren<HunterMoonbag>();
+            int inMoonbag = moonbag != null ? moonbag.StoredCount : 0;
+            int looseStock = s != null ? s.carriedFruit : 0;
+            return physicalInHands + inMoonbag + looseStock;
+        }
+
+        public static void MaterializeSavedCarriedFruit(Starfall.Food.FoodState s, NpcAutonomy brain, NpcPlayerControls controls)
+        {
+            if (s == null || brain == null || s.carriedFruit <= 0) return;
+            var moonbag = brain.GetComponentInChildren<HunterMoonbag>();
+
+            // 1. If moonbag has room, deposit saved fruit into moonbag first
+            while (s.carriedFruit > 0 && moonbag != null && moonbag.CanStore)
+            {
+                moonbag.StoreFruit();
+                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+            }
+
+            // 2. If hands have room, spawn in hand
+            if (s.carriedFruit > 0 && controls != null && controls.GetFreeHandCount() > 0)
+            {
+                controls.SpawnBerryInHand();
+                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+            }
+        }
+
+        public static void ReconcileCarriedFruit(Starfall.Food.FoodState s, NpcAutonomy brain, NpcPlayerControls controls = null)
+        {
+            if (s == null) return;
+            if (brain == null)
+            {
+                s.carriedFruit = 0;
+                return;
+            }
+
+            if (controls == null)
+            {
+                controls = brain.GetComponent<NpcPlayerControls>() ?? UnityEngine.Object.FindFirstObjectByType<NpcPlayerControls>();
+            }
+
+            if (s.carriedFruit > 0 && controls != null)
+            {
+                MaterializeSavedCarriedFruit(s, brain, controls);
+            }
+
+            int physicalInHands = 0;
+            if (brain.Actions != null)
+            {
+                if (brain.Actions.HeldRight != null && IsFruitStatic(brain.Actions.HeldRight)) physicalInHands++;
+                if (brain.Actions.HeldLeft != null && IsFruitStatic(brain.Actions.HeldLeft)) physicalInHands++;
+            }
+            var moonbag = brain.GetComponentInChildren<HunterMoonbag>();
+            int inMoonbag = moonbag != null ? moonbag.StoredCount : 0;
+
+            if (physicalInHands == 0 && inMoonbag == 0)
+            {
+                s.carriedFruit = 0;
+            }
+            else
+            {
+                int maxRemaining = Mathf.Max(0, 4 - (physicalInHands + inMoonbag));
+                s.carriedFruit = Mathf.Clamp(s.carriedFruit, 0, maxRemaining);
+            }
+        }
+
+        public static bool IsFruitStatic(NpcInteractable item)
+        {
+            if (item == null) return false;
+            var phys = item.GetComponent<CityLife.Items.PhysicalItem>();
+            if (phys != null && (phys.itemTypeId == "food-sourfig-berry" || phys.itemTypeId == "fruit")) return true;
+            return item.StableId.Contains("berry") || item.StableId.Contains("fruit");
+        }
+
         public void ToggleClubHolster()
         {
             if (Brain == null) return;
@@ -832,7 +989,14 @@ namespace CityLife.World
             }
             else
             {
-                if (Brain.Actions != null && Brain.Actions.HeldLeft != null) return;
+                if (Brain.Actions != null && Brain.Actions.HeldLeft != null)
+                {
+                    Brain.LastResult = "Cannot draw club while left hand is holding an item (press G to drop)";
+                    if (Brain.Log != null)
+                        Brain.Log.Record(Brain.Tick, "DECISION", Brain.DescribePerception(), "draw club", "Left hand occupied", "Cannot draw club while holding item");
+                    UpdatePickupTargetLabel();
+                    return;
+                }
                 carry.SetStowed(false);
                 if (Brain.Log != null)
                     Brain.Log.Record(Brain.Tick, "DECISION", Brain.DescribePerception(), "draw club", "Player key X input", "Club drawn to left hand");
@@ -980,23 +1144,19 @@ namespace CityLife.World
             fishGo.layer = 11;
 
             var col = fishGo.AddComponent<BoxCollider>();
-            col.size = new Vector3(0.12f, 0.12f, 0.22f);
+            col.size = new Vector3(0.14f, 0.14f, 0.42f);
             col.isTrigger = true;
 
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            visual.name = "Visual";
-            var vCol = visual.GetComponent<Collider>();
-            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            var visual = new GameObject("Visual", typeof(MeshFilter), typeof(MeshRenderer));
             visual.transform.SetParent(fishGo.transform, false);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.Euler(90f, 0, 0); // Orient horizontally in hand
-            visual.transform.localScale = new Vector3(0.06f, 0.12f, 0.06f); // 12cm length, 6cm thickness
+            visual.transform.localPosition = new Vector3(0, 0, 0.05f);
+            visual.transform.localRotation = Quaternion.Euler(0, 90f, 0); // Orient horizontally in survivor's grip
+            visual.transform.localScale = Vector3.one * 0.22f; // ~42cm caught freshwater barber
 
+            var mf = visual.GetComponent<MeshFilter>();
             var mr = visual.GetComponent<MeshRenderer>();
-            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var fishMat = new Material(litShader) { name = "River Fish Prop" };
-            fishMat.SetColor("_BaseColor", new Color(0.24f, 0.48f, 0.52f, 1f));
-            mr.sharedMaterial = fishMat;
+            mf.sharedMesh = RiverFishSchool.SharedBarberMesh ?? RiverFishSchool.CreateProceduralFishMesh();
+            mr.sharedMaterial = RiverFishSchool.SharedBarberMaterial ?? RiverFishSchool.CreateFishMaterial();
 
             var approach = new GameObject(fishId + " approach");
             approach.transform.SetParent(fishGo.transform, false);
@@ -1026,6 +1186,76 @@ namespace CityLife.World
             return fishGo;
         }
 
+        private static int dynamicCarpIdCounter = 100;
+        public GameObject SpawnCarpInHand(bool? preferLeft = null)
+        {
+            if (Brain == null || Brain.Actions == null) return null;
+            bool rightFree = IsRightHandFree();
+            bool leftFree = IsLeftHandFree();
+            if (!rightFree && !leftFree) return null;
+
+            bool isLeft;
+            if (preferLeft.HasValue)
+            {
+                isLeft = preferLeft.Value;
+                if (isLeft && !leftFree) return null;
+                if (!isLeft && !rightFree) return null;
+            }
+            else
+            {
+                isLeft = !rightFree;
+            }
+
+            Transform targetHand = isLeft ? Brain.Actions.LeftHandTransform : Brain.Actions.RightHandTransform;
+            if (targetHand == null) return null;
+
+            string carpId = $"held-river-carp-{++dynamicCarpIdCounter}";
+            var carpGo = new GameObject(carpId);
+            carpGo.layer = 11;
+
+            var col = carpGo.AddComponent<BoxCollider>();
+            col.size = new Vector3(0.16f, 0.12f, 0.42f);
+            col.isTrigger = true;
+
+            var visual = new GameObject("Visual", typeof(MeshFilter), typeof(MeshRenderer));
+            visual.transform.SetParent(carpGo.transform, false);
+            visual.transform.localPosition = new Vector3(0, 0, 0.05f);
+            visual.transform.localRotation = Quaternion.Euler(0, 90f, 0); // Orient horizontally in survivor's grip
+            visual.transform.localScale = Vector3.one * 0.22f; // ~42cm caught freshwater carp
+
+            var mf = visual.GetComponent<MeshFilter>();
+            var mr = visual.GetComponent<MeshRenderer>();
+            mf.sharedMesh = RiverFishSchool.SharedCarpMesh ?? RiverFishSchool.CreateProceduralFishMesh();
+            mr.sharedMaterial = RiverFishSchool.SharedCarpMaterial ?? RiverFishSchool.CreateFishMaterial();
+
+            var approach = new GameObject(carpId + " approach");
+            approach.transform.SetParent(carpGo.transform, false);
+            approach.transform.localPosition = Vector3.zero;
+
+            var ni = carpGo.AddComponent<NpcInteractable>();
+            ni.StableId = carpId;
+            ni.WorldId = Brain.InstanceWorldId;
+            ni.Kind = NpcObjectKind.Item;
+            ni.Permission = true;
+            ni.Approach = approach.transform;
+
+            var phys = carpGo.AddComponent<PhysicalItem>();
+            phys.itemId = carpId;
+            phys.itemTypeId = "food-river-carp";
+            phys.massKg = 0.85f;
+            phys.dimensions = new PhysicalDimensions(0.42f, 0.16f, 0.10f);
+
+            Brain.Actions.HoldItemDirect(ni, isLeft);
+
+            if (Brain.Registry != null)
+            {
+                var list = new List<NpcInteractable>(Brain.Registry) { ni };
+                Brain.Registry = list.ToArray();
+            }
+
+            return carpGo;
+        }
+
         private static int dynamicCrabIdCounter = 100;
         public GameObject SpawnCrabInHand()
         {
@@ -1046,20 +1276,14 @@ namespace CityLife.World
             col.size = new Vector3(0.16f, 0.08f, 0.14f);
             col.isTrigger = true;
 
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            visual.name = "Visual";
-            var vCol = visual.GetComponent<Collider>();
-            if (vCol != null) UnityEngine.Object.DestroyImmediate(vCol);
+            var visual = new GameObject("Visual", typeof(MeshFilter), typeof(MeshRenderer));
             visual.transform.SetParent(crabGo.transform, false);
             visual.transform.localPosition = Vector3.zero;
             visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = new Vector3(0.14f, 0.035f, 0.12f); // 14cm wide, 3.5cm tall
+            visual.transform.localScale = Vector3.one * 0.75f; // Sits neatly in survivor's hand
 
-            var mr = visual.GetComponent<MeshRenderer>();
-            Shader litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var crabMat = new Material(litShader) { name = "Shore Crab Prop" };
-            crabMat.SetColor("_BaseColor", new Color(0.78f, 0.32f, 0.14f, 1f));
-            mr.sharedMaterial = crabMat;
+            visual.GetComponent<MeshFilter>().sharedMesh = CoastalCrabDistribution.GetOrCreateCrabMesh();
+            visual.GetComponent<MeshRenderer>().sharedMaterial = CoastalCrabDistribution.GetOrCreateCrabMaterial();
 
             var approach = new GameObject(crabId + " approach");
             approach.transform.SetParent(crabGo.transform, false);
@@ -1272,7 +1496,7 @@ namespace CityLife.World
                         s.satiety = Mathf.Min(10000, s.satiety + 2000);
                         Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
                     }
-                    else if (typeId == "food-river-fish")
+                    else if (typeId == "food-river-fish" || typeId == "food-river-carp")
                     {
                         s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
                         s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
@@ -1285,6 +1509,7 @@ namespace CityLife.World
                         s.hydration = Mathf.Min(10000, s.hydration + 600);
                         s.satiety = Mathf.Min(10000, s.satiety + 1500);
                         Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
+                        s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
                     }
                     s.knowsMealBenefit = true;
                 }
@@ -1311,6 +1536,7 @@ namespace CityLife.World
                     s.satiety = Mathf.Min(10000, s.satiety + 1500);
                     Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
                     s.knowsMealBenefit = true;
+                    s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
                 }
                 if (Brain.Actor != null) Brain.Actor.Gesture();
                 if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
@@ -1342,13 +1568,14 @@ namespace CityLife.World
                 return phys.itemTypeId == "food-protein-crab" ||
                        phys.itemTypeId == "food-cooked-crab" ||
                        phys.itemTypeId == "food-river-fish" ||
+                       phys.itemTypeId == "food-river-carp" ||
                        phys.itemTypeId == "food-cooked-fish" ||
                        phys.itemTypeId == "food-wolf-meat" ||
                        phys.itemTypeId == "food-cooked-meat" ||
                        phys.itemTypeId == "food-sourfig-berry" ||
                        phys.itemTypeId == "fruit";
             }
-            return item.StableId.Contains("berry") || item.StableId.Contains("fish") || item.StableId.Contains("crab") || item.StableId.Contains("meat");
+            return item.StableId.Contains("berry") || item.StableId.Contains("fish") || item.StableId.Contains("carp") || item.StableId.Contains("crab") || item.StableId.Contains("meat");
         }
         public void OpenMenu()
         {

@@ -53,101 +53,245 @@ namespace CityLife.World
         {
             if (sharedCrabMesh != null) return sharedCrabMesh;
 
-            // Generate procedural low-poly crustacean mesh
-            // Carapace: flattened hexagon dome
+            // Generate high-fidelity procedural 3D Shore Crab mesh (Decapoda)
+            // Complete with sculpted carapace, eye stalks, 3D articulated chelae (pincers),
+            // and 4 pairs of volumetric arching walking legs.
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var colors = new List<Color32>();
             var triangles = new List<int>();
 
-            Color32 carapaceColor = new Color32(185, 68, 42, 255); // Rich ochre-red marine chitin
-            Color32 bellyColor = new Color32(215, 160, 110, 255);  // Paler underbelly
-            Color32 clawColor = new Color32(205, 52, 30, 255);     // Crimson claw tips
-            Color32 legColor = new Color32(160, 75, 45, 255);      // Walking leg chitin
+            Color32 carapaceColor = new Color32(195, 62, 32, 255); // Rich marine rust-crimson chitin
+            Color32 ridgeColor = new Color32(225, 120, 55, 255);   // Golden-orange dorsal marginal ridges
+            Color32 bellyColor = new Color32(235, 210, 175, 255);  // Creamy porcelain ventral sternum
+            Color32 clawColor = new Color32(220, 45, 25, 255);     // Fiery crimson claw palms
+            Color32 toothColor = new Color32(250, 245, 230, 255);  // Ivory serrated pincer teeth
+            Color32 legColor = new Color32(175, 75, 40, 255);      // Mottled leg chitin
+            Color32 legJointColor = new Color32(215, 110, 50, 255);// Articulated golden leg joints
+            Color32 eyeStalkColor = new Color32(160, 60, 35, 255); // Ocular stalk chitin
+            Color32 eyeCorneaColor = new Color32(20, 20, 25, 255); // Glossy black obsidian eye sphere
 
-            // Top apex of carapace
-            int topIdx = vertices.Count;
-            vertices.Add(new Vector3(0f, 0.07f, 0f));
-            normals.Add(Vector3.up);
-            colors.Add(carapaceColor);
-
-            // Carapace perimeter ring (8 vertices)
-            int ringStart = vertices.Count;
-            float rx = 0.11f, rz = 0.08f;
-            for (int i = 0; i < 8; i++)
+            void AddQuad(int a, int b, int c, int d)
             {
-                float angle = (i / 8f) * Mathf.PI * 2f;
-                float vx = Mathf.Cos(angle) * rx;
-                float vz = Mathf.Sin(angle) * rz;
-                vertices.Add(new Vector3(vx, 0.02f, vz));
-                normals.Add(new Vector3(vx, 0.3f, vz).normalized);
-                colors.Add(carapaceColor);
+                triangles.Add(a); triangles.Add(b); triangles.Add(c);
+                triangles.Add(a); triangles.Add(c); triangles.Add(d);
             }
 
-            // Bottom center vertex
-            int botIdx = vertices.Count;
-            vertices.Add(new Vector3(0f, -0.01f, 0f));
+            // -------------------------------------------------------------
+            // 1. Sculpted Volumetric Carapace (Dorsal Dome + Ventral Plastron)
+            // -------------------------------------------------------------
+            // 16-point perimeter with lateral spines and anterior ocular notch
+            const int perimeterPoints = 16;
+            float[] rxTable = {
+                0.045f, 0.085f, 0.125f, 0.150f, 0.155f, 0.145f, 0.115f, 0.065f, // Front to right to rear
+                0.000f, -0.065f,-0.115f,-0.145f,-0.155f,-0.150f,-0.125f,-0.085f // Rear to left to front
+            };
+            float[] rzTable = {
+                0.095f, 0.088f, 0.065f, 0.025f, -0.020f,-0.065f,-0.095f,-0.105f,
+                -0.108f,-0.105f,-0.095f,-0.065f,-0.020f, 0.025f, 0.065f, 0.088f
+            };
+            float[] spineOffsets = {
+                0.0f, 0.008f, 0.018f, 0.025f, 0.020f, 0.010f, 0.004f, 0.0f,
+                0.0f, 0.0f, 0.004f, 0.010f, 0.020f, 0.025f, 0.018f, 0.008f
+            };
+
+            int dorsalApex = vertices.Count;
+            vertices.Add(new Vector3(0f, 0.075f, -0.010f));
+            normals.Add(Vector3.up);
+            colors.Add(ridgeColor);
+
+            int ventralCenter = vertices.Count;
+            vertices.Add(new Vector3(0f, 0.005f, -0.015f));
             normals.Add(Vector3.down);
             colors.Add(bellyColor);
 
-            // Triangles for carapace top & bottom
-            for (int i = 0; i < 8; i++)
+            int innerRingStart = vertices.Count;
+            for (int i = 0; i < perimeterPoints; i++)
             {
-                int next = (i + 1) % 8;
-                // Top cap
-                triangles.Add(topIdx);
-                triangles.Add(ringStart + i);
-                triangles.Add(ringStart + next);
-
-                // Bottom belly
-                triangles.Add(botIdx);
-                triangles.Add(ringStart + next);
-                triangles.Add(ringStart + i);
+                float x = rxTable[i] * 0.55f;
+                float z = rzTable[i] * 0.55f;
+                vertices.Add(new Vector3(x, 0.062f, z));
+                normals.Add(new Vector3(x * 1.5f, 0.8f, z * 1.5f).normalized);
+                colors.Add(carapaceColor);
             }
 
-            // Left & Right Chelae Claws
-            void AddClaw(float sign)
+            int outerPerimeterStart = vertices.Count;
+            for (int i = 0; i < perimeterPoints; i++)
             {
-                int cStart = vertices.Count;
-                Vector3 clawBase = new Vector3(sign * 0.09f, 0.025f, 0.07f);
-                Vector3 clawElbow = new Vector3(sign * 0.14f, 0.035f, 0.11f);
-                Vector3 clawTip = new Vector3(sign * 0.10f, 0.04f, 0.17f);
-                Vector3 clawInner = new Vector3(sign * 0.06f, 0.03f, 0.14f);
-
-                vertices.Add(clawBase); normals.Add(Vector3.up); colors.Add(clawColor);
-                vertices.Add(clawElbow); normals.Add(Vector3.up); colors.Add(clawColor);
-                vertices.Add(clawTip); normals.Add(Vector3.up); colors.Add(clawColor);
-                vertices.Add(clawInner); normals.Add(Vector3.up); colors.Add(clawColor);
-
-                triangles.Add(cStart); triangles.Add(cStart + 1); triangles.Add(cStart + 2);
-                triangles.Add(cStart); triangles.Add(cStart + 2); triangles.Add(cStart + 3);
+                float x = rxTable[i] + Mathf.Sign(rxTable[i]) * spineOffsets[i];
+                float z = rzTable[i];
+                vertices.Add(new Vector3(x, 0.035f, z));
+                normals.Add(new Vector3(x * 2.0f, 0.3f, z * 2.0f).normalized);
+                colors.Add(spineOffsets[i] > 0.015f ? ridgeColor : carapaceColor);
             }
-            AddClaw(1f);
-            AddClaw(-1f);
 
-            // Walking Legs (3 on each side)
-            void AddLeg(float sign, float zOffset, float yawDeg)
+            int ventralPerimeterStart = vertices.Count;
+            for (int i = 0; i < perimeterPoints; i++)
             {
-                int lStart = vertices.Count;
+                float x = rxTable[i] * 0.85f;
+                float z = rzTable[i] * 0.85f;
+                vertices.Add(new Vector3(x, 0.015f, z));
+                normals.Add(new Vector3(x, -0.5f, z).normalized);
+                colors.Add(bellyColor);
+            }
+
+            // Assemble carapace faces
+            for (int i = 0; i < perimeterPoints; i++)
+            {
+                int next = (i + 1) % perimeterPoints;
+                // Dorsal dome apex to inner ring
+                triangles.Add(dorsalApex);
+                triangles.Add(innerRingStart + i);
+                triangles.Add(innerRingStart + next);
+
+                // Inner ring to outer margin quad
+                AddQuad(innerRingStart + i, outerPerimeterStart + i, outerPerimeterStart + next, innerRingStart + next);
+
+                // Outer margin to ventral rim quad
+                AddQuad(outerPerimeterStart + i, ventralPerimeterStart + i, ventralPerimeterStart + next, outerPerimeterStart + next);
+
+                // Ventral plastron to center
+                triangles.Add(ventralCenter);
+                triangles.Add(ventralPerimeterStart + next);
+                triangles.Add(ventralPerimeterStart + i);
+            }
+
+            // -------------------------------------------------------------
+            // 2. Protruding Eye Stalks (Left & Right)
+            // -------------------------------------------------------------
+            void AddEye(float sign)
+            {
+                Vector3 basePos = new Vector3(sign * 0.024f, 0.048f, 0.085f);
+                Vector3 tipPos = basePos + new Vector3(sign * 0.008f, 0.028f, 0.015f);
+
+                int s0 = vertices.Count;
+                vertices.Add(basePos + new Vector3(-0.005f, 0, 0)); normals.Add(Vector3.up); colors.Add(eyeStalkColor);
+                vertices.Add(basePos + new Vector3(0.005f, 0, 0));  normals.Add(Vector3.up); colors.Add(eyeStalkColor);
+                vertices.Add(tipPos + new Vector3(0.005f, 0, 0));   normals.Add(Vector3.up); colors.Add(eyeStalkColor);
+                vertices.Add(tipPos + new Vector3(-0.005f, 0, 0));  normals.Add(Vector3.up); colors.Add(eyeStalkColor);
+                AddQuad(s0, s0 + 1, s0 + 2, s0 + 3);
+
+                // Glossy black obsidian cornea sphere
+                int c0 = vertices.Count;
+                vertices.Add(tipPos + new Vector3(0, 0.008f, 0.004f));   normals.Add(Vector3.forward); colors.Add(eyeCorneaColor);
+                vertices.Add(tipPos + new Vector3(0.007f, 0, 0.004f));    normals.Add(Vector3.right);   colors.Add(eyeCorneaColor);
+                vertices.Add(tipPos + new Vector3(0, -0.008f, 0.004f));  normals.Add(Vector3.down);    colors.Add(eyeCorneaColor);
+                vertices.Add(tipPos + new Vector3(-0.007f, 0, 0.004f));   normals.Add(Vector3.left);    colors.Add(eyeCorneaColor);
+                AddQuad(c0, c0 + 1, c0 + 2, c0 + 3);
+            }
+            AddEye(1f);
+            AddEye(-1f);
+
+            // -------------------------------------------------------------
+            // 3. Volumetric 3D Chelae (Major & Minor Claws with Pincers)
+            // -------------------------------------------------------------
+            void AddVolumetricClaw(float sign, float clawScale)
+            {
+                Vector3 shoulder = new Vector3(sign * 0.095f, 0.028f, 0.070f);
+                Vector3 elbow = shoulder + new Vector3(sign * 0.065f, 0.032f, 0.050f) * clawScale;
+                Vector3 palmBase = elbow + new Vector3(sign * -0.015f, 0.018f, 0.065f) * clawScale;
+                Vector3 palmTip = palmBase + new Vector3(sign * -0.020f, 0.005f, 0.060f) * clawScale;
+
+                // Arm segment (merus/carpus prism)
+                int a0 = vertices.Count;
+                vertices.Add(shoulder + new Vector3(0, -0.012f, 0)); normals.Add(Vector3.down); colors.Add(carapaceColor);
+                vertices.Add(shoulder + new Vector3(0, 0.015f, 0));  normals.Add(Vector3.up);   colors.Add(carapaceColor);
+                vertices.Add(elbow + new Vector3(0, 0.018f, 0));     normals.Add(Vector3.up);   colors.Add(clawColor);
+                vertices.Add(elbow + new Vector3(0, -0.014f, 0));    normals.Add(Vector3.down); colors.Add(clawColor);
+                AddQuad(a0, a0 + 1, a0 + 2, a0 + 3);
+
+                // Bulging palm (propodus)
+                int p0 = vertices.Count;
+                float pw = 0.024f * clawScale;
+                float ph = 0.032f * clawScale;
+                vertices.Add(palmBase + new Vector3(-pw, -ph, 0));  normals.Add(Vector3.left);    colors.Add(clawColor);
+                vertices.Add(palmBase + new Vector3(-pw, ph, 0));   normals.Add(Vector3.up);      colors.Add(clawColor);
+                vertices.Add(palmBase + new Vector3(pw, ph, 0));    normals.Add(Vector3.right);   colors.Add(clawColor);
+                vertices.Add(palmBase + new Vector3(pw, -ph, 0));   normals.Add(Vector3.down);    colors.Add(bellyColor);
+
+                vertices.Add(palmTip + new Vector3(-pw * 0.7f, -ph * 0.7f, 0)); normals.Add(Vector3.left);  colors.Add(clawColor);
+                vertices.Add(palmTip + new Vector3(-pw * 0.7f, ph * 0.7f, 0));  normals.Add(Vector3.up);    colors.Add(clawColor);
+                vertices.Add(palmTip + new Vector3(pw * 0.7f, ph * 0.7f, 0));   normals.Add(Vector3.right); colors.Add(clawColor);
+                vertices.Add(palmTip + new Vector3(pw * 0.7f, -ph * 0.7f, 0));  normals.Add(Vector3.down);  colors.Add(bellyColor);
+
+                AddQuad(p0, p0 + 1, p0 + 5, p0 + 4); // Left
+                AddQuad(p0 + 1, p0 + 2, p0 + 6, p0 + 5); // Top
+                AddQuad(p0 + 2, p0 + 3, p0 + 7, p0 + 6); // Right
+                AddQuad(p0 + 3, p0, p0 + 4, p0 + 7); // Bottom
+
+                // Fixed Pollex (lower thumb pincer with teeth)
+                Vector3 pollexBase = palmTip + new Vector3(sign * 0.008f, -0.010f, 0f);
+                Vector3 pollexTip = pollexBase + new Vector3(sign * -0.012f, 0.002f, 0.045f * clawScale);
+                Vector3 pollexTooth = (pollexBase + pollexTip) * 0.5f + new Vector3(0, 0.006f, 0);
+
+                int plx = vertices.Count;
+                vertices.Add(pollexBase);  normals.Add(Vector3.down); colors.Add(clawColor);
+                vertices.Add(pollexTooth); normals.Add(Vector3.up);   colors.Add(toothColor);
+                vertices.Add(pollexTip);   normals.Add(Vector3.forward); colors.Add(toothColor);
+                triangles.Add(plx); triangles.Add(plx + 1); triangles.Add(plx + 2);
+
+                // Movable Dactyl (upper curved finger pincer)
+                Vector3 dactylBase = palmTip + new Vector3(sign * 0.008f, 0.012f, 0f);
+                Vector3 dactylTip = dactylBase + new Vector3(sign * -0.015f, -0.018f, 0.048f * clawScale);
+                Vector3 dactylTooth = (dactylBase + dactylTip) * 0.5f + new Vector3(0, -0.006f, 0);
+
+                int dct = vertices.Count;
+                vertices.Add(dactylBase);  normals.Add(Vector3.up);      colors.Add(clawColor);
+                vertices.Add(dactylTip);   normals.Add(Vector3.forward); colors.Add(toothColor);
+                vertices.Add(dactylTooth); normals.Add(Vector3.down);    colors.Add(toothColor);
+                triangles.Add(dct); triangles.Add(dct + 1); triangles.Add(dct + 2);
+            }
+            AddVolumetricClaw(1f, 1.15f);  // Major crusher claw
+            AddVolumetricClaw(-1f, 0.95f); // Minor pincher claw
+
+            // -------------------------------------------------------------
+            // 4. Four Pairs (8 total) of 3D Articulated Walking Legs
+            // -------------------------------------------------------------
+            void AddArticulatedLeg(float sign, float zOffset, float yawDeg, float legLengthScale)
+            {
                 Quaternion rot = Quaternion.Euler(0, yawDeg, 0);
-                Vector3 lBase = new Vector3(sign * 0.08f, 0.01f, zOffset);
-                Vector3 lJoint = lBase + rot * new Vector3(sign * 0.07f, 0.03f, 0f);
-                Vector3 lFoot = lJoint + rot * new Vector3(sign * 0.06f, -0.05f, 0f);
+                Vector3 legBase = new Vector3(sign * 0.115f, 0.022f, zOffset);
+                // Merus: arches upward and outward
+                Vector3 kneeJoint = legBase + rot * new Vector3(sign * 0.075f, 0.052f, 0.010f) * legLengthScale;
+                // Carpus: angles downward toward sand
+                Vector3 ankleJoint = kneeJoint + rot * new Vector3(sign * 0.058f, -0.042f, -0.005f) * legLengthScale;
+                // Dactyl: pointed claw tip planted on ground
+                Vector3 footTip = ankleJoint + rot * new Vector3(sign * 0.038f, -0.040f, -0.008f) * legLengthScale;
 
-                vertices.Add(lBase); normals.Add(Vector3.up); colors.Add(legColor);
-                vertices.Add(lJoint); normals.Add(Vector3.up); colors.Add(legColor);
-                vertices.Add(lFoot); normals.Add(Vector3.up); colors.Add(legColor);
+                int lg = vertices.Count;
+                // Thigh prism (merus)
+                vertices.Add(legBase + new Vector3(0, -0.008f, 0));   normals.Add(Vector3.down); colors.Add(legColor);
+                vertices.Add(legBase + new Vector3(0, 0.010f, 0));    normals.Add(Vector3.up);   colors.Add(legColor);
+                vertices.Add(kneeJoint + new Vector3(0, 0.012f, 0));  normals.Add(Vector3.up);   colors.Add(legJointColor);
+                vertices.Add(kneeJoint + new Vector3(0, -0.008f, 0)); normals.Add(Vector3.down); colors.Add(legJointColor);
+                AddQuad(lg, lg + 1, lg + 2, lg + 3);
 
-                triangles.Add(lStart); triangles.Add(lStart + 1); triangles.Add(lStart + 2);
+                // Shin prism (carpus / propodus)
+                int sh = vertices.Count;
+                vertices.Add(kneeJoint + new Vector3(0, 0.012f, 0));   normals.Add(Vector3.up);   colors.Add(legJointColor);
+                vertices.Add(kneeJoint + new Vector3(0, -0.008f, 0));  normals.Add(Vector3.down); colors.Add(legJointColor);
+                vertices.Add(ankleJoint + new Vector3(0, -0.006f, 0)); normals.Add(Vector3.down); colors.Add(legColor);
+                vertices.Add(ankleJoint + new Vector3(0, 0.008f, 0));  normals.Add(Vector3.up);   colors.Add(legColor);
+                AddQuad(sh, sh + 1, sh + 2, sh + 3);
+
+                // Foot claw dactyl tip
+                int ft = vertices.Count;
+                vertices.Add(ankleJoint + new Vector3(0, 0.008f, 0));  normals.Add(Vector3.up);   colors.Add(legColor);
+                vertices.Add(footTip);                                 normals.Add(Vector3.down); colors.Add(toothColor);
+                vertices.Add(ankleJoint + new Vector3(0, -0.006f, 0)); normals.Add(Vector3.down); colors.Add(legColor);
+                triangles.Add(ft); triangles.Add(ft + 1); triangles.Add(ft + 2);
             }
 
-            AddLeg(1f, 0.02f, 15f);
-            AddLeg(1f, -0.02f, -10f);
-            AddLeg(1f, -0.05f, -35f);
+            // 4 pairs of legs spanning front to rear (yawed naturally like genuine decapod crustaceans)
+            AddArticulatedLeg(1f,  0.035f,  25f, 1.05f); // Front right
+            AddArticulatedLeg(1f,  0.005f,   5f, 1.10f); // Mid-front right
+            AddArticulatedLeg(1f, -0.030f, -15f, 1.05f); // Mid-rear right
+            AddArticulatedLeg(1f, -0.065f, -38f, 0.95f); // Rear right
 
-            AddLeg(-1f, 0.02f, -15f);
-            AddLeg(-1f, -0.02f, 10f);
-            AddLeg(-1f, -0.05f, 35f);
+            AddArticulatedLeg(-1f,  0.035f, -25f, 1.05f); // Front left
+            AddArticulatedLeg(-1f,  0.005f,  -5f, 1.10f); // Mid-front left
+            AddArticulatedLeg(-1f, -0.030f,  15f, 1.05f); // Mid-rear left
+            AddArticulatedLeg(-1f, -0.065f,  38f, 0.95f); // Rear left
 
             sharedCrabMesh = new Mesh
             {
@@ -158,6 +302,7 @@ namespace CityLife.World
                 triangles = triangles.ToArray()
             };
             sharedCrabMesh.RecalculateBounds();
+            sharedCrabMesh.RecalculateNormals();
             return sharedCrabMesh;
         }
 
@@ -168,9 +313,9 @@ namespace CityLife.World
             sharedCrabMaterial = new Material(shader)
             {
                 name = "Starfall_Crab_Material",
-                color = new Color(0.85f, 0.32f, 0.20f, 1f)
+                color = new Color(0.92f, 0.35f, 0.22f, 1f)
             };
-            if (sharedCrabMaterial.HasProperty("_Smoothness")) sharedCrabMaterial.SetFloat("_Smoothness", 0.65f); // Wet shiny chitin
+            if (sharedCrabMaterial.HasProperty("_Smoothness")) sharedCrabMaterial.SetFloat("_Smoothness", 0.78f); // Wet shiny coastal chitin
             return sharedCrabMaterial;
         }
 
@@ -200,6 +345,7 @@ namespace CityLife.World
                 col.size = new Vector3(0.24f, 0.12f, 0.20f);
 
                 crabGo.layer = 9; // Interactive item layer
+                crabGo.AddComponent<CoastalCrabActor>();
                 spawned.Add(crabGo);
             }
 
@@ -221,8 +367,21 @@ namespace CityLife.World
                 return false;
             }
 
-            receipt = $"Crab ecology verified: {AuthoredLocations.Length} locations defined, mesh vertices={mesh.vertexCount}, triangles={mesh.triangles.Length / 3}.";
+            // Verify actor logic exists
+            var testObj = new GameObject("Test_Crab");
+            var actor = testObj.AddComponent<CoastalCrabActor>();
+            bool hasActor = actor != null;
+            UnityEngine.Object.DestroyImmediate(testObj);
+
+            if (!hasActor)
+            {
+                receipt = "Crab actor component verification failed.";
+                return false;
+            }
+
+            receipt = $"Crab ecology verified: {AuthoredLocations.Length} locations defined, mesh vertices={mesh.vertexCount}, triangles={mesh.triangles.Length / 3}, reactive actor verified.";
             return true;
         }
     }
 }
+

@@ -46,6 +46,23 @@ namespace CityLife.World
             return dFeed < 42f || dOutlet < 48f || (dCenter < 38f && depth > 0.02f);
         }
 
+        public static bool CanDrinkFromRiver(float x, float z, float y, float waterLevel)
+        {
+            if (!IsFreshwaterRiver(x, z, y, waterLevel)) return false;
+            float groundY = Height(x, z);
+            float depth = waterLevel - groundY;
+            // Either standing in shallow water (depth between 2cm and 65cm, like the river ford)
+            if (depth >= 0.02f && depth <= 0.65f) return true;
+            // Or standing right on the sandy waterline edge (elevation within 35cm of water level)
+            if (depth < 0.02f && groundY <= waterLevel + 0.35f)
+            {
+                float dFeed = DistanceToFeed(x, z);
+                float dOutlet = DistanceToOutlet(x, z);
+                return dFeed < 22f || dOutlet < 22f || IsRiverFord(x, z);
+            }
+            return false;
+        }
+
         /// <summary>Metre-space surface height; outside this finite patch, returns the nearest edge height.</summary>
         public static float Height(float x, float z)
         {
@@ -81,7 +98,10 @@ namespace CityLife.World
             float outletCut = 1f - Smooth(-2f, 18f, DistanceToCurve(x,z,Outlet) - outletWidth);
             float channelCut = Mathf.Max(ringCut, Mathf.Max(feedCut, outletCut));
             float riverBed = -4.5f + Noise(x * .075f + 9, z * .075f) * .4f;
-            riverBed += Smooth(-230f, -390f, z) * 48f; // Elevated hanging gorge plunging over south canyon wall
+            // Steep rock headwall cliff step: flat plunge basin up to z = -245m,
+            // steep cliff rise between -245m and -258m, and upper hanging gorge beyond -258m.
+            float cliffStep = Smooth(-245f, -258f, z);
+            riverBed += cliffStep * 32f + Smooth(-258f, -420f, z) * 16f;
             riverBed -= Smooth(120f, 700f, z) * 11.5f;
 
             // Shallow River Ford crossing at z in [-22f, -8f] (centered at z = -15f):
@@ -147,6 +167,13 @@ namespace CityLife.World
             mesh.RecalculateNormals(); mesh.RecalculateBounds();
             var material = new Material(shader) { name = "Coastal ochre strata and sandy shelves - procedural" };
             material.SetFloat("_SeaLevel",SeaLevel);
+            var groundTex = Resources.Load<Texture2D>("CityLifeArt/DryGround_1K");
+            if (groundTex != null)
+            {
+                material.SetTexture("_GroundAlbedo", groundTex);
+                material.SetFloat("_GroundTiling", 0.16f);
+                material.SetFloat("_GroundDetailTiling", 0.82f);
+            }
             var root = new GameObject("Coastal terrain " + DefinitionId + " seed " + Seed);
             root.transform.SetParent(parent,false);
             root.layer = 8;

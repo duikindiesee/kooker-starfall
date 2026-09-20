@@ -57,7 +57,7 @@ namespace CityLife.World
             var shader = Shader.Find("CityLife/CoastalRocks");
             if (shader == null) throw new InvalidOperationException("Missing CityLife/CoastalRocks shader.");
             var rock = new Material(shader) { name = "Warm charcoal iron-brown fractured shore stone" };
-            rock.SetColor("_BaseColor", new Color(.18f, .135f, .11f, 1));
+            rock.SetColor("_BaseColor", new Color(.44f, .38f, .30f, 1));
             var plants = new Material(shader) { name = "Blue green succulent wax and small flowers" };
             plants.SetColor("_BaseColor", Color.white);
             plants.SetFloat("_Vegetation", 1);
@@ -282,12 +282,12 @@ namespace CityLife.World
             var collider=go.GetComponent<MeshCollider>(); collider.sharedMesh=null; collider.sharedMesh=mesh;
         }
 
-        static Mesh RockMesh(float width,float height,float depth,int id)
+        public static Mesh RockMesh(float width,float height,float depth,int id)
         {
             return RockMesh(width,height,depth,id,out _,out _);
         }
 
-        static Mesh RockMesh(float width,float height,float depth,int id,
+        public static Mesh RockMesh(float width,float height,float depth,int id,
             out HashSet<Vector3> bottomRing,out Vector3 bottomCentre)
         {
             int sides = 7 + (int)(Hash(id,50)*4), rings = 5;

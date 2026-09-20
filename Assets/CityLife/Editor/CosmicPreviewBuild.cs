@@ -56,6 +56,15 @@ namespace CityLife.World.Editor
                 }
                 AssetDatabase.CreateAsset(clone,folder+"/Asset-"+(assetIndex++)+".asset");return clone;
             }
+            if(integrated||coastalPreview)
+            {
+                var unneeded=new[]{"Prototype companion trees","Neutral inspection ground","Cosmic study floor","Age lineup - same seed, unscaled metre geometry"};
+                foreach(var name in unneeded)
+                {
+                    var go=GameObject.Find(name);
+                    if(go!=null)Object.DestroyImmediate(go);
+                }
+            }
             foreach(MeshFilter filter in Object.FindObjectsByType<MeshFilter>(FindObjectsInactive.Include,FindObjectsSortMode.None))
                 filter.sharedMesh=(Mesh)Persist(filter.sharedMesh);
             foreach(Renderer renderer in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include,FindObjectsSortMode.None))
@@ -73,11 +82,22 @@ namespace CityLife.World.Editor
             foreach(MeshFilter filter in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
                 if(filter.name=="Bark")
                 {
-                    var c=filter.gameObject.AddComponent<MeshCollider>();
-                    // Use the legacy midphase for the dense frozen wood, without simplifying its geometry.
-                    if(frozenR19&&filter.name=="Bark")c.cookingOptions&=~MeshColliderCookingOptions.UseFastMidphase;
-                    c.sharedMesh=filter.sharedMesh;
-                    if(integrated)filter.gameObject.layer=8;
+                    if (integrated)
+                    {
+                        // Use a trunk capsule collider so the tree blocks movement at ground level
+                        // without allowing the character to climb branches or walk across the canopy.
+                        var c = filter.gameObject.AddComponent<CapsuleCollider>();
+                        c.center = new Vector3(0, 1.4f, 0);
+                        c.height = 2.8f;
+                        c.radius = 0.55f;
+                        filter.gameObject.layer = 8;
+                    }
+                    else
+                    {
+                        var c=filter.gameObject.AddComponent<MeshCollider>();
+                        if(frozenR19&&filter.name=="Bark")c.cookingOptions&=~MeshColliderCookingOptions.UseFastMidphase;
+                        c.sharedMesh=filter.sharedMesh;
+                    }
                     woodColliders++;
                 }
             camera.enabled=true;camera.tag="MainCamera";

@@ -29,6 +29,35 @@ namespace CityLife.World
         // When true, renders full deliberate map layout with selectable tabs.
         public bool Expanded { get; set; } = false;
 
+        public enum MapDisplaySize { Tactical, Large, Fullscreen }
+        public MapDisplaySize DisplaySize = MapDisplaySize.Tactical;
+        public float MapZoom = 1.0f;
+
+        public void CycleDisplaySize()
+        {
+            if (DisplaySize == MapDisplaySize.Tactical) DisplaySize = MapDisplaySize.Large;
+            else if (DisplaySize == MapDisplaySize.Large) DisplaySize = MapDisplaySize.Fullscreen;
+            else DisplaySize = MapDisplaySize.Tactical;
+            UpdateResponsiveLayout();
+        }
+
+        public void CycleZoom(int dir = 1)
+        {
+            if (dir > 0)
+            {
+                if (MapZoom < 1.4f) MapZoom = 1.8f;
+                else if (MapZoom < 2.5f) MapZoom = 3.0f;
+                else MapZoom = 1.0f;
+            }
+            else
+            {
+                if (MapZoom > 2.5f) MapZoom = 1.8f;
+                else if (MapZoom > 1.4f) MapZoom = 1.0f;
+                else MapZoom = 3.0f;
+            }
+            UpdateResponsiveLayout();
+        }
+
         public int ActiveTab => activeTab;
 
         [NonSerialized] public Keyboard TestKeyboard;
@@ -85,6 +114,14 @@ namespace CityLife.World
         private RectTransform playerChevronRt;
         private Text gpsLabel;
         private readonly System.Collections.Generic.List<(Vector3 worldPos, string label, RectTransform rt, Text txt)> poiBadges = new System.Collections.Generic.List<(Vector3, string, RectTransform, Text)>();
+        private RectTransform directiveBeaconRt;
+        private Text directiveBeaconTxt;
+        private Button sizeToggleBtn;
+        private Text sizeToggleTxt;
+        private Button zoomToggleBtn;
+        private Text zoomToggleTxt;
+        private GameObject directButtonsGroup;
+        private Button directCampBtn, directWaterfallBtn, directRiverBtn, clearDirectiveBtn;
         private bool showVisualMap = true;
         private int lastRevealedCellCount = -1;
         private Vector3 lastRevealedPos = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -338,6 +375,52 @@ namespace CityLife.World
                     showVisualMap = !showVisualMap;
                     UpdateResponsiveLayout();
                 }
+                else if (key.zKey.wasPressedThisFrame)
+                {
+                    CycleDisplaySize();
+                }
+                else if (key.equalsKey.wasPressedThisFrame || key.numpadPlusKey.wasPressedThisFrame)
+                {
+                    CycleZoom(1);
+                }
+                else if (key.minusKey.wasPressedThisFrame || key.numpadMinusKey.wasPressedThisFrame)
+                {
+                    CycleZoom(-1);
+                }
+
+                // Click-to-Direct Waypoint Placement
+                if (activeTab == 0 && showVisualMap && visualMapRt != null)
+                {
+                    var mouse = Mouse.current;
+                    if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+                    {
+                        Vector2 mousePos = mouse.position.ReadValue();
+                        Camera cam = canvas != null ? canvas.worldCamera : null;
+                        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(visualMapRt, mousePos, cam, out Vector2 localPoint))
+                        {
+                            Rect mapRect = visualMapRt.rect;
+                            if (mapRect.Contains(localPoint))
+                            {
+                                float localU = (localPoint.x - mapRect.xMin) / mapRect.width;
+                                float localV = (localPoint.y - mapRect.yMin) / mapRect.height;
+
+                                float uvSpan = 1.0f / MapZoom;
+                                Vector3 curPos = actorPositionProvider != null ? actorPositionProvider() : (Brain != null ? Brain.transform.position : Vector3.zero);
+                                Vector2 playerUv = StarfallVisualMapGenerator.WorldToMapUV(curPos);
+                                float uvX0 = Mathf.Clamp(playerUv.x - uvSpan * 0.5f, 0f, 1f - uvSpan);
+                                float uvY0 = Mathf.Clamp(playerUv.y - uvSpan * 0.5f, 0f, 1f - uvSpan);
+
+                                float worldU = uvX0 + localU * uvSpan;
+                                float worldV = uvY0 + localV * uvSpan;
+                                Vector3 targetWorld = StarfallVisualMapGenerator.MapUVToWorld(new Vector2(worldU, worldV));
+                                if (Survival != null)
+                                {
+                                    Survival.SetPlayerDirective(targetWorld, $"Waypoint ({targetWorld.x:F0}, {targetWorld.z:F0})");
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -442,12 +525,24 @@ namespace CityLife.World
                 Vector2 uv = StarfallVisualMapGenerator.WorldToMapUV(actorPos);
                 Vector2 mapSize = visualMapRt.sizeDelta;
 
+                float uvSpan = 1.0f / MapZoom;
+                float uvX0 = Mathf.Clamp(uv.x - uvSpan * 0.5f, 0f, 1f - uvSpan);
+                float uvY0 = Mathf.Clamp(uv.y - uvSpan * 0.5f, 0f, 1f - uvSpan);
+                Rect zoomRect = new Rect(uvX0, uvY0, uvSpan, uvSpan);
+                if (topoRawImage != null) topoRawImage.uvRect = zoomRect;
+                if (fogRawImage != null) fogRawImage.uvRect = zoomRect;
+
+                Vector2 MapToLocal(Vector2 worldUv)
+                {
+                    float lx = (worldUv.x - uvX0) / uvSpan * mapSize.x;
+                    float ly = ((worldUv.y - uvY0) / uvSpan - 1f) * mapSize.y;
+                    return new Vector2(lx, ly);
+                }
+
                 if (playerChevronRt != null)
                 {
-                    float margin = 14f;
-                    float cx = Mathf.Clamp(uv.x * mapSize.x, margin, mapSize.x - margin);
-                    float cy = Mathf.Clamp((uv.y - 1f) * mapSize.y, -mapSize.y + margin, -margin);
-                    playerChevronRt.anchoredPosition = new Vector2(cx, cy);
+                    Vector2 pPos = MapToLocal(uv);
+                    playerChevronRt.anchoredPosition = pPos;
                     float yaw = 0f;
                     if (Brain != null) yaw = Brain.transform.eulerAngles.y;
                     else if (View != null) yaw = View.transform.eulerAngles.y;
@@ -457,7 +552,25 @@ namespace CityLife.World
                     {
                         string region = GetRegionName(actorPos);
                         string weatherLine = CanyonMicroWeather.GetHudWeatherLine(actorPos);
-                        gpsLabel.text = $"GRID: [{actorPos.x:+0.0;-0.0;0.0}, {actorPos.z:+0.0;-0.0;0.0}] · ALT: {actorPos.y:0.0}m · HDG: {Mathf.Repeat(yaw, 360f):0}°\nREGION: {region}  ·  FOG: {(ViewModel.ExploredCellCount > 0 ? "Revealing" : "Shrouded")}\n{weatherLine}";
+                        string beaconLine = (Survival != null && Survival.PlayerDirectiveTarget.HasValue)
+                            ? $"\n<color=#FFE680>★ DIRECTIVE: {Survival.PlayerDirectiveLabel} ({Vector3.Distance(actorPos, Survival.PlayerDirectiveTarget.Value):F1}m)</color>"
+                            : "";
+                        gpsLabel.text = $"GRID: [{actorPos.x:+0.0;-0.0;0.0}, {actorPos.z:+0.0;-0.0;0.0}] · ALT: {actorPos.y:0.0}m · HDG: {Mathf.Repeat(yaw, 360f):0}° · ZOOM: {MapZoom:0.0}x\nREGION: {region}  ·  FOG: {(ViewModel.ExploredCellCount > 0 ? "Revealing" : "Shrouded")}\n{weatherLine}{beaconLine}";
+                    }
+                }
+
+                // Update Directive Beacon
+                if (directiveBeaconRt != null)
+                {
+                    if (Survival != null && Survival.PlayerDirectiveTarget.HasValue)
+                    {
+                        directiveBeaconRt.gameObject.SetActive(true);
+                        Vector2 dUv = StarfallVisualMapGenerator.WorldToMapUV(Survival.PlayerDirectiveTarget.Value);
+                        directiveBeaconRt.anchoredPosition = MapToLocal(dUv);
+                    }
+                    else
+                    {
+                        directiveBeaconRt.gameObject.SetActive(false);
                     }
                 }
 
@@ -466,7 +579,10 @@ namespace CityLife.World
                 {
                     var (wpos, name, pRt, pTxt) = poiBadges[i];
                     Vector2 poiUv = StarfallVisualMapGenerator.WorldToMapUV(wpos);
-                    pRt.anchoredPosition = new Vector2(poiUv.x * mapSize.x, (poiUv.y - 1f) * mapSize.y);
+                    Vector2 poiPos = MapToLocal(poiUv);
+                    pRt.anchoredPosition = poiPos;
+                    bool inView = poiPos.x >= -30f && poiPos.x <= mapSize.x + 30f && poiPos.y <= 30f && poiPos.y >= -mapSize.y - 30f;
+                    pRt.gameObject.SetActive(inView);
                 }
             }
         }
@@ -499,7 +615,32 @@ namespace CityLife.World
             if (sw <= 0) sw = 1600;
             if (sh <= 0) sh = 900;
 
-            CalculateSafeBounds(sw, sh, Expanded, out Vector2 pos, out Vector2 size, out _, out _);
+            Vector2 pos, size;
+            if (!Expanded)
+            {
+                CalculateSafeBounds(sw, sh, false, out pos, out size, out _, out _);
+            }
+            else
+            {
+                if (DisplaySize == MapDisplaySize.Tactical)
+                {
+                    CalculateSafeBounds(sw, sh, true, out pos, out size, out _, out _);
+                }
+                else if (DisplaySize == MapDisplaySize.Large)
+                {
+                    float targetW = Mathf.Min(680f, sw - 40f);
+                    float targetH = Mathf.Min(660f, sh - 180f);
+                    size = new Vector2(targetW, targetH);
+                    pos = new Vector2(-12f, -175f);
+                }
+                else // Fullscreen
+                {
+                    float targetW = sw * 0.88f;
+                    float targetH = sh * 0.84f;
+                    size = new Vector2(targetW, targetH);
+                    pos = new Vector2(-(sw - targetW) * 0.5f, -sh * 0.08f);
+                }
+            }
 
             panelRect.anchoredPosition = pos;
             panelRect.sizeDelta = size;
@@ -524,17 +665,33 @@ namespace CityLife.World
             }
             else
             {
-                // Reflow Header: Title, Collapse button, status
-                float collapseW = 96f;
+                // Reflow Header: Title, Collapse button, Size button, Zoom button, status
+                float collapseW = 90f;
+                float btnW = 86f;
                 if (collapseBtnRt != null)
                 {
                     collapseBtnRt.anchoredPosition = new Vector2(size.x - 12f - collapseW, -6f);
                     collapseBtnRt.sizeDelta = new Vector2(collapseW, 32f);
                 }
+                if (sizeToggleBtn != null)
+                {
+                    var sRt = sizeToggleBtn.GetComponent<RectTransform>();
+                    sRt.anchoredPosition = new Vector2(size.x - 12f - collapseW - btnW - 6f, -6f);
+                    sRt.sizeDelta = new Vector2(btnW, 32f);
+                    if (sizeToggleTxt != null) sizeToggleTxt.text = DisplaySize.ToString();
+                }
+                if (zoomToggleBtn != null)
+                {
+                    var zRt = zoomToggleBtn.GetComponent<RectTransform>();
+                    zRt.anchoredPosition = new Vector2(size.x - 12f - collapseW - (btnW * 2f) - 12f, -6f);
+                    zRt.sizeDelta = new Vector2(btnW, 32f);
+                    if (zoomToggleTxt != null) zoomToggleTxt.text = $"{MapZoom:0.0}x";
+                }
                 if (titleLabel != null)
                 {
+                    float rightBtns = collapseW + (btnW * 2f) + 24f;
                     titleLabel.rectTransform.anchoredPosition = new Vector2(12f, -6f);
-                    titleLabel.rectTransform.sizeDelta = new Vector2(Mathf.Max(120f, usableW - collapseW - 8f), 32f);
+                    titleLabel.rectTransform.sizeDelta = new Vector2(Mathf.Max(120f, usableW - rightBtns), 32f);
                 }
                 if (statusLabel != null)
                 {
@@ -596,8 +753,9 @@ namespace CityLife.World
                     cRt.sizeDelta = new Vector2(usableW, contentH);
                 }
 
-                // Reflow Tab 0 contents: visual map and GPS banner or grid
-                float mapDim = Mathf.Min(usableW, contentH - 52f);
+                // Reflow Tab 0 contents: visual map, direct buttons, and GPS banner or grid
+                float extraControlsH = 26f + 66f;
+                float mapDim = Mathf.Min(usableW, contentH - extraControlsH - 8f);
                 mapDim = Mathf.Max(120f, mapDim);
 
                 if (visualMapRt != null)
@@ -610,9 +768,17 @@ namespace CityLife.World
                     visualMapContainer.SetActive(showVisualMap);
                 }
 
+                if (directButtonsGroup != null)
+                {
+                    var dRt = directButtonsGroup.GetComponent<RectTransform>();
+                    dRt.anchoredPosition = new Vector2(0f, -mapDim - 4f);
+                    dRt.sizeDelta = new Vector2(usableW, 26f);
+                    directButtonsGroup.SetActive(showVisualMap);
+                }
+
                 if (gpsLabel != null)
                 {
-                    gpsLabel.rectTransform.anchoredPosition = new Vector2(0f, -mapDim - 4f);
+                    gpsLabel.rectTransform.anchoredPosition = new Vector2(0f, -mapDim - 32f);
                     gpsLabel.rectTransform.sizeDelta = new Vector2(usableW, 64f);
                     gpsLabel.gameObject.SetActive(showVisualMap);
                 }
@@ -651,7 +817,7 @@ namespace CityLife.World
                 {
                     footerLabel.rectTransform.anchoredPosition = new Vector2(12f, -size.y + 26f);
                     footerLabel.rectTransform.sizeDelta = new Vector2(usableW, 26f);
-                    footerLabel.text = "[M] close · 1/2/3: tabs · [G] toggle grid · Fog of war active";
+                    footerLabel.text = "[M] Close · 1/2/3: Tabs · [Z] Size · [+/-] Zoom · [G] Grid · Click map to direct";
                 }
             }
         }
@@ -666,7 +832,8 @@ namespace CityLife.World
             canvas = root.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = View != null ? View : Camera.main;
-            canvas.planeDistance = .5f;
+            float mapNear = canvas.worldCamera != null ? canvas.worldCamera.nearClipPlane : 0.15f;
+            canvas.planeDistance = Mathf.Max(0.18f, mapNear + 0.02f);
             canvas.sortingOrder = 12;
 
             if (root.GetComponent<GraphicRaycaster>() == null)
@@ -767,6 +934,38 @@ namespace CityLife.World
             collapseButton = collapseGo.GetComponent<Button>();
             collapseButton.targetGraphic = collapseImg;
             collapseButton.onClick.AddListener(() => { Expanded = false; UpdateResponsiveLayout(); });
+
+            // Size Toggle button
+            var sizeGo = new GameObject("SizeToggleBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+            var sizeRt = sizeGo.GetComponent<RectTransform>();
+            sizeRt.SetParent(expandedGroup.transform, false);
+            sizeRt.anchorMin = sizeRt.anchorMax = new Vector2(0, 1);
+            sizeRt.pivot = new Vector2(0, 1);
+            sizeRt.anchoredPosition = new Vector2(336f - 188f, -6f);
+            sizeRt.sizeDelta = new Vector2(86f, 32f);
+            var sizeImg = sizeGo.GetComponent<Image>();
+            sizeImg.color = new Color(.12f, .22f, .32f, 0.95f);
+            sizeToggleTxt = MakeLabel(sizeGo, "Label", Vector2.zero, new Vector2(86f, 32f), 18, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
+            sizeToggleTxt.text = "Tactical";
+            sizeToggleBtn = sizeGo.GetComponent<Button>();
+            sizeToggleBtn.targetGraphic = sizeImg;
+            sizeToggleBtn.onClick.AddListener(CycleDisplaySize);
+
+            // Zoom Toggle button
+            var zoomGo = new GameObject("ZoomToggleBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+            var zoomRt = zoomGo.GetComponent<RectTransform>();
+            zoomRt.SetParent(expandedGroup.transform, false);
+            zoomRt.anchorMin = zoomRt.anchorMax = new Vector2(0, 1);
+            zoomRt.pivot = new Vector2(0, 1);
+            zoomRt.anchoredPosition = new Vector2(336f - 280f, -6f);
+            zoomRt.sizeDelta = new Vector2(86f, 32f);
+            var zoomImg = zoomGo.GetComponent<Image>();
+            zoomImg.color = new Color(.12f, .22f, .32f, 0.95f);
+            zoomToggleTxt = MakeLabel(zoomGo, "Label", Vector2.zero, new Vector2(86f, 32f), 18, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
+            zoomToggleTxt.text = "1.0x";
+            zoomToggleBtn = zoomGo.GetComponent<Button>();
+            zoomToggleBtn.targetGraphic = zoomImg;
+            zoomToggleBtn.onClick.AddListener(() => CycleZoom(1));
 
             // Redundant provenance heading hidden to preserve header layout with larger typography
             provenanceLabel = MakeLabel(expandedGroup, "Provenance", new Vector2(12, -6), Vector2.zero, 24, new Color(.55f, .65f, .72f), FontStyle.Normal, TextAnchor.UpperRight);
@@ -904,6 +1103,63 @@ namespace CityLife.World
             chevTxt.alignment = TextAnchor.MiddleCenter;
             chevTxt.text = "▲";
 
+            // Directive beacon marker
+            var beaconGo = new GameObject("DirectiveBeacon", typeof(RectTransform), typeof(Text));
+            directiveBeaconRt = beaconGo.GetComponent<RectTransform>();
+            directiveBeaconRt.SetParent(visualMapRt, false);
+            directiveBeaconRt.anchorMin = directiveBeaconRt.anchorMax = new Vector2(0, 1);
+            directiveBeaconRt.pivot = new Vector2(0.5f, 0.5f);
+            directiveBeaconRt.sizeDelta = new Vector2(30f, 30f);
+            directiveBeaconTxt = beaconGo.GetComponent<Text>();
+            directiveBeaconTxt.font = font;
+            directiveBeaconTxt.fontSize = 24;
+            directiveBeaconTxt.fontStyle = FontStyle.Bold;
+            directiveBeaconTxt.color = new Color(1f, 0.85f, 0.15f, 1f);
+            directiveBeaconTxt.alignment = TextAnchor.MiddleCenter;
+            directiveBeaconTxt.text = "★";
+            beaconGo.SetActive(false);
+
+            // Landmark direct buttons
+            directButtonsGroup = new GameObject("DirectButtonsGroup", typeof(RectTransform));
+            var dbRt = directButtonsGroup.GetComponent<RectTransform>();
+            dbRt.SetParent(tab0Container.transform, false);
+            dbRt.anchorMin = dbRt.anchorMax = new Vector2(0, 1);
+            dbRt.pivot = new Vector2(0, 1);
+            dbRt.anchoredPosition = new Vector2(0, -250);
+            dbRt.sizeDelta = new Vector2(336, 26);
+
+            Button MakeDirectBtn(string name, string label, float x, float w, Action onClick)
+            {
+                var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+                var rt = go.GetComponent<RectTransform>();
+                rt.SetParent(directButtonsGroup.transform, false);
+                rt.anchorMin = rt.anchorMax = new Vector2(0, 1);
+                rt.pivot = new Vector2(0, 1);
+                rt.anchoredPosition = new Vector2(x, 0);
+                rt.sizeDelta = new Vector2(w, 24);
+                var img = go.GetComponent<Image>();
+                img.color = new Color(0.12f, 0.24f, 0.34f, 0.95f);
+                var txt = MakeLabel(go, "Txt", Vector2.zero, new Vector2(w, 24), 12, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
+                txt.text = label;
+                var b = go.GetComponent<Button>();
+                b.targetGraphic = img;
+                b.onClick.AddListener(() => onClick());
+                return b;
+            }
+
+            directCampBtn = MakeDirectBtn("DirectCamp", "Refuge", 0, 78, () => {
+                if (Survival != null) Survival.SetPlayerDirective(new Vector3(-165f, 0, 118f), "Refuge Cavern");
+            });
+            directWaterfallBtn = MakeDirectBtn("DirectWaterfall", "Waterfall", 82, 82, () => {
+                if (Survival != null) Survival.SetPlayerDirective(new Vector3(25f, 0, -245f), "South Waterfall");
+            });
+            directRiverBtn = MakeDirectBtn("DirectRiver", "River", 168, 78, () => {
+                if (Survival != null) Survival.SetPlayerDirective(new Vector3(0f, 0, 0f), "River Shallows");
+            });
+            clearDirectiveBtn = MakeDirectBtn("ClearDirect", "Clear", 250, 70, () => {
+                if (Survival != null) Survival.ClearPlayerDirective();
+            });
+
             gpsLabel = MakeLabel(tab0Container, "GpsBanner", new Vector2(0, -260), new Vector2(336, 64), 14, new Color(0.85f, 0.88f, 0.92f), FontStyle.Normal, TextAnchor.MiddleLeft);
             gpsLabel.text = "TACTICAL GPS INITIALIZING...";
 
@@ -940,8 +1196,18 @@ namespace CityLife.World
         {
             if (panelObject == null) BuildUi();
 
-            if (canvas != null && canvas.worldCamera == null)
-                canvas.worldCamera = View != null ? View : Camera.main;
+            if (canvas != null)
+            {
+                if (canvas.worldCamera == null && (View != null || Camera.main != null))
+                    canvas.worldCamera = View != null ? View : Camera.main;
+                if (canvas.worldCamera != null)
+                {
+                    float mapNear = canvas.worldCamera.nearClipPlane;
+                    float desired = Mathf.Max(0.18f, mapNear + 0.02f);
+                    if (Mathf.Abs(canvas.planeDistance - desired) > 0.001f)
+                        canvas.planeDistance = desired;
+                }
+            }
 
             if (titleLabel == null) return;
 

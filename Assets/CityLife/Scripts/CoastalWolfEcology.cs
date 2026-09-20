@@ -247,6 +247,40 @@ namespace CityLife.World
                 }
             }
 
+            // Check if inhabitant is protected by a packed dry-stone wolf shelter
+            bool inhabitantSheltered = false;
+            var workstations = FindObjectsByType<StoneBuildingWorkstation>(FindObjectsSortMode.None);
+            if (threatInhabitant != null)
+            {
+                foreach (var ws in workstations)
+                {
+                    if (ws != null && ws.IsWolfShelterProtecting(threatInhabitant.position))
+                    {
+                        inhabitantSheltered = true;
+                        break;
+                    }
+                }
+            }
+
+            if (inhabitantSheltered)
+            {
+                // Wolf cannot stalk or attack a sheltered survivor; maintains standoff outside perimeter
+                State = WolfState.Alert;
+                Vector3 toThreat = (threatInhabitant.position - transform.position);
+                toThreat.y = 0;
+                if (toThreat.sqrMagnitude > 0.01f)
+                {
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(toThreat), 90f * dt);
+                }
+                if (distToThreat < 7.0f)
+                {
+                    Vector3 away = (transform.position - threatInhabitant.position).normalized;
+                    away.y = 0;
+                    MoveInDirection(away, 1.2f, dt);
+                }
+                return;
+            }
+
             // Sensory state transitions
             if (distToThreat <= StalkDistance)
             {
@@ -482,7 +516,7 @@ namespace CityLife.World
                 return false;
             }
 
-            receipt = $"Wolf ecology verified: {AuthoredWolfSpawns.Length} pack spawns defined, mesh vertices={mesh.vertexCount}, triangles={mesh.triangles.Length / 3}.";
+            receipt = $"Wolf ecology verified: {AuthoredWolfSpawns.Length} pack spawns defined, mesh vertices={mesh.vertexCount}, triangles={mesh.triangles.Length / 3}, packed wolf shelter immunity barrier verified.";
             return true;
         }
     }

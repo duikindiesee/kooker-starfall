@@ -7,7 +7,7 @@ namespace CityLife.World
     /// Small reusable meshes, combined once into deterministic per-chunk scene meshes. Quiver branching
     /// proportions and palette derive from CityLife R3FQuiverTrees.tsx, not a generic pine asset.
     /// </summary>
-    internal static class IslandFloraGeometry
+    public static class IslandFloraGeometry
     {
         sealed class Builder
         {

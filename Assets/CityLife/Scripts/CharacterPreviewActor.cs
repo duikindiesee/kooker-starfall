@@ -41,7 +41,7 @@ namespace CityLife.World
         public void Place(Vector3 position)
         {
             float groundH = CoastalTerrain.Height(position.x, position.z);
-            if (Physics.Raycast(new Vector3(position.x, position.y + 10f, position.z), Vector3.down, out RaycastHit hit, 50f, 1 << 10, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(new Vector3(position.x, position.y + 0.45f, position.z), Vector3.down, out RaycastHit hit, 15f, 1 << 10, QueryTriggerInteraction.Ignore))
             {
                 groundH = Mathf.Max(groundH, hit.point.y);
             }
@@ -101,18 +101,31 @@ namespace CityLife.World
 
             // Water awareness, surface buoyancy, and submersion detection
             float groundY = CoastalTerrain.Height(transform.position.x, transform.position.z);
-            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 10f, transform.position.z), Vector3.down, out RaycastHit hitBelow, 50f, 1 << 10, QueryTriggerInteraction.Ignore))
+            int groundMask = (1 << 10) | (1 << 8);
+            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 0.45f, transform.position.z), Vector3.down, out RaycastHit hitBelow, 15f, groundMask, QueryTriggerInteraction.Ignore))
             {
                 groundY = Mathf.Max(groundY, hitBelow.point.y);
             }
-            float waterSurface = CoastalWater.Level;
+            float waterSurface = CoastalWater.CurrentLevel;
             WaterDepth = Mathf.Max(0f, waterSurface - groundY);
-            IsSwimming = WaterDepth > 1.0f && transform.position.y <= waterSurface + 0.15f;
+
+            // Swimming state with hysteresis: eliminates the dead zone and prevents rapid toggling
+            if (IsSwimming)
+            {
+                // Continue swimming until water is shallow enough to walk comfortably (< 0.70m) or climbed out
+                IsSwimming = WaterDepth > 0.70f && transform.position.y <= waterSurface + 0.30f;
+            }
+            else
+            {
+                // Begin swimming when water is deeper than 0.90m, OR when in water > 0.50m and off the ground
+                IsSwimming = (WaterDepth > 0.90f && transform.position.y <= waterSurface + 0.15f) ||
+                             (WaterDepth > 0.50f && !Capsule.isGrounded && transform.position.y <= waterSurface + 0.05f);
+            }
             IsWading = WaterDepth > 0.05f && !IsSwimming && transform.position.y <= waterSurface + 0.15f;
             IsSubmerged = transform.position.y + 1.65f < waterSurface;
 
-            bool sprinting = IsSprinting && Stamina > 0f && direction.sqrMagnitude > 0.01f && !IsSwimming;
-            float currentSpeed = IsSwimming ? SwimSpeed : (sprinting ? WalkSpeed * 1.85f : WalkSpeed);
+            bool sprinting = IsSprinting && Stamina > 0f && direction.sqrMagnitude > 0.01f;
+            float currentSpeed = IsSwimming ? (sprinting ? SwimSpeed * 1.5f : SwimSpeed) : (sprinting ? WalkSpeed * 1.85f : WalkSpeed);
             if (sprinting)
             {
                 Stamina = Mathf.Max(0f, Stamina - 22f * dt);
@@ -133,7 +146,9 @@ namespace CityLife.World
             else
             {
                 if (Capsule.isGrounded && fallingSpeed < 0) fallingSpeed = -2;
-                fallingSpeed = Mathf.Max(-25, fallingSpeed - 18 * dt);
+                float gravityRate = IsWading ? 12f : 18f;
+                float terminalVelocity = IsWading ? -10f : -25f;
+                fallingSpeed = Mathf.Max(terminalVelocity, fallingSpeed - gravityRate * dt);
             }
 
             // Edge drop safety: dampen movement toward steep vertical drops to prevent stepping into thin air
@@ -172,7 +187,7 @@ namespace CityLife.World
             // so both feet remain solidly planted on slopes.
             if (Animator != null && Animator.transform != transform)
             {
-                if (IsSwimming || !Capsule.isGrounded)
+                if (IsSwimming || (IsWading && WaterDepth > 0.35f) || !Capsule.isGrounded)
                 {
                     Animator.transform.localRotation = Quaternion.Slerp(Animator.transform.localRotation, Quaternion.Euler(0, 180f, 0), 10f * dt);
                     Animator.transform.localPosition = Vector3.Lerp(Animator.transform.localPosition, new Vector3(0, 0.12f, 0), 10f * dt);
@@ -191,24 +206,25 @@ namespace CityLife.World
                     Vector3 tanZ = (fwd * 0.80f + Vector3.up * (hF - hB)).normalized;
                     Vector3 tanX = (rgt * 0.60f + Vector3.up * (hR - hL)).normalized;
                     Vector3 groundNormal = Vector3.Cross(tanZ, tanX).normalized;
-                    if (groundNormal.y < 0) groundNormal = -groundNormal;
+                    if (groundNormal.y < 0.2f) groundNormal = Vector3.up;
 
-                    Vector3 clampedNormal = Vector3.RotateTowards(Vector3.up, groundNormal, 32f * Mathf.Deg2Rad, 0f);
-                    Vector3 localNormal = transform.InverseTransformDirection(clampedNormal);
-                    Quaternion slopeTilt = Quaternion.FromToRotation(Vector3.up, localNormal);
-                    Quaternion targetModelRot = slopeTilt * Quaternion.Euler(0, 180f, 0);
+                    Vector3 clampedNormal = Vector3.RotateTowards(Vector3.up, groundNormal, 26f * Mathf.Deg2Rad, 0f);
+                    Quaternion worldSlopeTilt = Quaternion.FromToRotation(Vector3.up, clampedNormal);
+                    Quaternion targetWorldRot = worldSlopeTilt * (transform.rotation * Quaternion.Euler(0, 180f, 0));
 
-                    Animator.transform.localRotation = Quaternion.Slerp(Animator.transform.localRotation, targetModelRot, 14f * dt);
+                    Animator.transform.rotation = Quaternion.Slerp(Animator.transform.rotation, targetWorldRot, 14f * dt);
 
-                    float slopeDrop = Mathf.Min(0f, Mathf.Min(hF, hB) - pos.y);
-                    float targetY = Mathf.Clamp(0.12f + slopeDrop * 0.45f, -0.05f, 0.12f);
+                    // Ensure the feet soles never sink below ground on slopes.
+                    // Instead of sagging downward into the dirt, lift slightly if terrain rises
+                    float slopeRise = Mathf.Max(0f, Mathf.Max(hF, hB) - pos.y);
+                    float targetY = Mathf.Clamp(0.12f + slopeRise * 0.25f, 0.12f, 0.22f);
                     Animator.transform.localPosition = Vector3.Lerp(Animator.transform.localPosition, new Vector3(0, targetY, 0), 10f * dt);
                 }
             }
 
             // Absolute terrain collision safety clamp:
             // Prevents the actor from sinking into uneven terrain or falling through single-sided mesh
-            if (transform.position.y < groundY + 0.01f)
+            if (transform.position.y < groundY - 0.05f)
             {
                 Capsule.enabled = false;
                 transform.position = new Vector3(transform.position.x, groundY + 0.02f, transform.position.z);

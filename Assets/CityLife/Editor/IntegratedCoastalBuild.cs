@@ -116,10 +116,15 @@ namespace CityLife.World.Editor
             if (!CoastalWolfEcology.VerifyWolfEcology(out string wolfReceipt))
                 throw new InvalidOperationException($"Wolf ecology verification failed: {wolfReceipt}");
 
+            // Riverbank Pilot Slice verification (grounding, hollow log cavity passage, waterline sedge clustering)
+            RiverbankPilotAuthoring.ConfigureAssets();
+            if (!RiverbankPilotSlice.VerifyPilotSlice(out string pilotReceipt))
+                throw new InvalidOperationException($"Riverbank pilot slice verification failed: {pilotReceipt}");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 15;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, waist moonbag, and coastal timber wolf ecology with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + 16;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, waist moonbag, coastal timber wolf ecology, and riverbank pilot slice with zero errors.");
             return totalPassed;
         }
 
@@ -139,7 +144,7 @@ namespace CityLife.World.Editor
             var actor = actorObject.AddComponent<CharacterPreviewActor>(); actor.ExternalDrive = true;
             actor.Capsule = actorObject.AddComponent<CharacterController>();
             actor.Capsule.height = 1.85f; actor.Capsule.center = new Vector3(0, .96f, 0); actor.Capsule.radius = .3f;
-            actor.Capsule.skinWidth = .025f; actor.Capsule.stepOffset = .25f; actor.Capsule.slopeLimit = 45;
+            actor.Capsule.skinWidth = .025f; actor.Capsule.stepOffset = .38f; actor.Capsule.slopeLimit = 52;
             var model = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(CharacterAssetImport.Body));
             model.transform.SetParent(actorObject.transform, false);
             model.transform.localPosition = new Vector3(0, .12f, 0);
@@ -216,18 +221,19 @@ namespace CityLife.World.Editor
             var activityOffset = new Vector3(CoastalTerrain.ActivityCentre.x, 0, CoastalTerrain.ActivityCentre.y);
             brain.OptionalPlanner = actorObject.AddComponent<NpcOptionalPlanner>(); brain.OptionalPlanner.Brain = brain;
             var livingMemory = actorObject.AddComponent<StarfallLivingMemoryRuntime>();
-            livingMemory.Brain = brain; livingMemory.Hud = camera.GetComponent<NpcDecisionHud>();
-            float spawnX = CoastalTerrain.RefugeCentre.x + 2.5f;
-            float spawnZ = CoastalTerrain.RefugeCentre.y - 0.5f;
+            // Spawn cleanly in the open river canyon valley on the east riverbank,
+            // overlooking the freshwater river, crossing shallows, and southern waterfall gorge.
+            float spawnX = 34.5f;
+            float spawnZ = -22.0f;
             float spawnY = CoastalTerrain.Height(spawnX, spawnZ) + 0.05f;
-            brain.SpawnPosition = new Vector3(spawnX, spawnY, spawnZ);
+            Vector3 canyonSpawn = new Vector3(spawnX, spawnY, spawnZ);
+            brain.SpawnPosition = canyonSpawn;
             actor.Place(brain.SpawnPosition);
             controls.PersistentMouseCapture = true;
             controls.CameraMinimum = new Vector3(CoastalTerrain.MinX + 3, -1, CoastalTerrain.MinZ + 3);
             controls.CameraMaximum = new Vector3(CoastalTerrain.MaxX - 3, 220, CoastalTerrain.MaxZ - 3);
             camera.GetComponent<NpcDecisionHud>().Detailed = false;
-            camera.fieldOfView = 60; actor.View.Yaw = 65; actor.View.Pitch = 12; actor.View.Follow();
-            // Keep the composed galaxy view and add background coverage behind it.
+            camera.fieldOfView = 60; actor.View.Yaw = -35; actor.View.Pitch = 12; actor.View.Distance = 4.8f; actor.View.Follow();
             var galaxy = GameObject.Find("Distant galaxy - procedural dust and stellar band");
             if (galaxy != null)
             {
@@ -235,8 +241,8 @@ namespace CityLife.World.Editor
                 skyTemplate.name = "Surrounding procedural stars";
                 Object.DestroyImmediate(skyTemplate.GetComponent<Collider>());
                 skyTemplate.transform.localScale = Vector3.one * 9000;
-                var surroundingSky = new Material(galaxy.GetComponent<MeshRenderer>().sharedMaterial);
-                surroundingSky.name = "Surrounding stars"; surroundingSky.renderQueue = 999;
+                Shader envSkyShader = Shader.Find("Starfall/EnvironmentSky") ?? Shader.Find("Hidden/Starfall/CoastalGalaxy");
+                var surroundingSky = new Material(envSkyShader) { name = "Surrounding stars", renderQueue = 998 };
                 skyTemplate.GetComponent<MeshRenderer>().sharedMaterial = surroundingSky;
                 skyTemplate.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
@@ -266,11 +272,11 @@ namespace CityLife.World.Editor
             actorObject.layer = 9;
             foreach (var item in brain.Registry)
                 foreach (var collider in item.GetComponentsInChildren<Collider>(true)) collider.gameObject.layer = 11;
-            Vector3 caveSpawn = refugeRuntime.Hearth + new Vector3(2.5f, 0, -0.5f);
-            caveSpawn.y = CoastalTerrain.Height(caveSpawn.x, caveSpawn.z) + 0.05f;
-            brain.SpawnPosition = caveSpawn;
+            // Maintain spawn cleanly in the open river canyon valley on the east riverbank,
+            // overlooking the river, crossing shallows, and southern waterfall gorge.
+            brain.SpawnPosition = canyonSpawn;
             actor.Place(brain.SpawnPosition);
-            actor.View.Yaw = 65; actor.View.Pitch = 12; actor.View.Distance = 5.2f; actor.View.Follow();
+            actor.View.Yaw = -35; actor.View.Pitch = 12; actor.View.Distance = 4.8f; actor.View.Follow();
             var refuge = new GameObject("First refuge / discoverable place"); refuge.layer = 11; refuge.transform.position = refugeRuntime.Hearth;
             var refugeSensor = refuge.AddComponent<SphereCollider>(); refugeSensor.isTrigger = true; refugeSensor.radius = .4f;
             var place = refuge.AddComponent<NpcInteractable>(); place.StableId = "first-refuge"; place.WorldId = brain.InstanceWorldId;
@@ -625,8 +631,28 @@ namespace CityLife.World.Editor
             }
             brain.Registry = brain.Registry.Concat(driftInteractables).ToArray();
 
-            // Freshwater River Fish Schools in the river channel
-            var fishObjects = RiverFishSchool.SpawnFishSchool(ground.transform, brain.InstanceWorldId, out var fishSchoolComp);
+            // Dynamic River Driftwood Flotsam Flow downstream from waterfall with continuous replenishment
+            var riverFlow = RiverDriftwoodFlow.Create(ground.transform, brain.InstanceWorldId);
+            var flowInteractables = new List<NpcInteractable>();
+            for (int i = 0; i < riverFlow.ActiveLogs.Count; i++)
+            {
+                var log = riverFlow.ActiveLogs[i];
+                if (log.interactable != null) flowInteractables.Add(log.interactable);
+            }
+            brain.Registry = brain.Registry.Concat(flowInteractables).ToArray();
+
+            // Canyon Riverbank World Decoration (waterline pebble beds, riparian reeds, dry tussocks)
+            RiverbankDecoration.SpawnDecorations(ground.transform);
+
+            // Coherent Riverbank Pilot Slice (weathered boulders, hollow driftwood log with open cavity, riparian sedges)
+            RiverbankPilotSlice.SpawnPilotSlice(ground.transform);
+
+            // Freshwater River Fish Schools (Catfish / Barber & Gauteng Common Carp) in the river channel
+            var catfishPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/CityLife/Art/Catfish/catfish_swim.fbx");
+            var catfishMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/CityLife/Art/Catfish/Catfish_Material.mat");
+            var carpPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/CityLife/Art/Carp/carp_swim.fbx");
+            var carpMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/CityLife/Art/Carp/Carp_Material.mat");
+            var fishObjects = RiverFishSchool.SpawnFishSchool(ground.transform, brain.InstanceWorldId, out var fishSchoolComp, catfishPrefab, catfishMat, carpPrefab, carpMat);
             var fishInteractables = new List<NpcInteractable>();
             for (int i = 0; i < fishSchoolComp.ActiveFish.Count; i++)
             {
@@ -656,8 +682,23 @@ namespace CityLife.World.Editor
             caveHearthComp.ConstructionSite = caveHearthPos;
             caveHearthComp.CurrentTarget = StoneStructureKind.HearthRing;
 
+            // Fortified Wolf Defense Perimeter Wall Workstation at Refuge Cave entrance
+            var refugeWallObj = new GameObject("Refuge Wolf Defense Wall Station");
+            refugeWallObj.transform.SetParent(ground.transform, false);
+            Vector3 refugeWallPos = new Vector3(CoastalTerrain.RefugeCentre.x + 3.8f, CoastalTerrain.Height(CoastalTerrain.RefugeCentre.x + 3.8f, CoastalTerrain.RefugeCentre.y + 0.4f), CoastalTerrain.RefugeCentre.y + 0.4f);
+            refugeWallObj.transform.position = refugeWallPos;
+            var refugeWallComp = refugeWallObj.AddComponent<StoneBuildingWorkstation>();
+            refugeWallComp.Brain = brain;
+            refugeWallComp.Bootstrap = physicalBootstrap;
+            refugeWallComp.ConstructionSite = refugeWallPos;
+            refugeWallComp.CurrentTarget = StoneStructureKind.PackedWolfShelter;
+            refugeWallComp.UpdateRequirementsForTarget(StoneStructureKind.PackedWolfShelter);
+
             // South Canyon Waterfall Cascade and Foaming Plunge Pool
             CreateWaterfallCascade(ground.transform, folder);
+
+            // Canyon Arid Dry Grass tufts across terraces, riverbank, and refuge
+            CreateCanyonDryGrass(ground.transform, folder);
 
             // Spread-out Kokerboom tree distribution across canyon ridges, terraces, and riverbanks
             var treeGroup = new GameObject("Canyon Kokerboom trees");
@@ -693,12 +734,17 @@ namespace CityLife.World.Editor
             {
                 float ty = CoastalTerrain.Height(tp.x, tp.z);
                 if (ty <= CoastalWater.Level + 1.2f) continue;
-                var tree = KokerboomGeometry.Create(tp.seed, tp.age, 0);
+                // Share 2 cached archetypes at LOD 1 to keep binary asset footprint well within Unity's 2GB file limit
+                int archSeed = (tp.seed % 2 == 0) ? 4242 : 4243;
+                float archAge = (tp.seed % 2 == 0) ? 0.85f : 0.65f;
+                var tree = KokerboomGeometry.Create(archSeed, archAge, 1);
                 if (tree != null)
                 {
                     tree.transform.SetParent(treeGroup.transform, false);
                     tree.transform.position = new Vector3(tp.x, ty, tp.z);
                     tree.transform.rotation = Quaternion.Euler(0, (tp.seed * 37) % 360, 0);
+                    float scale = Mathf.Lerp(0.85f, 1.15f, (tp.seed % 7) / 6f);
+                    tree.transform.localScale = Vector3.one * scale;
                 }
             }
 
@@ -737,6 +783,7 @@ namespace CityLife.World.Editor
             rainRenderer.velocityScale = .007f;
             rainRenderer.maxParticleSize = .008f;
             rain.Play(); environment.Rain = rain;
+            camera.gameObject.AddComponent<StarfallAmbientSoundscape>();
             var acceptance = camera.gameObject.AddComponent<IntegratedAcceptance>(); acceptance.Brain = brain; acceptance.Controls = controls; acceptance.Environment = environment; acceptance.Food = food;
             Time.fixedDeltaTime = .02f; Physics.gravity = Vector3.down * 9.81f;
             File.WriteAllText(folder + "/component-binding.json", JsonUtility.ToJson(new Binding(), true));
@@ -752,12 +799,20 @@ namespace CityLife.World.Editor
             var root = new GameObject("South Canyon Waterfall Cascade");
             root.transform.SetParent(parent, false);
 
-            Shader waterShader = Shader.Find("CityLife/CoastalWater");
-            if (waterShader == null || !waterShader.isSupported)
-                waterShader = Shader.Find("Universal Render Pipeline/Unlit");
+            Shader waterShader = Shader.Find("CityLife/WaterfallCascade") ?? Shader.Find("CityLife/CoastalWater") ?? Shader.Find("Universal Render Pipeline/Unlit");
 
             var cascadeMat = new Material(waterShader) { name = "Waterfall cascade procedural" };
-            if (waterShader.name == "CityLife/CoastalWater")
+            if (waterShader.name == "CityLife/WaterfallCascade")
+            {
+                cascadeMat.SetColor("_DeepColor", new Color(0.04f, 0.45f, 0.65f, 0.92f));
+                cascadeMat.SetColor("_ShallowColor", new Color(0.12f, 0.88f, 0.92f, 0.88f));
+                cascadeMat.SetColor("_FoamColor", new Color(0.96f, 0.98f, 1.0f, 0.98f));
+                cascadeMat.SetFloat("_FlowSpeedMain", 4.2f);
+                cascadeMat.SetFloat("_FlowSpeedTurbulent", 7.5f);
+                cascadeMat.SetFloat("_FoamAeration", 0.48f);
+                cascadeMat.SetFloat("_EdgeSoftness", 0.65f);
+            }
+            else if (waterShader.name == "CityLife/CoastalWater")
             {
                 cascadeMat.SetColor("_ShallowColor", new Color(0.15f, 0.92f, 0.95f, 0.9f));
                 cascadeMat.SetColor("_RiverColor", new Color(0.08f, 0.78f, 0.88f, 0.92f));
@@ -765,80 +820,152 @@ namespace CityLife.World.Editor
                 cascadeMat.SetColor("_FoamColor", new Color(0.92f, 0.98f, 1.0f, 0.98f));
                 cascadeMat.SetFloat("_WaveStrength", 1.0f);
             }
-            else
-            {
-                cascadeMat.color = new Color(0.2f, 0.85f, 0.95f, 0.85f);
-            }
             if (!string.IsNullOrEmpty(folder))
             {
                 AssetDatabase.CreateAsset(cascadeMat, folder + "/WaterfallCascade.mat");
             }
 
-            // 1. Cascading water curtain mesh (flowing from upper lip at z=-252 down into plunge pool at z=-238)
-            int segsX = 16, segsY = 24;
-            var verts = new Vector3[(segsX + 1) * (segsY + 1)];
-            var norms = new Vector3[verts.Length];
-            var uvs = new Vector2[verts.Length];
-            var tris = new int[segsX * segsY * 6];
-
-            float xMin = 16f, xMax = 34f;
-            float topY = 24f, botY = -2.3f;
-            float topZ = -254f, botZ = -238f;
-
-            for (int y = 0; y <= segsY; y++)
+            // Material for outer volumetric spray veil
+            var veilMat = new Material(cascadeMat) { name = "Waterfall spray veil" };
+            if (waterShader.name == "CityLife/WaterfallCascade")
             {
-                float ty = y / (float)segsY;
-                float curY = Mathf.Lerp(topY, botY, ty);
-                float curZ = Mathf.Lerp(topZ, botZ, Mathf.Pow(ty, 0.65f));
-
-                for (int x = 0; x <= segsX; x++)
-                {
-                    float tx = x / (float)segsX;
-                    float curX = Mathf.Lerp(xMin, xMax, tx);
-                    float ripple = Mathf.Sin(tx * 12f + ty * 18f) * 0.35f;
-                    int idx = y * (segsX + 1) + x;
-                    verts[idx] = new Vector3(curX, curY, curZ + ripple);
-                    norms[idx] = new Vector3(0f, 0.2f, 1f).normalized;
-                    uvs[idx] = new Vector2(tx, ty * 4f);
-                }
+                veilMat.SetFloat("_FoamAeration", 0.65f);
+                veilMat.SetFloat("_FlowSpeedTurbulent", 9.5f);
+            }
+            if (!string.IsNullOrEmpty(folder))
+            {
+                AssetDatabase.CreateAsset(veilMat, folder + "/WaterfallSprayVeil.mat");
             }
 
-            int t = 0;
-            for (int y = 0; y < segsY; y++)
+            // Dedicated material for churning radial plunge pool with expanding ripples
+            var poolMat = new Material(cascadeMat) { name = "Waterfall plunge pool procedural" };
+            if (waterShader.name == "CityLife/WaterfallCascade")
             {
-                for (int x = 0; x < segsX; x++)
-                {
-                    int a = y * (segsX + 1) + x;
-                    int b = a + 1;
-                    int c = a + (segsX + 1);
-                    int d = c + 1;
-
-                    tris[t++] = a; tris[t++] = c; tris[t++] = b;
-                    tris[t++] = b; tris[t++] = c; tris[t++] = d;
-                }
+                poolMat.SetFloat("_IsPlungePool", 1.0f);
+                poolMat.SetFloat("_FoamAeration", 0.72f);
+                poolMat.SetFloat("_FlowSpeedTurbulent", 5.5f);
+            }
+            if (!string.IsNullOrEmpty(folder))
+            {
+                AssetDatabase.CreateAsset(poolMat, folder + "/WaterfallPlungePool.mat");
             }
 
-            var curtainMesh = new Mesh { name = "Waterfall curtain procedural" };
-            curtainMesh.vertices = verts;
-            curtainMesh.normals = norms;
-            curtainMesh.uv = uvs;
-            curtainMesh.triangles = tris;
-            curtainMesh.RecalculateBounds();
+            Mesh BuildFlowingCurtain(string name, int sx, int sy, float x0, float x1, float yTop, float yBot, float zTop, float zBot, float bowOffset, float uvYScale, float wingDepth = 5.5f)
+            {
+                var verts = new Vector3[(sx + 1) * (sy + 1)];
+                var norms = new Vector3[verts.Length];
+                var uvs = new Vector2[verts.Length];
+                var tris = new int[sx * sy * 6];
 
-            var curtainObj = new GameObject("Waterfall Curtain");
-            curtainObj.transform.SetParent(root.transform, false);
-            curtainObj.AddComponent<MeshFilter>().sharedMesh = curtainMesh;
-            curtainObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+                for (int y = 0; y <= sy; y++)
+                {
+                    float ty = y / (float)sy;
+                    float curY = Mathf.Lerp(yTop, yBot, ty);
+                    float curZ = Mathf.Lerp(zTop, zBot, Mathf.Pow(ty, 0.72f)) + Mathf.Sin(ty * Mathf.PI) * bowOffset;
 
-            // 2. Foaming Plunge Pool Disc
-            int poolSegs = 24;
+                    for (int x = 0; x <= sx; x++)
+                    {
+                        float tx = x / (float)sx;
+                        Vector3 pos;
+                        Vector3 n;
+
+                        if (tx < 0.22f)
+                        {
+                            // West return wing: extends back into west basalt rock chasm wall
+                            float wingT = tx / 0.22f; // 0 deep inside rock wall, 1 at front corner
+                            float wx = Mathf.Lerp(x0 - 2.8f, x0, wingT);
+                            float wz = Mathf.Lerp(curZ - wingDepth, curZ, wingT);
+                            float ripple = Mathf.Sin(wingT * 12f + ty * 20f) * 0.18f;
+                            pos = new Vector3(wx + ripple * 0.5f, curY, wz + ripple);
+                            n = Vector3.Lerp(new Vector3(-1f, 0.2f, 0.1f), new Vector3(-0.4f, 0.3f, 0.8f), wingT).normalized;
+                        }
+                        else if (tx > 0.78f)
+                        {
+                            // East return wing: extends back into east basalt rock chasm wall
+                            float wingT = (tx - 0.78f) / 0.22f; // 0 at front corner, 1 deep inside rock wall
+                            float ex = Mathf.Lerp(x1, x1 + 2.8f, wingT);
+                            float ez = Mathf.Lerp(curZ, curZ - wingDepth, wingT);
+                            float ripple = Mathf.Sin(wingT * 12f + ty * 20f) * 0.18f;
+                            pos = new Vector3(ex - ripple * 0.5f, curY, ez + ripple);
+                            n = Vector3.Lerp(new Vector3(0.4f, 0.3f, 0.8f), new Vector3(1f, 0.2f, 0.1f), wingT).normalized;
+                        }
+                        else
+                        {
+                            // Main front torrent face
+                            float frontT = (tx - 0.22f) / 0.56f; // 0 at x0, 1 at x1
+                            float fx = Mathf.Lerp(x0, x1, frontT);
+                            float ripple = Mathf.Sin(frontT * 14f + ty * 20f) * 0.28f;
+                            pos = new Vector3(fx, curY, curZ + ripple);
+                            n = new Vector3(0f, 0.3f, 1f).normalized;
+                        }
+
+                        int idx = y * (sx + 1) + x;
+                        verts[idx] = pos;
+                        norms[idx] = n;
+                        uvs[idx] = new Vector2(tx, ty * uvYScale);
+                    }
+                }
+
+                int t = 0;
+                for (int y = 0; y < sy; y++)
+                {
+                    for (int x = 0; x < sx; x++)
+                    {
+                        int a = y * (sx + 1) + x;
+                        int b = a + 1;
+                        int c = a + (sx + 1);
+                        int d = c + 1;
+                        tris[t++] = a; tris[t++] = c; tris[t++] = b;
+                        tris[t++] = b; tris[t++] = c; tris[t++] = d;
+                    }
+                }
+
+                var m = new Mesh { name = name };
+                m.vertices = verts;
+                m.normals = norms;
+                m.uv = uvs;
+                m.triangles = tris;
+                m.RecalculateBounds();
+                return m;
+            }
+
+            // 1. Tier 1: Upper Hanging Gorge Chute (from Y=27.5m, Z=-260m down to Y=14.5m, Z=-248m)
+            var upperMesh = BuildFlowingCurtain("Upper Gorge Chute", 22, 18, 17f, 33f, 27.5f, 14.5f, -260f, -248f, 0.5f, 3.5f, 6.5f);
+            var upperObj = new GameObject("Waterfall Tier 1 Upper Chute");
+            upperObj.transform.SetParent(root.transform, false);
+            upperObj.AddComponent<MeshFilter>().sharedMesh = upperMesh;
+            upperObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+
+            // 2. Mid Basalt Churn Ledge Shelf (crashed water boiling horizontally at Y=14.5m to 13.8m)
+            var midShelfMesh = BuildFlowingCurtain("Mid Churn Ledge", 22, 10, 16f, 34f, 14.5f, 13.8f, -248f, -245f, 0.25f, 2.0f, 5.0f);
+            var midObj = new GameObject("Waterfall Tier 2 Mid Ledge");
+            midObj.transform.SetParent(root.transform, false);
+            midObj.AddComponent<MeshFilter>().sharedMesh = midShelfMesh;
+            midObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+
+            // 3. Tier 3: Main Roaring Plunge (from Y=13.8m down to Y=-2.6m penetrating deep into pool water)
+            var mainMesh = BuildFlowingCurtain("Main Plunge Curtain", 24, 24, 15f, 35f, 13.8f, -2.6f, -245f, -238f, 0.85f, 5.0f, 8.0f);
+            var mainObj = new GameObject("Waterfall Tier 3 Main Plunge");
+            mainObj.transform.SetParent(root.transform, false);
+            mainObj.AddComponent<MeshFilter>().sharedMesh = mainMesh;
+            mainObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+
+            // 4. Volumetric Spray & Mist Veil (slightly forward-offset curtain +0.38m)
+            var veilMesh = BuildFlowingCurtain("Volumetric Mist Veil", 20, 20, 14f, 36f, 14.0f, -2.5f, -244.6f, -237.5f, 1.1f, 4.0f, 7.5f);
+            var veilObj = new GameObject("Waterfall Spray Veil");
+            veilObj.transform.SetParent(root.transform, false);
+            veilObj.AddComponent<MeshFilter>().sharedMesh = veilMesh;
+            veilObj.AddComponent<MeshRenderer>().sharedMaterial = veilMat;
+
+            // 5. Churning Radial Plunge Pool Disc
+            int poolSegs = 32;
             var pVerts = new Vector3[poolSegs + 2];
             var pNorms = new Vector3[poolSegs + 2];
             var pUvs = new Vector2[poolSegs + 2];
             var pTris = new int[poolSegs * 3];
 
-            Vector3 poolCenter = new Vector3(25f, -2.2f, -238f);
-            float radiusX = 14f, radiusZ = 10f;
+            Vector3 poolCenter = new Vector3(25f, -1.98f, -236f);
+            float radiusX = 15.5f, radiusZ = 12.0f;
             pVerts[0] = poolCenter;
             pNorms[0] = Vector3.up;
             pUvs[0] = new Vector2(0.5f, 0.5f);
@@ -871,9 +998,164 @@ namespace CityLife.World.Editor
             var poolObj = new GameObject("Waterfall Plunge Pool");
             poolObj.transform.SetParent(root.transform, false);
             poolObj.AddComponent<MeshFilter>().sharedMesh = poolMesh;
-            poolObj.AddComponent<MeshRenderer>().sharedMaterial = cascadeMat;
+            poolObj.AddComponent<MeshRenderer>().sharedMaterial = poolMat;
+
+            // 6. Basalt rock material for gorge cliffs and plunge pool boulders
+            var basaltMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
+            {
+                name = "Basalt rock dark",
+                color = new Color(0.20f, 0.21f, 0.24f, 1f)
+            };
+            if (basaltMat.HasProperty("_Smoothness")) basaltMat.SetFloat("_Smoothness", 0.28f);
+            if (!string.IsNullOrEmpty(folder)) AssetDatabase.CreateAsset(basaltMat, folder + "/BasaltRockDark.mat");
+
+            // 7. Flanking Basalt Cliff Walls & Canyon Headwalls (Solid grounded 3D chasm bedrock)
+            var cliffGroup = new GameObject("Basalt Gorge Cliffs");
+            cliffGroup.transform.SetParent(root.transform, false);
+
+            void CreateBasaltPillar(string name, Vector3 pos, Vector3 size, int seed)
+            {
+                var pObj = new GameObject(name);
+                pObj.transform.SetParent(cliffGroup.transform, false);
+                pObj.transform.position = pos;
+                var pMesh = CoastalRocks.RockMesh(size.x, size.y, size.z, seed);
+                pObj.AddComponent<MeshFilter>().sharedMesh = pMesh;
+                pObj.AddComponent<MeshRenderer>().sharedMaterial = basaltMat;
+                pObj.transform.localScale = Vector3.one;
+                var col = pObj.AddComponent<MeshCollider>();
+                col.sharedMesh = pMesh;
+                pObj.layer = 8;
+            }
+
+            // West Headwall Buttresses (grounded from Y=-4.5m up to canyon rim)
+            CreateBasaltPillar("West Chasm Buttress North", new Vector3(12.0f, 4.0f, -234f), new Vector3(14f, 18f, 16f), 801);
+            CreateBasaltPillar("West Chasm Buttress South", new Vector3(10.5f, 12.0f, -250f), new Vector3(16f, 26f, 18f), 802);
+            CreateBasaltPillar("West Chasm Upper Rim", new Vector3(9.0f, 24.0f, -260f), new Vector3(18f, 20f, 22f), 803);
+            CreateBasaltPillar("West Plunge Bed Rock", new Vector3(13.5f, -2.5f, -226f), new Vector3(12f, 8f, 14f), 804);
+
+            // East Headwall Buttresses (completely enclosing east gorge and sealing the open dirt trench)
+            CreateBasaltPillar("East Chasm Buttress North", new Vector3(38.0f, 4.0f, -234f), new Vector3(14f, 18f, 16f), 805);
+            CreateBasaltPillar("East Chasm Buttress South", new Vector3(40.5f, 12.0f, -250f), new Vector3(16f, 26f, 18f), 806);
+            CreateBasaltPillar("East Chasm Upper Rim", new Vector3(42.0f, 24.0f, -260f), new Vector3(18f, 20f, 22f), 807);
+            CreateBasaltPillar("East Plunge Bed Rock", new Vector3(36.5f, -2.5f, -226f), new Vector3(12f, 8f, 14f), 808);
+            CreateBasaltPillar("East Canyon Wall Flank North", new Vector3(48.0f, 6.0f, -232f), new Vector3(18f, 20f, 22f), 812);
+            CreateBasaltPillar("East Canyon Wall Flank South", new Vector3(50.0f, 16.0f, -250f), new Vector3(20f, 28f, 24f), 813);
+
+            // Solid Rear Basalt Cliff Face (directly behind falling water curtains)
+            CreateBasaltPillar("Rear Cliff Face Lower", new Vector3(25.0f, 5.0f, -248f), new Vector3(28f, 18f, 12f), 809);
+            CreateBasaltPillar("Rear Cliff Face Upper", new Vector3(25.0f, 22.0f, -260f), new Vector3(30f, 22f, 14f), 810);
+            CreateBasaltPillar("Mid Shelf Basalt Support", new Vector3(25.0f, 12.5f, -249f), new Vector3(26f, 7.0f, 10f), 811);
+
+            // 8. Plunge Pool Rim Boulders encircling the churn basin (natural stones along river arc)
+            var rimStoneGroup = new GameObject("Plunge Pool Rim Boulders");
+            rimStoneGroup.transform.SetParent(root.transform, false);
+            int boulderCount = 18;
+            for (int b = 0; b < boulderCount; b++)
+            {
+                float angle = b * (Mathf.PI * 2f / boulderCount);
+                // Only place rim boulders along the northern/front arc facing river and banks
+                // skip the rear rock wall arc (from 210 deg to 330 deg)
+                float deg = (angle * Mathf.Rad2Deg + 360f) % 360f;
+                if (deg > 210f && deg < 330f) continue;
+
+                float bx = poolCenter.x + Mathf.Cos(angle) * (radiusX + 0.8f);
+                float bz = poolCenter.z + Mathf.Sin(angle) * (radiusZ + 0.6f);
+                float by = CoastalTerrain.Height(bx, bz);
+
+                var bObj = new GameObject($"Rim_Boulder_{b + 1:D2}");
+                bObj.transform.SetParent(rimStoneGroup.transform, false);
+                bObj.transform.position = new Vector3(bx, by + 0.35f, bz);
+                bObj.transform.rotation = Quaternion.Euler((b * 27) % 360, (b * 53) % 360, 0);
+                float scale = 1.35f + (b % 4) * 0.35f;
+                var bMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(
+                    b % 2 == 0 ? CityLife.Stones.StoneShapeKind.Fieldstone : CityLife.Stones.StoneShapeKind.RiverCobble,
+                    seed: 700 + b, variantIndex: b % 3, uniformScale: scale, flatShaded: true);
+                bObj.AddComponent<MeshFilter>().sharedMesh = bMesh;
+                bObj.AddComponent<MeshRenderer>().sharedMaterial = basaltMat;
+                var bCol = bObj.AddComponent<MeshCollider>();
+                bCol.sharedMesh = bMesh;
+                bObj.layer = 8;
+            }
+
+            // 9. Plunge Pool Outflow Stepping Stones
+            var stepStoneGroup = new GameObject("Waterfall Outflow Stepping Stones");
+            stepStoneGroup.transform.SetParent(root.transform, false);
+            var stepPositions = new[]
+            {
+                new Vector3(22f, -1.8f, -226f),
+                new Vector3(25f, -1.8f, -220f),
+                new Vector3(27f, -1.8f, -214f),
+                new Vector3(24f, -1.8f, -208f)
+            };
+            for (int s = 0; s < stepPositions.Length; s++)
+            {
+                var sPos = stepPositions[s];
+                sPos.y = CoastalTerrain.Height(sPos.x, sPos.z) + 0.2f;
+                var sObj = new GameObject($"Waterfall_Step_{s + 1:D2}");
+                sObj.transform.SetParent(stepStoneGroup.transform, false);
+                sObj.transform.position = sPos;
+                var sMesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(
+                    CityLife.Stones.StoneShapeKind.FlatSlab, seed: 900 + s, variantIndex: 0, uniformScale: 1.4f, flatShaded: true);
+                sObj.AddComponent<MeshFilter>().sharedMesh = sMesh;
+                sObj.AddComponent<MeshRenderer>().sharedMaterial = basaltMat;
+                var sCol = sObj.AddComponent<MeshCollider>();
+                sCol.sharedMesh = sMesh;
+                sObj.layer = 8;
+            }
 
             return root;
+        }
+
+        private static GameObject CreateCanyonDryGrass(Transform parent, string folder)
+        {
+            var grassRoot = new GameObject("Canyon Arid Dry Grass");
+            grassRoot.transform.SetParent(parent, false);
+
+            var grassMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
+            {
+                name = "Arid dry grass material"
+            };
+            if (grassMat.HasProperty("_Smoothness")) grassMat.SetFloat("_Smoothness", 0.05f);
+            if (!string.IsNullOrEmpty(folder)) AssetDatabase.CreateAsset(grassMat, folder + "/AridDryGrass.mat");
+
+            var grassMesh = IslandFloraGeometry.DryGrass();
+
+            // Scatter dry grass tufts across canyon terraces, riverbanks, and refuge surroundings
+            var grassLocations = new (float x, float z, float scale, float rot)[]
+            {
+                // Riverbank Shallows & Verges
+                (28f, -212f, 1.2f, 35f), (21f, -205f, 1.0f, 85f), (32f, -185f, 1.4f, 142f),
+                (18f, -160f, 1.1f, 210f), (35f, -140f, 1.3f, 45f), (12f, -120f, 1.0f, 310f),
+                (38f, -95f, 1.35f, 115f), (15f, -70f, 1.2f, 185f), (28f, -40f, 1.1f, 260f),
+                (32f, -15f, 1.4f, 15f), (12f, 15f, 1.25f, 95f), (22f, 45f, 1.1f, 175f),
+                // Activity Terrace
+                (16f, -32f, 1.3f, 55f), (24f, -28f, 1.1f, 120f), (12f, -18f, 1.2f, 230f),
+                (18f, -10f, 1.4f, 315f), (26f, -4f, 1.15f, 40f), (8f, 5f, 1.3f, 160f),
+                // Refuge Cave Terrace & Foothills
+                (-160f, 112f, 1.4f, 25f), (-168f, 125f, 1.2f, 80f), (-155f, 120f, 1.35f, 190f),
+                (-162f, 105f, 1.1f, 280f), (-150f, 115f, 1.25f, 340f), (-172f, 118f, 1.3f, 105f),
+                // Southern Waterfall Approach
+                (18f, -230f, 1.4f, 45f), (33f, -228f, 1.2f, 160f), (15f, -222f, 1.3f, 275f),
+                (36f, -218f, 1.1f, 330f), (25f, -200f, 1.5f, 90f)
+            };
+
+            for (int i = 0; i < grassLocations.Length; i++)
+            {
+                var (gx, gz, gScale, gRot) = grassLocations[i];
+                float gy = CoastalTerrain.Height(gx, gz);
+                if (gy < -1.8f) continue; // Skip underwater spots
+
+                var tObj = new GameObject($"DryGrass_Tuft_{i + 1:D2}");
+                tObj.transform.SetParent(grassRoot.transform, false);
+                tObj.transform.position = new Vector3(gx, gy + 0.02f, gz);
+                tObj.transform.rotation = Quaternion.Euler(0, gRot, 0);
+                tObj.transform.localScale = Vector3.one * gScale;
+
+                tObj.AddComponent<MeshFilter>().sharedMesh = grassMesh;
+                tObj.AddComponent<MeshRenderer>().sharedMaterial = grassMat;
+            }
+
+            return grassRoot;
         }
     }
 }

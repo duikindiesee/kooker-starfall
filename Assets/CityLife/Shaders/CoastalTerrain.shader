@@ -3,11 +3,14 @@ Shader "CityLife/CoastalTerrain"
     Properties
     {
         _BaseColor("Overall tint",Color)=(1,1,1,1)
-        _Sand("Warm sand",Color)=(0.43,0.31,0.20,1)
-        _Ochre("Ochre stone",Color)=(0.41,0.24,0.135,1)
-        _Pale("Pale sandstone strata",Color)=(0.57,0.40,0.27,1)
-        _Rust("Terracotta weathering",Color)=(0.29,0.17,0.12,1)
+        _Sand("Warm sand",Color)=(0.45,0.38,0.28,1)
+        _Ochre("Ochre stone",Color)=(0.44,0.36,0.28,1)
+        _Pale("Pale sandstone strata",Color)=(0.49,0.46,0.41,1)
+        _Rust("Terracotta weathering",Color)=(0.36,0.26,0.20,1)
         _SeaLevel("Water elevation",Float)=-2
+        _GroundAlbedo("Ground Soil Texture", 2D)="white"{}
+        _GroundTiling("Ground Tiling Frequency", Float)=0.16
+        _GroundDetailTiling("Ground Micro Detail Tiling", Float)=0.82
         _BaseMap("Shadow caster base",2D)="white"{}
         _Cutoff("Cutoff",Range(0,1))=.5
         _Cull("Cull",Float)=2
@@ -29,9 +32,13 @@ Shader "CityLife/CoastalTerrain"
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            TEXTURE2D(_GroundAlbedo);
+            SAMPLER(sampler_GroundAlbedo);
+
             CBUFFER_START(UnityPerMaterial)
-                float4 _BaseColor,_Sand,_Ochre,_Pale,_Rust,_BaseMap_ST;
-                float _SeaLevel,_Cutoff,_Cull;
+                float4 _BaseColor,_Sand,_Ochre,_Pale,_Rust,_BaseMap_ST,_GroundAlbedo_ST;
+                float _SeaLevel,_Cutoff,_Cull,_GroundTiling,_GroundDetailTiling;
             CBUFFER_END
             struct Attributes {float4 positionOS:POSITION;float3 normalOS:NORMAL;};
             struct Varyings {float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float fog:TEXCOORD2;};
@@ -44,8 +51,6 @@ Shader "CityLife/CoastalTerrain"
             }
             float CausticNetwork(float2 p,float t)
             {
-                // Metre-scale warped cell boundaries: small enough to read as focused
-                // refracted light, rather than the multi-metre contour loops seen in R148.
                 p*=2.35;
                 float2 warp=float2(sin(p.y*.73+t*.67),cos(p.x*.61-t*.53))*.31;
                 float a=sin((p.x+warp.x)*1.73+t*1.13);
@@ -66,24 +71,16 @@ Shader "CityLife/CoastalTerrain"
             {
                 float3 p=i.positionWS,n=normalize(i.normalWS);
                 float broad=Noise(p*.045),weather=Noise(p*.095+17),grain=Noise(p*.72);
-                // Metre-scale, laterally interrupted layers replace the evenly repeated
-                // bright rings. Broad mineral variation does most of the colour work.
                 float strata=p.y*.18+(broad-.5)*.85;
                 float layer=Noise(float3(p.x*.07,strata,p.z*.065)+31);
                 float seamDistance=abs(frac(strata*.69)-.46);
                 float seam=1-smoothstep(.025,.08,seamDistance);
                 seam*=smoothstep(.53,.76,weather);
-                // Walkable ground vs. steep cliff slope blending:
-                // Gentle slopes (n.y > 0.88, slope < 28 deg) form warm, walkable sand/gravel paths.
-                // Steep cliffs (n.y < 0.78, slope > 38 deg) form layered ochre/pale rock faces.
                 float slopeFactor = 1 - saturate(n.y);
                 float cliff = smoothstep(.12, .28, slopeFactor);
-                // High-mesa rock exposure only at extreme heights (> 45m), preserving flat terraces as walkable sand
                 float highMesa = smoothstep(45, 80, p.y) * .25;
                 float3 rock = lerp(_Ochre.rgb, _Pale.rgb, saturate(.20 + layer * .48 + seam * .06));
                 rock = lerp(rock, _Rust.rgb, smoothstep(.47, .81, broad) * .23);
-                // Dark recessed seams and warm ledge caps make metre-scale strata
-                // readable at player distance without displacing collision geometry.
                 float ledgeBand = 1 - smoothstep(.035, .12, abs(frac(p.y * .115 + weather * .08) - .5));
                 float ledgeTop = saturate(n.y) * ledgeBand;
                 rock *= 1 - seam * cliff * .24;
@@ -91,20 +88,21 @@ Shader "CityLife/CoastalTerrain"
                 float crackField = Noise(p * float3(.16, .045, .16) + 59);
                 float crackWidth = max(.018, fwidth(crackField) * 1.1);
                 float cracks = (1 - smoothstep(crackWidth, crackWidth + .045, abs(crackField - .50))) * smoothstep(.30, .65, weather) * cliff;
-                rock *= 1 - cracks * .24;
-                float3 sand = _Sand.rgb * lerp(.91, 1.07, broad);
+                
+                // Dual-frequency stochastic sampling of photo-scanned soil with normalized gain
+                float2 uvMacro = p.xz * _GroundTiling;
+                float2 uvMicro = p.xz * _GroundDetailTiling;
+                float3 groundMacro = SAMPLE_TEXTURE2D(_GroundAlbedo, sampler_GroundAlbedo, uvMacro).rgb;
+                float3 groundMicro = SAMPLE_TEXTURE2D(_GroundAlbedo, sampler_GroundAlbedo, uvMicro).rgb;
+                float3 groundTex = groundMacro * lerp(0.85, 1.18, groundMicro / 0.38);
+                float3 sand = lerp(_Sand.rgb, groundTex, 0.85);
+
                 float3 albedo = lerp(sand, rock, saturate(cliff * .92 + highMesa));
-                // Grain is filtered toward its mean at distance; no sparkling screen-space noise.
                 float fineVisibility=1-saturate(length(fwidth(p))*2);
                 albedo*=1+(grain-.5)*.035*fineVisibility;
-                float damp=1-smoothstep(_SeaLevel-.2,_SeaLevel+1.0,p.y);
-                albedo*=lerp(1,.73,damp);
-                // Moving refracted light belongs only to the submerged bed. The
-                // cutoff stays below the authored wave trough, so dry sand cannot glow.
+                float damp=1-smoothstep(_SeaLevel-.2,_SeaLevel+1.2,p.y);
+                albedo*=lerp(1.0, 0.68, damp);
                 float submerged=1-smoothstep(_SeaLevel-.16,_SeaLevel-.03,p.y);
-                // The riverbed needs readable material variation beneath clear water.
-                // Broad mineral patches and smaller gravel variation are world-space and
-                // remain attached to the actual collision terrain as the camera moves.
                 float bedPatch=Noise(float3(p.x*.17,19,p.z*.17));
                 float bedGravel=Noise(float3(p.x*.83,47,p.z*.83));
                 float3 submergedBed=lerp(float3(.16,.205,.17),float3(.36,.275,.17),bedPatch);
@@ -112,8 +110,10 @@ Shader "CityLife/CoastalTerrain"
                 albedo=lerp(albedo,submergedBed,submerged*.62);
                 float causticLines=CausticNetwork(p.xz,_Time.y);
                 float opticalDepth=max(0,_SeaLevel-p.y);
-                // Centimetre-scale weathering relief affects light, not the collider.
-                float relief=((weather-.5)*.028+(grain-.5)*.004-cracks*.017)*cliff;
+
+                // Weathering relief on cliffs combined with micro gravel normal relief on walkable ground
+                float groundRelief = (dot(groundMicro, float3(0.3, 0.59, 0.11)) - 0.38) * 0.010 * (1 - cliff);
+                float relief = ((weather - .5) * .028 + (grain - .5) * .004 - cracks * .017) * cliff + groundRelief;
                 float3 dpdx=ddx(p),dpdy=ddy(p),r1=cross(dpdy,n),r2=cross(n,dpdx);
                 float determinant=dot(dpdx,r1);
                 if(abs(determinant)>1e-9)
@@ -122,7 +122,7 @@ Shader "CityLife/CoastalTerrain"
                 input.viewDirectionWS=GetWorldSpaceNormalizeViewDir(p);input.shadowCoord=TransformWorldToShadowCoord(p);
                 input.bakedGI=SampleSH(n);input.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(i.positionCS);input.shadowMask=1;
                 SurfaceData surface=(SurfaceData)0;surface.albedo=albedo*_BaseColor.rgb;surface.alpha=1;
-                surface.smoothness=lerp(.12,.22,damp);surface.metallic=0;surface.occlusion=1;surface.normalTS=float3(0,0,1);
+                surface.smoothness=lerp(.10,.38,damp);surface.metallic=0;surface.occlusion=1;surface.normalTS=float3(0,0,1);
                 half4 color=UniversalFragmentPBR(input,surface);
                 // Refracted sun is concentrated light, not another brown/green bed
                 // pigment. Add it after PBR shading, only to truly submerged upward

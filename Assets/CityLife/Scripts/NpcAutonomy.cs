@@ -234,8 +234,7 @@ namespace CityLife.World
             { Actor.Step(Vector3.zero, StepSeconds); return; }
             if (Possessed)
             {
-                float speed = (Actor != null && Actor.IsSprinting) ? Actor.WalkSpeed * 1.85f : Actor.WalkSpeed;
-                Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, speed * StepSeconds), StepSeconds);
+                Actor.Step(ManualDirection, StepSeconds);
                 if (Survival != null && Survival.Enabled)
                 {
                     Survival.RememberCurrentWorld();

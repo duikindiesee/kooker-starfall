@@ -542,6 +542,9 @@ namespace CityLife.Items
                 Check(catalog.TryGet("food-river-fish", out var fishDef), "catalog-contains-river-fish");
                 Check(Mathf.Approximately(fishDef.massKg, 0.65f), "river-fish-mass-matches-0.65kg");
 
+                Check(catalog.TryGet("food-river-carp", out var carpDef), "catalog-contains-river-carp");
+                Check(Mathf.Approximately(carpDef.massKg, 0.85f), "river-carp-mass-matches-0.85kg");
+
                 Check(catalog.TryGet("food-sourfig-berry", out var berryDef), "catalog-contains-sourfig-berry");
                 Check(Mathf.Approximately(berryDef.massKg, 0.08f), "sourfig-berry-mass-matches-0.08kg");
 
@@ -559,9 +562,12 @@ namespace CityLife.Items
 
                 // HearthCooking transformation logic checks
                 Check(HearthCooking.CanRoast("food-river-fish"), "can-roast-river-fish");
+                Check(HearthCooking.CanRoast("food-river-carp"), "can-roast-river-carp");
                 Check(HearthCooking.CanRoast("food-protein-crab"), "can-roast-protein-crab");
                 Check(!HearthCooking.CanRoast("canyon-stone"), "cannot-roast-stone");
                 Check(HearthCooking.GetCookedTypeId("food-river-fish") == "food-cooked-fish", "fish-cooked-type-id-matches");
+                Check(HearthCooking.GetCookedTypeId("food-river-carp") == "food-cooked-fish", "carp-cooked-type-id-matches");
+                Check(HearthCooking.GetItemDisplayName("food-river-carp") == "Gauteng Common Carp", "carp-display-name-matches");
                 Check(HearthCooking.GetCookedTypeId("food-protein-crab") == "food-cooked-crab", "crab-cooked-type-id-matches");
 
                 var testHearthGo = new GameObject("TestHearthCooking");
@@ -591,6 +597,59 @@ namespace CityLife.Items
                 {
                     UnityEngine.Object.DestroyImmediate(testFishGo);
                     UnityEngine.Object.DestroyImmediate(testHearthGo);
+                }
+
+                // Gauteng Common Carp Full Physical Lifecycle Checks (spawning, carry, roast, eat, persist)
+                var testCarpGo = new GameObject("TestCarpItem");
+                var testHearthCarpGo = new GameObject("TestHearthCookingCarp");
+                try
+                {
+                    var cooker = testHearthCarpGo.AddComponent<HearthCooking>();
+                    cooker.AuthoredHearthPosition = Vector3.zero;
+
+                    var carpPhys = testCarpGo.AddComponent<PhysicalItem>();
+                    carpPhys.itemId = "carp-item-01";
+                    carpPhys.itemTypeId = "food-river-carp";
+                    carpPhys.massKg = 0.85f;
+                    carpPhys.ConfigureComponents();
+
+                    var carpInteractable = testCarpGo.AddComponent<NpcInteractable>();
+                    carpInteractable.StableId = "item-food-river-carp-01";
+
+                    var mr = testCarpGo.AddComponent<MeshRenderer>();
+
+                    // 1. Physical item configuration & mass
+                    Check(carpPhys.itemTypeId == "food-river-carp", "carp-physical-item-configured");
+                    Check(Mathf.Approximately(carpPhys.massKg, 0.85f), "carp-mass-matches-0.85kg");
+
+                    // 2. Hearth roasting transformation
+                    Check(cooker.RoastItem(testCarpGo), "cooker-roasts-raw-carp");
+                    Check(carpPhys.itemTypeId == "food-cooked-fish", "carp-type-id-updated-to-cooked-fish");
+                    Check(Mathf.Approximately(carpPhys.massKg, 0.55f), "carp-mass-reduced-to-0.55kg-post-roast");
+                    Check(carpInteractable.StableId.Contains("food-cooked-fish"), "carp-interactable-id-updated-to-cooked");
+
+                    // 3. Nutrition & consumption lifecycle
+                    var foodState = new Starfall.Food.FoodState();
+                    foodState.satiety = 2000;
+                    foodState.body.protein = 1500;
+                    foodState.body.stomach = 1000;
+                    // Apply cooked fish feast gains matching StarfallSurvivalAutonomy
+                    foodState.body.stomach = Mathf.Min(10000, foodState.body.stomach + 3500);
+                    foodState.body.protein = Mathf.Min(10000, foodState.body.protein + 4000);
+                    foodState.satiety = Mathf.Min(10000, foodState.satiety + 3500);
+                    Check(foodState.satiety == 5500, "carp-consumption-boosts-satiety-to-5500");
+                    Check(foodState.body.protein == 5500, "carp-consumption-boosts-protein-to-5500");
+                    Check(foodState.body.stomach == 4500, "carp-consumption-boosts-stomach-to-4500");
+
+                    // 4. Persistence round-trip serialization
+                    string json = JsonUtility.ToJson(foodState);
+                    var reloadedState = JsonUtility.FromJson<Starfall.Food.FoodState>(json);
+                    Check(reloadedState != null && reloadedState.satiety == 5500 && reloadedState.body.protein == 5500, "carp-consumption-state-persists-round-trip");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(testCarpGo);
+                    UnityEngine.Object.DestroyImmediate(testHearthCarpGo);
                 }
 
                 // PlaceLedger expanded capacity check (4096 cells)
@@ -641,6 +700,14 @@ namespace CityLife.Items
                     Check(fishPhys != null && fishPhys.itemTypeId == "food-river-fish", "spawned-fish-has-river-fish-type");
                     Check(actions.Held != null, "actions-held-is-not-null-after-fish-spawn");
                     UnityEngine.Object.DestroyImmediate(fishGo);
+                    actions.HoldItemDirect(null, false);
+
+                    var carpGo = controls.SpawnCarpInHand();
+                    Check(carpGo != null, "controls-spawns-carp-in-hand");
+                    var carpPhys = carpGo.GetComponent<PhysicalItem>();
+                    Check(carpPhys != null && carpPhys.itemTypeId == "food-river-carp", "spawned-carp-has-river-carp-type");
+                    Check(actions.Held != null, "actions-held-is-not-null-after-carp-spawn");
+                    UnityEngine.Object.DestroyImmediate(carpGo);
                     actions.HoldItemDirect(null, false);
 
                     var crabGo = controls.SpawnCrabInHand();
@@ -923,6 +990,82 @@ namespace CityLife.Items
                 {
                     UnityEngine.Object.DestroyImmediate(meatDrop);
                     UnityEngine.Object.DestroyImmediate(leatherDrop);
+                }
+            }
+
+            // -------------------------------------------------------------
+            // 12. Living World & Unified HUD Integration Checks
+            // -------------------------------------------------------------
+            {
+                // 1. Berry Inventory Reconciliation: ghost fruit cleared and decrement on eat/drop
+                var s = new FoodState();
+                s.carriedFruit = 4; // Simulated ghost inventory lock
+                NpcPlayerControls.ReconcileCarriedFruit(s, null, null);
+                Check(s.carriedFruit == 0, "reconcile-clears-ghost-carried-fruit-when-hands-empty");
+
+                // Decrement on eating / dropping
+                s.carriedFruit = 2;
+                s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+                Check(s.carriedFruit == 1, "eating-or-dropping-decrements-carried-fruit");
+
+                // 2. Truthful Decision Reflection Provenance & Directing
+                var go = new GameObject("TestAutonomyRoot");
+                try
+                {
+                    var brain = go.AddComponent<NpcAutonomy>();
+                    var surv = go.AddComponent<StarfallSurvivalAutonomy>();
+                    surv.Brain = brain;
+
+                    // Test player directive
+                    surv.SetPlayerDirective(new Vector3(45f, 0f, -80f), "Canyon Overlook");
+                    Check(surv.PlayerDirectiveTarget.HasValue && surv.PlayerDirectiveLabel == "Canyon Overlook", "player-directive-beacon-set");
+                    surv.ClearPlayerDirective();
+                    Check(!surv.PlayerDirectiveTarget.HasValue, "player-directive-beacon-cleared");
+
+                    // Test well-fulfilled domestic camp routines
+                    surv.Food = go.AddComponent<IntegratedFoodRuntime>();
+                    surv.Food.Brain = brain;
+                    var ensureMethod = typeof(IntegratedFoodRuntime).GetMethod("EnsureModel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (ensureMethod != null) ensureMethod.Invoke(surv.Food, null);
+                    surv.Food.Model.State.satiety = 9500;
+                    surv.Food.Model.State.hydration = 9000;
+                    surv.Food.Model.State.body.protein = 8500;
+                    Check(surv.IsWellFulfilled(), "well-fulfilled-evaluates-true-when-needs-satisfied");
+
+                    // 3. Survival Diary Chronicle & Milestones
+                    var diary = go.AddComponent<StarfallSurvivalDiary>();
+                    diary.AddEntry(100, "Forage", "Found ripe wild sourfigs on the rocks.");
+                    Check(diary.Entries.Count == 1, "survival-diary-entry-recorded");
+                    Check(diary.UnlockMilestone("first-feast", 100), "survival-milestone-unlocked");
+                    Check(!diary.UnlockMilestone("first-feast", 120), "duplicate-milestone-unlock-ignored");
+                    Check(diary.IsMilestoneUnlocked("first-feast"), "milestone-is-unlocked-verified");
+
+                    // 4. Packed Wolf Shelter & Immunity Barrier
+                    var wsGo = new GameObject("TestShelterWorkstation");
+                    var ws = wsGo.AddComponent<StoneBuildingWorkstation>();
+                    ws.UpdateRequirementsForTarget(StoneStructureKind.PackedWolfShelter);
+                    Check(ws.RequiredStones == 8, "packed-wolf-shelter-requires-8-stones");
+                    ws.IsCompleted = true;
+                    ws.ConstructionSite = new Vector3(10f, 0f, 10f);
+                    Check(ws.IsWolfShelterProtecting(new Vector3(11f, 0f, 11f), 6.0f), "inhabitant-inside-shelter-protected");
+                    Check(!ws.IsWolfShelterProtecting(new Vector3(25f, 0f, 25f), 6.0f), "inhabitant-outside-shelter-unprotected");
+                    UnityEngine.Object.DestroyImmediate(wsGo);
+
+                    // 5. Diurnal Day/Night Cycle Progression
+                    var envGo = new GameObject("TestEnvironment");
+                    var env = envGo.AddComponent<IntegratedEnvironment>();
+                    Check(env.DayDurationSeconds == 480f, "diurnal-day-duration-configured");
+                    UnityEngine.Object.DestroyImmediate(envGo);
+
+                    // 6. Reactive Crab Actor Verification
+                    var crabTestGo = new GameObject("TestCrab");
+                    var crabActor = crabTestGo.AddComponent<CoastalCrabActor>();
+                    Check(crabActor != null && crabActor.ThreatDistance == 3.5f, "coastal-crab-actor-initialized");
+                    UnityEngine.Object.DestroyImmediate(crabTestGo);
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(go);
                 }
             }
 

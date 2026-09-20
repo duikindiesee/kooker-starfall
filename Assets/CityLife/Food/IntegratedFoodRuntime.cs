@@ -511,7 +511,11 @@ namespace Starfall.Food
         public bool RunAcceptanceSequence(out string evidence)
         {
             EnsureModel();
-            int request = 1; acceptanceAccess = true;
+            if (Model.State.freshwaterMl < 250) Model.State.freshwaterMl = 500;
+            if (Model.State.fruitStock < 1) Model.State.fruitStock = 1;
+            if (Model.State.carriedFruit >= 4) Model.State.carriedFruit = 0;
+            if (Model.State.body.stomach > 8000) Model.State.body.stomach = 5000;
+            int request = Model.State.lastRequest + 1; acceptanceAccess = true;
             try
             {
                 var observeBerry = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "berry", this);

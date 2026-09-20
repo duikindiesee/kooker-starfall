@@ -13,7 +13,9 @@ namespace CityLife.World
     {
         HearthRing = 0,     // 6-12 stones enclosing fire pit; improves burn efficiency and thermal retention
         WindbreakWall = 1,  // 8-16 stacked fieldstones; blocks 60-80% of incoming wind in its lee
-        StorageCairn = 2    // 4-8 flat slabs; elevates food baskets above ground dampness and pests
+        StorageCairn = 2,   // 4-8 flat slabs; elevates food baskets above ground dampness and pests
+        PackedWolfShelter = 3, // 8-12 packed basalt river stones; fortified predator redoubt protecting against night wolf attacks
+        WolfPeltBivouac = 4    // 4 anchor stones + timber sticks and wolf leather; mobile wilderness camp tent
     }
 
     /// <summary>
@@ -79,7 +81,20 @@ namespace CityLife.World
                 case StoneStructureKind.StorageCairn:
                     RequiredStones = 4;
                     break;
+                case StoneStructureKind.PackedWolfShelter:
+                    RequiredStones = 8;
+                    break;
+                case StoneStructureKind.WolfPeltBivouac:
+                    RequiredStones = 4;
+                    break;
             }
+        }
+
+        public bool IsWolfShelterProtecting(Vector3 position, float protectionRadius = 6.0f)
+        {
+            if (!IsCompleted || CurrentTarget != StoneStructureKind.PackedWolfShelter) return false;
+            float d = Vector3.Distance(ConstructionSite, position);
+            return d <= protectionRadius;
         }
 
         /// <summary>
@@ -151,13 +166,13 @@ namespace CityLife.World
 
         private void SpawnPlacedStoneVisual(int stoneIndex, string itemTypeId)
         {
-            var stoneObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            stoneObj.name = $"{CurrentTarget}_Stone_{stoneIndex + 1}";
+            var stoneObj = new GameObject($"{CurrentTarget}_Stone_{stoneIndex + 1}");
             stoneObj.transform.SetParent(transform, true);
+            stoneObj.layer = 8; // Layer 8: Geometry
 
             // Compute layout position based on structure kind
             Vector3 localOffset = Vector3.zero;
-            Vector3 scale = new Vector3(0.35f, 0.22f, 0.35f);
+            Vector3 scale = new Vector3(0.55f, 0.28f, 0.45f);
 
             switch (CurrentTarget)
             {
@@ -165,6 +180,7 @@ namespace CityLife.World
                     // Circular ring arrangement (radius 0.65m)
                     float angle = (stoneIndex / (float)RequiredStones) * Mathf.PI * 2f;
                     localOffset = new Vector3(Mathf.Cos(angle) * 0.65f, 0.1f, Mathf.Sin(angle) * 0.65f);
+                    scale = new Vector3(0.35f, 0.22f, 0.35f);
                     break;
 
                 case StoneStructureKind.WindbreakWall:
@@ -187,15 +203,46 @@ namespace CityLife.World
                     localOffset = new Vector3(dx, 0.15f, dz);
                     scale = new Vector3(0.4f, 0.25f, 0.4f);
                     break;
+
+                case StoneStructureKind.PackedWolfShelter:
+                    // 2-tier curved perimeter wall arc (8 stones) enclosing shelter entrance with a defensive chokepoint
+                    int wTier = stoneIndex / 4; // 2 tiers of 4 stones
+                    int wCol = stoneIndex % 4;
+                    float wAngle = -1.15f + (wCol / 3.0f) * 2.3f;
+                    float wRadius = 2.4f;
+                    localOffset = new Vector3(
+                        Mathf.Sin(wAngle) * wRadius,
+                        0.16f + wTier * 0.32f,
+                        Mathf.Cos(wAngle) * wRadius
+                    );
+                    scale = new Vector3(0.65f, 0.32f, 0.50f);
+                    break;
+
+                case StoneStructureKind.WolfPeltBivouac:
+                    // 4 corner anchor stones for wilderness camp tent
+                    float bx = (stoneIndex % 2 == 0) ? -1.1f : 1.1f;
+                    float bz = (stoneIndex < 2) ? -0.9f : 0.9f;
+                    localOffset = new Vector3(bx, 0.12f, bz);
+                    scale = new Vector3(0.38f, 0.25f, 0.38f);
+                    break;
             }
 
             stoneObj.transform.position = ConstructionSite + localOffset;
             stoneObj.transform.localScale = scale;
 
+            var mesh = CityLife.Stones.StoneMeshGenerator.GenerateMesh(
+                CurrentTarget == StoneStructureKind.StorageCairn ? CityLife.Stones.StoneShapeKind.FlatSlab :
+                CityLife.Stones.StoneShapeKind.Fieldstone,
+                seed: 200 + stoneIndex, variantIndex: stoneIndex % 3, uniformScale: 1.0f, flatShaded: true);
+
+            var mf = stoneObj.AddComponent<MeshFilter>();
+            mf.sharedMesh = mesh;
+            var mr = stoneObj.AddComponent<MeshRenderer>();
             if (Bootstrap != null && Bootstrap.StoneMaterial != null)
-            {
-                stoneObj.GetComponent<MeshRenderer>().sharedMaterial = Bootstrap.StoneMaterial;
-            }
+                mr.sharedMaterial = Bootstrap.StoneMaterial;
+
+            var colBox = stoneObj.AddComponent<BoxCollider>();
+            colBox.size = Vector3.one * 0.85f;
 
             _spawnedVisualStones.Add(stoneObj);
         }
@@ -209,12 +256,36 @@ namespace CityLife.World
             {
                 var slab = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 slab.name = "StorageCairn_PlatformSlab";
+                slab.layer = 8;
                 slab.transform.SetParent(transform, true);
                 slab.transform.position = ConstructionSite + new Vector3(0, 0.35f, 0);
                 slab.transform.localScale = new Vector3(0.9f, 0.08f, 0.9f);
                 if (Bootstrap != null && Bootstrap.StoneMaterial != null)
                     slab.GetComponent<MeshRenderer>().sharedMaterial = Bootstrap.StoneMaterial;
                 _spawnedVisualStones.Add(slab);
+            }
+            else if (CurrentTarget == StoneStructureKind.PackedWolfShelter)
+            {
+                // Left and right defensive gateposts
+                var leftPost = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                leftPost.name = "WolfShelter_LeftGatepost";
+                leftPost.layer = 8;
+                leftPost.transform.SetParent(transform, true);
+                leftPost.transform.position = ConstructionSite + new Vector3(-1.35f, 0.55f, 2.3f);
+                leftPost.transform.localScale = new Vector3(0.45f, 1.1f, 0.45f);
+                if (Bootstrap != null && Bootstrap.StoneMaterial != null)
+                    leftPost.GetComponent<MeshRenderer>().sharedMaterial = Bootstrap.StoneMaterial;
+                _spawnedVisualStones.Add(leftPost);
+
+                var rightPost = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                rightPost.name = "WolfShelter_RightGatepost";
+                rightPost.layer = 8;
+                rightPost.transform.SetParent(transform, true);
+                rightPost.transform.position = ConstructionSite + new Vector3(1.35f, 0.55f, 2.3f);
+                rightPost.transform.localScale = new Vector3(0.45f, 1.1f, 0.45f);
+                if (Bootstrap != null && Bootstrap.StoneMaterial != null)
+                    rightPost.GetComponent<MeshRenderer>().sharedMaterial = Bootstrap.StoneMaterial;
+                _spawnedVisualStones.Add(rightPost);
             }
 
             Debug.Log($"STONE_STRUCTURE_COMPLETED: {CurrentTarget} built at {ConstructionSite} using {DepositedStonesCount} stones.");
@@ -281,15 +352,23 @@ namespace CityLife.World
             float windwardAttenuation = ws.GetWindAttenuation(ws.transform.position + new Vector3(0, 0, -1.0f), new Vector3(0, 0, 1.0f));
             bool attenuationPass = leeAttenuation > 0.4f && windwardAttenuation == 0.0f;
 
+            // 5. Packed wolf shelter verification
+            ws.UpdateRequirementsForTarget(StoneStructureKind.PackedWolfShelter);
+            bool shelterReq8 = ws.RequiredStones == 8;
+            bool shelterProtectsInside = ws.IsWolfShelterProtecting(ws.transform.position + new Vector3(1f, 0, 1f));
+            bool shelterProtectsOutside = !ws.IsWolfShelterProtecting(ws.transform.position + new Vector3(12f, 0, 12f));
+            bool shelterPass = shelterReq8 && shelterProtectsInside && shelterProtectsOutside;
+
             UnityEngine.Object.DestroyImmediate(go);
 
             bool allPassed = initNotComplete && targetIsHearth && reqIs6 && acceptsCobble && acceptsField &&
-                             rejectsWood && dep1 && dep6 && finalComplete && rejectsOverflow && attenuationPass;
+                             rejectsWood && dep1 && dep6 && finalComplete && rejectsOverflow && attenuationPass && shelterPass;
 
             verificationReceipt = $"init={initNotComplete}, targetHearth={targetIsHearth}, req6={reqIs6}, " +
                                   $"acceptsStones={acceptsCobble && acceptsField}, rejectsWood={rejectsWood}({woodReason}), " +
                                   $"comp6={finalComplete}, rejectsOverflow={rejectsOverflow}({overReason}), " +
-                                  $"attenuationPass={attenuationPass}(lee={leeAttenuation:F2}, windward={windwardAttenuation:F2})";
+                                  $"attenuationPass={attenuationPass}(lee={leeAttenuation:F2}, windward={windwardAttenuation:F2}), " +
+                                  $"shelterPass={shelterPass}";
 
             return allPassed;
         }

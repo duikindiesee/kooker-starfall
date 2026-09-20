@@ -60,21 +60,41 @@ namespace CityLife.World
             return !Physics.CheckCapsule(floor + Vector3.up * .45f, floor + Vector3.up * 1.5f,
                 .35f, 1 << 8, QueryTriggerInteraction.Ignore);
         }
+        private bool IsTraversable(Vector3 p, Vector3 curPos, out Vector3 floor)
+        {
+            floor = p;
+            float waterLvl = WaterLevel(p);
+            if (!TryGround(p, out float h, out Vector3 n)) return false;
+            floor.y = h;
+            if (Physics.CheckCapsule(floor + Vector3.up * .45f, floor + Vector3.up * 1.5f, .35f, 1 << 8, QueryTriggerInteraction.Ignore))
+                return false;
+
+            bool inWater = curPos.y <= waterLvl + 0.15f || h < waterLvl - 0.5f;
+            if (inWater)
+            {
+                // In water: allow swimming/wading and bank climbing without getting stuck
+                return n.y >= 0.25f && (floor.y - curPos.y <= 1.2f || curPos.y <= waterLvl + 0.1f);
+            }
+
+            if (n.y < Mathf.Cos(45 * Mathf.Deg2Rad) || h < waterLvl - .85f) return false;
+            return floor.y - curPos.y <= .45f;
+        }
+
         public Vector3 ConstrainMotion(Vector3 position, Vector3 direction, float distance)
         {
             var next = position + Vector3.ClampMagnitude(direction, 1) * (distance + .2f);
-            if (Walkable(next, out Vector3 floor) && floor.y - position.y <= .45f && IsWithinSafePerimeter(floor, 5f))
+            if (IsTraversable(next, position, out Vector3 floor) && IsWithinSafePerimeter(floor, 5f))
                 return direction;
 
             // Try slight left/right deflections (30 degrees) to step around small obstacles/rocks
             Vector3 leftDeflect = Quaternion.Euler(0, -30f, 0) * direction;
             var nextLeft = position + Vector3.ClampMagnitude(leftDeflect, 1) * (distance + .2f);
-            if (Walkable(nextLeft, out Vector3 floorLeft) && floorLeft.y - position.y <= .45f && IsWithinSafePerimeter(floorLeft, 5f))
+            if (IsTraversable(nextLeft, position, out Vector3 floorLeft) && IsWithinSafePerimeter(floorLeft, 5f))
                 return leftDeflect;
 
             Vector3 rightDeflect = Quaternion.Euler(0, 30f, 0) * direction;
             var nextRight = position + Vector3.ClampMagnitude(rightDeflect, 1) * (distance + .2f);
-            if (Walkable(nextRight, out Vector3 floorRight) && floorRight.y - position.y <= .45f && IsWithinSafePerimeter(floorRight, 5f))
+            if (IsTraversable(nextRight, position, out Vector3 floorRight) && IsWithinSafePerimeter(floorRight, 5f))
                 return rightDeflect;
 
             return Vector3.zero;
@@ -84,12 +104,14 @@ namespace CityLife.World
         {
             float bestDist = float.MaxValue;
             Vector3 bestBank = new Vector3(0f, CoastalTerrain.Height(0f, -15f), -15f); // Shallow river ford default
-            for (float z = -250f; z <= 380f; z += 15f)
+            // Search along the freshwater river corridor specifically for true waterline / shallow ford contact:
+            // y between waterLevel - 0.25m (ankle-deep ford) and waterLevel + 0.15m (immediate sandy waterline edge)
+            for (float z = -250f; z <= 380f; z += 10f)
             {
-                for (float x = -60f; x <= 80f; x += 10f)
+                for (float x = -60f; x <= 80f; x += 5f)
                 {
                     float y = CoastalTerrain.Height(x, z);
-                    if (y >= CoastalWater.Level - 0.25f && y <= CoastalWater.Level + 2.5f &&
+                    if (y >= CoastalWater.Level - 0.25f && y <= CoastalWater.Level + 0.15f &&
                         CoastalTerrain.IsFreshwaterRiver(x, z, y, CoastalWater.CurrentLevel))
                     {
                         if (Walkable(new Vector3(x, y, z), out Vector3 floor))
@@ -99,6 +121,30 @@ namespace CityLife.World
                             {
                                 bestDist = d;
                                 bestBank = floor;
+                            }
+                        }
+                    }
+                }
+            }
+            // Fallback to shallow water margin if no immediate waterline cell matched
+            if (bestDist == float.MaxValue)
+            {
+                for (float z = -250f; z <= 380f; z += 15f)
+                {
+                    for (float x = -60f; x <= 80f; x += 8f)
+                    {
+                        float y = CoastalTerrain.Height(x, z);
+                        if (y >= CoastalWater.Level - 0.35f && y <= CoastalWater.Level + 0.45f &&
+                            CoastalTerrain.IsFreshwaterRiver(x, z, y, CoastalWater.CurrentLevel))
+                        {
+                            if (Walkable(new Vector3(x, y, z), out Vector3 floor))
+                            {
+                                float d = Vector3.Distance(origin, floor);
+                                if (d < bestDist)
+                                {
+                                    bestDist = d;
+                                    bestBank = floor;
+                                }
                             }
                         }
                     }

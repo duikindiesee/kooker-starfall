@@ -265,12 +265,21 @@ namespace CityLife.Items
                 isContainer = false
             });
 
-            // Freshwater River Fish (Nutritious salmonoid swimming in river channel)
+            // Freshwater River Fish (African Sharptooth Catfish / Barber swimming in river channel)
             catalog.Register(new ItemDefinition
             {
                 itemTypeId = "food-river-fish",
                 dimensions = new PhysicalDimensions(0.35f, 0.12f, 0.08f),
                 massKg = 0.65f,
+                isContainer = false
+            });
+
+            // Gauteng Common Carp (Golden scaled river carp swimming in deep pools and runs)
+            catalog.Register(new ItemDefinition
+            {
+                itemTypeId = "food-river-carp",
+                dimensions = new PhysicalDimensions(0.42f, 0.16f, 0.10f),
+                massKg = 0.85f,
                 isContainer = false
             });
 

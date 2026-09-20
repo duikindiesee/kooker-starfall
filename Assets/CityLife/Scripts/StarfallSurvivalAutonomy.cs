@@ -42,6 +42,43 @@ namespace CityLife.World
             cherishedAffinities.TryGetValue(placeKey, out int current);
             cherishedAffinities[placeKey] = Mathf.Clamp(current + amount, 0, 100);
         }
+
+        public Vector3? PlayerDirectiveTarget { get; private set; }
+        public string PlayerDirectiveLabel { get; private set; }
+        public void SetPlayerDirective(Vector3 worldPos, string label = "Player Beacon")
+        {
+            PlayerDirectiveTarget = worldPos;
+            PlayerDirectiveLabel = label;
+            if (Brain != null && Brain.Log != null)
+                Brain.Log.Record(Brain.Tick, "DIRECTIVE", Brain.DescribePerception(), "player directive", "Set guidance waypoint", $"{label} at {worldPos}");
+        }
+        public void ClearPlayerDirective()
+        {
+            PlayerDirectiveTarget = null;
+            PlayerDirectiveLabel = null;
+        }
+
+        public bool IsWellFulfilled()
+        {
+            var s = Food != null && Food.Model != null ? Food.Model.State : null;
+            if (s == null) return false;
+            return s.satiety >= 7500 && s.hydration >= 7000 && s.body != null && s.body.protein >= 6000 && s.body.health >= 8000;
+        }
+
+        private StarfallSurvivalDiary diary;
+        public StarfallSurvivalDiary Diary
+        {
+            get
+            {
+                if (diary == null && Brain != null)
+                    diary = Brain.GetComponent<StarfallSurvivalDiary>() ?? Brain.GetComponentInChildren<StarfallSurvivalDiary>();
+                if (diary == null)
+                    diary = FindFirstObjectByType<StarfallSurvivalDiary>();
+                if (diary == null && Brain != null)
+                    diary = Brain.gameObject.AddComponent<StarfallSurvivalDiary>();
+                return diary;
+            }
+        }
         private string endpoint,model,evidenceDirectory,savePath;
         private Task<StarfallSurvivalThought.Result> pending;
         private CancellationTokenSource cancellation;
@@ -50,6 +87,7 @@ namespace CityLife.World
         private Vector2Int? lastOccupiedCell;
         private List<string> offered;
         private int request, modelRequestSequence, nextRequestTick, routeStartTick, deathAtTick=-1, explorationSeed, lastCheckpointSecond, blockedTicks;
+        private int huntingPursuitFailures, huntingHopeLostUntilTick;
         public bool LocalModelEnabled { get; set; } = true;
         public string routePurpose;
         private string recentVerifiedOutcome;
@@ -286,9 +324,45 @@ namespace CityLife.World
                 }
             }
             visiblePlaceIds.Clear(); foreach (string id in now) visiblePlaceIds.Add(id);
+            CheckEnvironmentalClues();
             MapHud?.NotifyStateChanged();
             return true;
         }
+
+        private bool discoveredLogClue;
+        private bool discoveredSedgeClue;
+        private bool discoveredBoulderClue;
+
+        private void CheckEnvironmentalClues()
+        {
+            if (Brain == null) return;
+            Vector3 pos = Brain.transform.position;
+
+            // 1. Hollow Log Clue on Terrace Fringe (-58, 68)
+            if (!discoveredLogClue && Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(-58f, 68f)) <= 9.0f)
+            {
+                discoveredLogClue = true;
+                Diary?.AddEntry(Brain.Tick, "Discovery", "Discovered a weathered hollow log on the terrace edge—its splintered interior cavity offers wind shelter from wolves, and dry kindling.");
+                Brain.Log?.Record(Brain.Tick, "ENVIRONMENT_CLUE", Brain.DescribePerception(), "perceive landmark", "Inspect hollow log", "Noticed natural hollow log cavity framing line-of-sight to river");
+            }
+
+            // 2. Riparian Sedges Clue along Damp Waterline (-35, 70)
+            if (!discoveredSedgeClue && Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(-35f, 70f)) <= 9.0f)
+            {
+                discoveredSedgeClue = true;
+                Diary?.AddEntry(Brain.Tick, "Discovery", "Thick green riparian sedges clustered along the lower riverbank—a reliable indicator that clean fresh water flows right below the terrace.");
+                Brain.Log?.Record(Brain.Tick, "ENVIRONMENT_CLUE", Brain.DescribePerception(), "perceive landmark", "Observe riparian sedges", "Sedge cluster confirms immediate proximity to fresh river water");
+            }
+
+            // 3. Weathered Sandstone Boulders along Refuge Descent (-118, 108)
+            if (!discoveredBoulderClue && Vector2.Distance(new Vector2(pos.x, pos.z), new Vector2(-118f, 108f)) <= 9.0f)
+            {
+                discoveredBoulderClue = true;
+                Diary?.AddEntry(Brain.Tick, "Discovery", "Standing beside the massive weathered sandstone boulder at the terrace descent—serves as an elevated waypoint framing the path toward the river.");
+                Brain.Log?.Record(Brain.Tick, "ENVIRONMENT_CLUE", Brain.DescribePerception(), "perceive landmark", "Reach descent boulder", "High vantage point surveying the descent route to the river");
+            }
+        }
+
         public static bool BerryRelevant(FoodState s)
         {
             return s!=null&&s.fruitStock>0&&s.carriedFruit<4&&
@@ -332,7 +406,8 @@ namespace CityLife.World
 
             // 2. Freshwater river
             bool inRiver = CoastalTerrain.IsFreshwaterRiver(Brain.transform.position.x,Brain.transform.position.z,Brain.transform.position.y,CoastalWater.CurrentLevel);
-            if(s.hydration<8500&&inRiver)
+            bool canDrinkRiver = CoastalTerrain.CanDrinkFromRiver(Brain.transform.position.x, Brain.transform.position.z, Brain.transform.position.y, CoastalWater.CurrentLevel);
+            if(s.hydration<8500&&canDrinkRiver)
                 foodChoices.Add("drink river");
 
             // 2b. Carried freshwater container
@@ -390,6 +465,7 @@ namespace CityLife.World
             var carry = Brain.GetComponentInChildren<HunterClubCarry>();
             bool hasClubInHand = carry != null && !carry.Stowed;
             bool hasClubOnBack = carry != null && carry.Stowed;
+            bool leftOccupied = Brain.Actions != null && Brain.Actions.HeldLeft != null;
 
             var nearestWolf = Brain.Perception != null && Brain.Perception.Current != null
                 ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("wolf"))
@@ -401,7 +477,16 @@ namespace CityLife.World
             {
                 if (hasClubOnBack)
                 {
-                    foodChoices.Add("draw club");
+                    if (leftOccupied)
+                    {
+                        // Danger is more important to defend than holding extra food!
+                        // Drop held item in weapon hand to immediately brandish the club
+                        foodChoices.Add("drop to defend");
+                    }
+                    else
+                    {
+                        foodChoices.Add("draw club");
+                    }
                 }
                 else if (hasClubInHand)
                 {
@@ -415,37 +500,42 @@ namespace CityLife.World
                 {
                     foodChoices.Add("holster club");
                 }
-                else if (hasClubOnBack && (s.satiety >= 8500 && s.hydration >= 7500))
+                else if (hasClubOnBack && !leftOccupied && (s.satiety >= 8500 && s.hydration >= 7500))
                 {
+                    // Only draw club during idle travel IF left hand is completely free
                     foodChoices.Add("draw club");
                 }
             }
 
-            // 4. Marine Protein & Tidal Crab Foraging
+            // 4. Marine Protein & Tidal Crab / River Fish Foraging
             bool lowProtein = s.body.protein < 6500;
+            bool huntHopeLost = Brain != null && Brain.Tick < huntingHopeLostUntilTick;
             var nearestCrab = Brain.Perception != null && Brain.Perception.Current != null
                 ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("crab"))
                 : null;
             float crabDist = nearestCrab != null ? Vector3.Distance(Brain.transform.position, nearestCrab.position) : 999f;
 
-            if ((lowProtein || s.satiety < 8500) && freeHands > 0)
+            if ((lowProtein || s.satiety < 8500) && freeHands > 0 && !huntHopeLost)
             {
                 if (nearestCrab != null)
                 {
-                    if (crabDist > 1.8f) foodChoices.Add("approach crab");
-                    else foodChoices.Add("catch crab");
+                    if (hasClubInHand && crabDist <= 2.4f) foodChoices.Add("strike crab with club");
+                    else if (crabDist <= 2.2f) foodChoices.Add("catch crab");
+                    else foodChoices.Add("approach crab");
                 }
 
                 if (inRiver || (Brain.Perception != null && Brain.Perception.Current != null &&
                     Brain.Perception.Current.Any(x => x != null && x.kind == NpcObjectKind.Item && x.id.Contains("river-fish"))))
                 {
-                    foodChoices.Add("catch fish");
+                    if (hasClubInHand) foodChoices.Add("strike fish with club");
+                    else foodChoices.Add("catch fish");
                 }
 
                 bool nearShore = Brain.transform.position.y <= CoastalWater.Level + 3.2f || nearestCrab != null;
-                if (nearShore && !foodChoices.Contains("catch crab") && crabDist <= 2.2f)
+                if (nearShore && !foodChoices.Contains("catch crab") && !foodChoices.Contains("strike crab with club") && crabDist <= 2.2f)
                 {
-                    foodChoices.Add("catch crab");
+                    if (hasClubInHand) foodChoices.Add("strike crab with club");
+                    else foodChoices.Add("catch crab");
                 }
             }
 
@@ -488,7 +578,7 @@ namespace CityLife.World
                     foodChoices.Add("feast catch");
                     foodChoices.Add("feast roasted catch");
                 }
-                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat") && (s.satiety < 8500 || s.body.protein < 7500))
+                if ((heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat") && (s.satiety < 8500 || s.body.protein < 7500))
                     foodChoices.Add("eat catch");
                 if (heldPhys.itemTypeId == "food-sourfig-berry" && (s.satiety < 8500 || s.hydration < 8500))
                     foodChoices.Add("eat fruit");
@@ -497,7 +587,8 @@ namespace CityLife.World
             if (moonbag != null && moonbag.CanRetrieve && (s.satiety < 8500 || s.hydration < 8500))
                 foodChoices.Add("eat fruit");
 
-            if (s.carriedFruit > 0 && s.body.stomach <= 8800 && (s.satiety < 8500 || s.hydration < 8500))
+            int carriedBerries = NpcPlayerControls.GetTotalCarriedBerries(s, Brain);
+            if (carriedBerries > 0 && s.body.stomach <= 8800 && (s.satiety < 8500 || s.hydration < 8500))
                 foodChoices.Add("eat fruit");
 
             // 6. Starvation route-to-known-food when hungry and no food in immediate view
@@ -511,10 +602,25 @@ namespace CityLife.World
                 }
             }
 
-            // 6b. Dehydration route-to-river when thirsty and not at river and container empty or low
-            if (s.hydration < 7500 && !inRiver && (s.freshwaterMl < 250 || s.hydration < 4000) && !foodChoices.Contains("drink water"))
+            // 6b. Dehydration route-to-river when thirsty and not at river waterline and container empty or low
+            if (s.hydration < 7500 && !canDrinkRiver && (s.freshwaterMl < 250 || s.hydration < 4000) && !foodChoices.Contains("drink water"))
             {
                 foodChoices.Add("seek water");
+            }
+
+            // Player Directive waypoint guidance
+            if (PlayerDirectiveTarget.HasValue)
+            {
+                float distToDirective = Vector3.Distance(Brain.transform.position, PlayerDirectiveTarget.Value);
+                if (distToDirective > 2.5f)
+                {
+                    foodChoices.Insert(0, "follow player directive");
+                }
+                else
+                {
+                    ClearPlayerDirective();
+                    if (Diary != null) Diary.AddEntry(Brain.Tick, "Journey", "Reached player designated guidance waypoint.");
+                }
             }
 
             // Urgency ranking:
@@ -528,6 +634,11 @@ namespace CityLife.World
                     urgent = "draw club";
                 else if (hasClubInHand && foodChoices.Contains("defend with club"))
                     urgent = "defend with club";
+            }
+            // Active player directive (unless critically threatened by predators or dehydration)
+            if (urgent == null && foodChoices.Contains("follow player directive") && s.hydration > 3500 && s.satiety > 3500)
+            {
+                urgent = "follow player directive";
             }
             // Life-critical dehydration: drinking or seeking water immediately before starvation or foraging
             if (urgent == null && s.hydration < 3500)
@@ -545,8 +656,10 @@ namespace CityLife.World
                 else if (foodChoices.Contains("eat catch")) urgent = "eat catch";
                 else if (foodChoices.Contains("pick meat")) urgent = "pick meat";
                 else if (foodChoices.Contains("approach meat")) urgent = "approach meat";
+                else if (foodChoices.Contains("strike crab with club")) urgent = "strike crab with club";
                 else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
                 else if (foodChoices.Contains("approach crab")) urgent = "approach crab";
+                else if (foodChoices.Contains("strike fish with club")) urgent = "strike fish with club";
                 else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
             }
             // Eating when hungry!
@@ -572,10 +685,29 @@ namespace CityLife.World
             {
                 if (foodChoices.Contains("gather berry")) urgent = "gather berry";
                 else if (foodChoices.Contains("approach berry")) urgent = "approach berry";
+                else if (foodChoices.Contains("strike crab with club")) urgent = "strike crab with club";
                 else if (foodChoices.Contains("catch crab")) urgent = "catch crab";
                 else if (foodChoices.Contains("approach crab")) urgent = "approach crab";
+                else if (foodChoices.Contains("strike fish with club")) urgent = "strike fish with club";
                 else if (foodChoices.Contains("catch fish")) urgent = "catch fish";
                 else if (foodChoices.Contains("seek food")) urgent = "seek food";
+            }
+            // Well-fulfilled domestic camp routines: balance camp chores with canyon exploration
+            if (urgent == null && IsWellFulfilled() && !wolfThreat)
+            {
+                if (nearHearth) foodChoices.Add("rest by hearth");
+                foodChoices.Add("pack rocks for shelter");
+                foodChoices.Add("survey river");
+                // Alternate domestic routines with canyon exploration so inhabitant doesn't freeze in place
+                bool justDidCampWork = recentVerifiedOutcome != null && (recentVerifiedOutcome.Contains("pack shelter") || recentVerifiedOutcome.Contains("survey river") || recentVerifiedOutcome.Contains("rest by hearth"));
+                if (justDidCampWork)
+                {
+                    urgent = null;
+                }
+                else
+                {
+                    urgent = nearHearth ? "rest by hearth" : "pack rocks for shelter";
+                }
             }
             if (urgent == null)
                 urgent = foodChoices.FirstOrDefault();
@@ -653,9 +785,28 @@ namespace CityLife.World
             if(route.Count==0)
             {
                 ExploredMetres+=Mathf.RoundToInt(Vector3.Distance(routeOrigin,Brain.transform.position));
-                LastOutcome=mapAcceptanceRequested?"Walked to scripted diagnostic destination":"Walked to model-chosen place";
+                LastOutcome=mapAcceptanceRequested?"Walked to scripted diagnostic destination":(LastChoiceByModel ? "Walked to model-chosen place" : "Walked to rule-chosen destination");
                 recentVerifiedOutcome=mapAcceptanceRequested?(routePurpose!=null?routePurpose+" reached":"scripted destination reached"):routePurpose+" reached";
                 Record("route","reached",routePurpose,null);
+                if (routePurpose == "approach crab")
+                {
+                    var nearestObs = Brain.Perception != null && Brain.Perception.Current != null
+                        ? Brain.Perception.Current.FirstOrDefault(x => x != null && x.id.Contains("crab"))
+                        : null;
+                    float dist = nearestObs != null ? Vector3.Distance(Brain.transform.position, nearestObs.position) : 999f;
+                    if (dist > 2.4f)
+                    {
+                        huntingPursuitFailures++;
+                        if (huntingPursuitFailures >= 3)
+                        {
+                            huntingHopeLostUntilTick = Brain.Tick + 450;
+                            huntingPursuitFailures = 0;
+                            if (Diary != null) Diary.AddEntry(Brain.Tick, "Mind", "Lost hope in catching prey for now. Stored lesson: pursuing quick animals in the open without cornering them only drains energy. I must forage for wild berries and wait for a calmer opportunity.");
+                            if (Brain != null && Brain.Log != null) Brain.Log.Record(Brain.Tick, "LESSON", Brain.DescribePerception(), "hunting", "Loss of hope & stored lesson", "Prey evaded capture 3 times. Ceasing pursuit to conserve stamina.");
+                            LastOutcome = "Lost hope in hunting prey for now; stored lesson to forage elsewhere";
+                        }
+                    }
+                }
                 if (Brain != null && Brain.Log != null)
                     Brain.Log.Record(Brain.Tick, "OUTCOME", Brain.DescribePerception(), routePurpose ?? "patrol", "Destination reached", LastOutcome);
                 if (Brain != null) Brain.LastResult = LastOutcome;
@@ -848,8 +999,10 @@ namespace CityLife.World
                 Dialogue = "\"Carried water quenches the burn in my throat. Strength returning.\"";
             else if (currentAction != null && currentAction.StartsWith("approach berry"))
                 Dialogue = "\"Sourfig bushes ahead on the rock shelf. Ripe fruit to gather.\"";
+            else if (currentAction == "strike crab with club")
+                Dialogue = "\"Taking aim with the club... one solid strike will stun it!\"";
             else if (currentAction != null && currentAction.StartsWith("approach crab"))
-                Dialogue = "\"Spotted a shore crab scuttling on the wet stones. That's good protein.\"";
+                Dialogue = "\"Spotted a shore crab scuttling on the wet stones. Cutting off its escape line.\"";
             else if (currentAction == "pick meat" || (currentAction != null && currentAction.StartsWith("approach meat")))
                 Dialogue = "\"Rich wolf venison on the stones. Hearty meat to roast and feast upon.\"";
             else if (currentAction == "pick leather" || (currentAction != null && currentAction.StartsWith("approach leather")))
@@ -961,6 +1114,18 @@ namespace CityLife.World
                         }
                     }
                     Vector3 targetDest = bestCrab != null && bestCrab.approach != Vector3.zero ? bestCrab.approach : (bestCrab != null ? bestCrab.position : Vector3.zero);
+                    // Predictive interception strategy: lead the moving crab along its escape vector
+                    if (bestCrab != null)
+                    {
+                        var crabGo = GameObject.Find(bestCrab.id);
+                        var crabActor = crabGo != null ? crabGo.GetComponent<CoastalCrabActor>() : null;
+                        if (crabActor != null && crabActor.CurrentVelocity.sqrMagnitude > 0.04f)
+                        {
+                            Vector3 lead = crabGo.transform.position + crabActor.CurrentVelocity.normalized * 1.6f;
+                            lead.y = CoastalTerrain.Height(lead.x, lead.z);
+                            targetDest = lead;
+                        }
+                    }
                     if (bestCrab == null || (!StartRoute(targetDest) && !StartRoute(bestCrab.position)))
                     {
                         routePurpose = null;
@@ -968,7 +1133,7 @@ namespace CityLife.World
                     }
                     else
                     {
-                        LastOutcome = "Approaching nearby shore crab to harvest marine protein";
+                        LastOutcome = "Approaching nearby shore crab with predictive interception to harvest protein";
                         recentVerifiedOutcome = "approach crab started";
                     }
                 }
@@ -1121,30 +1286,46 @@ namespace CityLife.World
                 recentVerifiedOutcome = "drink river succeeded";
                 if (Brain.Actor != null) Brain.Actor.Gesture();
             }
-            else if (accepted == "catch fish")
+            else if (accepted == "catch fish" || accepted == "strike fish with club")
             {
-                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindAnyObjectByType<NpcPlayerControls>();
                 if (controls != null)
                 {
                     controls.SpawnFishInHand();
-                    LastOutcome = "Caught fresh river fish in shallows";
+                    var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                    bool usedClub = accepted == "strike fish with club" || (carry != null && !carry.Stowed);
+                    LastOutcome = usedClub ? "Struck whiskered river barber in shallows with hunter's club" : "Caught fresh river barber in shallows";
                     FoodOutcomes++;
+                    huntingPursuitFailures = 0;
                     Persist();
-                    recentVerifiedOutcome = "catch fish succeeded";
+                    recentVerifiedOutcome = usedClub ? "strike fish with club succeeded" : "catch fish succeeded";
                     if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Diary != null) Diary.AddEntry(Brain.Tick, "Hunting", usedClub
+                        ? "Brandished hunter's club and struck a whiskered river barber cruising the shallows. Harvested rich freshwater protein."
+                        : "Landed fresh river barber from the canyon shallows.");
                 }
             }
-            else if (accepted == "catch crab")
+            else if (accepted == "catch crab" || accepted == "strike crab with club")
             {
-                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindAnyObjectByType<NpcPlayerControls>();
                 if (controls != null)
                 {
                     controls.SpawnCrabInHand();
-                    LastOutcome = "Caught protein shore crab on coastal bank";
+                    var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                    bool usedClub = accepted == "strike crab with club" || (carry != null && !carry.Stowed);
+                    LastOutcome = usedClub
+                        ? "Struck shore crab with hunter's club and harvested fresh marine protein"
+                        : "Caught protein shore crab on coastal bank";
                     FoodOutcomes++;
+                    huntingPursuitFailures = 0;
                     Persist();
-                    recentVerifiedOutcome = "catch crab succeeded";
+                    recentVerifiedOutcome = usedClub ? "strike crab with club succeeded" : "catch crab succeeded";
                     if (Brain.Actor != null) Brain.Actor.Gesture();
+                    var crabActor = FindAnyObjectByType<CoastalCrabActor>();
+                    if (crabActor != null) crabActor.Stun(5.0f);
+                    if (Diary != null) Diary.AddEntry(Brain.Tick, "Hunting", usedClub
+                        ? "Brandished hunter's club with precise timing and struck the scuttling shore crab. Harvested rich marine protein."
+                        : "Stalked and captured a coastal protein crab along the waterline.");
                 }
             }
             else if (accepted == "pick meat")
@@ -1185,16 +1366,45 @@ namespace CityLife.World
                     if (Brain.Actor != null) Brain.Actor.Gesture();
                 }
             }
+            else if (accepted == "drop to defend")
+            {
+                // User requirement: danger is more important to defend than holding extra food!
+                // Inhabitant drops what is held in weapon hand to immediately brandish the club for defense.
+                var itemToDrop = Brain.Actions != null ? (Brain.Actions.HeldLeft ?? Brain.Actions.HeldRight) : null;
+                if (itemToDrop != null)
+                {
+                    string dropName = itemToDrop.name;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, itemToDrop.StableId);
+                    var carry = Brain.GetComponentInChildren<HunterClubCarry>();
+                    if (carry != null)
+                    {
+                        carry.SetStowed(false, force: true);
+                    }
+                    LastOutcome = "Dropped " + dropName + " to brandish hunter's club for defense against wolf!";
+                    FoodOutcomes++;
+                    Persist();
+                    recentVerifiedOutcome = "drop to defend succeeded";
+                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Diary != null) Diary.AddEntry(Brain.Tick, "Defense", "Predator threat detected! Dropped held provisions to brandish hunter's club for defense.");
+                }
+            }
             else if (accepted == "draw club")
             {
                 var carry = Brain.GetComponentInChildren<HunterClubCarry>();
                 if (carry != null)
                 {
-                    carry.SetStowed(false);
-                    LastOutcome = "Drew heavy club from back, ready for defense";
-                    Persist();
-                    recentVerifiedOutcome = "draw club succeeded";
-                    if (Brain.Actor != null) Brain.Actor.Gesture();
+                    if (Brain.Actions != null && Brain.Actions.HeldLeft != null)
+                    {
+                        LastOutcome = "Cannot draw club while left hand is holding an item";
+                    }
+                    else
+                    {
+                        carry.SetStowed(false);
+                        LastOutcome = "Drew heavy club from back, ready for defense";
+                        Persist();
+                        recentVerifiedOutcome = "draw club succeeded";
+                        if (Brain.Actor != null) Brain.Actor.Gesture();
+                    }
                 }
             }
             else if (accepted == "defend with club")
@@ -1202,7 +1412,11 @@ namespace CityLife.World
                 var carry = Brain.GetComponentInChildren<HunterClubCarry>();
                 if (carry != null && carry.Stowed)
                 {
-                    carry.SetStowed(false);
+                    if (Brain.Actions != null && Brain.Actions.HeldLeft != null)
+                    {
+                        Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.HeldLeft.StableId);
+                    }
+                    carry.SetStowed(false, force: true);
                 }
                 if (Brain.Actor != null) Brain.Actor.Gesture();
 
@@ -1296,7 +1510,7 @@ namespace CityLife.World
             {
                 var s = Food.Model.State;
                 var heldPhys = Brain.Actions != null && Brain.Actions.Held != null ? Brain.Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() : null;
-                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat"))
+                if (heldPhys != null && (heldPhys.itemTypeId == "food-river-fish" || heldPhys.itemTypeId == "food-river-carp" || heldPhys.itemTypeId == "food-protein-crab" || heldPhys.itemTypeId == "food-wolf-meat"))
                 {
                     if (heldPhys.itemTypeId == "food-wolf-meat")
                     {
@@ -1382,6 +1596,128 @@ namespace CityLife.World
                     }
                 }
             }
+            else if (accepted == "follow player directive")
+            {
+                if (PlayerDirectiveTarget.HasValue)
+                {
+                    routePurpose = "follow directive: " + (PlayerDirectiveLabel ?? "player beacon");
+                    if (StartRoute(PlayerDirectiveTarget.Value))
+                    {
+                        LastOutcome = "Steering toward player guidance waypoint: " + PlayerDirectiveLabel;
+                        recentVerifiedOutcome = "follow directive underway";
+                    }
+                    else
+                    {
+                        LastOutcome = "Cannot find walkable path to player directive";
+                        recentVerifiedOutcome = "directive path blocked";
+                        ClearPlayerDirective();
+                    }
+                }
+            }
+            else if (accepted == "rest by hearth")
+            {
+                var hearthPos = Refuge != null ? Refuge.Hearth : new Vector3(-8, 1.8f, 1);
+                float distToHearth = Vector3.Distance(Brain.transform.position, hearthPos);
+                if (distToHearth > 3.5f && route.Count == 0)
+                {
+                    routePurpose = "rest by hearth";
+                    if (StartRoute(hearthPos))
+                    {
+                        LastOutcome = "Walking toward the warm hearth embers to rest.";
+                        return;
+                    }
+                }
+                var s = Food.Model.State;
+                if (Brain.Actor != null) Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
+                s.body.fatigue = Mathf.Max(0, s.body.fatigue - 300);
+                s.body.health = Mathf.Min(10000, s.body.health + 100);
+                BoostPlaceAffinity("refuge-hearth", 5);
+                LastOutcome = "Resting comfortably by warm hearth embers. Needs well-fulfilled.";
+                recentVerifiedOutcome = "rest by hearth succeeded";
+                if (Diary != null) Diary.AddEntry(Brain.Tick, "Rest", "Rested peacefully beside the glowing hearth stones.");
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "REST", Brain.DescribePerception(), accepted, "Rest by embers", LastOutcome);
+            }
+            else if (accepted == "pack rocks for shelter")
+            {
+                var workstations = FindObjectsByType<StoneBuildingWorkstation>(FindObjectsSortMode.None);
+                StoneBuildingWorkstation shelterWs = null;
+                foreach (var ws in workstations)
+                {
+                    if (ws != null && ws.CurrentTarget == StoneStructureKind.PackedWolfShelter)
+                    {
+                        shelterWs = ws;
+                        break;
+                    }
+                }
+
+                var shelterPos = shelterWs != null ? shelterWs.ConstructionSite :
+                                (Refuge != null ? Refuge.Hearth + new Vector3(3f, 0, 0) : new Vector3(-8, 1.8f, 1));
+                float distToShelter = Vector3.Distance(Brain.transform.position, shelterPos);
+                if (distToShelter > 3.8f && route.Count == 0)
+                {
+                    routePurpose = "pack rocks for shelter";
+                    if (StartRoute(shelterPos))
+                    {
+                        LastOutcome = "Gathering river cobbles and walking toward shelter perimeter.";
+                        return;
+                    }
+                }
+                if (Brain.Actor != null) Brain.Actor.Gesture();
+                BoostPlaceAffinity("shelter", 10);
+
+                if (shelterWs != null && !shelterWs.IsCompleted)
+                {
+                    int nextIndex = shelterWs.DepositedStonesCount + 1;
+                    shelterWs.DepositStone($"river-cobble-{nextIndex:D2}", "stone-river-cobble", out bool justCompleted);
+                    if (justCompleted)
+                    {
+                        LastOutcome = $"Placed final stone ({shelterWs.DepositedStonesCount}/{shelterWs.RequiredStones})! Fortified dry-stone defense wall completed against wolves.";
+                        if (Diary != null)
+                        {
+                            Diary.AddEntry(Brain.Tick, "Crafting", "Finished stacking the perimeter dry-stone defense wall. Refuge mouth is fortified against wolves.");
+                            Diary.UnlockMilestone("packed-shelter", Brain.Tick);
+                        }
+                    }
+                    else
+                    {
+                        LastOutcome = $"Carefully placed basalt stone into wall ({shelterWs.DepositedStonesCount}/{shelterWs.RequiredStones} stones packed).";
+                        if (Diary != null)
+                        {
+                            Diary.AddEntry(Brain.Tick, "Crafting", $"Packed stone {shelterWs.DepositedStonesCount}/{shelterWs.RequiredStones} into the perimeter defense wall.");
+                        }
+                    }
+                }
+                else
+                {
+                    LastOutcome = "Inspected fortified dry-stone wall. Perimeter secure against wolves.";
+                    if (Diary != null) Diary.UnlockMilestone("packed-shelter", Brain.Tick);
+                }
+
+                recentVerifiedOutcome = "pack shelter succeeded";
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "CRAFT", Brain.DescribePerception(), accepted, "Pack shelter stones", LastOutcome);
+            }
+            else if (accepted == "survey river")
+            {
+                var riverLookout = new Vector3(0, 1.5f, -20);
+                float distToRiver = Vector3.Distance(Brain.transform.position, riverLookout);
+                if (distToRiver > 4.5f && route.Count == 0)
+                {
+                    routePurpose = "survey river";
+                    if (StartRoute(riverLookout))
+                    {
+                        LastOutcome = "Walking toward the river overlook to survey the canyon.";
+                        return;
+                    }
+                }
+                if (Brain.Actor != null) Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
+                LastOutcome = "Surveying the tranquil river canyon. Life is in harmony.";
+                recentVerifiedOutcome = "survey river succeeded";
+                if (Diary != null) Diary.AddEntry(Brain.Tick, "Journey", "Paused at the canyon overlook, watching the clear water run to the sea.");
+                if (Brain != null && Brain.Log != null)
+                    Brain.Log.Record(Brain.Tick, "SURVEY", Brain.DescribePerception(), accepted, "Survey canyon river", LastOutcome);
+            }
             else if (accepted == "gather berry")
             {
                 var s = Food.Model.State;
@@ -1446,6 +1782,22 @@ namespace CityLife.World
                         Food.SyncFruitVisual();
                         Persist();
                         if (Brain.Actor != null) Brain.Actor.Gesture();
+                        if (Diary != null)
+                        {
+                            Diary.AddEntry(Brain.Tick, "Food", "Gathered wild sourfig berries from the canyon scrub.");
+                            Diary.UnlockMilestone("first-feast", Brain.Tick);
+                        }
+                    }
+                    else
+                    {
+                        LastOutcome = "Failed to gather berry: " + receipt.code;
+                        recentVerifiedOutcome = "gather berry failed: " + receipt.code;
+                        BoostPlaceAffinity("berry-grove", -8);
+                        var controls = Brain.GetComponent<NpcPlayerControls>() ?? FindFirstObjectByType<NpcPlayerControls>();
+                        if (receipt.code == "inventory-full")
+                        {
+                            NpcPlayerControls.ReconcileCarriedFruit(s, Brain, controls);
+                        }
                     }
                 }
             }
@@ -1489,6 +1841,13 @@ namespace CityLife.World
             if(Brain.MenuPaused||Brain.Possessed||!Brain.Running){Cancel("control-interruption");return false;}
             RememberCurrentWorld();
             var s=Food.Model.State;
+            if (Brain.Tick % 50 == 0 && Diary != null)
+            {
+                if (Brain.transform.position.z < -100f && Mathf.Abs(Brain.transform.position.x) < 45f)
+                    Diary.UnlockMilestone("waterfall-discovered", Brain.Tick);
+                if (s.exploredCells != null && s.exploredCells.Count >= 1000)
+                    Diary.UnlockMilestone("master-surveyor", Brain.Tick);
+            }
             if(string.IsNullOrEmpty(s.survivalAuthorityEvidence) && !s.body.dead &&
                 Brain.Actions!=null && Brain.Actions.Held==null && Brain.Actions.Deliveries>=3 &&
                 Brain.Registry.Where(x=>x.Kind==NpcObjectKind.Item&&x.Permission)
