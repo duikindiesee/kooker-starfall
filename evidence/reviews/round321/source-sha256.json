@@ -1,0 +1,16 @@
+{
+  "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260926-080548",
+  "sourceFileCount": 258,
+  "files": [
+    {
+      "matchesBuildManifest": true,
+      "sha256": "A1BC6822289DE13AFD418240DD842A2B12B41302B225FE1F58BEBE8BE26E13AB",
+      "path": "Assets\\CityLife\\Scripts\\FishingRodItem.cs"
+    },
+    {
+      "matchesBuildManifest": true,
+      "sha256": "9BF9474AAE2A13A607F1F9D02A018CF82FA3155098396A3515576CF0AD0A0FBC",
+      "path": "Assets\\CityLife\\Items\\Editor\\FishingIntegrationChecks.cs"
+    }
+  ]
+}

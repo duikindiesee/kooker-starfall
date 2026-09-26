@@ -29,18 +29,12 @@ namespace CityLife.World.Editor
    Rock("Refuge roof",new Vector3(-10.5f,6.5f,0),new Vector3(12,2.2f,9));
    for(int i=0;i<9;i++)Rock("Refuge outer strata "+i,new Vector3(-14.4f+i*.6f,5.7f+(i%3)*.3f,3.6f),new Vector3(2.7f,1.6f,2));
    Vector3 hearth=new Vector3(-8,1.8f,1.35f),bed=new Vector3(-11,1.8f,-1.2f),storage=new Vector3(-12,1.8f,1.1f);
-   for(int i=0;i<12;i++){float a=i*Mathf.PI/6;Rock("Hearth boundary stone "+i,hearth+new Vector3(Mathf.Cos(a)*.64f,.1f,Mathf.Sin(a)*.64f),new Vector3(.31f,.24f,.27f));}
-   for(int i=0;i<4;i++){var log=Box("Hearth fuel log "+i,hearth+new Vector3(0,.13f+i*.055f,0),new Vector3(.8f,.12f,.12f),wood);log.transform.rotation=Quaternion.Euler(0,i*58,0);}
-   var mat=Box("Primitive sleeping mat",bed+Vector3.up*.035f,new Vector3(2.2f,.07f,1),straw);
-   for(int i=0;i<22;i++)Object.DestroyImmediate(Box("Mat weave "+i,bed+new Vector3(-1.05f+i*.1f,.08f,0),new Vector3(.035f,.025f,1),wood).GetComponent<Collider>());
-   Object.DestroyImmediate(Box("Rolled grass pillow",bed+new Vector3(-.85f,.15f,0),new Vector3(.32f,.2f,.75f),straw).GetComponent<Collider>());
-   Box("Modest stone storage base",storage+Vector3.up*.15f,new Vector3(.85f,.3f,.65f),stone);
-   for(int i=0;i<6;i++)Box("Stored fuel "+i,storage+new Vector3((i%2)*.2f-.1f,.4f+(i/2)*.13f,0),new Vector3(.13f,.12f,.6f),wood);
+   // Unfurnished natural cave: no pre-placed beds, grass mats, or fuel logs. Inhabitant decides where to craft and place survival structures.
    var runtime=camera.gameObject.AddComponent<Starfall.Refuge.RefugeRuntime>();camera.gameObject.AddComponent<Starfall.Refuge.RefugeRain>().World=runtime;runtime.View=camera;runtime.Hearth=hearth;runtime.Bed=bed;runtime.Storage=storage;runtime.Roof=GameObject.Find("Refuge roof").GetComponent<Collider>();
    var body=new GameObject("Refuge player capsule");body.layer=9;var capsule=body.AddComponent<CharacterController>();capsule.height=1.8f;capsule.center=new Vector3(0,.9f,0);capsule.radius=.3f;capsule.stepOffset=.25f;capsule.slopeLimit=45;capsule.skinWidth=.025f;body.transform.position=new Vector3(-4,.05f,-4);runtime.Body=capsule;
    camera.transform.position=body.transform.position+Vector3.up*1.65f;camera.transform.rotation=Quaternion.LookRotation(new Vector3(-7,2.5f,0)-camera.transform.position);camera.nearClipPlane=.08f;camera.fieldOfView=65;
-   var flame=Rock("Contained hearth flame",hearth+Vector3.up*.43f,new Vector3(.26f,.55f,.26f));Object.DestroyImmediate(flame.GetComponent<Collider>());var glow=Mat("Amber fire",new Color(1,.22f,.015f));glow.EnableKeyword("_EMISSION");glow.SetColor("_EmissionColor",new Color(3,.55f,.03f));flame.GetComponent<Renderer>().sharedMaterial=glow;runtime.Flame=flame;
-   var light=new GameObject("Hearth light").AddComponent<Light>();light.type=LightType.Point;light.color=new Color(1,.44f,.13f);light.range=7;light.shadows=LightShadows.Soft;light.transform.position=hearth+Vector3.up*.7f;runtime.FireLight=light;
+   var flame=Rock("Contained hearth flame",hearth+Vector3.up*.43f,new Vector3(.26f,.55f,.26f));Object.DestroyImmediate(flame.GetComponent<Collider>());var glow=Mat("Amber fire",new Color(1,.22f,.015f));glow.EnableKeyword("_EMISSION");glow.SetColor("_EmissionColor",new Color(3,.55f,.03f));flame.GetComponent<Renderer>().sharedMaterial=glow;flame.SetActive(false);runtime.Flame=flame;
+   var light=new GameObject("Hearth light").AddComponent<Light>();light.type=LightType.Point;light.color=new Color(1,.44f,.13f);light.range=7;light.shadows=LightShadows.Soft;light.transform.position=hearth+Vector3.up*.7f;light.enabled=false;runtime.FireLight=light;
    var giant=GameObject.Find("Blue gas giant - procedural volumetric cloud bands");if(giant!=null){giant.transform.position=new Vector3(120,420,2800);giant.transform.localScale=Vector3.one*650;camera.farClipPlane=6000;}
    Time.fixedDeltaTime=.02f;Time.maximumDeltaTime=.1f;runtime.ValidateGeometry();if(!runtime.GeometryVerified||!runtime.WaterVerified)throw new InvalidOperationException("Refuge editor geometry/water preflight failed; no player acceptance inferred.");
   }

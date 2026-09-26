@@ -25,15 +25,17 @@ namespace CityLife.World
         public int Tick { get; private set; }
         public string Phase { get; private set; } = "Observe";
         public string GoalId => goal != null ? goal.id : "";
-        public NpcActionApi Actions { get; private set; }
+        public NpcActionApi Actions { get; internal set; }
+        public void SetActionsForTesting(NpcActionApi actions) => Actions = actions;
         public int FailureCount { get; private set; }
         public bool Ready { get; private set; }
-        public string LastResult { get; private set; } = "Waiting for perception";
+        public string LastResult { get; set; } = "Waiting for perception";
         public string LastFailureDiagnostic { get; private set; } = "none";
         public List<string> ChosenGoals = new List<string>();
         public StarfallMemoryExport MemoryExport;
         public string MemoryExportFailure { get; private set; } = "";
         public CityLife.Items.PhysicalItemBootstrap PhysicalItems;
+        public ForagingExpeditionCycle Foraging;
         private NpcObservation goal;
         private readonly Dictionary<string, int> retryAfter = new Dictionary<string, int>(StringComparer.Ordinal);
         private Queue<Vector3> route;
@@ -43,38 +45,78 @@ namespace CityLife.World
 
         private void Start()
         {
-            foreach (var item in Registry) item.RememberInitial();
-            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
-                PhysicalItems.DemonstrationInteractable.RememberInitial();
-            ResetState(); Ready = true;
-        }
-        public IEnumerable<NpcInteractable> AllInteractables =>
-            PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null
-                ? Registry.Concat(new[] { PhysicalItems.DemonstrationInteractable })
-                : (IEnumerable<NpcInteractable>)Registry;
-
-        public void ResetState()
-        {
-            if (OptionalPlanner != null) OptionalPlanner.ResetSession();
-            if (Survival != null) Survival.Cancel("world-reset");
-            foreach (var item in Registry) item.RestoreInitial();
-            if (PhysicalItems != null && PhysicalItems.DemonstrationInteractable != null)
-                PhysicalItems.DemonstrationInteractable.RestoreInitial();
-            Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
-            goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear(); Log.ResetLog();
-            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
-            Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
-            Actor.Place(SpawnPosition); Actor.transform.rotation = Quaternion.identity;
-            Actions = new NpcActionApi(AgentId, InstanceWorldId, transform, Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand), AllInteractables);
-            if (PhysicalItems != null)
+            if (Registry != null)
             {
-                PhysicalItems.OnActionsCreated(Actions);
-                if (PhysicalItems.Model != null && PhysicalItems.Model.HighestReceiptRequestId > requestId)
+                foreach (var item in Registry)
                 {
-                    requestId = PhysicalItems.Model.HighestReceiptRequestId;
+                    if (item != null) item.RememberInitial();
                 }
             }
+            Ready = ResetState();
+        }
+        public IEnumerable<NpcInteractable> AllInteractables =>
+            PhysicalItems != null && PhysicalItems.AllInteractables != null
+                ? (Registry != null ? Registry.Where(i => i != null).Concat(PhysicalItems.AllInteractables.Where(i => i != null)) : PhysicalItems.AllInteractables.Where(i => i != null))
+                : (IEnumerable<NpcInteractable>)(Registry ?? Array.Empty<NpcInteractable>());
+
+        public bool ResetState()
+        {
+            Transform rightHand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            Transform leftHand = (Actor != null && Actor.Animator != null) ? Actor.Animator.GetBoneTransform(HumanBodyBones.LeftHand) : null;
+            NpcActionApi candidateActions;
+            try
+            {
+                candidateActions = new NpcActionApi(AgentId, InstanceWorldId, transform, rightHand, leftHand, AllInteractables);
+            }
+            catch
+            {
+                return false;
+            }
+
+            var hunterClub = GetComponentInChildren<HunterClubCarry>();
+            if (hunterClub != null)
+            {
+                candidateActions.OnLeftHandOccupiedChanged += stowed => hunterClub.SetStowed(stowed);
+            }
+
+            if (PhysicalItems != null)
+            {
+                bool physicalSuccess = PhysicalItems.OnActionsCreated(candidateActions);
+                if (!physicalSuccess)
+                {
+                    return false;
+                }
+            }
+
+            // Physical transaction and candidate validation succeeded: proceed to nonphysical reset side effects
+            if (OptionalPlanner != null) OptionalPlanner.ResetSession();
+            if (Survival != null) Survival.Cancel("world-reset");
+            if (Foraging != null) Foraging.ResetExpedition();
+            if (Registry != null)
+            {
+                foreach (var item in Registry)
+                {
+                    if (item != null) item.RestoreInitial();
+                }
+            }
+            Tick = requestId = gestureTicks = stalledTicks = FailureCount = 0;
+            goal = null; route = null; retryAfter.Clear(); ChosenGoals.Clear();
+            if (Log != null) Log.ResetLog();
+            perceptionSignature = previousWait = ""; Phase = "Observe"; LastResult = "Waiting for perception"; LastFailureDiagnostic = "none";
+            Running = true; MenuPaused = false; Possessed = false; ManualDirection = Vector3.zero;
+            if (Actor != null)
+            {
+                Actor.Place(SpawnPosition);
+                Actor.transform.rotation = Quaternion.identity;
+            }
+
+            Actions = candidateActions;
+            if (PhysicalItems != null && PhysicalItems.Model != null && PhysicalItems.Model.HighestReceiptRequestId > requestId)
+            {
+                requestId = PhysicalItems.Model.HighestReceiptRequestId;
+            }
             Physics.SyncTransforms();
+            return true;
         }
 
         public int RequestId => requestId;
@@ -120,6 +162,21 @@ namespace CityLife.World
             if (Log != null)
             {
                 Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), targetId ?? "", kind.ToString(), result.code,
+                    result.success ? "player-directed action completed" : "player-directed action rejected: " + result.code);
+            }
+            LastResult = result.code;
+            return result;
+        }
+
+        public NpcActionResult ExecutePlayerAction(NpcActionKind kind, string itemId, string containerId)
+        {
+            if (Actions == null) return new NpcActionResult { success = false, code = "actions-uninitialized" };
+            if (!TryAllocateRequestId(out int req))
+                return new NpcActionResult { success = false, code = "request-id-overflow" };
+            var result = Actions.Execute(req, kind, itemId, containerId);
+            if (Log != null)
+            {
+                Log.Record(Tick, result.success ? "result" : "failure", DescribePerception(), (itemId ?? "") + "->" + (containerId ?? ""), kind.ToString(), result.code,
                     result.success ? "player-directed action completed" : "player-directed action rejected: " + result.code);
             }
             LastResult = result.code;
@@ -175,15 +232,42 @@ namespace CityLife.World
             }
             if (Survival != null && Survival.Enabled && Survival.Food.Model.State.body.dead && Possessed)
             { Actor.Step(Vector3.zero, StepSeconds); return; }
-            if (Possessed) { Actor.Step(TerrainNavigation == null ? ManualDirection : TerrainNavigation.ConstrainMotion(transform.position, ManualDirection, Actor.WalkSpeed * StepSeconds), StepSeconds); return; }
+            if (Possessed)
+            {
+                Actor.Step(ManualDirection, StepSeconds);
+                if (Survival != null && Survival.Enabled)
+                {
+                    Survival.RememberCurrentWorld();
+                }
+                return;
+            }
             if (!Running) { Actor.Step(Vector3.zero, StepSeconds); return; }
-            if (Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
+            bool hasAuthoredLegacyItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item && x.GetComponent<CityLife.Items.PhysicalItem>() == null);
+            bool isHoldingFood = Actions != null && Actions.Held != null && (
+                Actions.Held.StableId.Contains("fish") || Actions.Held.StableId.Contains("crab") ||
+                Actions.Held.StableId.Contains("berry") || Actions.Held.StableId.Contains("food") ||
+                Actions.Held.StableId.Contains("fruit") ||
+                (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
+                 (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("food") ||
+                  Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId == "fruit")));
+            bool isHoldingTool = Actions != null && Actions.Held != null && (
+                Actions.Held.StableId.Contains("club") || Actions.Held.StableId.Contains("rod") ||
+                Actions.Held.StableId.Contains("tool") ||
+                (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
+                 Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("tool")));
+            bool allowSurvival = Actions == null || Actions.Held == null || isHoldingFood || isHoldingTool;
+            bool survivalPriority = Survival != null && Survival.Enabled && (Survival.HasActiveCommand || Survival.Food.Model.State.body.dead ||
+                isHoldingFood ||
+                (Survival.Food.Model.State.satiety < 7000 && allowSurvival) ||
+                (Survival.Food.Model.State.hydration < 7000 && allowSurvival) ||
                 // A scoped continuation earned in a prior real delivery cycle
                 // resumes survival without inventing delivery state in this
-                // reconstructed world. Never override a currently held item.
-                (Survival.VerifiedScopedContinuation && Actions.Held == null) ||
-                (goal == null && Actions.Held == null && Actions.Deliveries >= 3 &&
-                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0))))
+                // reconstructed world. Never override a currently held item unless it's food.
+                (Survival.VerifiedScopedContinuation && allowSurvival) ||
+                (!hasAuthoredLegacyItems && allowSurvival) ||
+                (goal == null && allowSurvival && (!hasAuthoredLegacyItems || (Actions.Deliveries >= 3 &&
+                    Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0)))));
+            if (survivalPriority)
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }
@@ -222,6 +306,19 @@ namespace CityLife.World
                 if (!proposed) goal = NpcDecisionPolicy.Choose(Perception.Current, Actions.Held != null, retryAfter, Tick);
                 if (goal == null)
                 {
+                    bool hasAuthoredItems = Registry != null && Registry.Any(x => x != null && x.Kind == NpcObjectKind.Item);
+                    bool deliveriesFinished = !hasAuthoredItems || (Actions.Deliveries >= 3 || (Actions.Deliveries > 0 && Registry.Where(x => x != null && x.Kind == NpcObjectKind.Item && x.Permission).All(x => !string.IsNullOrEmpty(x.DeliveredTo))));
+                    if (deliveriesFinished && Actions.Held == null)
+                    {
+                        if (Foraging == null) Foraging = GetComponent<ForagingExpeditionCycle>();
+                        if (Foraging != null && Foraging.StepAutonomousLiving(this, Actor, StepSeconds))
+                        {
+                            Phase = "Living / " + Foraging.Phase;
+                            LastResult = "Active living: " + Foraging.Phase;
+                            return;
+                        }
+                    }
+
                     Phase = "Wait";
                     string reason = Actions.Held == null ? "no eligible perceived item" : "no eligible perceived destination; retain cargo";
                     if (reason != previousWait)

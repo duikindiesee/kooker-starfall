@@ -53,20 +53,62 @@ namespace CityLife.World
             // asserting that untested fruit is edible or nutritious.
             string prior=recentVerifiedOutcome=="approach berry reached"?
                 "Last verified outcome: approach berry reached observed fruit. Gathering stores one fruit for a test; food benefit unknown. ":
+                recentVerifiedOutcome=="approach berry started"?
+                "Last verified outcome: approaching nearby ripe berry bush to forage. ":
+                recentVerifiedOutcome=="gather berry succeeded; ate immediately"?
+                "Last verified outcome: gathered ripe berry and ate immediately to replenish energy. ":
+                recentVerifiedOutcome=="gather berry succeeded; stored in moonbag"?
+                "Last verified outcome: gathered ripe berry and stored in waist moonbag for later. ":
+                recentVerifiedOutcome=="gather berry succeeded; carried in hand"?
+                "Last verified outcome: gathered ripe berry and carried in hand for later. ":
                 recentVerifiedOutcome=="gather berry succeeded"?
                 "Last verified outcome: gather berry put one observed fruit in inventory. Eating it would test an unknown meal effect. ":
+                recentVerifiedOutcome=="catch fish succeeded"?
+                "Last verified outcome: caught freshwater fish in shallows. ":
+                recentVerifiedOutcome=="catch crab succeeded"?
+                "Last verified outcome: caught protein crab on shore. ":
+                recentVerifiedOutcome=="approach crab started"?
+                "Last verified outcome: approaching shore crab to harvest marine protein. ":
+                recentVerifiedOutcome=="holster club succeeded"?
+                "Last verified outcome: holstered heavy club onto back to free hands. ":
+                recentVerifiedOutcome=="draw club succeeded"?
+                "Last verified outcome: drew heavy club from back, ready for defense. ":
+                recentVerifiedOutcome=="defend with club succeeded"?
+                "Last verified outcome: defended with club strike, repelling predatory wolf. ":
+                recentVerifiedOutcome=="pick meat succeeded"?
+                "Last verified outcome: gathered raw wolf venison meat from ground. ":
+                recentVerifiedOutcome=="pick leather succeeded"?
+                "Last verified outcome: collected cured wolf leather pelt from ground. ":
+                recentVerifiedOutcome=="approach meat started"?
+                "Last verified outcome: approaching wolf meat on stones to gather protein. ":
+                recentVerifiedOutcome=="approach leather started"?
+                "Last verified outcome: approaching wolf leather hide on ground. ":
+                recentVerifiedOutcome=="eat catch succeeded"?
+                "Last verified outcome: ate fresh catch to reduce hunger. ":
+                recentVerifiedOutcome=="eat fruit succeeded"?
+                "Last verified outcome: ate ripe fruit to reduce hunger. ":
+                recentVerifiedOutcome=="feast catch succeeded"?
+                "Last verified outcome: feasted on savory roasted meal. ":
                 recentVerifiedOutcome=="approach spring reached"?
                 "Last verified outcome: approach spring reached observed seep. ":
                 recentVerifiedOutcome=="inspect spring succeeded"?
                 "Last verified outcome: inspected the observed maintained freshwater seep. ":
-                recentVerifiedOutcome!=null&&recentVerifiedOutcome.StartsWith("explore ",StringComparison.Ordinal)&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
+                recentVerifiedOutcome=="drink river succeeded"?
+                "Last verified outcome: drank fresh river water. ":
+                recentVerifiedOutcome=="drink water succeeded"?
+                "Last verified outcome: drank carried freshwater from container. ":
+                recentVerifiedOutcome=="seek water started"?
+                "Last verified outcome: seeking freshwater river to quench thirst. ":
+                recentVerifiedOutcome!=null&&recentVerifiedOutcome.EndsWith(" reached",StringComparison.Ordinal)?
                 "Last verified outcome: "+recentVerifiedOutcome+". ":"";
             // Only the two measured, hash-validated own-death causes can enter
             // the request. Never forward arbitrary saved text as a model fact.
             string death=verifiedDeathCause=="prolonged-dehydration"?
                 "Prior verified own death: Hydration remained depleted before fatal damage. ":
                 verifiedDeathCause=="prolonged-starvation"?
-                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":"";
+                "Prior verified own death: Energy and fat were exhausted before fatal damage. ":
+                verifiedDeathCause=="drowning"?
+                "Prior verified own death: Submerged underwater without air; drowned. ":"";
             string energyLabel=hunger<2000?"severe low energy":hunger<8500?"below replenish target":"at replenish target";
             string waterLabel=thirst<2000?"severe low hydration":thirst<8500?"below replenish target":"at replenish target";
             string user=explorationOnly?death+prior+"Eligible: "+string.Join(", ",eligible)+".":

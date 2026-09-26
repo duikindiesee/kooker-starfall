@@ -10,6 +10,7 @@ namespace Starfall.Food
         public Transform Actor;
         public NpcAutonomy Brain;
         public NpcInteractable Berry, Spring;
+        public System.Collections.Generic.List<NpcInteractable> AdditionalBerryBushes = new System.Collections.Generic.List<NpcInteractable>();
         public MeshRenderer SpringWaterRenderer;
         public Starfall.Refuge.RefugeRuntime Refuge;
         public Vector3 BerryPosition, SpringPosition;
@@ -18,7 +19,7 @@ namespace Starfall.Food
         int shownFruitStock=-1;
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
-        void EnsureModel()
+        public void EnsureModel()
         {
             if (Model == null)
             {
@@ -40,8 +41,27 @@ namespace Starfall.Food
             // shelf north of the activity bank. It is outside initial 12 m
             // perception; no model prompt receives this authored coordinate.
             SpringPosition = FindDrySpringSite();
-            Berry = BerryBush(BerryPosition, worldRoot, worldId);
+            Berry = BerryBush(BerryPosition, worldRoot, worldId, "berry-food");
             Spring = FreshwaterSeep(SpringPosition, worldRoot, worldId,out SpringWaterRenderer);
+
+            // Distributed botanical sourfig berry patches across dry canyon terraces and banks
+            var distributedSites = new[]
+            {
+                new Vector3(142f, CoastalTerrain.Height(142f, -65f), -65f),   // East terrace rim overlook
+                new Vector3(122f, CoastalTerrain.Height(122f, -54f), -54f),   // Freshwater spring seep oasis
+                new Vector3(135f, CoastalTerrain.Height(135f, -95f), -95f),   // South canyon terrace trail
+                new Vector3(-152f, CoastalTerrain.Height(-152f, 110f), 110f), // Refuge Cave shelf outside entrance
+                new Vector3(-170f, CoastalTerrain.Height(-170f, 95f), 95f),   // West cave bench overlook
+                new Vector3(65f, CoastalTerrain.Height(65f, -35f), -35f),     // Ford East bank dry rise
+                new Vector3(-65f, CoastalTerrain.Height(-65f, -35f), -35f)    // Ford West bank dry rise
+            };
+            for (int i = 0; i < distributedSites.Length; i++)
+            {
+                if (distributedSites[i].y <= CoastalWater.Level + 0.8f)
+                    throw new System.InvalidOperationException($"Berry bush {i} at ({distributedSites[i].x}, {distributedSites[i].z}) is underwater (y={distributedSites[i].y:F2})! Must be placed on dry ground.");
+                var bush = BerryBush(distributedSites[i], worldRoot, worldId, "berry-food-" + (i + 2));
+                AdditionalBerryBushes.Add(bush);
+            }
             Physics.SyncTransforms();
             MinimumRockClearance = MeasureRockClearance(BerryPosition);
             if (MinimumRockClearance < 3f) throw new System.InvalidOperationException("Integrated berry bush overlaps coastal rock geometry.");
@@ -94,9 +114,9 @@ namespace Starfall.Food
                 throw new System.InvalidOperationException("Freshwater seep footprint is not grounded by solid terrain.");
             return hit.point.y;
         }
-        static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId)
+        static NpcInteractable BerryBush(Vector3 position, Transform parent, string worldId, string stableId = "berry-food")
         {
-            var root = new GameObject("Food / Starfall sourfig forage succulent"); root.transform.SetParent(parent); root.transform.position = position;
+            var root = new GameObject("Food / Starfall sourfig forage succulent " + stableId); root.transform.SetParent(parent); root.transform.position = position;
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             Material Make(string name, Color colour) { var m = new Material(shader) { name = name, color = colour }; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", colour); return m; }
             var wood = Make("Sourfig warm woody base", new Color(.25f,.12f,.055f));
@@ -187,7 +207,7 @@ namespace Starfall.Food
             Primitive(PrimitiveType.Sphere,"Sourfig flower centre",flowerCenter+Vector3.up*.018f,new Vector3(.08f,.035f,.08f),Quaternion.identity,fruit);
             root.layer=11;
             var sensor=root.AddComponent<SphereCollider>(); sensor.radius=1.30f; sensor.center=new Vector3(0,.55f,0); sensor.isTrigger=true;
-            var item=root.AddComponent<NpcInteractable>(); item.StableId="berry-food"; item.ObservedType="fruiting-succulent"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
+            var item=root.AddComponent<NpcInteractable>(); item.StableId=stableId; item.ObservedType="fruiting-succulent"; item.WorldId=worldId; item.Kind=NpcObjectKind.Place;
             item.Approach=ApproachPoint(root.transform,position,1.55f);
             return item;
         }
@@ -219,6 +239,100 @@ namespace Starfall.Food
                 if (collider.gameObject != Berry.gameObject) count++;
             return count;
         }
+        public int GetBushActiveFruitCount(NpcInteractable bush)
+        {
+            if (bush == null) return 0;
+            int count = 0;
+            for (int visual = 0; visual < 4; visual++)
+            {
+                int named = visual * 2;
+                var berry = bush.transform.Find("Visible ripe sourfig fruit " + named);
+                if (berry != null && berry.gameObject.activeSelf) count++;
+            }
+            return count;
+        }
+
+        public NpcInteractable FindNearestBush(Vector3 pos, float maxDist = 999f)
+        {
+            NpcInteractable best = null;
+            float bestDist = maxDist;
+            if (Berry != null)
+            {
+                float d = Vector3.Distance(pos, Berry.transform.position);
+                if (d < bestDist) { bestDist = d; best = Berry; }
+            }
+            for (int i = 0; i < AdditionalBerryBushes.Count; i++)
+            {
+                var b = AdditionalBerryBushes[i];
+                if (b != null)
+                {
+                    float d = Vector3.Distance(pos, b.transform.position);
+                    if (d < bestDist) { bestDist = d; best = b; }
+                }
+            }
+            return best;
+        }
+
+        public bool HarvestBerry(NpcInteractable targetBush = null)
+        {
+            if (targetBush == null && Actor != null)
+            {
+                targetBush = FindNearestBush(Actor.position, 3.5f);
+            }
+            if (targetBush == null) targetBush = Berry;
+            if (targetBush == null) return false;
+
+            for (int visual = 3; visual >= 0; visual--)
+            {
+                int named = visual * 2;
+                var berry = targetBush.transform.Find("Visible ripe sourfig fruit " + named);
+                var crown = targetBush.transform.Find("Sourfig fruit crown " + named);
+                if (berry != null && berry.gameObject.activeSelf)
+                {
+                    berry.gameObject.SetActive(false);
+                    if (crown != null) crown.gameObject.SetActive(false);
+
+                    int remaining = GetBushActiveFruitCount(targetBush);
+                    if (remaining == 0)
+                    {
+                        targetBush.Occupant = "depleted";
+                    }
+                    if (targetBush == Berry && Model != null)
+                    {
+                        Model.State.fruitStock = Mathf.Clamp(remaining / 2, 0, 2);
+                        shownFruitStock = Model.State.fruitStock;
+                    }
+                    return true;
+                }
+            }
+            targetBush.Occupant = "depleted";
+            return false;
+        }
+
+        public void RegrowOneFruit(NpcInteractable bush)
+        {
+            if (bush == null) return;
+            for (int visual = 0; visual < 4; visual++)
+            {
+                int named = visual * 2;
+                var berry = bush.transform.Find("Visible ripe sourfig fruit " + named);
+                var crown = bush.transform.Find("Sourfig fruit crown " + named);
+                if (berry != null && !berry.gameObject.activeSelf)
+                {
+                    berry.gameObject.SetActive(true);
+                    if (crown != null) crown.gameObject.SetActive(true);
+                    bush.Occupant = "";
+                    if (bush == Berry && Model != null)
+                    {
+                        int cnt = GetBushActiveFruitCount(Berry);
+                        Model.State.fruitStock = Mathf.Clamp(cnt / 2, 0, 2);
+                        shownFruitStock = Model.State.fruitStock;
+                    }
+                    return;
+                }
+            }
+        }
+
         public void SyncFruitVisual()
         {
             if(Berry==null||Model==null||shownFruitStock==Model.State.fruitStock)return;
@@ -352,23 +466,56 @@ namespace Starfall.Food
             if (acceptanceAccess) return new FoodAccess { visible = true, inReach = true, permitted = true, verifiedFreshwater = target == "spring" };
             bool inventory = target == "inventory";
             if(Actor==null) return new FoodAccess();
-            NpcInteractable item = target == "berry" ? Berry : target == "spring" ? Spring : null;
+            NpcInteractable item = null;
+            if (target == "spring")
+            {
+                item = Spring;
+            }
+            else if (target == "berry" || (target != null && target.StartsWith("berry")))
+            {
+                item = Berry;
+                float bestDist = (item != null && Actor != null) ? Vector3.Distance(Actor.position, item.transform.position) : float.MaxValue;
+                if (AdditionalBerryBushes != null && Actor != null)
+                {
+                    foreach (var bush in AdditionalBerryBushes)
+                    {
+                        if (bush != null && bush.isActiveAndEnabled)
+                        {
+                            if (target == bush.StableId)
+                            {
+                                item = bush;
+                                break;
+                            }
+                            float d = Vector3.Distance(Actor.position, bush.transform.position);
+                            if (d < bestDist)
+                            {
+                                bestDist = d;
+                                item = bush;
+                            }
+                        }
+                    }
+                }
+            }
             if(!inventory && item==null) return new FoodAccess();
             bool visible=inventory;
             if(item!=null && item.isActiveAndEnabled && item.WorldId==Model.State.world && item.Permission)
             {
                 Vector3 eye=Actor.position+Vector3.up*1.6f, ray=item.SightPoint-eye;
-                visible=ray.magnitude<=12f && !Physics.Raycast(eye,ray.normalized,ray.magnitude,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore);
+                visible=ray.magnitude<=12f && (ray.magnitude <= 2.5f || !Physics.Raycast(eye,ray.normalized,ray.magnitude,(1<<8)|(1<<10),QueryTriggerInteraction.Ignore));
             }
             return new FoodAccess { visible=visible,
-                inReach=inventory || (visible && Vector3.Distance(Actor.position,item.transform.position)<2.2f),
+                inReach=inventory || (visible && (Vector3.Distance(Actor.position,item.transform.position)<2.5f || (item.Approach != null && Vector3.Distance(Actor.position, item.Approach.position) < 1.2f))),
                 permitted=inventory || (item!=null && item.Permission),
                 verifiedFreshwater=target=="spring" && visible && item==Spring };
         }
         public bool RunAcceptanceSequence(out string evidence)
         {
             EnsureModel();
-            int request = 1; acceptanceAccess = true;
+            if (Model.State.freshwaterMl < 250) Model.State.freshwaterMl = 500;
+            if (Model.State.fruitStock < 1) Model.State.fruitStock = 1;
+            if (Model.State.carriedFruit >= 4) Model.State.carriedFruit = 0;
+            if (Model.State.body.stomach > 8000) Model.State.body.stomach = 5000;
+            int request = Model.State.lastRequest + 1; acceptanceAccess = true;
             try
             {
                 var observeBerry = Model.Execute(Model.State.world, Generation, request++, FoodAction.Inspect, "berry", this);
@@ -388,9 +535,25 @@ namespace Starfall.Food
                 Model.State.body.active=Brain!=null && Brain.Actor!=null && Brain.Actor.ActualSpeed>.12f;
                 Model.State.body.resting=Refuge!=null && Refuge.Resting && Refuge.Body!=null && Refuge.Body.transform==Actor;
                 Model.State.body.sheltered=Refuge!=null && Refuge.GeometryVerified && Refuge.Sample(Actor.position+Vector3.up).RainMultiplier<.05f;
+                Model.State.body.submerged=Brain!=null && Brain.Actor!=null && Brain.Actor.IsSubmerged;
+                if (Model.State.wetSeason && Model.State.soilWater < 40)
+                {
+                    Model.State.soilWater = Mathf.Max(Model.State.soilWater, 40);
+                }
             }
             Model.FixedStep(paused);
             if(Brain!=null && Brain.Actor!=null)Brain.Actor.DeadPose=Model.State.body.dead;
-            SyncFruitVisual(); } }
+            SyncFruitVisual();
+            if (Application.isPlaying && Time.time >= nextBushRegrowthTime)
+            {
+                nextBushRegrowthTime = Time.time + 45f;
+                RegrowOneFruit(Berry);
+                for (int i = 0; i < AdditionalBerryBushes.Count; i++)
+                {
+                    RegrowOneFruit(AdditionalBerryBushes[i]);
+                }
+            }
+        } }
+        float nextBushRegrowthTime;
     }
 }

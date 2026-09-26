@@ -1,0 +1,7 @@
+{
+    "status": "PASS",
+    "rockColliders": 84,
+    "rockRayHits": 84,
+    "terrainRayHits": 8,
+    "scope": "Actual Unity scene PhysX rays against exact static rendered rock/terrain meshes. Not a native coastal player movement or swimming test."
+}

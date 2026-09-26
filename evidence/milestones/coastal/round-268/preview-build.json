@@ -1,0 +1,20 @@
+{
+    "status": "Succeeded",
+    "output": "Builds/KookerStarfallIntegrated-0.0.11-survival.1-20260917-205620/KookerStarfallIntegrated.exe",
+    "scene": "Assets/CityLife/GeneratedPreview-20260917-205620/CosmicPreview.unity",
+    "product": "Kooker Starfall - Integrated Coastal Candidate",
+    "scope": "Finite coastal integration candidate with environment adapter, autonomous inhabitant and hunter clothing. Actual combined-player acceptance recorded separately; no full-world, save/load, swimming or boat claim.",
+    "utc": "2026-09-17T21:05:29.1808735Z",
+    "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260917-205620",
+    "version": "0.0.11-survival.1",
+    "sourceCommit": "922b8f8e025b453ac83e3c27a47fd76c3af8691c",
+    "treeReview": "R19",
+    "frozenTreeCommit": "fc30b2857be419172e740f0d338d5913145d75fb",
+    "componentMeshSha256": "3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca",
+    "bytes": 2789450458,
+    "seconds": 195.4557295,
+    "errors": 0,
+    "warnings": 30,
+    "woodColliders": 14,
+    "rockColliders": 84
+}

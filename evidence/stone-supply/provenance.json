@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "taskId": "86b2076d-1b15-41c6-b01c-8605b72c1d10",
+  "streamId": "da449324-f00d-4976-aceb-ff3eb3bbcfc0",
+  "workerId": "starfall-agy-03",
+  "model": "gemini-3.8-flash-high",
+  "branch": "codex/starfall-agy-03-stone-supply",
+  "baseHead": "f6fc9101e829118636f3315718193892bd102b73",
+  "passType": "ASSET_ONLY_SOURCE_PASS",
+  "generator": {
+    "class": "CityLife.Stones.StoneMeshGenerator",
+    "namespace": "CityLife.Stones",
+    "version": "1.1.0",
+    "prngAlgorithm": "Murmur3_Xorshift32_ValueStruct",
+    "baseTopology": "SubdividedIcosahedron_320Triangles",
+    "supportedShadingModes": [
+      "FlatShaded",
+      "SmoothShaded"
+    ],
+    "supportedScaleRange": [
+      0.25,
+      3.00
+    ],
+    "uvMapping": "Spherical_LongitudinalSeamSplit_Nondegenerate",
+    "tangentSpace": "MikkTSpace_Orthogonal_Handed",
+    "standardLithicDensityKgPerM3": 2600.0
+  },
+  "archetypes": [
+    {
+      "shape": "RiverCobble",
+      "seed": 1001,
+      "variantIndex": 0,
+      "nominalWidthMetres": 0.180,
+      "nominalHeightMetres": 0.120,
+      "nominalDepthMetres": 0.150,
+      "formFactor": 0.523,
+      "estimatedVolumeM3": 0.001695,
+      "intendedMassKg": 4.407,
+      "isHandCarryable": true,
+      "pivotPlacement": "BaseContactPlane_CenteredXZ_HorizontalOnly",
+      "note": "Nominal dimensions and mass are authored design baseline assumptions at scale 1.0, not measured physics simulation."
+    },
+    {
+      "shape": "Fieldstone",
+      "seed": 1002,
+      "variantIndex": 0,
+      "nominalWidthMetres": 0.220,
+      "nominalHeightMetres": 0.180,
+      "nominalDepthMetres": 0.200,
+      "formFactor": 0.580,
+      "estimatedVolumeM3": 0.004594,
+      "intendedMassKg": 11.944,
+      "isHandCarryable": true,
+      "pivotPlacement": "BaseContactPlane_CenteredXZ_HorizontalOnly",
+      "note": "Nominal dimensions and mass are authored design baseline assumptions at scale 1.0, not measured physics simulation."
+    },
+    {
+      "shape": "FlatSlab",
+      "seed": 1003,
+      "variantIndex": 0,
+      "nominalWidthMetres": 0.280,
+      "nominalHeightMetres": 0.070,
+      "nominalDepthMetres": 0.240,
+      "formFactor": 0.680,
+      "estimatedVolumeM3": 0.003199,
+      "intendedMassKg": 8.317,
+      "isHandCarryable": true,
+      "pivotPlacement": "BaseContactPlane_CenteredXZ_HorizontalOnly",
+      "note": "Nominal dimensions and mass are authored design baseline assumptions at scale 1.0, not measured physics simulation."
+    },
+    {
+      "shape": "Handstone",
+      "seed": 1004,
+      "variantIndex": 0,
+      "nominalWidthMetres": 0.160,
+      "nominalHeightMetres": 0.090,
+      "nominalDepthMetres": 0.110,
+      "formFactor": 0.460,
+      "estimatedVolumeM3": 0.000729,
+      "intendedMassKg": 1.895,
+      "isHandCarryable": true,
+      "pivotPlacement": "BaseContactPlane_CenteredXZ_HorizontalOnly",
+      "note": "Nominal dimensions and mass are authored design baseline assumptions at scale 1.0, not measured physics simulation."
+    }
+  ],
+  "verification": {
+    "sourceComplete": true,
+    "compileVerified": false,
+    "unityAppearanceVerified": false,
+    "inhabitantContextVerified": false,
+    "interactionMediaVerified": false,
+    "fabricatedMediaPresent": false,
+    "status": "SOURCE_ONLY_UNVERIFIED_RENDER",
+    "disclaimer": "Intended mass is authored design metadata with density assumption (2600 kg/m3), not measured physics simulation. Pivot aligns to horizontal base plane; slope placement requires collider/physics resolution. Diagnostic canyon-stone unaltered. No ItemDefinition registration claimed."
+  },
+  "validationSuite": {
+    "file": "Assets/CityLife/Stones/Editor/StoneValidation.cs",
+    "status": "AUTHORED_UNRUN",
+    "comparisonMethod": "ExplicitScalarIEEE754Bitwise_CompatibleBitConverter",
+    "bufferCoverage": [
+      "positions_xyz",
+      "normals_xyz",
+      "uv_xy",
+      "colors_rgba",
+      "tangents_xyzw",
+      "triangle_indices"
+    ],
+    "shadingModesCovered": [
+      "FlatShaded",
+      "SmoothShaded"
+    ],
+    "metadataFieldsCovered": [
+      "shape",
+      "seed",
+      "variantIndex",
+      "uniformScale",
+      "flatShaded",
+      "widthMetres",
+      "heightMetres",
+      "depthMetres",
+      "boundingVolumeM3",
+      "formFactor",
+      "estimatedVolumeM3",
+      "assumedDensityKgPerM3",
+      "intendedMassKg",
+      "vertexCount",
+      "triangleCount",
+      "boundsMin",
+      "boundsMax",
+      "pivotOffset"
+    ],
+    "helperRegressionChecks": [
+      "identical_values_match",
+      "one_bit_float_difference_detected",
+      "positive_negative_zero_distinguished",
+      "buffer_length_guard_mismatch_detected",
+      "metadata_single_bit_difference_detected"
+    ]
+  }
+}

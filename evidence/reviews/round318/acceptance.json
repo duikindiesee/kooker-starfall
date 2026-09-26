@@ -1,0 +1,77 @@
+{
+  "scope": "Sanitized receipt of tests executed 2026-09-21, not a new run",
+  "status": "PASS",
+  "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260921-194412",
+  "originalSavePointersUnchanged": true,
+  "sourceHashCount": 346,
+  "runs": [
+    {
+      "name": "fresh-loop",
+      "exitCode": 0,
+      "status": "PASS_HUD_COMMAND_RUNTIME",
+      "buildGuid": "36a99a71ba154ec187a823d1493bd4c5",
+      "automatedAudioVolume": 0.0,
+      "checks": [
+        "HUD directive completed: go fish",
+        "go fish landed river-carp-19",
+        "HUD directive completed: eat catch",
+        "eat catch removed exact fish and increased nutrition",
+        "HUD directive completed: go fish then store",
+        "go fish then store transferred a real catch into basket"
+      ],
+      "failures": [],
+      "privateResultSha256": "396CCA6A69DD777D199FF3A400B2E02AE30E988E74696BA68158D8D2FE34025B"
+    },
+    {
+      "name": "fresh-reload",
+      "exitCode": 0,
+      "status": "PASS_HUD_COMMAND_RUNTIME",
+      "buildGuid": "36a99a71ba154ec187a823d1493bd4c5",
+      "automatedAudioVolume": 0.0,
+      "checks": [
+        "Cold reload preserved exact consumed fish tombstone and absence",
+        "Cold reload preserved exact caught fish in original basket",
+        "Cold reload restored the stored fish runtime object and container attachment",
+        "Cold reload restored one basket without repeating supply migration",
+        "Cold reload preserved observed basket memory",
+        "Cold reload retained usable fishing rod and line tip"
+      ],
+      "failures": [],
+      "privateResultSha256": "C405FE47F6CC0EF988EBF4968208FC54362FCD7A6EF43281FAFE2D6B45805C45"
+    },
+    {
+      "name": "existing-loop",
+      "exitCode": 0,
+      "status": "PASS_HUD_COMMAND_RUNTIME",
+      "buildGuid": "36a99a71ba154ec187a823d1493bd4c5",
+      "automatedAudioVolume": 0.0,
+      "checks": [
+        "HUD directive completed: go fish",
+        "go fish landed river-fish-11",
+        "HUD directive completed: eat catch",
+        "eat catch removed exact fish and increased nutrition",
+        "HUD directive completed: go fish then store",
+        "go fish then store transferred a real catch into basket"
+      ],
+      "failures": [],
+      "privateResultSha256": "1C80615CF81C2E8D0C86120EF89449112AA288DA0F423A883B916E9D868F392E"
+    },
+    {
+      "name": "existing-reload",
+      "exitCode": 0,
+      "status": "PASS_HUD_COMMAND_RUNTIME",
+      "buildGuid": "36a99a71ba154ec187a823d1493bd4c5",
+      "automatedAudioVolume": 0.0,
+      "checks": [
+        "Cold reload preserved exact consumed fish tombstone and absence",
+        "Cold reload preserved exact caught fish in original basket",
+        "Cold reload restored the stored fish runtime object and container attachment",
+        "Cold reload restored one basket without repeating supply migration",
+        "Cold reload preserved observed basket memory",
+        "Cold reload retained usable fishing rod and line tip"
+      ],
+      "failures": [],
+      "privateResultSha256": "C405FE47F6CC0EF988EBF4968208FC54362FCD7A6EF43281FAFE2D6B45805C45"
+    }
+  ]
+}

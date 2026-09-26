@@ -114,9 +114,13 @@ namespace Starfall.Food
                 oldReload.State.exploredCells!=null&&oldReload.State.observedPlaces!=null&&
                 oldReload.State.exploredCells.Count==0&&oldReload.State.observedPlaces.Count==0,
                 "additive place ledger restores old food snapshot without inventing knowledge");
-            var capacity=new FoodModel("large-place","large-gen",4242);capacity.State.tick=512;
+            var capacity=new FoodModel("large-place","large-gen",4242);capacity.State.tick=PlaceLedger.MaximumCells;
             for(int i=0;i<PlaceLedger.MaximumCells;i++)
-                if(!PlaceLedger.Occupy(capacity.State,i,0,512))throw new Exception("capacity cell fixture failed");
+            {
+                int cx = (i % 64) - 32;
+                int cz = (i / 64) - 32;
+                if(!PlaceLedger.Occupy(capacity.State,cx,cz,capacity.State.tick))throw new Exception("capacity cell fixture failed at " + i);
+            }
             for(int i=0;i<PlaceLedger.MaximumEvents;i++)
                 if(!PlaceLedger.Observe(capacity.State,"site-"+i,"Place","observed-site",new Vector3(i,4,0),true,true,i+1,i+1,false))
                     throw new Exception("capacity event fixture failed");
@@ -125,7 +129,7 @@ namespace Starfall.Food
             Check(capacityReload.Load(capacityPath,"large-place","large-gen")&&
                 capacityReload.State.exploredCells.Count==PlaceLedger.MaximumCells&&
                 capacityReload.State.observedPlaces.Count==PlaceLedger.MaximumEvents&&
-                !PlaceLedger.Occupy(capacityReload.State,600,0,512),
+                !PlaceLedger.Occupy(capacityReload.State,100,100,capacityReload.State.tick),
                 "maximum bounded place payload reloads and capacity surfaces refusal rather than dropping knowledge");
             Check(!Do(FoodAction.Gather,"berry").success,"unknown berry not edible/gatherable");
             var exactModel=new Dictionary<string,object>{{"model","starfall-local-e4b"}};
@@ -335,6 +339,17 @@ namespace Starfall.Food
             ds.deaths[0].lesson="A spring was nearby";
             Check(CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(ds)==null,
                 "tampered death lesson cannot be supplied to the model");
+            var drowning=new FoodModel("drowning","g",4242);var drs=drowning.State;
+            drs.body.submerged=true;drs.body.health=200;drs.body.submergedSeconds=15;
+            for(int i=0;i<50;i++)drowning.FixedStep(false);
+            Check(drs.body.dead&&drs.deaths.Count==1&&drs.deaths[0].cause=="drowning"&&
+                drs.deaths[0].lesson.Contains("Submerged underwater without air; drowned."),
+                "drowning death records actual cause and causal memory without hallucination");
+            Check(CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(drs)==null,
+                "dead submerged inhabitant cannot issue request before safe return");
+            var retDrown=drowning.Execute("drowning","g",1,FoodAction.Return,"inventory",a);
+            Check(retDrown.success&&CityLife.World.StarfallSurvivalAutonomy.VerifiedOwnDeathCause(drs)=="drowning",
+                "verified drowning death cause available to survival model after return");
             string deathPath=Path.Combine(folder,"death.json");mortality.Save(deathPath);var mortalityReload=new FoodModel("mortality","g",4242);Check(mortalityReload.Load(deathPath,"mortality","g")&&mortalityReload.Json()==mortality.Json(),"death body bags and lesson survive reload");
             int oldSnapshots=Directory.GetFiles(folder,"snap-*.json").Length;
             mortality.Execute("mortality","g",3,FoodAction.Return,"inventory",a);Starve();Check(ms.deaths.Count==3&&ms.deaths[2].lesson==ms.deaths[0].lesson,"repeated death retains only the same measured cause lesson");

@@ -16,6 +16,9 @@ namespace CityLife.World
         public ZoneWeather LocalWeather;
         public CaveZonePolicy ShelterPolicy;
         public string Weather => Clock.Sample.target.ToString();
+        public float DayDurationSeconds = 480f; // 8 minutes per full 24h cycle
+        public float TimeOfDayNormalized { get; private set; } // 0.0 to 1.0
+        public bool IsNight { get; private set; }
         private Color sunColor;
         private Starfall.Refuge.RefugeRuntime refuge;
         public OutdoorWeather OutdoorSample()
@@ -47,36 +50,50 @@ namespace CityLife.World
         private void Update()
         {
             var s = Clock.Sample;
+            float envTime = Clock.Tick * EnvironmentClock.Dt;
             Shader.SetGlobalVector("_StarfallWind", s.wind);
-            Shader.SetGlobalFloat("_StarfallEnvironmentTime", Clock.Tick * EnvironmentClock.Dt);
-            Sun.intensity = Mathf.Lerp(2, .75f, s.precipitation);
-            Sun.color = Color.Lerp(sunColor, new Color(.65f, .76f, 1), s.precipitation * .45f);
-            RenderSettings.fogDensity = Mathf.Lerp(.0008f, .004f, s.precipitation);
+            Shader.SetGlobalFloat("_StarfallEnvironmentTime", envTime);
+
+            // Diurnal Day/Night Cycle progression
+            TimeOfDayNormalized = (envTime % DayDurationSeconds) / DayDurationSeconds;
+            // 0.0 = sunrise (06:00), 0.25 = noon (12:00), 0.5 = sunset (18:00), 0.75 = midnight (00:00)
+            float sunPitch = Mathf.Sin(TimeOfDayNormalized * Mathf.PI * 2f);
+            float sunAngle = TimeOfDayNormalized * 360f - 90f;
+            IsNight = sunPitch < 0f;
+
+            if (Sun != null)
+            {
+                Sun.transform.rotation = Quaternion.Euler(sunAngle, -35f, 0f);
+
+                if (!IsNight)
+                {
+                    // Daytime & Twilight
+                    float dayIntensity = Mathf.Clamp01(sunPitch * 1.4f);
+                    float stormDim = Mathf.Lerp(2.0f, 0.75f, s.precipitation);
+                    Sun.intensity = Mathf.Max(0.2f, dayIntensity * stormDim);
+
+                    // Morning/Evening golden amber vs Midday white vs Storm cold
+                    Color daylightColor = sunPitch < 0.25f 
+                        ? Color.Lerp(new Color(1.0f, 0.62f, 0.35f), sunColor, sunPitch * 4f)
+                        : sunColor;
+                    Sun.color = Color.Lerp(daylightColor, new Color(0.65f, 0.76f, 1.0f), s.precipitation * 0.45f);
+                }
+                else
+                {
+                    // Nighttime: dim celestial moonlight from the blue gas giant & moons
+                    Sun.intensity = 0.15f;
+                    Sun.color = new Color(0.42f, 0.58f, 0.85f);
+                }
+            }
+
+            float baseFog = IsNight ? 0.0020f : 0.0008f;
+            RenderSettings.fogDensity = Mathf.Lerp(baseFog, 0.0045f, s.precipitation);
             if (Rain != null)
             {
                 Rain.transform.position = View.transform.position + Vector3.up * 9;
                 var emission = Rain.emission; emission.rateOverTime = SampleAt(View.transform.position - Vector3.up * 1.5f).Rain01 * 180;
                 var velocity = Rain.velocityOverLifetime; velocity.x = s.wind.x * .3f; velocity.z = s.wind.z * .3f;
             }
-        }
-        private void OnGUI()
-        {
-            if (Brain.MenuPaused) return;
-            var controls = View.GetComponent<NpcPlayerControls>();
-            var textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22 };
-            float panelWidth = Mathf.Min(570, Screen.width * .48f);
-            float panelLeft = Screen.width - panelWidth - 12;
-            GUI.Box(new Rect(panelLeft, 12, panelWidth, 154), "");
-            GUI.Label(new Rect(panelLeft + 12, 18, panelWidth - 24, 108),
-                controls.Mode + "\n" + (!Application.isFocused ? "Click this window to focus controls" : controls.Looking ? "Mouse captured / Escape releases and pauses" : "Click or right-click in the world to look") +
-                "\nTab: possess | F: spectator | P: options | F11: display\nSensitivity: P > Controls > Mouse look", textStyle);
-            if (GUI.Button(new Rect(panelLeft + 12, 130, panelWidth - 24, 30), "Options", new GUIStyle(GUI.skin.button) { fontSize = 22 })) controls.OpenMenu();
-            GUI.Box(new Rect(panelLeft, Screen.height - 140, panelWidth, 128), "");
-            GUI.Label(new Rect(panelLeft + 12, Screen.height - 134, panelWidth - 24, 116),
-                "STARFALL / Coastal preview" +
-                "\n" + Weather + " | wind " + Clock.Sample.wind.magnitude.ToString("F1") + " m/s | " + Clock.Sample.temperature.ToString("F0") + " C" +
-                "\nInhabitant wetness " + Exposure.Wetness01.ToString("P0") + " | " + (Exposure.Cold ? "cold exposure" : "comfortable") +
-                "\nSwimming, boats and full saves: planned", textStyle);
         }
     }
 }

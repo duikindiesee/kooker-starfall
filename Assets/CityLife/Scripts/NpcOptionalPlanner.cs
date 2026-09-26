@@ -47,6 +47,11 @@ namespace CityLife.World
         }
         public void SetEnabled(bool enabled)
         {
+            if (enabled && !Configured)
+            {
+                try { Configure(new NpcLocalProposalProvider("http://127.0.0.1:1234", "local-model")); }
+                catch (ArgumentException) { }
+            }
             Cancel("local-thoughts-disabled"); EnabledByUser = enabled && Configured;
             Status = EnabledByUser ? "Local thoughts on" : Configured ? "Local thoughts off" : "Local thoughts unconfigured; rules active";
         }

@@ -60,7 +60,59 @@ namespace CityLife.World
    GripLeaves=new Transform[5];LeafRotations=new Quaternion[5];LeafPositions=new Vector3[5];
    for(int i=0;i<5;i++){var leaf=GripBones[i*3+2].GetChild(0);GripLeaves[i]=leaf;LeafRotations[i]=leaf.localRotation;LeafPositions[i]=leaf.localPosition;}
   }
-  private void LateUpdate(){if(!Animator||!Club||GripBones==null)return;
+  public bool Stowed { get; private set; }
+  public void ToggleHolster() => SetStowed(!Stowed);
+  public bool SetStowed(bool stowed, bool force = false)
+  {
+      if (!stowed && !force)
+      {
+          var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+          if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+          {
+              return false;
+          }
+      }
+      Stowed = stowed;
+      if (Club != null)
+      {
+          var rend = Club.GetComponent<Renderer>();
+          if (rend != null) rend.enabled = true;
+          if (stowed)
+          {
+              AttachToBack();
+          }
+      }
+      return true;
+  }
+  public void AttachToBack()
+  {
+      if (!Animator || !Club) return;
+      Transform backBone = Animator.GetBoneTransform(HumanBodyBones.Chest);
+      if (backBone == null) backBone = Animator.GetBoneTransform(HumanBodyBones.Spine);
+      if (backBone == null) backBone = Actor;
+      if (Club.parent != backBone)
+      {
+          Club.SetParent(backBone, false);
+          Club.localScale = Vector3.one;
+      }
+      // Holster diagonally across back from right shoulder blade to left waist
+      Club.localPosition = new Vector3(-0.08f, 0.14f, 0.135f);
+      Club.localRotation = Quaternion.Euler(-6f, 2f, 22f);
+  }
+  private void LateUpdate(){
+      if(!Animator||!Club)return;
+      if(Stowed)
+      {
+          AttachToBack();
+          return;
+      }
+      var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+      if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+      {
+          AttachToBack();
+          return;
+      }
+      if(GripBones==null)return;
    var upper=Animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
    var forearm=Animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
    var hand=Animator.GetBoneTransform(HumanBodyBones.LeftHand);
@@ -70,7 +122,7 @@ namespace CityLife.World
    Vector3 upperDirection=(Vector3.down-Actor.right*ElbowOut+Actor.forward*swing).normalized;
    upper.rotation=Quaternion.FromToRotation(forearm.position-upper.position,upperDirection)*upper.rotation;
    float lowPose=Mathf.InverseLerp(1.25f,.85f,upper.position.y-Actor.position.y);
-   float slope=Mathf.Lerp(ForearmSlope,.3f,lowPose);
+   float slope=Mathf.Lerp(ForearmSlope,.46f,lowPose);
    Vector3 forearmDirection=(Actor.forward+Vector3.up*slope).normalized;
    forearm.rotation=Quaternion.FromToRotation(hand.position-forearm.position,forearmDirection)*forearm.rotation;
    Vector3 handDirection=Quaternion.AngleAxis(-WristDeviation,Actor.right)*forearmDirection;
