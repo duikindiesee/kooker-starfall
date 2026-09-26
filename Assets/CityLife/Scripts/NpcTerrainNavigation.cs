@@ -32,9 +32,26 @@ namespace CityLife.World
                 normal = IslandField.Normal(Mathf.RoundToInt((float)gx), Mathf.RoundToInt((float)gz));
                 return true;
             }
-            if (!Physics.Raycast(new Vector3(p.x, 170, p.z), Vector3.down,
-                out RaycastHit hit, 300, 1 << 10, QueryTriggerInteraction.Ignore)) return false;
-            height = hit.point.y; normal = hit.normal; return true;
+            if (Physics.Raycast(new Vector3(p.x, 170, p.z), Vector3.down,
+                out RaycastHit hit, 300, 1 << 10, QueryTriggerInteraction.Ignore))
+            {
+                height = hit.point.y; normal = hit.normal; return true;
+            }
+
+            // Fallback for headless tests / in-memory validation when mesh collider is not present in layer 10
+            if (p.x >= CoastalTerrain.MinX && p.x <= CoastalTerrain.MaxX &&
+                p.z >= CoastalTerrain.MinZ && p.z <= CoastalTerrain.MaxZ)
+            {
+                height = CoastalTerrain.Height(p.x, p.z);
+                const float eps = 0.5f;
+                float hL = CoastalTerrain.Height(p.x - eps, p.z);
+                float hR = CoastalTerrain.Height(p.x + eps, p.z);
+                float hD = CoastalTerrain.Height(p.x, p.z - eps);
+                float hU = CoastalTerrain.Height(p.x, p.z + eps);
+                normal = Vector3.Normalize(new Vector3((hL - hR) / (2f * eps), 1f, (hD - hU) / (2f * eps)));
+                return true;
+            }
+            return false;
         }
         public float WaterLevel(Vector3 p) => IslandField != null ? 0f : CoastalWater.CurrentLevel;
         public float WaterDepth(Vector3 p) => TryGround(p, out float h, out _) ? Mathf.Max(0, WaterLevel(p) - h) : 0;
@@ -101,44 +118,50 @@ namespace CityLife.World
             return Vector3.zero;
         }
 
+        public bool TryFindNearestRiverBank(Vector3 origin, out Vector3 bank)
+        {
+            bank = FindNearestRiverBank(origin);
+            return bank != Vector3.zero;
+        }
+
         public Vector3 FindNearestRiverBank(Vector3 origin)
         {
+            if (IslandField != null) return Vector3.zero;
+
             float bestDist = float.MaxValue;
-            Vector3 bestBank = new Vector3(0f, CoastalTerrain.Height(0f, -15f), -15f); // Shallow river ford default
-            // Search along the freshwater river corridor specifically for true waterline / shallow ford contact:
-            // y between waterLevel - 0.25m (ankle-deep ford) and waterLevel + 0.15m (immediate sandy waterline edge)
-            for (float z = -250f; z <= 380f; z += 10f)
+            Vector3 bestBank = Vector3.zero;
+            float waterLevel = CoastalWater.Level;
+
+            // Search along the freshwater river corridor specifically for dry bank terrain adjacent to river water:
+            // Elevation must be dry (y >= waterLevel + 0.15f) and outside the freshwater river channel, but adjacent to river
+            for (float z = -240f; z <= 380f; z += 10f)
             {
-                for (float x = -60f; x <= 80f; x += 5f)
+                float cx = CoastalTerrain.RiverCenterlineX(z);
+                for (float side = -1f; side <= 1f; side += 2f)
                 {
-                    float y = CoastalTerrain.Height(x, z);
-                    if (y >= CoastalWater.Level - 0.25f && y <= CoastalWater.Level + 0.15f &&
-                        CoastalTerrain.IsFreshwaterRiver(x, z, y, CoastalWater.CurrentLevel))
+                    for (float offset = 5.0f; offset <= 45.0f; offset += 2.0f)
                     {
-                        if (Walkable(new Vector3(x, y, z), out Vector3 floor))
-                        {
-                            float d = Vector3.Distance(origin, floor);
-                            if (d < bestDist)
-                            {
-                                bestDist = d;
-                                bestBank = floor;
-                            }
-                        }
-                    }
-                }
-            }
-            // Fallback to shallow water margin if no immediate waterline cell matched
-            if (bestDist == float.MaxValue)
-            {
-                for (float z = -250f; z <= 380f; z += 15f)
-                {
-                    for (float x = -60f; x <= 80f; x += 8f)
-                    {
+                        float x = cx + side * offset;
                         float y = CoastalTerrain.Height(x, z);
-                        if (y >= CoastalWater.Level - 0.35f && y <= CoastalWater.Level + 0.45f &&
-                            CoastalTerrain.IsFreshwaterRiver(x, z, y, CoastalWater.CurrentLevel))
+                        if (y < waterLevel + 0.15f) continue;
+
+                        // Verify adjacency: stepping 2.5m-5m toward river centerline reaches actual river water
+                        float nearRiverX1 = Mathf.MoveTowards(x, cx, 2.5f);
+                        float nearRiverY1 = CoastalTerrain.Height(nearRiverX1, z);
+                        float nearRiverX2 = Mathf.MoveTowards(x, cx, 5.0f);
+                        float nearRiverY2 = CoastalTerrain.Height(nearRiverX2, z);
+                        bool waterNear1 = nearRiverY1 < CoastalWater.CurrentLevel - 0.25f &&
+                            CoastalTerrain.IsFreshwaterRiver(nearRiverX1, z, CoastalWater.CurrentLevel, CoastalWater.CurrentLevel);
+                        bool waterNear2 = nearRiverY2 < CoastalWater.CurrentLevel - 0.25f &&
+                            CoastalTerrain.IsFreshwaterRiver(nearRiverX2, z, CoastalWater.CurrentLevel, CoastalWater.CurrentLevel);
+                        if (!waterNear1 && !waterNear2)
                         {
-                            if (Walkable(new Vector3(x, y, z), out Vector3 floor))
+                            continue;
+                        }
+
+                        if (Walkable(new Vector3(x, y, z), out Vector3 floor) && floor.y >= waterLevel + 0.15f)
+                        {
+                            if (IsWithinSafePerimeter(floor, 5f))
                             {
                                 float d = Vector3.Distance(origin, floor);
                                 if (d < bestDist)
@@ -151,7 +174,93 @@ namespace CityLife.World
                     }
                 }
             }
+
+            if (bestDist == float.MaxValue) return Vector3.zero;
             return bestBank;
+        }
+
+        /// <summary>
+        /// Finds a dry, walkable, route-reachable bank point for casting toward an exact fish position.
+        /// Enforces dry bank elevation (y >= current water level + 0.15f),
+        /// valid cast range [2m, 18m], water depth > 0.25m, and clear line of sight.
+        /// </summary>
+        public bool TryFindCastingBankForFish(Vector3 casterPos, Vector3 fishPos, out Vector3 bankFloor)
+        {
+            bankFloor = Vector3.zero;
+            var candidates = new List<(Vector3 floor, float score)>();
+
+            // Prefer range margin, but retain valid longer casts when the near
+            // bank is submerged. Keep the standing point dry through rising tide.
+            float safeBankHeight = CoastalWater.Level + CoastalTide.AmplitudeMetres + .15f;
+            for (float r = 3f; r <= 17.5f; r += 0.5f)
+            {
+                for (int a = 0; a < 32; a++)
+                {
+                    float ang = a * (Mathf.PI * 2f / 32f);
+                    Vector3 test = fishPos + new Vector3(Mathf.Cos(ang) * r, 0f, Mathf.Sin(ang) * r);
+                    float y = CoastalTerrain.Height(test.x, test.z);
+                    // Freshwater classification describes the whole river corridor,
+                    // including dry banks. Use elevation to test the standing surface.
+                    if (y < safeBankHeight)
+                        continue;
+
+                    if (!IsWithinSafePerimeter(new Vector3(test.x, y, test.z), 5f))
+                        continue;
+
+                    if (!Walkable(new Vector3(test.x, y, test.z), out Vector3 floor))
+                        continue;
+
+                    if (floor.y < safeBankHeight)
+                        continue;
+
+                    if (!IsWithinSafePerimeter(floor, 5f))
+                        continue;
+
+                    if (!RiverFishSchool.CanFishInRiver(floor, fishPos, out _))
+                        continue;
+
+                    // Verify line of sight from standing caster eye to fish target
+                    Vector3 eyePos = floor + Vector3.up * 1.5f;
+                    Vector3 targetPos = fishPos + Vector3.up * 0.15f;
+                    if (Physics.Linecast(eyePos, targetPos, out var hit, (1 << 0) | (1 << 8), QueryTriggerInteraction.Ignore))
+                    {
+                        if (hit.collider != null && !hit.collider.name.Contains("Fish") && !hit.collider.name.Contains("Actor") && !hit.collider.name.Contains("Character"))
+                        {
+                            continue;
+                        }
+                    }
+
+                    float distToCaster = Vector3.Distance(casterPos, floor);
+                    float distToFish = Vector3.Distance(floor, fishPos);
+                    float score = distToCaster + distToFish * 0.2f + Mathf.Max(0f, distToFish - 14f) * 2f;
+
+                    candidates.Add((floor, score));
+                }
+            }
+
+            candidates.Sort((a, b) => a.score.CompareTo(b.score));
+            // Bound expensive path searches; a partial route is not a reachable bank.
+            var searchedCells = new HashSet<Vector2Int>();
+            for (int i = 0; i < candidates.Count && searchedCells.Count < 24; i++)
+            {
+                Vector3 candidate = candidates[i].floor;
+                if (!searchedCells.Add(new Vector2Int(Mathf.RoundToInt(candidate.x / 2f), Mathf.RoundToInt(candidate.z / 2f)))) continue;
+                if (Vector3.Distance(casterPos, candidate) <= .5f && casterPos.y >= safeBankHeight)
+                {
+                    bankFloor = candidate;
+                    return true;
+                }
+                var path = Plan(casterPos, candidate);
+                if (path == null || path.Count == 0) continue;
+                var points = path.ToArray();
+                if (Vector3.Distance(points[points.Length - 1], candidate) > 1.25f) continue;
+                Vector3 endpoint = points[points.Length - 1];
+                if (endpoint.y < safeBankHeight || !RiverFishSchool.CanFishInRiver(endpoint, fishPos, out _)) continue;
+                bankFloor = endpoint;
+                return true;
+            }
+
+            return false;
         }
         public Queue<Vector3> Plan(Vector3 origin, Vector3 goal) => PlanInternal(origin, goal, null);
 

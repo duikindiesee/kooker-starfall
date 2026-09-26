@@ -1025,8 +1025,7 @@ namespace CityLife.Items
                     // Test well-fulfilled domestic camp routines
                     surv.Food = go.AddComponent<IntegratedFoodRuntime>();
                     surv.Food.Brain = brain;
-                    var ensureMethod = typeof(IntegratedFoodRuntime).GetMethod("EnsureModel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (ensureMethod != null) ensureMethod.Invoke(surv.Food, null);
+                    surv.Food.EnsureModel();
                     surv.Food.Model.State.satiety = 9500;
                     surv.Food.Model.State.hydration = 9000;
                     surv.Food.Model.State.body.protein = 8500;

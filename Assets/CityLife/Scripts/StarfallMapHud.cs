@@ -27,7 +27,19 @@ namespace CityLife.World
         // Expanded state: toggled via 'M' key or clicking the compact summary badge.
         // When false, renders compact unobtrusive summary (does not cover inhabitant or stack menus).
         // When true, renders full deliberate map layout with selectable tabs.
-        public bool Expanded { get; set; } = false;
+        private bool _expanded;
+        public bool Expanded
+        {
+            get => _expanded;
+            set
+            {
+                if (_expanded != value)
+                {
+                    _expanded = value;
+                    if (_expanded) dirtyMapTexture = true;
+                }
+            }
+        }
 
         public enum MapDisplaySize { Tactical, Large, Fullscreen }
         public MapDisplaySize DisplaySize = MapDisplaySize.Tactical;
@@ -125,6 +137,7 @@ namespace CityLife.World
         private bool showVisualMap = true;
         private int lastRevealedCellCount = -1;
         private Vector3 lastRevealedPos = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        private bool dirtyMapTexture = true;
 
         private int activeTab = 0; // 0: Tactical Map / Grid, 1: Beliefs, 2: History
         private int lastScreenWidth = -1;
@@ -490,17 +503,19 @@ namespace CityLife.World
                 RefreshUi();
             }
 
-            // Update dynamic Fog of War reveal on cell changes or actor movement
-            if (fogPixels != null && fogTexture != null && ViewModel != null && ViewModel.IsValid)
+            // Update dynamic Fog of War reveal only when the visual map is actually expanded & visible
+            if (Expanded && visualMapContainer != null && visualMapContainer.activeSelf &&
+                fogPixels != null && fogTexture != null && ViewModel != null && ViewModel.IsValid)
             {
                 bool cellCountChanged = ViewModel.ExploredCellCount != lastRevealedCellCount;
                 bool posMoved = (pos - lastRevealedPos).sqrMagnitude > (1.2f * 1.2f);
-                if (cellCountChanged || posMoved)
+                if (cellCountChanged || posMoved || dirtyMapTexture)
                 {
                     var cells = ViewModel.GetExploredCells();
                     if (cells != null)
                     {
-                        for (int i = 0; i < cells.Length; i++)
+                        int startIdx = (lastRevealedCellCount > 0 && lastRevealedCellCount <= cells.Length && !dirtyMapTexture) ? lastRevealedCellCount : 0;
+                        for (int i = startIdx; i < cells.Length; i++)
                         {
                             StarfallVisualMapGenerator.RevealCell(fogPixels, cells[i].X, cells[i].Z, 22f);
                         }
@@ -512,9 +527,10 @@ namespace CityLife.World
                     StarfallVisualMapGenerator.RevealCell(fogPixels, curCellX, curCellZ, 22f);
 
                     fogTexture.SetPixels32(fogPixels);
-                    fogTexture.Apply();
+                    fogTexture.Apply(false);
                     lastRevealedCellCount = cells != null ? cells.Length : 0;
                     lastRevealedPos = pos;
+                    dirtyMapTexture = false;
                 }
             }
 

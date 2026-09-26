@@ -53,6 +53,12 @@ namespace CityLife.World
                    reg == interactable;
         }
 
+        public bool TryGetRegisteredInteractable(string stableId, out NpcInteractable interactable)
+        {
+            interactable = null;
+            return !string.IsNullOrEmpty(stableId) && objects.TryGetValue(stableId, out interactable);
+        }
+
         public bool RegisterInteractable(NpcInteractable interactable)
         {
             if (interactable == null || string.IsNullOrEmpty(interactable.StableId)) return false;
@@ -257,6 +263,23 @@ namespace CityLife.World
             return true;
         }
 
+        public NpcActionResult Store(int requestId, string containerId, string itemId = null)
+        {
+            string id = !string.IsNullOrEmpty(itemId) ? itemId : (Held != null ? Held.StableId : "");
+            return Execute(requestId, NpcActionKind.Store, id, containerId);
+        }
+
+        public NpcActionResult Retrieve(int requestId, string itemId, string containerId = null)
+        {
+            if (string.IsNullOrEmpty(containerId) && PhysicalModel != null && PhysicalModel.TryGetItem(itemId ?? "", out var snap) && snap.location == ItemLocationKind.Stored)
+            {
+                containerId = snap.containerItemId;
+            }
+            return Execute(requestId, NpcActionKind.Retrieve, itemId, containerId);
+        }
+
+        public NpcActionResult Take(int requestId, string itemId, string containerId = null) => Retrieve(requestId, itemId, containerId);
+
         public NpcActionResult Execute(int requestId, NpcActionKind action, string targetId)
         {
             if (action == NpcActionKind.Store)
@@ -276,6 +299,7 @@ namespace CityLife.World
 
             string signature = action + ":" + (targetId ?? "");
             NpcActionResult Deny(string code) => new NpcActionResult { code = code, success = false };
+            if (FoodConsumptionBridge.IsIndeterminateFrozen) return Deny("indeterminate-checkpoint-frozen");
             if (requestId <= 0) return Deny("invalid-request-id");
             if (action != NpcActionKind.Pickup && action != NpcActionKind.Deliver && action != NpcActionKind.Drop)
                 return Deny("unsupported-action");
@@ -697,6 +721,7 @@ namespace CityLife.World
             }
 
             NpcActionResult Deny(string code) => new NpcActionResult { code = code, success = false, duplicate = false };
+            if (FoodConsumptionBridge.IsIndeterminateFrozen) return Deny("indeterminate-checkpoint-frozen");
             if (requestId <= 0) return Deny("invalid-request-id");
             if (action != NpcActionKind.Store && action != NpcActionKind.Retrieve)
                 return Deny("unsupported-action");

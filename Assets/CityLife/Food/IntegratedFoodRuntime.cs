@@ -19,7 +19,7 @@ namespace Starfall.Food
         int shownFruitStock=-1;
         bool acceptanceAccess;
         void Awake() { EnsureModel(); }
-        void EnsureModel()
+        public void EnsureModel()
         {
             if (Model == null)
             {

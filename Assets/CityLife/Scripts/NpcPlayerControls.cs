@@ -87,10 +87,25 @@ namespace CityLife.World
             if (!Application.isFocused && !AllowUnfocusedTestInput) { ReleasePointer(); return; }
             var key = TestKeyboard ?? Keyboard.current; var mouse = TestMouse ?? Mouse.current;
             if (key == null) return;
+
+            // Inhibit movement and player shortcuts while actively typing in the command HUD
+            if (Hud != null && Hud.IsTypingCommand)
+            {
+                if (!ExternalMovementInput && Brain != null) Brain.ManualDirection = Vector3.zero;
+                cameraMotion = Vector3.zero;
+                ReleasePointer();
+                return;
+            }
+
             if (key.f11Key.wasPressedThisFrame && !Display.IsChanging) { StartCoroutine(ToggleDisplayShortcut()); return; }
             if (key.pKey.wasPressedThisFrame) { if (MenuOpen) Resume(); else OpenMenu(); }
             else if (key.escapeKey.wasPressedThisFrame)
             {
+                if (Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                {
+                    Brain.Survival.CancelActiveCommand("user-cancelled-via-esc");
+                    return;
+                }
                 if (MenuOpen)
                 {
                     if (Page != "Root") ShowPage("Root");
@@ -168,13 +183,14 @@ namespace CityLife.World
                 View.CycleViewMode();
             }
             if (key.lKey.wasPressedThisFrame && Hud != null) Hud.ToggleDetailed();
+            if (key.cKey.wasPressedThisFrame && Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+            {
+                Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");
+                return;
+            }
             if (!Brain.Possessed && Brain.Survival != null)
             {
-                if (key.cKey.wasPressedThisFrame && Brain.Survival.HasActiveCommand)
-                {
-                    Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");
-                }
-                else if (key.digit1Key.wasPressedThisFrame || key.numpad1Key.wasPressedThisFrame)
+                if (key.digit1Key.wasPressedThisFrame || key.numpad1Key.wasPressedThisFrame)
                 {
                     Brain.Survival.SubmitNaturalLanguageCommand("go to river");
                 }
@@ -1525,68 +1541,19 @@ namespace CityLife.World
             if (foodToEat != null)
             {
                 var phys = foodToEat.GetComponent<PhysicalItem>();
-                string typeId = phys != null ? phys.itemTypeId : foodToEat.StableId;
-                if (food != null && food.Model != null)
-                {
-                    var s = food.Model.State;
-                    if (typeId == "food-cooked-meat")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 4500);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 5000);
-                        s.satiety = Mathf.Min(10000, s.satiety + 4500);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 4000);
-                    }
-                    else if (typeId == "food-wolf-meat")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2500);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 3200);
-                        s.satiety = Mathf.Min(10000, s.satiety + 2200);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
-                    }
-                    else if (typeId == "food-cooked-fish")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3500);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 4000);
-                        s.satiety = Mathf.Min(10000, s.satiety + 3500);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3500);
-                    }
-                    else if (typeId == "food-cooked-crab")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 3000);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 3800);
-                        s.satiety = Mathf.Min(10000, s.satiety + 3000);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 3200);
-                    }
-                    else if (typeId == "food-protein-crab")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
-                        s.satiety = Mathf.Min(10000, s.satiety + 2000);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2500);
-                    }
-                    else if (typeId == "food-river-fish" || typeId == "food-river-carp")
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
-                        s.body.protein = Mathf.Min(10000, s.body.protein + 2500);
-                        s.satiety = Mathf.Min(10000, s.satiety + 2000);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 2200);
-                    }
-                    else // berry / fruit
-                    {
-                        s.body.stomach = Mathf.Min(10000, s.body.stomach + 2000);
-                        s.hydration = Mathf.Min(10000, s.hydration + 600);
-                        s.satiety = Mathf.Min(10000, s.satiety + 1500);
-                        Starfall.Food.FoodPhysiology.ApplyDriveReduction(s.body, 1500);
-                        s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
-                    }
-                    s.knowsMealBenefit = true;
-                }
+                bool isLeft = (Brain.Actions != null && Brain.Actions.HeldLeft == foodToEat);
+                bool consumed = FoodConsumptionBridge.TryConsumeHeldFood(
+                    Brain,
+                    foodToEat,
+                    phys,
+                    isLeft,
+                    "player-consumed-held-item",
+                    out string code);
 
-                var heldGo = foodToEat.gameObject;
-                Brain.ExecutePlayerAction(NpcActionKind.Drop, foodToEat.StableId);
-                Destroy(heldGo);
-                if (Brain.Actor != null) Brain.Actor.Gesture();
-                if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                if (consumed)
+                {
+                    if (Brain.Survival != null) Brain.Survival.RememberCurrentWorld();
+                }
                 UpdatePickupTargetLabel();
                 return;
             }

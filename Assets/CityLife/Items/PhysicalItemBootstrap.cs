@@ -425,6 +425,30 @@ namespace CityLife.Items
 
             SetupDemonstrationItem();
 
+            // The coordinated checkpoint is newer than an independent physical
+            // save after actions such as storage. Hydrate that exact item graph
+            // before NpcAutonomy constructs its action registry.
+            if (Brain?.Survival?.Food != null)
+            {
+                var repositoryPath = FoodConsumptionBridge.GetRepositoryDirectory(Brain);
+                if (File.Exists(Path.Combine(repositoryPath, Starfall.Food.FoodOwnershipCheckpointRepository.PointerFileName)))
+                {
+                    Brain.Survival.Food.EnsureModel();
+                    var foodModel = Brain.Survival.Food.Model;
+                    var repository = new Starfall.Food.FoodOwnershipCheckpointRepository(repositoryPath, worldId,
+                        NpcAutonomy.AgentId, foodModel.State.generation, Model.GenerationId);
+                    var loaded = repository.LoadAuthoritativeCheckpoint(foodModel, Model, out var envelope);
+                    if (loaded.Status != Starfall.Food.CheckpointLoadStatus.Success || envelope == null ||
+                        !LoadSavePayloadInternal(PhysicalSavePath, envelope.physicalPayload))
+                    {
+                        SaveRejected = true;
+                        Debug.LogWarning("[PhysicalItemBootstrap] Authoritative checkpoint hydration refused; no stale physical fallback. " + loaded.Message);
+                    }
+                    else Debug.Log("[PhysicalItemBootstrap] Hydrated authoritative checkpoint item graph.");
+                    return;
+                }
+            }
+
             if (!string.IsNullOrEmpty(PhysicalSavePath))
             {
                 if (File.Exists(PhysicalSavePath))
@@ -454,6 +478,9 @@ namespace CityLife.Items
         }
 
         public bool LoadSavePayload(string path)
+            => LoadSavePayloadInternal(path, null);
+
+        private bool LoadSavePayloadInternal(string path, string authoritativePayload)
         {
             SourceSaveRejected = true;
             RejectedSourcePath = path;
@@ -465,7 +492,7 @@ namespace CityLife.Items
                 return false;
             }
 
-            if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path) || !File.Exists(path))
+            if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path) || (authoritativePayload == null && !File.Exists(path)))
             {
                 SaveRejected = true;
                 return false;
@@ -488,13 +515,14 @@ namespace CityLife.Items
             try
             {
                 var fi = new FileInfo(path);
-                if (fi.Length > ItemPersistence.MaxFileSizeBytes)
+                if (authoritativePayload == null && fi.Length > ItemPersistence.MaxFileSizeBytes)
                 {
                     SaveRejected = true;
                     return false;
                 }
 
-                string text = File.ReadAllText(path);
+                string text = authoritativePayload == null ? File.ReadAllText(path) : JsonUtility.ToJson(new PhysicalSaveEnvelope
+                { schema = ItemPersistence.SchemaVersion, payload = authoritativePayload, sha256 = ItemPersistence.ComputeSha256(authoritativePayload) });
                 if (string.IsNullOrEmpty(text))
                 {
                     SaveRejected = true;
@@ -546,6 +574,9 @@ namespace CityLife.Items
                                 var it = candidate.items[j];
                                 if (it != null && string.Equals(reg.StableId, it.itemId, StringComparison.Ordinal))
                                 {
+                                    var authoredPhysical = reg.GetComponent<PhysicalItem>();
+                                    if (authoredPhysical != null && authoredPhysical.itemId == it.itemId &&
+                                        authoredPhysical.itemTypeId == it.itemTypeId && reg.WorldId == worldId) continue;
                                     SaveRejected = true;
                                     return false;
                                 }
@@ -657,7 +688,7 @@ namespace CityLife.Items
                     var go = new GameObject(rec.itemId);
                     go.SetActive(false); // STAGED INACTIVE
                     stagedObjects.Add(go);
-                    go.layer = 0;
+                    go.layer = 11;
                     if (targetScene.IsValid())
                     {
                         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go, targetScene);
@@ -695,6 +726,7 @@ namespace CityLife.Items
                     phys.dimensions = def.dimensions;
                     phys.isAnchored = false;
                     phys.ConfigureComponents();
+                    if (rec.itemTypeId == FishingRodItem.ItemTypeId) FishingRodItem.ConfigureRuntimeRod(phys, interactable);
                     phys.Bind(candidateModel, worldId, candidateModel.GenerationId);
                     phys.RecordInitialRendererStates();
 
@@ -721,7 +753,7 @@ namespace CityLife.Items
                 {
                     for (int i = 0; i < Brain.Registry.Length; i++)
                     {
-                        if (Brain.Registry[i] != null) candidateInteractables.Add(Brain.Registry[i]);
+                        if (Brain.Registry[i] != null && !seenIds.Contains(Brain.Registry[i].StableId)) candidateInteractables.Add(Brain.Registry[i]);
                     }
                 }
                 for (int i = 0; i < stagedBindings.Count; i++)
@@ -745,6 +777,10 @@ namespace CityLife.Items
                 // ALL FALLIBLE CHECKS & BINDER VALIDATION PASSED: IRREVERSIBLE COMMIT
                 // 1. Destroy previous baseline physical objects
                 ClearCommittedItems();
+                if (Brain?.Registry != null)
+                    foreach (var authored in Brain.Registry)
+                        if (authored != null && seenIds.Contains(authored.StableId) && authored.GetComponent<PhysicalItem>() != null)
+                            DestroyImmediate(authored.gameObject);
 
                 // 2. Activate staged candidate objects
                 foreach (var go in stagedObjects)
@@ -762,6 +798,12 @@ namespace CityLife.Items
                 SourceSaveRejected = false;
                 RejectedSourcePath = null;
                 restoreAttempted = true; // Staged objects already restored by validated binder
+
+                var school = UnityEngine.Object.FindAnyObjectByType<CityLife.World.RiverFishSchool>();
+                if (school != null)
+                {
+                    school.ReconcileWithAuthoritativeModel(Model);
+                }
 
                 // 4. Update demonstration references for backward compatibility
                 PhysicalItem demoPhys = null;
@@ -1115,6 +1157,7 @@ namespace CityLife.Items
 
         private GameObject CreateVisualForItem(Transform parent, string itemTypeId, ItemDefinition def)
         {
+            if (itemTypeId == FishingRodItem.ItemTypeId) return FishingRodItem.CreateVisual(parent);
             if (string.Equals(itemTypeId, "container-basket", StringComparison.Ordinal))
             {
                 var basketMat = BasketMaterial != null ? BasketMaterial : DemonstrationMaterial;
@@ -1421,33 +1464,43 @@ namespace CityLife.Items
                 {
                     bool isCurrentDeliberateTarget = !string.IsNullOrEmpty(activeRecoveryPath) &&
                         string.Equals(fullPath, Path.GetFullPath(activeRecoveryPath), StringComparison.OrdinalIgnoreCase);
-                    if (File.Exists(fullPath))
+                    if (File.Exists(fullPath) && !isCurrentDeliberateTarget)
                     {
-                        if (!isCurrentDeliberateTarget)
+                        try { File.Delete(stagingPath); } catch { }
+                        LastSaveFailed = true;
+                        LastSaveError = "refused-overwriting-existing-sibling";
+                        return false;
+                    }
+                }
+
+                if (Brain != null)
+                {
+                    bool chkOk = FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(Brain, "physical-save", out string chkCode);
+                    if (!chkOk)
+                    {
+                        if (!string.IsNullOrEmpty(stagingPath))
                         {
-                            try { File.Delete(stagingPath); } catch { }
-                            LastSaveFailed = true;
-                            LastSaveError = "refused-overwriting-existing-sibling";
-                            return false;
+                            try { if (File.Exists(stagingPath)) File.Delete(stagingPath); } catch { }
                         }
-                        File.Replace(stagingPath, fullPath, fullPath + ".bak");
+                        LastSaveFailed = true;
+                        LastSaveError = "checkpoint-sync-refused: " + chkCode;
+                        SaveRejected = true;
+                        Debug.LogWarning($"[PhysicalItemBootstrap] SaveCurrentState coordinated checkpoint refused: {chkCode}");
+                        return false;
                     }
-                    else
-                    {
-                        File.Move(stagingPath, fullPath);
-                    }
-                    activeRecoveryPath = fullPath;
+                }
+
+                if (File.Exists(fullPath))
+                {
+                    File.Replace(stagingPath, fullPath, fullPath + ".bak");
                 }
                 else
                 {
-                    if (File.Exists(fullPath))
-                    {
-                        File.Replace(stagingPath, fullPath, fullPath + ".bak");
-                    }
-                    else
-                    {
-                        File.Move(stagingPath, fullPath);
-                    }
+                    File.Move(stagingPath, fullPath);
+                }
+                if (isRecoveryAction)
+                {
+                    activeRecoveryPath = fullPath;
                 }
 
                 HasSavedPayload = true;

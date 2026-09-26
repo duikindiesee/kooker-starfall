@@ -29,6 +29,7 @@ namespace Starfall.Food
         // Restore installs empty lists only after validating the old payload.
         public List<PlaceCell> exploredCells=new List<PlaceCell>();
         public List<PlaceObservationEvent> observedPlaces=new List<PlaceObservationEvent>();
+        public List<KnownItemObservation> observedItems=new List<KnownItemObservation>();
     }
     [Serializable] public sealed class FoodReceipt
     {
@@ -184,7 +185,7 @@ namespace Starfall.Food
                 s.knowsMealBenefit&&!s.lastMealEvidence.StartsWith(generation+".ate.",StringComparison.Ordinal))return false;
             if(!string.IsNullOrEmpty(s.survivalAuthorityEvidence)&&
                 s.survivalAuthorityEvidence!=SurvivalAuthorityEvidence(s))return false;
-            if(!PlaceLedger.Valid(s))return false;
+            if(!PlaceLedger.Valid(s)||!ItemObservationMemory.Valid(s))return false;
             var p=s.actorPosition;return Finite(p.x)&&Finite(p.y)&&Finite(p.z)&&p.magnitude<10000;
         }
         static bool Finite(float f)=>!float.IsNaN(f)&&!float.IsInfinity(f);
@@ -194,6 +195,7 @@ namespace Starfall.Food
             try{var candidate=JsonUtility.FromJson<FoodState>(json);if(!Valid(candidate,world,generation)||candidate.seed!=State.seed||candidate.actorId!=State.actorId)return false;
                 if(candidate.exploredCells==null)candidate.exploredCells=new List<PlaceCell>();
                 if(candidate.observedPlaces==null)candidate.observedPlaces=new List<PlaceObservationEvent>();
+                if(candidate.observedItems==null)candidate.observedItems=new List<KnownItemObservation>();
                 State=candidate;return true;}catch{return false;}
         }
         [Serializable] sealed class SaveEnvelope{public string schema="starfall.food-save.v1",payload,sha256;}

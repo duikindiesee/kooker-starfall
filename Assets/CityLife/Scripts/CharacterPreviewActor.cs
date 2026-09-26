@@ -10,7 +10,8 @@ namespace CityLife.World
         public CharacterController Capsule;
         public CharacterPreviewCamera View;
         public CharacterPreviewRoamer Roamer;
-        public float WalkSpeed = 1.65f;
+        public float WalkSpeed = 3.0525f;
+        public float RunSpeed = 5f;
         public float SwimSpeed = 2.0f;
         public bool IsSprinting;
         public float Stamina = 100f;
@@ -125,10 +126,10 @@ namespace CityLife.World
             IsSubmerged = transform.position.y + 1.65f < waterSurface;
 
             bool sprinting = IsSprinting && Stamina > 0f && direction.sqrMagnitude > 0.01f;
-            float currentSpeed = IsSwimming ? (sprinting ? SwimSpeed * 1.5f : SwimSpeed) : (sprinting ? WalkSpeed * 1.85f : WalkSpeed);
+            float currentSpeed = IsSwimming ? (sprinting ? SwimSpeed * 1.5f : SwimSpeed) : (sprinting ? RunSpeed : WalkSpeed);
             if (sprinting)
             {
-                Stamina = Mathf.Max(0f, Stamina - 22f * dt);
+                Stamina = Mathf.Max(0f, Stamina - 8f * dt);
                 if (Stamina <= 0f) IsSprinting = false;
             }
             else
@@ -177,7 +178,9 @@ namespace CityLife.World
                 else Animate(ActualSpeed > 0.12f ? "Walk" : "Idle");
                 if (Animator != null)
                 {
-                    Animator.speed = (sprinting && ActualSpeed > 0.12f) ? 1.55f : 1.0f;
+                    Animator.speed = ActualSpeed <= 0.12f ? 1f :
+                        IsSwimming ? (sprinting ? 1.55f : 1f) :
+                        Mathf.Clamp(ActualSpeed / 1.65f, 0.5f, 3.1f);
                 }
             }
 

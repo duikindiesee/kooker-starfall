@@ -42,6 +42,13 @@ namespace CityLife.Items.Editor
                 Check(rodVisual != null, "rod-visual-created");
                 var tip = testRodGo.transform.Find("Visual/RodTip");
                 Check(tip != null, "rod-tip-transform-exists");
+                Check(rodVisual.transform.Find("VisibleCorkGrip") != null, "rod-has-contrasting-cork-grip");
+                Check(rodVisual.transform.Find("VisibleReelSpool") != null &&
+                      rodVisual.transform.Find("ReelCrank") != null, "rod-has-visible-reel-and-crank");
+                Check(rodVisual.transform.Find("LineGuide1") != null &&
+                      rodVisual.transform.Find("LineGuide4") != null, "rod-has-visible-line-guides");
+                Check(FishingRodItem.GetOrCreateRodMesh().bounds.size.x >= 0.012f,
+                    "rod-blank-readable-silhouette-width");
             }
             finally
             {
@@ -128,6 +135,8 @@ namespace CityLife.Items.Editor
                 Check(missedSpecies == null, "missed-species-is-null");
                 Check(missedReceipt == "strike-missed-no-fish", "missed-receipt-strike-missed-no-fish");
                 Check(fishing.ReservedFish == null, "reserved-fish-is-null-on-miss");
+                fishing.Tick(FishingInteraction.ReelDuration + 0.1f);
+                Check(fishing.State == FishingState.Idle, "missed-strike-retrieval-finished");
 
                 // 6. Atomic Swimmer Reservation & Rollback
                 var school = schoolGo.AddComponent<RiverFishSchool>();
@@ -137,7 +146,7 @@ namespace CityLife.Items.Editor
                 var swimmerPhys = swimmerGo.AddComponent<PhysicalItem>();
                 swimmerPhys.itemId = "river-fish-test";
                 swimmerPhys.itemTypeId = "food-river-fish";
-                swimmerGo.transform.position = validRiverTarget;
+                swimmerGo.transform.position = validRiverTarget + Vector3.down * 0.38f;
 
                 var swimmerInstance = new RiverFishSchool.RiverFishInstance
                 {
@@ -172,8 +181,9 @@ namespace CityLife.Items.Editor
                 Check(model.TryGetItem(swimmerNi.StableId, out var preCatchState) && preCatchState.location == ItemLocationKind.Free, "swimmer-pre-registered-free-in-model");
 
                 fishing.BobberPosition = validRiverTarget;
-                fishing.StartCast(validRiverTarget);
-                fishing.State = FishingState.Bite;
+                Check(fishing.StartCast(validRiverTarget), "baited-cast-starts-from-idle");
+                for (int i = 0; i < 1200 && fishing.State != FishingState.Bite; i++) fishing.Tick(0.05f);
+                Check(fishing.State == FishingState.Bite && fishing.BaitEaten, "fish-reached-and-ate-bait:" + fishing.State + ":" + fishing.LastReceipt);
 
                 Check(fishing.StrikeAndReel(out string caughtSpecies, out float scale, out string hookReceipt), "strike-with-fish-succeeded");
                 Check(hookReceipt == "fish-hooked-reeling", "hook-receipt-fish-hooked-reeling");
@@ -219,7 +229,6 @@ namespace CityLife.Items.Editor
                 int initialOutcomes = survival.FoodOutcomes;
                 // StrikeAndReel must NOT increment FoodOutcomes
                 fishing.StartCast(validRiverTarget);
-                fishing.State = FishingState.Bite;
                 // Add new swimmer for second cast
                 var swimmer2Go = new GameObject("river-fish-test-2");
                 var swimmer2Ni = swimmer2Go.AddComponent<NpcInteractable>();
@@ -227,7 +236,7 @@ namespace CityLife.Items.Editor
                 var swimmer2Phys = swimmer2Go.AddComponent<PhysicalItem>();
                 swimmer2Phys.itemId = "river-fish-test-2";
                 swimmer2Phys.itemTypeId = "food-river-fish";
-                swimmer2Go.transform.position = validRiverTarget;
+                swimmer2Go.transform.position = validRiverTarget + Vector3.down * 0.38f;
                 var swimmer2Instance = new RiverFishSchool.RiverFishInstance
                 {
                     gameObject = swimmer2Go,
@@ -240,7 +249,8 @@ namespace CityLife.Items.Editor
                 school.ActiveFish.Add(swimmer2Instance);
                 actions.HoldItemDirect(null, true); // Free left hand for second catch
 
-                fishing.StrikeAndReel(out _, out _, out _);
+                for (int i = 0; i < 1200 && fishing.State != FishingState.Bite; i++) fishing.Tick(0.05f);
+                Check(fishing.StrikeAndReel(out _, out _, out _), "second-fish-ate-bait-and-hooked");
                 Check(survival.FoodOutcomes == initialOutcomes, "strike-and-reel-does-not-increment-food-outcomes");
 
                 // LandCatch DOES record outcome and update diary
@@ -263,7 +273,7 @@ namespace CityLife.Items.Editor
                 Check(fishing.State == FishingState.Floating, "empty-water-reaches-floating");
                 fishing.Tick(fishing.FloatTargetDuration + 1.0f);
                 Check(fishing.State == FishingState.Floating, "empty-water-stays-floating-no-false-bite");
-                Check(fishing.LastReceipt == "calm-waters-no-fish-nearby", "empty-water-reports-calm-waters");
+                Check(fishing.LastReceipt == "waiting-for-fish-interest", "empty-water-reports-waiting-for-interest");
                 fishing.CancelFishing("empty-water-test-cleanup");
 
                 // 13. Fail Closed on Request ID Allocation Failure (Line 642 Verification)
@@ -376,7 +386,21 @@ namespace CityLife.Items.Editor
 
                 bool cmdFish = survival.SubmitNaturalLanguageCommand("catch a fish");
                 Check(cmdFish && survival.HasActiveCommand, "cmd-fish-accepted");
-                Check(survival.ActiveCommandTitle == "Catch a fish" && survival.ActiveCommandTotalSteps == 5, "cmd-fish-steps-match");
+                Check(survival.ActiveCommandTitle == "Catch a fish" && survival.ActiveCommandTotalSteps == 6, "cmd-fish-steps-match");
+
+                var titles = survival.ActiveCommandStepTitles;
+                bool titlesMatch = titles != null && titles.Count == 6 &&
+                    titles[0] == "Equip fishing rod" &&
+                    titles[1] == "Select active fish & calculate casting bank" &&
+                    titles[2] == "Route to casting bank" &&
+                    titles[3] == "Face fish & cast fishing line" &&
+                    titles[4] == "Wait for fish bite & strike" &&
+                    titles[5] == "Land catch into hand";
+                Check(titlesMatch, "cmd-fish-sequence-contract-match");
+
+                bool cmdGoFish = survival.SubmitNaturalLanguageCommand("go fish");
+                Check(cmdGoFish && survival.HasActiveCommand, "cmd-gofish-accepted");
+                Check(survival.ActiveCommandTitle == "Catch a fish" && survival.ActiveCommandTotalSteps == 6, "cmd-gofish-steps-match");
 
                 bool cmdRoast = survival.SubmitNaturalLanguageCommand("roast catch");
                 Check(cmdRoast && survival.HasActiveCommand, "cmd-roast-accepted");
@@ -392,11 +416,15 @@ namespace CityLife.Items.Editor
 
                 bool cmdCatchEat = survival.SubmitNaturalLanguageCommand("catch then eat");
                 Check(cmdCatchEat && survival.HasActiveCommand, "cmd-catch-eat-accepted");
-                Check(survival.ActiveCommandTitle == "Catch then eat" && survival.ActiveCommandTotalSteps == 10, "cmd-catch-eat-steps-match");
+                Check(survival.ActiveCommandTitle == "Catch then eat" && survival.ActiveCommandTotalSteps == 11, "cmd-catch-eat-steps-match");
 
                 bool cmdCatchStore = survival.SubmitNaturalLanguageCommand("catch then store");
                 Check(cmdCatchStore && survival.HasActiveCommand, "cmd-catch-store-accepted");
-                Check(survival.ActiveCommandTitle == "Catch then store" && survival.ActiveCommandTotalSteps == 8, "cmd-catch-store-steps-match");
+                Check(survival.ActiveCommandTitle == "Catch then store" && survival.ActiveCommandTotalSteps == 9, "cmd-catch-store-steps-match");
+
+                bool cmdCatchRoast = survival.SubmitNaturalLanguageCommand("catch then roast");
+                Check(cmdCatchRoast && survival.HasActiveCommand, "cmd-catch-roast-accepted");
+                Check(survival.ActiveCommandTitle == "Catch then roast" && survival.ActiveCommandTotalSteps == 9, "cmd-catch-roast-steps-match");
 
                 // 18. Command Cancellation & Rejection Reporting
                 survival.CancelActiveCommand("unit-test-cancel");

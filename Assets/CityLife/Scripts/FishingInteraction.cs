@@ -54,6 +54,11 @@ namespace CityLife.World
         public GameObject BobberInstance;
         public LineRenderer DynamicLine;
         public RiverFishSchool.RiverFishInstance ReservedFish;
+        public readonly FishBaitResponse BaitResponse = new FishBaitResponse();
+        public bool BaitEaten { get; private set; }
+        public GameObject BaitInstance;
+        public Vector3 BaitPosition => new Vector3(CastTarget.x, CoastalWater.CurrentLevel - 0.38f, CastTarget.z);
+        private int castSequence;
 
         private AudioSource audioSource;
         private static AudioClip splashClip;
@@ -85,8 +90,36 @@ namespace CityLife.World
             EnsureBobberAndLine();
         }
 
+        private void OnDestroy()
+        {
+            BaitResponse.Release();
+            foreach (var visual in new[] { BobberInstance, BaitInstance })
+            {
+                if (visual == null) continue;
+                var renderer = visual.GetComponent<Renderer>();
+                if (renderer != null && renderer.sharedMaterial != null)
+                {
+                    if (Application.isPlaying) Destroy(renderer.sharedMaterial);
+                    else DestroyImmediate(renderer.sharedMaterial);
+                }
+                if (Application.isPlaying) Destroy(visual); else DestroyImmediate(visual);
+            }
+        }
+
         public void EnsureBobberAndLine()
         {
+            if (BaitInstance == null)
+            {
+                BaitInstance = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                BaitInstance.name = "FishingBait_Submerged";
+                var collider = BaitInstance.GetComponent<Collider>();
+                if (Application.isPlaying) Destroy(collider); else DestroyImmediate(collider);
+                BaitInstance.transform.localScale = new Vector3(0.04f, 0.025f, 0.065f);
+                var baitMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                baitMaterial.SetColor("_BaseColor", new Color(0.65f, 0.25f, 0.12f));
+                BaitInstance.GetComponent<Renderer>().sharedMaterial = baitMaterial;
+                BaitInstance.SetActive(false);
+            }
             if (BobberInstance == null)
             {
                 BobberInstance = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -116,7 +149,7 @@ namespace CityLife.World
                 var lineGo = new GameObject("FishingLine_Renderer");
                 lineGo.transform.SetParent(transform, false);
                 DynamicLine = lineGo.AddComponent<LineRenderer>();
-                DynamicLine.positionCount = 3;
+                DynamicLine.positionCount = 4;
                 DynamicLine.startWidth = 0.005f;
                 DynamicLine.endWidth = 0.004f;
                 DynamicLine.useWorldSpace = true;
@@ -216,7 +249,25 @@ namespace CityLife.World
             return true;
         }
 
-        public bool StartCast(Vector3 targetWaterPos)
+        public bool CanStartCast(Vector3 casterPos, Vector3 targetWaterPos, out string reason)
+        {
+            reason = null;
+            if (!IsHoldingFishingRod(out _))
+            {
+                reason = "Not holding fishing rod in hand";
+                return false;
+            }
+
+            if (IsFishingActive)
+            {
+                reason = $"Already fishing in state {State}";
+                return false;
+            }
+
+            return RiverFishSchool.CanFishInRiver(casterPos, targetWaterPos, out reason);
+        }
+
+        public bool StartCast(Vector3 targetWaterPos, RiverFishSchool.RiverFishInstance specificFish = null)
         {
             EnsureBobberAndLine();
             if (!IsHoldingFishingRod(out var rod))
@@ -247,8 +298,24 @@ namespace CityLife.World
 
             State = FishingState.Casting;
             StateTimer = 0f;
-            FloatTargetDuration = UnityEngine.Random.Range(FloatMinDuration, FloatMaxDuration);
-            TargetSpeciesTypeId = null;
+            BaitResponse.Begin(++castSequence);
+            BaitEaten = false;
+            ReservedFish = null;
+
+            if (specificFish != null)
+            {
+                // A spotted fish guides the cast, but does not guarantee a bite.
+                specificFish.isReserved = false;
+                specificFish.fishingControlled = false;
+                bool isCarp = (specificFish.interactable != null && specificFish.interactable.StableId != null && specificFish.interactable.StableId.Contains("carp")) ||
+                              (specificFish.gameObject != null && specificFish.gameObject.name.Contains("carp"));
+                TargetSpeciesTypeId = isCarp ? "food-river-carp" : "food-river-fish";
+                TargetFishScale = specificFish.scale > 0.05f ? specificFish.scale : (isCarp ? 0.85f : 0.75f);
+            }
+            else
+            {
+                TargetSpeciesTypeId = null;
+            }
 
             if (BobberInstance != null)
             {
@@ -286,22 +353,20 @@ namespace CityLife.World
                 StateTimer = 0f;
 
                 // Atomic fish reservation from RiverFishSchool
-                var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
                 bool reserved = false;
-                if (school != null)
+                if (ReservedFish != null && ReservedFish.gameObject != null && ReservedFish.gameObject.activeSelf)
                 {
-                    reserved = school.TryReserveFishNear(BobberPosition, 7.5f, out var fish);
-                    if (reserved)
-                    {
-                        ReservedFish = fish;
-                        bool isCarp = (fish.interactable != null && fish.interactable.StableId != null && fish.interactable.StableId.Contains("carp")) ||
-                                      (fish.gameObject != null && fish.gameObject.name.Contains("carp"));
-                        TargetSpeciesTypeId = isCarp ? "food-river-carp" : "food-river-fish";
-                        TargetFishScale = fish.scale > 0.05f ? fish.scale : (isCarp ? 0.85f : 0.75f);
-                    }
+                    reserved = true;
                 }
 
-                if (!reserved)
+                if (reserved && ReservedFish != null)
+                {
+                    bool isCarp = (ReservedFish.interactable != null && ReservedFish.interactable.StableId != null && ReservedFish.interactable.StableId.Contains("carp")) ||
+                                  (ReservedFish.gameObject != null && ReservedFish.gameObject.name.Contains("carp"));
+                    TargetSpeciesTypeId = isCarp ? "food-river-carp" : "food-river-fish";
+                    TargetFishScale = ReservedFish.scale > 0.05f ? ReservedFish.scale : (isCarp ? 0.85f : 0.75f);
+                }
+                else
                 {
                     // STRICT: No fish near bobber => no catch! No phantom fallback!
                     ReservedFish = null;
@@ -324,6 +389,8 @@ namespace CityLife.World
             }
             else if (State == FishingState.Floating || State == FishingState.Nibble)
             {
+                BaitResponse.Release();
+                if (BaitInstance != null) BaitInstance.SetActive(false);
                 // Premature strike before bite: line pulled early, fish spooked away
                 State = FishingState.Reeling;
                 StateTimer = 0f;
@@ -348,6 +415,8 @@ namespace CityLife.World
 
         public void CancelFishing(string reason = "cancelled")
         {
+            BaitResponse.Release();
+            if (BaitInstance != null) BaitInstance.SetActive(false);
             if (ReservedFish != null)
             {
                 if (RiverFishSchool.Instance != null)
@@ -410,6 +479,8 @@ namespace CityLife.World
                         StateTimer = 0f;
                         BobberPosition = CastTarget;
                         BobberPosition.y = CoastalWater.CurrentLevel;
+                        BaitInstance.transform.position = BaitPosition;
+                        BaitInstance.SetActive(true);
                         PlaySplashCue();
                     }
                     break;
@@ -425,27 +496,30 @@ namespace CityLife.World
                     if (BobberInstance != null) BobberInstance.transform.position = BobberPosition;
                     UpdateLinePositions(tipPos, BobberPosition);
 
-                    if (StateTimer >= FloatTargetDuration)
+                    var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
+                    BaitResponse.Tick(dt, BaitPosition, school != null ? school.ActiveFish : null);
+                    ReservedFish = BaitResponse.InterestedFish;
+                    BaitInstance.transform.position = BaitPosition;
+                    if (BaitResponse.AtBait)
                     {
-                        var school = RiverFishSchool.Instance ?? FindFirstObjectByType<RiverFishSchool>();
-                        bool hasFish = school != null && school.HasFishNear(BobberPosition, 7.5f);
-                        if (hasFish)
-                        {
-                            State = FishingState.Nibble;
-                            StateTimer = 0f;
-                        }
-                        else
-                        {
-                            // Empty water: no false bite! Bobber stays floating calmly
-                            StateTimer = FloatTargetDuration * 0.75f;
-                            LastReceipt = "calm-waters-no-fish-nearby";
-                        }
+                        State = FishingState.Nibble;
+                        StateTimer = 0f;
+                        LastReceipt = "fish-investigating-bait";
                     }
+                    else LastReceipt = ReservedFish != null ? "fish-approaching-bait" : "waiting-for-fish-interest";
                     break;
                 }
 
                 case FishingState.Nibble:
                 {
+                    BaitResponse.Tick(dt, BaitPosition, null);
+                    if (!BaitResponse.AtBait)
+                    {
+                        ReservedFish = null;
+                        State = FishingState.Floating;
+                        StateTimer = 0;
+                        break;
+                    }
                     // Twitching bobber dips
                     float waterY = CoastalWater.CurrentLevel;
                     float twitch = Mathf.Abs(Mathf.Sin(Time.time * 8f)) * -0.045f;
@@ -458,6 +532,9 @@ namespace CityLife.World
                     {
                         State = FishingState.Bite;
                         StateTimer = 0f;
+                        BaitEaten = true;
+                        BaitInstance.SetActive(false);
+                        LastReceipt = "fish-ate-bait";
                         PlaySplashCue();
                     }
                     break;
@@ -724,6 +801,12 @@ namespace CityLife.World
                 if (fish.physicalItem != null)
                 {
                     fish.physicalItem.itemTypeId = itemTypeId;
+                    if (model != null && model.TryGetDefinition(itemTypeId, out var fishDef))
+                    {
+                        fish.physicalItem.massKg = fishDef.massKg;
+                        fish.physicalItem.dimensions = fishDef.dimensions;
+                        fish.physicalItem.isAnchored = fishDef.isAnchored;
+                    }
                     fish.physicalItem.ConfigureComponents();
                     if (model != null)
                     {
@@ -850,6 +933,7 @@ namespace CityLife.World
             DynamicLine.SetPosition(0, tip);
             DynamicLine.SetPosition(1, mid);
             DynamicLine.SetPosition(2, bobber);
+            DynamicLine.SetPosition(3, State == FishingState.Floating || State == FishingState.Nibble || State == FishingState.Bite ? BaitPosition : bobber);
         }
 
         private void PlaySplashCue()

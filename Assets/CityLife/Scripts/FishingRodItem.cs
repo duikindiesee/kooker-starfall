@@ -17,6 +17,9 @@ namespace CityLife.World
         public const string ItemTypeId = "tool-fishing-rod";
         public const float RodLength = 2.10f;
         public const float RodMassKg = 0.85f;
+        // New-world starter tool on reachable shore. Persisted item poses still
+        // come from ItemPersistence; this does not relocate a saved player's rod.
+        public static Vector3 InitialWorldPosition => new Vector3(40f, CoastalTerrain.Height(40f, -30f) + .15f, -30f);
 
         [Header("References")]
         public PhysicalItem PhysicalItem;
@@ -29,6 +32,8 @@ namespace CityLife.World
         private static Mesh cachedRodMesh;
         private static Material cachedRodMaterial;
         private static Material cachedCorkMaterial;
+        private static Material cachedReelMaterial;
+        private static Material cachedGuideMaterial;
 
         public static Mesh GetOrCreateRodMesh()
         {
@@ -47,7 +52,7 @@ namespace CityLife.World
                 name = "RiverFishingRod_WoodBlank"
             };
             // Warm ash wood tone
-            cachedRodMaterial.SetColor("_BaseColor", new Color(0.46f, 0.32f, 0.18f, 1f));
+            cachedRodMaterial.SetColor("_BaseColor", new Color(0.66f, 0.39f, 0.17f, 1f));
             cachedRodMaterial.SetFloat("_Smoothness", 0.45f);
             return cachedRodMaterial;
         }
@@ -67,6 +72,28 @@ namespace CityLife.World
             return cachedCorkMaterial;
         }
 
+        private static Material GetOrCreateReelMaterial()
+        {
+            if (cachedReelMaterial != null) return cachedReelMaterial;
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+            cachedReelMaterial = new Material(shader) { name = "RiverFishingRod_TealReel" };
+            cachedReelMaterial.SetColor("_BaseColor", new Color(0.12f, 0.48f, 0.52f, 1f));
+            cachedReelMaterial.SetFloat("_Smoothness", 0.58f);
+            return cachedReelMaterial;
+        }
+
+        private static Material GetOrCreateGuideMaterial()
+        {
+            if (cachedGuideMaterial != null) return cachedGuideMaterial;
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) shader = Shader.Find("Standard");
+            cachedGuideMaterial = new Material(shader) { name = "RiverFishingRod_LineGuides" };
+            cachedGuideMaterial.SetColor("_BaseColor", new Color(0.82f, 0.78f, 0.57f, 1f));
+            cachedGuideMaterial.SetFloat("_Smoothness", 0.72f);
+            return cachedGuideMaterial;
+        }
+
         public static Mesh GenerateProceduralRodMesh()
         {
             var mesh = new Mesh { name = "Procedural_Fishing_Rod_Mesh" };
@@ -81,7 +108,8 @@ namespace CityLife.World
 
             // Rod extends along local Z axis from 0 to RodLength (2.1m)
             // Handle: z in [0, 0.35m], radius = 0.016m (cork grip)
-            // Blank: z in [0.35, 2.10m], tapers from 0.012m to 0.003m
+            // Blank: z in [0.35, 2.10m], tapers from 0.021m to 0.006m so
+            // the silhouette remains legible in the pulled-back third-person view.
             for (int r = 0; r <= segments; r++)
             {
                 float fr = r / (float)segments;
@@ -90,12 +118,12 @@ namespace CityLife.World
                 float radius;
                 if (z <= 0.35f)
                 {
-                    radius = 0.016f; // Cork handle grip
+                    radius = 0.021f; // Cork handle grip
                 }
                 else
                 {
                     float blankFr = (z - 0.35f) / (RodLength - 0.35f);
-                    radius = Mathf.Lerp(0.012f, 0.003f, blankFr); // Tapered wood blank
+                    radius = Mathf.Lerp(0.021f, 0.006f, blankFr); // Tapered wood blank
                 }
 
                 for (int s = 0; s <= sides; s++)
@@ -209,11 +237,62 @@ namespace CityLife.World
             var mr = visual.AddComponent<MeshRenderer>();
             mr.sharedMaterial = rodMat != null ? rodMat : GetOrCreateRodMaterial();
 
+            // The rod used to be one slim, dark mesh. At the normal game camera
+            // distance it read as a line beside the inhabitant, not as fishing
+            // equipment. Give the grip, reel and guides distinct handcrafted
+            // materials and a clear silhouette without changing line physics.
+            var grip = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            grip.name = "VisibleCorkGrip";
+            grip.transform.SetParent(visual.transform, false);
+            grip.transform.localPosition = new Vector3(0, 0, 0.18f);
+            grip.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+            grip.transform.localScale = new Vector3(0.027f, 0.175f, 0.027f);
+            grip.GetComponent<Renderer>().sharedMaterial = corkMat != null ? corkMat : GetOrCreateCorkMaterial();
+            var gripCollider = grip.GetComponent<Collider>();
+            if (gripCollider != null) Destroy(gripCollider);
+
+            var reel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            reel.name = "VisibleReelSpool";
+            reel.transform.SetParent(visual.transform, false);
+            reel.transform.localPosition = new Vector3(0, -0.057f, 0.24f);
+            reel.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+            reel.transform.localScale = new Vector3(0.072f, 0.025f, 0.072f);
+            reel.GetComponent<Renderer>().sharedMaterial = GetOrCreateReelMaterial();
+            var reelCollider = reel.GetComponent<Collider>();
+            if (reelCollider != null) Destroy(reelCollider);
+
+            AddRodAccent(visual.transform, "ReelHub", new Vector3(0, -0.057f, 0.258f),
+                new Vector3(0.035f, 0.035f, 0.035f), GetOrCreateGuideMaterial());
+            AddRodAccent(visual.transform, "ReelCrank", new Vector3(0.046f, -0.057f, 0.258f),
+                new Vector3(0.014f, 0.062f, 0.014f), GetOrCreateGuideMaterial());
+            AddRodAccent(visual.transform, "ReelKnob", new Vector3(0.046f, -0.105f, 0.258f),
+                new Vector3(0.025f, 0.025f, 0.025f), GetOrCreateReelMaterial());
+            for (int guide = 0; guide < 4; guide++)
+            {
+                float z = 0.62f + guide * 0.39f;
+                AddRodAccent(visual.transform, "LineGuide" + (guide + 1), new Vector3(0, 0.014f, z),
+                    new Vector3(0.014f, 0.014f, 0.014f), GetOrCreateGuideMaterial());
+            }
+
             var tipGo = new GameObject("RodTip");
             tipGo.transform.SetParent(visual.transform, false);
             tipGo.transform.localPosition = new Vector3(0, 0, RodLength);
 
             return visual;
+        }
+
+        private static GameObject AddRodAccent(Transform parent, string objectName, Vector3 localPosition,
+            Vector3 localScale, Material material)
+        {
+            var accent = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            accent.name = objectName;
+            accent.transform.SetParent(parent, false);
+            accent.transform.localPosition = localPosition;
+            accent.transform.localScale = localScale;
+            accent.GetComponent<Renderer>().sharedMaterial = material;
+            var collider = accent.GetComponent<Collider>();
+            if (collider != null) Destroy(collider);
+            return accent;
         }
 
         public static GameObject SpawnWorldFishingRod(Transform parent, string worldId, Vector3 position, string stableId = "fishing-rod-01")
@@ -276,6 +355,27 @@ namespace CityLife.World
         public void AttachLineRenderer(LineRenderer lr)
         {
             LineRenderer = lr;
+        }
+
+        public static void ConfigureRuntimeRod(PhysicalItem physical, NpcInteractable interactable)
+        {
+            var root = physical.gameObject;
+            var rod = root.GetComponent<FishingRodItem>() ?? root.AddComponent<FishingRodItem>();
+            rod.PhysicalItem = physical;
+            rod.Interactable = interactable;
+            rod.TipTransform = root.transform.Find("Visual/RodTip");
+            var handle = root.transform.Find("RodHandle");
+            if (handle == null)
+            {
+                handle = new GameObject("RodHandle").transform;
+                handle.SetParent(root.transform, false);
+                handle.localPosition = new Vector3(0, 0, .18f);
+            }
+            rod.HandleTransform = handle;
+            physical.GripLocalOffset = new Vector3(.018f, .065f, -.18f);
+            physical.GripLocalRotation = Quaternion.Euler(15f, 0, 0);
+            var collider = root.GetComponent<BoxCollider>();
+            if (collider != null) collider.center = new Vector3(0, 0, RodLength * .5f);
         }
 
         public void SetBobberVisible(bool visible)

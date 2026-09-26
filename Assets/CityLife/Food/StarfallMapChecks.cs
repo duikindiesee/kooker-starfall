@@ -242,8 +242,7 @@ namespace Starfall.Food
                     "unattached food runtime reports clear missing model error");
 
                 testFood.Brain = testBrain;
-                var ensureMethod = typeof(IntegratedFoodRuntime).GetMethod("EnsureModel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                ensureMethod.Invoke(testFood, null);
+                testFood.EnsureModel();
                 testFood.Model.State.world = "world-a";
                 testFood.Model.State.generation = IntegratedFoodRuntime.Generation;
                 testFood.Model.State.actorId = NpcAutonomy.AgentId;

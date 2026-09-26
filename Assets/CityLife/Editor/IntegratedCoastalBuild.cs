@@ -126,10 +126,15 @@ namespace CityLife.World.Editor
             // River Fishing Mechanics & Atomic Catch-to-Hand/Store/Eat verification
             var fishingChecks = CityLife.Items.Editor.FishingIntegrationChecks.Run();
 
+            // 'Go fish' Command Loop, Club Stowing & Public Negative Routing verification
+            if (!GoFishCommandValidationTests.RunAllChecks(out string goFishReceipt, out var goFishPassed))
+                throw new InvalidOperationException($"Go fish command validation failed: {goFishReceipt}");
+
             int totalPassed = foodChecks.Count + materialChecks.Count + checkpointChecks.Count +
                               basketPersistChecks.Count + caveFoodChecks.Count + stoneChecks.Count +
-                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + fishingChecks.Count + 17;
-            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, automated river fish kinematic visibility verification, waist moonbag, coastal timber wolf ecology, riverbank pilot slice, and handcrafted river fishing rod mechanics with zero errors.");
+                              woodChecks.Count + mapChecks.Count + dualHandChecks.Count + fishingChecks.Count +
+                              goFishPassed.Count + 17;
+            Debug.Log($"STARFALL_INTEGRATED_VALIDATION_PASSED: {totalPassed} named checks verified across all AG1-AG5 lanes, dual-hand carry, survival cycle, masonry, map fog-of-war, marine crabs, tidal driftwood, micro-weathers, freshwater river drinking, South canyon waterfall cascade, river fish ecology, automated river fish kinematic visibility verification, waist moonbag, coastal timber wolf ecology, riverbank pilot slice, handcrafted river fishing rod mechanics, and 'go fish' directive/catch sequence loop with zero errors.");
             return totalPassed;
         }
 
@@ -353,6 +358,7 @@ namespace CityLife.World.Editor
             var fishing = actorObject.AddComponent<FishingInteraction>();
             fishing.Brain = brain;
             controls.Fishing = fishing;
+            actorObject.AddComponent<FishingCampSupplies>().Brain = brain;
 
             // Autonomous Evening Refuge Fire Survival Cycle
             var eveningFire = actorObject.AddComponent<EveningRefugeFireCycle>();
@@ -676,8 +682,9 @@ namespace CityLife.World.Editor
             }
             brain.Registry = brain.Registry.Concat(fishInteractables).ToArray();
 
-            // Handcrafted River Fishing Rod on boulder shelf near riverside activity terrace
-            Vector3 rodPos = new Vector3(3.2f, CoastalTerrain.Height(3.2f, 10.0f) + 0.15f, 10.0f);
+            // Starter rod on accessible shore; the former boulder shelf failed
+            // navigation and left the nearest reachable point outside pickup range.
+            Vector3 rodPos = FishingRodItem.InitialWorldPosition;
             var worldRod = FishingRodItem.SpawnWorldFishingRod(ground.transform, brain.InstanceWorldId, rodPos, "tool-fishing-rod-01");
             var rodNi = worldRod.GetComponent<NpcInteractable>();
             if (rodNi != null)

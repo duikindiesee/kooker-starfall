@@ -196,6 +196,9 @@ namespace CityLife.World
             ActiveFish.RemoveAll(f => f == null || f.gameObject == null);
             if (ActiveFish.Count > 0) return;
 
+            var brain = UnityEngine.Object.FindAnyObjectByType<NpcAutonomy>();
+            var itemModel = (brain != null && brain.PhysicalItems != null) ? brain.PhysicalItems.Model : null;
+
             // Search children for baked fish instances
             var allChildren = GetComponentsInChildren<Transform>(true);
             int fishIndex = 0;
@@ -214,6 +217,19 @@ namespace CityLife.World
                 var phys = child.GetComponent<PhysicalItem>();
                 var anim = child.GetComponentInChildren<Animation>(true);
                 bool isCarp = name.StartsWith("river-carp-", StringComparison.Ordinal);
+
+                string fishId = (phys != null && !string.IsNullOrEmpty(phys.itemId)) ? phys.itemId :
+                                (ni != null && !string.IsNullOrEmpty(ni.StableId) ? ni.StableId : name);
+
+                if (itemModel != null && !string.IsNullOrEmpty(fishId))
+                {
+                    if (itemModel.IsRetired(fishId) || itemModel.TryGetItem(fishId, out _))
+                    {
+                        // Suppress baked scene fish: it is authoritatively registered/caught/stored/retired/free!
+                        child.gameObject.SetActive(false);
+                        continue;
+                    }
+                }
 
                 float scale = 0.85f;
                 var smr = child.GetComponentInChildren<SkinnedMeshRenderer>(true);
@@ -242,6 +258,36 @@ namespace CityLife.World
             }
         }
 
+        public void ReconcileWithAuthoritativeModel(ItemModel itemModel)
+        {
+            if (itemModel == null) return;
+            if (ActiveFish == null) return;
+
+            for (int i = ActiveFish.Count - 1; i >= 0; i--)
+            {
+                var fish = ActiveFish[i];
+                if (fish == null || fish.gameObject == null)
+                {
+                    ActiveFish.RemoveAt(i);
+                    continue;
+                }
+                string id = (fish.physicalItem != null && !string.IsNullOrEmpty(fish.physicalItem.itemId))
+                    ? fish.physicalItem.itemId
+                    : (fish.interactable != null && !string.IsNullOrEmpty(fish.interactable.StableId)
+                        ? fish.interactable.StableId
+                        : fish.gameObject.name);
+
+                if (string.IsNullOrEmpty(id)) continue;
+
+                if (itemModel.IsRetired(id) || itemModel.TryGetItem(id, out _))
+                {
+                    // Suppress baked swimming visual: this fish is authoritatively registered/caught/stored/retired/free!
+                    fish.gameObject.SetActive(false);
+                    ActiveFish.RemoveAt(i);
+                }
+            }
+        }
+
         public void EnsureFishKinematicsAndAnimation()
         {
             for (int i = 0; i < ActiveFish.Count; i++)
@@ -251,8 +297,11 @@ namespace CityLife.World
 
                 if (fish.physicalItem != null && fish.physicalItem.Body != null)
                 {
-                    fish.physicalItem.Body.linearVelocity = Vector3.zero;
-                    fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    if (!fish.physicalItem.Body.isKinematic)
+                    {
+                        fish.physicalItem.Body.linearVelocity = Vector3.zero;
+                        fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    }
                     fish.physicalItem.Body.isKinematic = true;
                     fish.physicalItem.Body.useGravity = false;
                 }
@@ -314,6 +363,7 @@ namespace CityLife.World
             public PhysicalItem physicalItem;
             public Animation animation;
             public bool isReserved;
+            public bool fishingControlled;
         }
 
         [SerializeField]
@@ -401,7 +451,7 @@ namespace CityLife.World
                 if (fish == null || fish.gameObject == null || !fish.gameObject.activeSelf) continue;
 
                 // If reserved on fishing line, carried in hand, stowed in satchel, or undergoing eating/cooking, don't simulate swimming orbit
-                if (fish.isReserved || (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored)))
+                if (fish.fishingControlled || (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored)))
                 {
                     continue;
                 }
@@ -432,7 +482,8 @@ namespace CityLife.World
                     waterY);
 
                 Vector3 delta = newPos - fish.gameObject.transform.position;
-                fish.gameObject.transform.position = newPos;
+                // Returning from a missed bite must not teleport back onto the old orbit.
+                fish.gameObject.transform.position = Vector3.MoveTowards(fish.gameObject.transform.position, newPos, Time.deltaTime * 1.2f);
 
                 if (delta.sqrMagnitude > 0.00001f)
                 {
@@ -687,8 +738,11 @@ namespace CityLife.World
                 phys.ConfigureComponents();
                 if (phys.Body != null)
                 {
-                    phys.Body.linearVelocity = Vector3.zero;
-                    phys.Body.angularVelocity = Vector3.zero;
+                    if (!phys.Body.isKinematic)
+                    {
+                        phys.Body.linearVelocity = Vector3.zero;
+                        phys.Body.angularVelocity = Vector3.zero;
+                    }
                     phys.Body.isKinematic = true;
                     phys.Body.useGravity = false;
                 }
@@ -846,8 +900,11 @@ namespace CityLife.World
                 phys.ConfigureComponents();
                 if (phys.Body != null)
                 {
-                    phys.Body.linearVelocity = Vector3.zero;
-                    phys.Body.angularVelocity = Vector3.zero;
+                    if (!phys.Body.isKinematic)
+                    {
+                        phys.Body.linearVelocity = Vector3.zero;
+                        phys.Body.angularVelocity = Vector3.zero;
+                    }
                     phys.Body.isKinematic = true;
                     phys.Body.useGravity = false;
                 }
@@ -982,12 +1039,16 @@ namespace CityLife.World
         {
             if (fish == null) return;
             fish.isReserved = false;
+            fish.fishingControlled = false;
             if (fish.gameObject != null && fish.gameObject.activeSelf)
             {
                 if (fish.physicalItem != null && fish.physicalItem.Body != null)
                 {
-                    fish.physicalItem.Body.linearVelocity = Vector3.zero;
-                    fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    if (!fish.physicalItem.Body.isKinematic)
+                    {
+                        fish.physicalItem.Body.linearVelocity = Vector3.zero;
+                        fish.physicalItem.Body.angularVelocity = Vector3.zero;
+                    }
                     fish.physicalItem.Body.isKinematic = true;
                     fish.physicalItem.Body.useGravity = false;
                 }

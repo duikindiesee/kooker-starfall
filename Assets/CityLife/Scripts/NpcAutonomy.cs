@@ -256,7 +256,7 @@ namespace CityLife.World
                 (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
                  Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("tool")));
             bool allowSurvival = Actions == null || Actions.Held == null || isHoldingFood || isHoldingTool;
-            bool survivalPriority = Survival != null && Survival.Enabled && (Survival.Food.Model.State.body.dead ||
+            bool survivalPriority = Survival != null && Survival.Enabled && (Survival.HasActiveCommand || Survival.Food.Model.State.body.dead ||
                 isHoldingFood ||
                 (Survival.Food.Model.State.satiety < 7000 && allowSurvival) ||
                 (Survival.Food.Model.State.hydration < 7000 && allowSurvival) ||

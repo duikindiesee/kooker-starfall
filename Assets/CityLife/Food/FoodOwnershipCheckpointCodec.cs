@@ -705,9 +705,13 @@ namespace Starfall.Food
             Directory.CreateDirectory(stagingDirectory);
             string stagingFile = Path.Combine(stagingDirectory, "item-stage-" + Guid.NewGuid().ToString("N") + ".tmp");
 
+            string physicalSchema = envelope.physicalPayload != null && envelope.physicalPayload.Contains("\"isManaged\":true")
+                ? ItemPersistence.ManagedSchemaVersion
+                : ItemPersistence.SchemaVersion;
+
             var saveEnvelope = new PhysicalSaveEnvelope
             {
-                schema = ItemPersistence.SchemaVersion,
+                schema = physicalSchema,
                 payload = envelope.physicalPayload,
                 sha256 = envelope.physicalPayloadHash
             };

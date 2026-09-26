@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -62,6 +63,36 @@ namespace CityLife.World
         private Text diaryText;
         private Text milestonesText;
 
+        // Command Directive Entry Bar
+        private GameObject commandPanel;
+        private RectTransform commandRect;
+        private InputField commandInputField;
+        private int commandSubmittedFrame = -1;
+
+        private void SubmitCommandField()
+        {
+            if (commandInputField == null || commandSubmittedFrame == Time.frameCount) return;
+            commandSubmittedFrame = Time.frameCount;
+            string text = commandInputField.text.Trim();
+            commandInputField.text = "";
+            commandInputField.DeactivateInputField();
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            if (!string.IsNullOrEmpty(text) && Brain?.Survival != null)
+                _ = Brain.Survival.SubmitNaturalLanguageCommandAsync(text);
+        }
+
+        public bool IsTypingCommand => commandInputField != null && commandInputField.isFocused;
+        public InputField CommandInputField => commandInputField;
+
+        public void FocusCommandInput()
+        {
+            if (commandInputField != null)
+            {
+                commandInputField.ActivateInputField();
+                commandInputField.Select();
+            }
+        }
+
         private static Material _alwaysOnTopMaterial;
         public static Material AlwaysOnTopMaterial
         {
@@ -80,7 +111,8 @@ namespace CityLife.World
             }
         }
 
-        public const string BuildVersion = "STARFALL v0.0.11 · round-313-fishing";
+        public static string BuildVersion => "STARFALL v" + Application.version + " · " +
+            (string.IsNullOrEmpty(Application.buildGUID) ? "Editor" : Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length)));
 
         private void Awake()
         {
@@ -233,6 +265,41 @@ namespace CityLife.World
             thoughtsBackground = drawerPanel;
 
             // ==========================================
+            // 2b. Command Directive Entry Bar (1100 x 34)
+            // ==========================================
+            commandPanel = new GameObject("Command input panel", typeof(RectTransform), typeof(Image));
+            commandRect = MakeRt(commandPanel, panelGroup.transform, 250, 818, 1100, 34);
+            var commandImg = commandPanel.GetComponent<Image>();
+            commandImg.color = new Color(0.02f, 0.05f, 0.08f, 0.92f);
+            if (AlwaysOnTopMaterial != null) commandImg.material = AlwaysOnTopMaterial;
+
+            var prefixLabel = MakeLabel(commandPanel, "Prefix", 10, 0, 160, 34, 14, new Color(0.38f, 0.88f, 1.0f), FontStyle.Bold, TextAnchor.MiddleLeft);
+            prefixLabel.text = "[Enter] Directive >";
+
+            var inputGo = new GameObject("Command InputField", typeof(RectTransform), typeof(Image), typeof(InputField));
+            MakeRt(inputGo, commandPanel.transform, 175, 2, 915, 30);
+            var inputGoImg = inputGo.GetComponent<Image>();
+            inputGoImg.color = new Color(0.05f, 0.10f, 0.15f, 0.85f);
+            if (AlwaysOnTopMaterial != null) inputGoImg.material = AlwaysOnTopMaterial;
+
+            var placeholderLabel = MakeLabel(inputGo, "Placeholder", 8, 0, 900, 30, 13, new Color(0.5f, 0.65f, 0.75f, 0.7f), FontStyle.Italic, TextAnchor.MiddleLeft);
+            placeholderLabel.text = "Type directive (e.g. 'go fish', 'go river', 'eat catch', 'store catch') and press Enter... (Esc to cancel)";
+
+            var textLabel = MakeLabel(inputGo, "Text", 8, 0, 900, 30, 14, Color.white, FontStyle.Normal, TextAnchor.MiddleLeft);
+
+            commandInputField = inputGo.GetComponent<InputField>();
+            commandInputField.textComponent = textLabel;
+            commandInputField.placeholder = placeholderLabel;
+            commandInputField.lineType = InputField.LineType.SingleLine;
+            commandInputField.characterLimit = 120;
+            commandInputField.onEndEdit.AddListener(_ =>
+            {
+                var keyboard = Controls != null && Controls.TestKeyboard != null ? Controls.TestKeyboard : Keyboard.current;
+                if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame))
+                    SubmitCommandField();
+            });
+
+            // ==========================================
             // 3. Docked Bottom Hotkey Pill Strip
             // ==========================================
             var footerPanel = new GameObject("Bottom hotkey strip", typeof(RectTransform), typeof(Image));
@@ -242,7 +309,7 @@ namespace CityLife.World
             if (AlwaysOnTopMaterial != null) footerImg.material = AlwaysOnTopMaterial;
 
             footer = MakeLabel(footerPanel, "Controls footer", 10, 0, 1080, 34, 14, new Color(0.72f, 0.82f, 0.90f), FontStyle.Normal, TextAnchor.MiddleCenter);
-            footer.text = "[Tab] Possess  ·  [E] Gather/Drink/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [B] Moonbag  ·  [M] Map  ·  [L] Inspector Drawer  ·  [Shift] Sprint";
+            footer.text = "[Enter] Directive  ·  [Tab] Possess  ·  [E] Gather/Drink/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [B] Moonbag  ·  [M] Map  ·  [L] Drawer";
 
             drawerPanel.SetActive(Detailed);
         }
@@ -263,8 +330,42 @@ namespace CityLife.World
 
         private void Update()
         {
-            var key = Keyboard.current;
+            var key = Controls != null && Controls.TestKeyboard != null ? Controls.TestKeyboard : Keyboard.current;
             if (key == null) return;
+
+            // Free-text command entry submission & cancellation
+            if ((key.enterKey.wasPressedThisFrame || key.numpadEnterKey.wasPressedThisFrame) && commandSubmittedFrame != Time.frameCount)
+            {
+                if (commandInputField != null && commandInputField.isFocused)
+                {
+                    SubmitCommandField();
+                }
+                else if (commandInputField != null && !commandInputField.isFocused && (Controls == null || !Controls.MenuOpen))
+                {
+                    FocusCommandInput();
+                }
+            }
+            else if (key.escapeKey.wasPressedThisFrame)
+            {
+                if (commandInputField != null && commandInputField.isFocused)
+                {
+                    commandInputField.text = "";
+                    commandInputField.DeactivateInputField();
+                    if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+                }
+                if (Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                {
+                    Brain.Survival.CancelActiveCommand("user-cancelled-via-esc");
+                }
+            }
+            else if (key.cKey.wasPressedThisFrame)
+            {
+                if ((commandInputField == null || !commandInputField.isFocused) &&
+                    Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                {
+                    Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");
+                }
+            }
 
             if (Detailed)
             {
@@ -499,11 +600,11 @@ namespace CityLife.World
             {
                 if (Brain.Survival != null && Brain.Survival.HasActiveCommand)
                 {
-                    footer.text = "[C] Cancel Command  ·  [1] River  ·  [2] Fish  ·  [3] Roast  ·  [4] Basket  ·  [5] Eat  ·  [6] Catch->Eat  ·  [7] Catch->Store  ·  [Tab] Possess";
+                    footer.text = "[Enter] Directive  ·  [C/Esc] Cancel Command  ·  [Tab] Possess  ·  [E] Gather/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [M] Map  ·  [L] Drawer";
                 }
                 else
                 {
-                    footer.text = "[Tab] Possess  ·  [1-7] Grounded Commands  ·  [E] Gather/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [M] Map  ·  [L] Drawer";
+                    footer.text = "[Enter] Directive  ·  [Tab] Possess  ·  [E] Gather/Drink/Roast  ·  [H] Eat  ·  [G] Drop  ·  [X] Club  ·  [B] Moonbag  ·  [M] Map  ·  [L] Drawer";
                 }
             }
 

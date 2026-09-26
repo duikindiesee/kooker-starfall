@@ -475,7 +475,6 @@ namespace Starfall.Food
                 }
 
                 string stagingDir = Path.Combine(_repositoryDirectory, StagingSubdir);
-                Directory.CreateDirectory(stagingDir);
 
                 // Finding 3: Validate CURRENT complete authoritative pair under SAME OS-exclusive lock before successor admission
                 if (currentSequence > 0)
@@ -584,7 +583,8 @@ namespace Starfall.Food
                 }
                 else
                 {
-                    string tmpChkPath = chkFilePath + ".tmp-" + Guid.NewGuid().ToString("N");
+                    string tmpChkPath = Path.Combine(_repositoryDirectory, $"_t_chk_{candidate.sequence}.tmp");
+                    if (File.Exists(tmpChkPath)) { try { File.Delete(tmpChkPath); } catch { } }
 
                     if (FaultInjection == CheckpointFaultInjectionPoint.FailDuringPartialCheckpointWrite)
                     {
@@ -649,7 +649,8 @@ namespace Starfall.Food
                 string pointerJson = FoodOwnershipCheckpointCodec.EncodePointer(newPointer, true);
 
                 string pointerPath = Path.Combine(_repositoryDirectory, PointerFileName);
-                string tmpPointerPath = pointerPath + ".tmp-" + Guid.NewGuid().ToString("N");
+                string tmpPointerPath = Path.Combine(_repositoryDirectory, $"_t_ptr_{candidate.sequence}.tmp");
+                if (File.Exists(tmpPointerPath)) { try { File.Delete(tmpPointerPath); } catch { } }
 
                 using (var fs = new FileStream(tmpPointerPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 {
@@ -844,6 +845,24 @@ namespace Starfall.Food
             }
             finally
             {
+                string stagingDir = Path.Combine(_repositoryDirectory, StagingSubdir);
+                if (Directory.Exists(stagingDir))
+                {
+                    try
+                    {
+                        string[] tmpFiles = Directory.GetFiles(stagingDir, "*.tmp*");
+                        for (int i = 0; i < tmpFiles.Length; i++)
+                        {
+                            try { File.Delete(tmpFiles[i]); } catch { }
+                        }
+                        if (Directory.GetFileSystemEntries(stagingDir).Length == 0)
+                        {
+                            Directory.Delete(stagingDir, false);
+                        }
+                    }
+                    catch { }
+                }
+
                 if (lockStream != null)
                 {
                     lockStream.Dispose();
@@ -1118,6 +1137,21 @@ namespace Starfall.Food
                     Pointer = pointer,
                     Error = ex
                 };
+            }
+            finally
+            {
+                string stagingDir = Path.Combine(_repositoryDirectory, StagingSubdir);
+                if (Directory.Exists(stagingDir))
+                {
+                    try
+                    {
+                        if (Directory.GetFileSystemEntries(stagingDir).Length == 0)
+                        {
+                            Directory.Delete(stagingDir, false);
+                        }
+                    }
+                    catch { }
+                }
             }
         }
     }
