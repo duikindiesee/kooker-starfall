@@ -2,23 +2,24 @@
 
 ## Codex fishing candidate — 26 September 2026
 
-Round319 build `KookerStarfallIntegrated-0.0.11-survival.1-20260926-072027`, runtime build GUID `c3207a7e6a8b4a62a761e4da5de733a7`. The new rod visual gives the ash blank more width and adds contrasting cork, a teal spool, crank and line-guide details. It remains a procedurally generated handheld model; no external rod asset was added.
+Round321 build `KookerStarfallIntegrated-0.0.11-survival.1-20260926-080548`, runtime build GUID `220fc6284a854c63b977f3d585d49991`. This build was produced from the PR worktree. The handheld pole is thicker, angles outward from the grip, and has a high-contrast cork handle and crosswise teal reel positioned beyond the palm. It remains procedural; no external rod asset was added. `evidence/reviews/round321/rod-equipped-gameplay.png` is a standalone-player HUD capture at ordinary third-person distance.
 
-The round319 Windows player compiled with 2,072 named integrated checks, including rod silhouette/material/detail checks. A real HUD `go fish` command caught `river-carp-18`; `eat catch` consumed that exact fish and raised nutrition. On the same fresh isolated save, `go fish then store` failed with `command-failed-no-reachable-bank`. Therefore this build has not passed the complete repeat-catch/storage/cold-reload journey. The preceding round318 candidate passed four fresh/existing-world-copy loop/reload runs; that is historical evidence for a different binary and does not waive round319's failure. The round319 player camera image records the rod equipped in-world.
+The round321 Windows player built with zero build errors and passed 2,072 named integrated checks. Its muted visual probe captured the rod at HUD stage 5, then was stopped while “go fish” was routing to a casting bank at 32.2m. The raw receipt remains unchanged and records `RUNNING` at last write; it is not a fishing pass or failure result. AudioListener volume was 0. No catch/eat/store claim is made for round321. The earlier round319 candidate caught `river-carp-18` and `eat catch` consumed it, but repeat storage failed with `command-failed-no-reachable-bank`; round318's four loop/reload passes apply only to that earlier binary.
 
-Walking uses the prior sprint speed, 3.0525 m/s; Shift runs at 5 m/s. Walk restores 18 stamina/s and running consumes 8/s. Locomotion reuses the existing animation clip. The test AudioListener volume was 0; normal game audio was not modified by the opt-in probe.
+Walking uses the prior sprint speed, 3.0525 m/s; Shift runs at 5 m/s. Walk restores 18 stamina/s and running consumes 8/s. Locomotion reuses the existing animation clip. Automated HUD probes use AudioListener volume 0; normal game audio was not modified by the opt-in probe.
 
 | Claim | Status | Evidence | Remaining gap |
 |---|---|---|---|
-| Fishing rod visual and grip | Compiled; named visual checks passed; actual player capture retained | `evidence/reviews/round319/rod-equipped-gameplay.png`, `build-result.json` | User has not accepted visibility/handling in normal play |
-| `go fish` and `eat catch` | Passed in round319 standalone | `evidence/reviews/round319/runtime-result.json` | Repeat catch/store did not complete |
-| `go fish then store` after eating | Failed in round319 standalone | Same runtime result: `command-failed-no-reachable-bank` | Repair bank routing and rerun player flow plus cold reload |
+| Fishing rod visual and grip | Round321 capture retained; visual checks passed | `evidence/reviews/round321/rod-equipped-gameplay.png`, `build-result.json` | User acceptance in normal play |
+| Round321 `go fish` route | Probe stopped before route completion | `evidence/reviews/round321/fishing-command-runtime.json` | Complete the route test on this build |
+| `go fish` and `eat catch` | Passed in round319 standalone only | `evidence/reviews/round319/runtime-result.json` | Reprove on round321, then repeat catch/store |
+| `go fish then store` after eating | Failed in round319; round321 did not reach fishing | Round319 runtime result and round321 probe | Repair bank routing and rerun player flow plus cold reload |
 | Full catch/eat/store/reload | Passed round318 only | Historical `evidence/reviews/round318/acceptance.json` | Reprove on current rod build |
-| Round319 compile and regression checks | Passed, 2,072 named integrated checks | `evidence/reviews/round319/build-result.json` | Does not substitute for full gameplay acceptance |
+| Round321 compile and regression checks | Passed, 2,072 named integrated checks | `evidence/reviews/round321/build-result.json` | Does not substitute for full gameplay acceptance |
 
 Merge blockers for this PR are recorded separately: the existing catfish, carp and riverbank imported-art provenance has local/descriptive source values and missing publisher licence links, so the public-project guard fails; no rights metadata will be guessed. The PR targets `dev`, while repository GitHub workflow triggers currently name `main`, and the live PR check list is empty. Establish exact-head checks before any merge. No deployment, release, user acceptance or merge is claimed.
 
-The older round318 packet is historical baseline evidence and is superseded for current-player claims by round319. All automated test players are closed.
+The round318 and round319 packets are historical baselines and are superseded for current-player claims by round321. All automated test players are closed.
 
 ## Verified isolated physical Play mode checkpoint — 16 September 2026
 

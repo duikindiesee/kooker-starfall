@@ -47,8 +47,8 @@ namespace CityLife.Items.Editor
                       rodVisual.transform.Find("ReelCrank") != null, "rod-has-visible-reel-and-crank");
                 Check(rodVisual.transform.Find("LineGuide1") != null &&
                       rodVisual.transform.Find("LineGuide4") != null, "rod-has-visible-line-guides");
-                Check(FishingRodItem.GetOrCreateRodMesh().bounds.size.x >= 0.012f,
-                    "rod-blank-readable-silhouette-width");
+                Check(FishingRodItem.GetOrCreateRodMesh().bounds.size.x >= 0.06f,
+                    "rod-blank-visible-player-camera-silhouette-width");
             }
             finally
             {
