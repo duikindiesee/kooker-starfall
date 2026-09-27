@@ -12,11 +12,14 @@ namespace CityLife.World
     /// Registered in authoritative PhysicalItemCatalog as "tool-fishing-rod".
     /// </summary>
     [SelectionBase]
+    [DefaultExecutionOrder(101)]
     public sealed class FishingRodItem : MonoBehaviour
     {
         public const string ItemTypeId = "tool-fishing-rod";
         public const float RodLength = 2.10f;
         public const float RodMassKg = 0.85f;
+        private static readonly Vector3 HandPalmGripPoint = new Vector3(0.018f, 0.065f, 0f);
+        private static readonly Quaternion HandGripRotation = Quaternion.Euler(-60f, 25f, 0f);
         // New-world starter tool on reachable shore. Persisted item poses still
         // come from ItemPersistence; this does not relocate a saved player's rod.
         public static Vector3 InitialWorldPosition => new Vector3(40f, CoastalTerrain.Height(40f, -30f) + .15f, -30f);
@@ -327,8 +330,6 @@ namespace CityLife.World
             phys.itemTypeId = ItemTypeId;
             phys.massKg = RodMassKg;
             phys.dimensions = new PhysicalDimensions(0.08f, 0.08f, RodLength);
-            phys.GripLocalOffset = new Vector3(0.018f, 0.065f, -0.18f);
-            phys.GripLocalRotation = Quaternion.Euler(-28f, 25f, 0f);
             phys.ConfigureComponents();
 
             if (phys.Body != null)
@@ -348,6 +349,7 @@ namespace CityLife.World
             handleGo.transform.SetParent(rodGo.transform, false);
             handleGo.transform.localPosition = new Vector3(0, 0, 0.18f);
             rodComp.HandleTransform = handleGo.transform;
+            ConfigureGripPose(phys, handleGo.transform.localPosition);
 
             return rodGo;
         }
@@ -355,6 +357,32 @@ namespace CityLife.World
         public void AttachLineRenderer(LineRenderer lr)
         {
             LineRenderer = lr;
+        }
+
+        private void LateUpdate() => ApplyStableCarryPose();
+
+        public void ApplyStableCarryPose()
+        {
+            if (PhysicalItem == null || !PhysicalItem.IsCarried || PhysicalItem.CarriedHand == null || HandleTransform == null)
+                return;
+
+            Transform hand = PhysicalItem.CarriedHand;
+            Animator animator = hand.GetComponentInParent<Animator>();
+            Transform facing = animator != null ? animator.transform : hand.root;
+            Vector3 forward = Vector3.ProjectOnPlane(facing.forward, Vector3.up).normalized;
+            if (forward.sqrMagnitude < 0.001f)
+                forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+
+            // The generic walk cycle swings the wrist; keep a carried fishing rod
+            // in a readable, upward-ready posture while retaining the animated arm.
+            Vector3 rodAxis = (forward * 0.342f + Vector3.up * 0.940f).normalized;
+            Quaternion rodRotation = Quaternion.LookRotation(rodAxis, Vector3.up);
+            hand.rotation = rodRotation * Quaternion.Inverse(HandGripRotation);
+
+            Vector3 offset = HandPalmGripPoint - HandGripRotation * HandleTransform.localPosition;
+            if (PhysicalItem.IsLeftHand) offset.x = -offset.x;
+            PhysicalItem.GripLocalOffset = offset;
+            PhysicalItem.UpdateGripPose();
         }
 
         public static void ConfigureRuntimeRod(PhysicalItem physical, NpcInteractable interactable)
@@ -372,10 +400,18 @@ namespace CityLife.World
                 handle.localPosition = new Vector3(0, 0, .18f);
             }
             rod.HandleTransform = handle;
-            physical.GripLocalOffset = new Vector3(.018f, .065f, -.18f);
-            physical.GripLocalRotation = Quaternion.Euler(-28f, 25f, 0f);
+            ConfigureGripPose(physical, handle.localPosition);
             var collider = root.GetComponent<BoxCollider>();
             if (collider != null) collider.center = new Vector3(0, 0, RodLength * .5f);
+        }
+
+        private static void ConfigureGripPose(PhysicalItem physical, Vector3 handleLocalPosition)
+        {
+            // PhysicalItem positions the rod origin relative to the wrist, then applies
+            // this rotation. Solve the origin offset from the actual cork grip point so
+            // the palm stays on the cork instead of inheriting a guessed -Z offset.
+            physical.GripLocalRotation = HandGripRotation;
+            physical.GripLocalOffset = HandPalmGripPoint - HandGripRotation * handleLocalPosition;
         }
 
         public void SetBobberVisible(bool visible)

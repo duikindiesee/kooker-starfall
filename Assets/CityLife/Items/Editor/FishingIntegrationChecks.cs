@@ -49,6 +49,27 @@ namespace CityLife.Items.Editor
                       rodVisual.transform.Find("LineGuide4") != null, "rod-has-visible-line-guides");
                 Check(FishingRodItem.GetOrCreateRodMesh().bounds.size.x >= 0.06f,
                     "rod-blank-visible-player-camera-silhouette-width");
+
+                var rodPhysical = testRodGo.AddComponent<PhysicalItem>();
+                FishingRodItem.ConfigureRuntimeRod(rodPhysical, null);
+                var rodActor = new GameObject("RodGripActor");
+                rodActor.transform.rotation = Quaternion.Euler(0f, 137f, 0f);
+                var rodHand = new GameObject("RodGripHand");
+                rodHand.transform.SetParent(rodActor.transform, false);
+                rodHand.transform.localPosition = new Vector3(0.3f, 1.1f, 0.25f);
+                rodHand.transform.localRotation = Quaternion.Euler(20f, -25f, -12f);
+                rodPhysical.AttachToHand(rodHand.transform, false);
+                testRodGo.GetComponent<FishingRodItem>().ApplyStableCarryPose();
+                var handle = testRodGo.transform.Find("RodHandle");
+                var rodTip = testRodGo.transform.Find("Visual/RodTip");
+                Vector3 expectedPalmGrip = rodHand.transform.TransformPoint(new Vector3(0.018f, 0.065f, 0f));
+                Check(handle != null && Vector3.Distance(handle.position, expectedPalmGrip) < 0.001f,
+                    "rod-cork-grip-pivot-aligns-to-right-palm");
+                Vector3 expectedRodAxis = (rodActor.transform.forward * 0.342f + Vector3.up * 0.940f).normalized;
+                Vector3 actualRodAxis = (rodTip.position - handle.position).normalized;
+                Check(Vector3.Dot(actualRodAxis, expectedRodAxis) >= 0.999f,
+                    "rod-held-at-stable-upward-angle-despite-wrist-pose");
+                UnityEngine.Object.DestroyImmediate(rodActor);
             }
             finally
             {
