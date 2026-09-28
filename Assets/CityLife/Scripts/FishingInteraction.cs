@@ -169,33 +169,44 @@ namespace CityLife.World
             rod = null;
             if (Brain == null || Brain.Actions == null) return false;
 
-            var r = Brain.Actions.HeldRight;
-            if (r != null)
+            if (TryResolveFishingRod(Brain.Actions.HeldRight, out rod) ||
+                TryResolveFishingRod(Brain.Actions.HeldLeft, out rod))
             {
-                var rodComp = r.GetComponent<FishingRodItem>() ?? r.GetComponentInChildren<FishingRodItem>();
-                var phys = r.GetComponent<PhysicalItem>();
-                if (rodComp != null || (phys != null && phys.itemTypeId == FishingRodItem.ItemTypeId))
-                {
-                    rod = rodComp ?? r.gameObject.AddComponent<FishingRodItem>();
-                    ActiveRod = rod;
-                    return true;
-                }
-            }
-
-            var l = Brain.Actions.HeldLeft;
-            if (l != null)
-            {
-                var rodComp = l.GetComponent<FishingRodItem>() ?? l.GetComponentInChildren<FishingRodItem>();
-                var phys = l.GetComponent<PhysicalItem>();
-                if (rodComp != null || (phys != null && phys.itemTypeId == FishingRodItem.ItemTypeId))
-                {
-                    rod = rodComp ?? l.gameObject.AddComponent<FishingRodItem>();
-                    ActiveRod = rod;
-                    return true;
-                }
+                ActiveRod = rod;
+                return true;
             }
 
             return false;
+        }
+
+        private static bool TryResolveFishingRod(NpcInteractable held, out FishingRodItem rod)
+        {
+            rod = null;
+            if (held == null) return false;
+
+            var physical = held.GetComponent<PhysicalItem>() ?? held.GetComponentInChildren<PhysicalItem>();
+            var component = held.GetComponent<FishingRodItem>() ?? held.GetComponentInChildren<FishingRodItem>();
+            if (physical == null && component != null)
+                physical = component.PhysicalItem;
+
+            if (component == null && (physical == null || physical.itemTypeId != FishingRodItem.ItemTypeId))
+                return false;
+
+            if (physical != null && physical.itemTypeId == FishingRodItem.ItemTypeId &&
+                (component == null || component.PhysicalItem != physical || component.HandleTransform == null))
+            {
+                FishingRodItem.ConfigureRuntimeRod(physical, held);
+                component = physical.GetComponent<FishingRodItem>();
+            }
+
+            if (component == null)
+            {
+                component = held.gameObject.AddComponent<FishingRodItem>();
+                component.Interactable = held;
+            }
+
+            rod = component;
+            return true;
         }
 
         public bool CanStartCast(Vector3 casterPos, out Vector3 targetWaterPos, out string reason)

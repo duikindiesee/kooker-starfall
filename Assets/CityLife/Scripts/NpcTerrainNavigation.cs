@@ -186,7 +186,13 @@ namespace CityLife.World
         /// </summary>
         public bool TryFindCastingBankForFish(Vector3 casterPos, Vector3 fishPos, out Vector3 bankFloor)
         {
+            return TryFindCastingBankForFish(casterPos, fishPos, out bankFloor, out _);
+        }
+
+        public bool TryFindCastingBankForFish(Vector3 casterPos, Vector3 fishPos, out Vector3 bankFloor, out Queue<Vector3> plannedRoute)
+        {
             bankFloor = Vector3.zero;
+            plannedRoute = null;
             var candidates = new List<(Vector3 floor, float score)>();
 
             // Prefer range margin, but retain valid longer casts when the near
@@ -248,6 +254,7 @@ namespace CityLife.World
                 if (Vector3.Distance(casterPos, candidate) <= .5f && casterPos.y >= safeBankHeight)
                 {
                     bankFloor = candidate;
+                    plannedRoute = new Queue<Vector3>();
                     return true;
                 }
                 var path = Plan(casterPos, candidate);
@@ -257,6 +264,7 @@ namespace CityLife.World
                 Vector3 endpoint = points[points.Length - 1];
                 if (endpoint.y < safeBankHeight || !RiverFishSchool.CanFishInRiver(endpoint, fishPos, out _)) continue;
                 bankFloor = endpoint;
+                plannedRoute = new Queue<Vector3>(points);
                 return true;
             }
 

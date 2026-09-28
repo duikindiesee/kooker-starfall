@@ -1,4 +1,5 @@
 using UnityEngine;
+using CityLife.Items;
 namespace CityLife.World
 {
  // Cosmetic left-hand prop only: no collider, damage, targeting or action authority.
@@ -16,6 +17,10 @@ namespace CityLife.World
   public float ForearmSlope=-1.5f,ElbowOut=.6f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
+  private Transform cachedClubRoot;
+  private Renderer[] cachedClubRenderers;
+  private bool[] originalClubRendererStates;
+  private bool hiddenForFishingRod;
   public static float ClubRadius(float fraction){float t=Mathf.Clamp01((fraction-.22f)/.78f);return .010f+.026f*t*t*(3-2*t)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));}
   public static float ClubCurve(float fraction){return fraction<=.22f?0:.012f*Mathf.Sin((fraction-.22f)/.78f*5);}
   // Author once in the imported bind pose, before the Animator evaluates.
@@ -75,14 +80,53 @@ namespace CityLife.World
       Stowed = stowed;
       if (Club != null)
       {
-          var rend = Club.GetComponent<Renderer>();
-          if (rend != null) rend.enabled = true;
           if (stowed)
           {
               AttachToBack();
           }
       }
+      RefreshClubVisibilityForCurrentLoadout();
       return true;
+  }
+  public void RefreshClubVisibilityForCurrentLoadout()
+  {
+      if (Club == null) return;
+      EnsureClubRendererCache();
+      var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+      bool rodHeld = brain != null && brain.Actions != null &&
+          (IsFishingRod(brain.Actions.HeldRight) || IsFishingRod(brain.Actions.HeldLeft));
+      if (rodHeld && !Stowed)
+      {
+          Stowed = true;
+          AttachToBack();
+      }
+      if (rodHeld == hiddenForFishingRod) return;
+
+      hiddenForFishingRod = rodHeld;
+      for (int i = 0; i < cachedClubRenderers.Length; i++)
+      {
+          var renderer = cachedClubRenderers[i];
+          if (renderer != null)
+              renderer.enabled = rodHeld ? false : originalClubRendererStates[i];
+      }
+  }
+  private void EnsureClubRendererCache()
+  {
+      if (cachedClubRoot == Club && cachedClubRenderers != null) return;
+      cachedClubRoot = Club;
+      cachedClubRenderers = Club != null ? Club.GetComponentsInChildren<Renderer>(true) : new Renderer[0];
+      originalClubRendererStates = new bool[cachedClubRenderers.Length];
+      for (int i = 0; i < cachedClubRenderers.Length; i++)
+          originalClubRendererStates[i] = cachedClubRenderers[i] != null && cachedClubRenderers[i].enabled;
+      hiddenForFishingRod = false;
+  }
+  private static bool IsFishingRod(NpcInteractable held)
+  {
+      if (held == null) return false;
+      if (held.GetComponent<FishingRodItem>() != null || held.GetComponentInChildren<FishingRodItem>() != null)
+          return true;
+      var physical = held.GetComponent<PhysicalItem>() ?? held.GetComponentInChildren<PhysicalItem>();
+      return physical != null && physical.itemTypeId == FishingRodItem.ItemTypeId;
   }
   public void AttachToBack()
   {
@@ -100,7 +144,9 @@ namespace CityLife.World
       Club.localRotation = Quaternion.Euler(-6f, 2f, 22f);
   }
   private void LateUpdate(){
-      if(!Animator||!Club)return;
+      if(!Club)return;
+      RefreshClubVisibilityForCurrentLoadout();
+      if(!Animator)return;
       if(Stowed)
       {
           AttachToBack();
@@ -135,7 +181,8 @@ namespace CityLife.World
    if(Club.parent!=hand){Club.SetParent(hand,false);Club.localScale=Vector3.one;}
    Club.localPosition=PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y;
    Club.localRotation=Quaternion.FromToRotation(Vector3.down,ShaftAxis);GripCenter=Club.position;
-   GroundClearance=Club.GetComponent<Renderer>().bounds.min.y-Actor.position.y;
+   var clubRenderer=Club.GetComponent<Renderer>();
+   if(clubRenderer!=null)GroundClearance=clubRenderer.bounds.min.y-Actor.position.y;
   }
  }
 }

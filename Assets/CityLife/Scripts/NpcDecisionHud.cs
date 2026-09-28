@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -497,6 +498,22 @@ namespace CityLife.World
                 {
                     int pct = Mathf.RoundToInt(Brain.Survival.ActiveCommandProgress * 100f);
                     commandAlert = $"  |  <color=#55FF88><b>[CMD: {Brain.Survival.ActiveCommandTitle}] Step {Brain.Survival.ActiveCommandStepIndex + 1}/{Brain.Survival.ActiveCommandTotalSteps}: {Brain.Survival.ActiveCommandCurrentStep} ({pct}%) [Cancel: C]</b></color>";
+                }
+                else if (Brain.Survival != null)
+                {
+                    string receipt = Brain.Survival.LastCommandReceipt ?? "";
+                    string failure = null;
+                    const string cancelledFailure = "command-cancelled: command-failed-";
+                    if (receipt.StartsWith(cancelledFailure, StringComparison.Ordinal))
+                        failure = receipt.Substring(cancelledFailure.Length);
+                    else if (receipt.StartsWith("command-timeout-", StringComparison.Ordinal))
+                        failure = receipt.Substring("command-timeout-".Length);
+
+                    if (!string.IsNullOrEmpty(failure))
+                    {
+                        failure = failure.Replace('-', ' ');
+                        commandAlert = $"  |  <color=#FF7777><b>[LAST COMMAND FAILED: {failure}]</b></color>";
+                    }
                 }
 
                 Summary.text = $"<b>{mode}</b>  |  Tick {Brain.Tick}  |  Goal: <color=#FFE680>{currentGoal}</color>  |  Cargo: {cargo}  |  Club: {weaponStatus}{airAlert}{wolfAlert}{fishingAlert}{commandAlert}";

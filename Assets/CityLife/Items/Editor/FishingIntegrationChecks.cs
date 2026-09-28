@@ -59,16 +59,20 @@ namespace CityLife.Items.Editor
                 rodHand.transform.localPosition = new Vector3(0.3f, 1.1f, 0.25f);
                 rodHand.transform.localRotation = Quaternion.Euler(20f, -25f, -12f);
                 rodPhysical.AttachToHand(rodHand.transform, false);
-                testRodGo.GetComponent<FishingRodItem>().ApplyStableCarryPose();
+                var rodItem = testRodGo.GetComponent<FishingRodItem>();
+                var authoredHandle = testRodGo.transform.Find("RodHandle");
+                UnityEngine.Object.DestroyImmediate(authoredHandle.gameObject);
+                rodItem.HandleTransform = null;
+                rodItem.ApplyStableCarryPose();
                 var handle = testRodGo.transform.Find("RodHandle");
                 var rodTip = testRodGo.transform.Find("Visual/RodTip");
                 Vector3 expectedPalmGrip = rodHand.transform.TransformPoint(new Vector3(0.018f, 0.065f, 0f));
                 Check(handle != null && Vector3.Distance(handle.position, expectedPalmGrip) < 0.001f,
-                    "rod-cork-grip-pivot-aligns-to-right-palm");
-                Vector3 expectedRodAxis = (rodActor.transform.forward * 0.342f + Vector3.up * 0.940f).normalized;
+                    "runtime-rebuilds-missing-handle-and-keeps-cork-grip-in-right-palm");
+                Vector3 expectedRodAxis = (rodActor.transform.forward * 0.12f + Vector3.up * 0.993f).normalized;
                 Vector3 actualRodAxis = (rodTip.position - handle.position).normalized;
-                Check(Vector3.Dot(actualRodAxis, expectedRodAxis) >= 0.999f,
-                    "rod-held-at-stable-upward-angle-despite-wrist-pose");
+                Check(Vector3.Dot(actualRodAxis, expectedRodAxis) >= 0.999f && Vector3.Dot(actualRodAxis, Vector3.up) > 0.99f,
+                    "rod-held-nearly-upright-despite-wrist-pose");
                 UnityEngine.Object.DestroyImmediate(rodActor);
             }
             finally

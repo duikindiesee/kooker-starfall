@@ -244,7 +244,7 @@ namespace CityLife.World.Editor
 
                 // Verify TryFindCastingBankForFish
                 Vector3 fishPos = new Vector3(2f, CoastalWater.Level, -15f); // Known freshwater river coordinate
-                if (nav.TryFindCastingBankForFish(origin, fishPos, out Vector3 castingBank))
+                if (nav.TryFindCastingBankForFish(origin, fishPos, out Vector3 castingBank, out Queue<Vector3> plannedRoute))
                 {
                     if (castingBank.y < CoastalWater.Level + 0.15f)
                     {
@@ -255,7 +255,16 @@ namespace CityLife.World.Editor
                     {
                         throw new InvalidOperationException($"Casting distance {castDist:F2}m out of valid casting range [2.0m, 18.0m].");
                     }
-                    checks.Add($"[TerrainNavigation] Validated dry bank geometry: bank={castingBank} distToFish={castDist:F1}m elevation={castingBank.y:F2}m (waterLevel={CoastalWater.Level:F2}m).");
+                    if (Vector3.Distance(origin, castingBank) > .5f)
+                    {
+                        if (plannedRoute == null || plannedRoute.Count == 0)
+                            throw new InvalidOperationException("Reachable casting bank did not retain the route that proved it reachable.");
+                        Vector3 routeEnd = origin;
+                        foreach (var waypoint in plannedRoute) routeEnd = waypoint;
+                        if (Vector3.Distance(routeEnd, castingBank) > .01f)
+                            throw new InvalidOperationException($"Cached casting-bank route ended at {routeEnd}, not the validated bank {castingBank}.");
+                    }
+                    checks.Add($"[TerrainNavigation] Validated dry casting bank and retained its full route: bank={castingBank} distToFish={castDist:F1}m elevation={castingBank.y:F2}m (waterLevel={CoastalWater.Level:F2}m).");
                 }
                 else
                 {
@@ -402,7 +411,9 @@ namespace CityLife.World.Editor
         private static void TestClubInHandCommandRouting(List<string> checks)
         {
             var actorGo = new GameObject("Test_Actor_ClubInHand");
-            var clubGo = new GameObject("Test_Club");
+            var clubGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            clubGo.name = "Test_Club";
+            UnityEngine.Object.DestroyImmediate(clubGo.GetComponent<Collider>());
             var rodGo = new GameObject("Test_Rod_Ground");
             var rightHandGo = new GameObject("RightHand");
             var leftHandGo = new GameObject("LeftHand");
@@ -496,13 +507,35 @@ namespace CityLife.World.Editor
                     throw new InvalidOperationException($"Left hand was not free after equipping rod (HeldLeft={actions.HeldLeft}).");
                 }
 
+                var fishing = actorGo.AddComponent<FishingInteraction>();
+                fishing.Brain = brain;
+                if (!fishing.IsHoldingFishingRod(out var rodItem) || rodItem == null)
+                    throw new InvalidOperationException("Fishing action did not initialize the equipped runtime rod.");
+                rodItem.ApplyStableCarryPose();
+                var rodHandle = rodGo.transform.Find("RodHandle");
+                var rightPalm = rightHandGo.transform.TransformPoint(new Vector3(0.018f, 0.065f, 0f));
+                if (rodHandle == null || Vector3.Distance(rodHandle.position, rightPalm) >= .001f)
+                    throw new InvalidOperationException("Equipped fishing rod handle did not sit in the right palm.");
+                if (Vector3.Dot(rodGo.transform.forward, Vector3.up) <= .99f)
+                    throw new InvalidOperationException("Equipped fishing pole was not held nearly upright.");
+
+                carry.RefreshClubVisibilityForCurrentLoadout();
+                var clubRenderer = clubGo.GetComponent<Renderer>();
+                if (clubRenderer == null || clubRenderer.enabled)
+                    throw new InvalidOperationException("Stowed club remained visible while the fishing rod was in hand.");
+
+                actions.HoldItemDirect(null, false);
+                carry.RefreshClubVisibilityForCurrentLoadout();
+                if (!clubRenderer.enabled)
+                    throw new InvalidOperationException("Club visibility was not restored after the fishing rod left the hand.");
+
                 // Verify: Command advanced to step 2
                 if (survival.ActiveCommandStepIndex != 1 || survival.ActiveCommandCurrentStep != "Select active fish & calculate casting bank")
                 {
                     throw new InvalidOperationException($"Command did not advance to step 2: index={survival.ActiveCommandStepIndex}, current='{survival.ActiveCommandCurrentStep}'.");
                 }
 
-                checks.Add("[CommandRouting] Verified 'go fish' public routing from normal club-in-hand: stows club to back, equips rod in right hand, leaves left hand free.");
+                checks.Add("[CommandRouting] Verified 'go fish' stows and hides the club while a nearly upright rod is gripped in the right palm; club visibility restores when the rod is released.");
             }
             finally
             {

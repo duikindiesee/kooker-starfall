@@ -97,6 +97,8 @@ namespace CityLife.World
         private string commandTargetFishId;
         private Vector3 commandChosenBank;
         private Vector3 commandCastTarget;
+        private Queue<Vector3> commandBankRoute;
+        private Vector3 commandBankRouteOrigin;
         private string commandRodAcquiredCode;
 
         private void Awake()
@@ -2899,6 +2901,8 @@ namespace CityLife.World
             commandTargetFishId = null;
             commandChosenBank = Vector3.zero;
             commandCastTarget = Vector3.zero;
+            commandBankRoute = null;
+            commandBankRouteOrigin = Vector3.zero;
             commandRodAcquiredCode = null;
 
             if (activeCommandSteps != null)
@@ -3563,12 +3567,14 @@ namespace CityLife.World
                         var fish = candidateFish[i];
                         Vector3 fishPos = fish.gameObject.transform.position;
                         if (self.Brain.TerrainNavigation != null &&
-                            self.Brain.TerrainNavigation.TryFindCastingBankForFish(self.Brain.transform.position, fishPos, out Vector3 bankFloor))
+                            self.Brain.TerrainNavigation.TryFindCastingBankForFish(self.Brain.transform.position, fishPos, out Vector3 bankFloor, out Queue<Vector3> bankRoute))
                         {
                             self.commandTargetFish = fish;
                             self.commandTargetFish.isReserved = true;
                             self.commandTargetFishId = fish.interactable != null ? fish.interactable.StableId : (fish.gameObject != null ? fish.gameObject.name : "river-fish");
                             self.commandChosenBank = bankFloor;
+                            self.commandBankRoute = bankRoute;
+                            self.commandBankRouteOrigin = self.Brain.transform.position;
                             self.commandCastTarget = fishPos;
                             self.commandCastTarget.y = CoastalWater.CurrentLevel;
 
@@ -3607,7 +3613,22 @@ namespace CityLife.World
 
                     if (self.route.Count == 0 || self.routePurpose != "route-to-casting-bank")
                     {
-                        self.StartRoute(self.commandChosenBank);
+                        bool restoredPlannedRoute = self.commandBankRoute != null && self.commandBankRoute.Count > 0 &&
+                            Vector3.Distance(self.Brain.transform.position, self.commandBankRouteOrigin) <= 1.0f;
+                        if (restoredPlannedRoute)
+                        {
+                            self.route.Clear();
+                            foreach (var waypoint in self.commandBankRoute) self.route.Enqueue(waypoint);
+                            self.routeStartTick = self.Brain.Tick;
+                            self.routeOrigin = self.Brain.transform.position;
+                        }
+                        else if (!self.StartRoute(self.commandChosenBank))
+                        {
+                            self.ActiveCommandStatus = "Casting bank became unreachable; stopped instead of waiting in place";
+                            self.CancelActiveCommand("command-failed-no-reachable-bank");
+                            return true;
+                        }
+                        self.commandBankRoute = null;
                         self.routePurpose = "route-to-casting-bank";
                     }
                     self.ActiveCommandStatus = $"Routing to casting bank ({dist:F1}m)...";

@@ -363,7 +363,15 @@ namespace CityLife.World
 
         public void ApplyStableCarryPose()
         {
-            if (PhysicalItem == null || !PhysicalItem.IsCarried || PhysicalItem.CarriedHand == null || HandleTransform == null)
+            if (PhysicalItem == null || !PhysicalItem.IsCarried || PhysicalItem.CarriedHand == null)
+                return;
+
+            // Runtime-loaded rods may receive this component only when a fishing
+            // action first inspects the held item. Rebuild the authored grip pivots
+            // before trying to pose the rod so it cannot remain loose at the wrist.
+            if (HandleTransform == null)
+                ConfigureRuntimeRod(PhysicalItem, Interactable);
+            if (HandleTransform == null)
                 return;
 
             Transform hand = PhysicalItem.CarriedHand;
@@ -375,8 +383,14 @@ namespace CityLife.World
 
             // The generic walk cycle swings the wrist; keep a carried fishing rod
             // in a readable, upward-ready posture while retaining the animated arm.
-            Vector3 rodAxis = (forward * 0.342f + Vector3.up * 0.940f).normalized;
-            Quaternion rodRotation = Quaternion.LookRotation(rodAxis, Vector3.up);
+            // Keep the pole nearly vertical and choose a perpendicular up vector.
+            // Passing world-up for a nearly vertical LookRotation makes roll
+            // underdetermined and was the source of the diagonal waist-level pose.
+            Vector3 rodAxis = (forward * 0.12f + Vector3.up * 0.993f).normalized;
+            Vector3 rodUp = Vector3.ProjectOnPlane(forward, rodAxis).normalized;
+            if (rodUp.sqrMagnitude < 0.001f)
+                rodUp = Vector3.ProjectOnPlane(facing.right, rodAxis).normalized;
+            Quaternion rodRotation = Quaternion.LookRotation(rodAxis, rodUp);
             hand.rotation = rodRotation * Quaternion.Inverse(HandGripRotation);
 
             Vector3 offset = HandPalmGripPoint - HandGripRotation * HandleTransform.localPosition;
@@ -387,6 +401,7 @@ namespace CityLife.World
 
         public static void ConfigureRuntimeRod(PhysicalItem physical, NpcInteractable interactable)
         {
+            if (physical == null) return;
             var root = physical.gameObject;
             var rod = root.GetComponent<FishingRodItem>() ?? root.AddComponent<FishingRodItem>();
             rod.PhysicalItem = physical;
