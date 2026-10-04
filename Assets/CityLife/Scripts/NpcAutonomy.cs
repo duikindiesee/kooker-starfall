@@ -89,6 +89,7 @@ namespace CityLife.World
             }
             catch (Exception ex)
             {
+                Ready = false;
                 Debug.LogError($"[NpcAutonomy] ResetState candidateActions creation failed: {ex.Message}");
                 return false;
             }
@@ -104,6 +105,7 @@ namespace CityLife.World
                 bool physicalSuccess = PhysicalItems.OnActionsCreated(candidateActions);
                 if (!physicalSuccess)
                 {
+                    Ready = false;
                     Debug.LogError("[NpcAutonomy] ResetState PhysicalItems.OnActionsCreated failed.");
                     return false;
                 }
@@ -137,6 +139,7 @@ namespace CityLife.World
                 requestId = PhysicalItems.Model.HighestReceiptRequestId;
             }
             Physics.SyncTransforms();
+            Ready = true;
             return true;
         }
 
