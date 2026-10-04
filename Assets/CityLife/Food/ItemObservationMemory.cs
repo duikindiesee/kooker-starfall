@@ -18,15 +18,48 @@ namespace Starfall.Food
     public static class ItemObservationMemory
     {
         public const int Capacity = 128;
+        public const int FishingWaterCapacity = 16;
         public static bool Observe(FoodState state, string id, string role, Vector3 position,
             bool available, bool permitted, int brainTick)
         {
-            if (state == null || !FoodModel.Id(id) || (role != "rod" && role != "basket") ||
+            if (state == null || !FoodModel.Id(id) || (role != "rod" && role != "basket" && role != "fishing-water") ||
                 !Finite(position) || brainTick < 0) return false;
             state.observedItems ??= new List<KnownItemObservation>();
             var prior = state.observedItems.Find(x => x.id == id);
             if (prior != null && prior.foodTick > state.tick) return false;
-            if (prior == null && state.observedItems.Count >= Capacity) return false;
+
+            // Throttle churn: if the item hasn't moved significantly and availability hasn't changed,
+            // don't re-hash or bump tick every single frame.
+            if (prior != null && prior.available == available && prior.permitted == permitted &&
+                (prior.position - position).sqrMagnitude < 0.25f && state.tick - prior.foodTick < 10)
+            {
+                return true;
+            }
+
+            if (prior == null)
+            {
+                if (role == "fishing-water")
+                {
+                    int fishWaterCount = 0;
+                    KnownItemObservation oldestFishWater = null;
+                    for (int i = 0; i < state.observedItems.Count; i++)
+                    {
+                        if (state.observedItems[i].role == "fishing-water")
+                        {
+                            fishWaterCount++;
+                            if (oldestFishWater == null || state.observedItems[i].foodTick < oldestFishWater.foodTick)
+                                oldestFishWater = state.observedItems[i];
+                        }
+                    }
+                    if (fishWaterCount >= FishingWaterCapacity && oldestFishWater != null)
+                    {
+                        state.observedItems.Remove(oldestFishWater);
+                    }
+                }
+
+                if (state.observedItems.Count >= Capacity) return false;
+            }
+
             var entry = new KnownItemObservation { world = state.world, generation = state.generation,
                 actor = state.actorId, id = id, role = role, position = position,
                 available = available, permitted = permitted, foodTick = state.tick, brainTick = brainTick };
@@ -55,7 +88,7 @@ namespace Starfall.Food
             {
                 if (entry == null || entry.world != state.world || entry.generation != state.generation ||
                     entry.actor != state.actorId || !FoodModel.Id(entry.id) || !ids.Add(entry.id) ||
-                    (entry.role != "rod" && entry.role != "basket") || entry.source != "scoped-npc-los-perception" ||
+                    (entry.role != "rod" && entry.role != "basket" && entry.role != "fishing-water") || entry.source != "scoped-npc-los-perception" ||
                     entry.foodTick < 0 || entry.foodTick > state.tick || entry.brainTick < 0 || !Finite(entry.position)) return false;
                 var copy = JsonUtility.FromJson<KnownItemObservation>(JsonUtility.ToJson(entry));
                 copy.hash = "";

@@ -99,6 +99,54 @@ namespace CityLife.World.Editor
                 throw new Exception("New observation did not supersede stale availability.");
             state.observedItems[0].world = "other-world";
             if (Starfall.Food.ItemObservationMemory.Valid(state)) throw new Exception("Cross-world item memory accepted.");
+            var fishMemory = new Starfall.Food.FoodModel("fish-memory-world", "fish-memory-generation", 17);
+            if (!Starfall.Food.ItemObservationMemory.Observe(fishMemory.State, "seen-fish", "fishing-water", new Vector3(26, 0, -1), true, true, 21))
+                throw new Exception("Fish sighting was not recorded as observed water.");
+            var fishReload = new Starfall.Food.FoodModel("fish-memory-world", "fish-memory-generation", 17);
+            if (!fishReload.Restore(fishMemory.Json(), fishMemory.State.world, fishMemory.State.generation) ||
+                Starfall.Food.ItemObservationMemory.Nearest(fishReload.State, "fishing-water", Vector3.zero)?.id != "seen-fish")
+                throw new Exception("Fish sighting memory did not survive reload.");
+
+            // Fishing-water capacity cap: strictly capped at 16 entries, evicting oldest FIFO while preserving rods/baskets
+            var capModel = new Starfall.Food.FoodModel("cap-world", "cap-gen", 18);
+            Starfall.Food.ItemObservationMemory.Observe(capModel.State, "perm-rod", "rod", new Vector3(1, 0, 1), true, true, 1);
+            for (int i = 0; i < 20; i++)
+            {
+                capModel.State.tick = i * 20;
+                Starfall.Food.ItemObservationMemory.Observe(capModel.State, "spot-" + i, "fishing-water", new Vector3(10 + i, 0, 10), true, true, i);
+            }
+            int waterCount = 0;
+            foreach (var item in capModel.State.observedItems) if (item.role == "fishing-water") waterCount++;
+            if (waterCount != Starfall.Food.ItemObservationMemory.FishingWaterCapacity)
+                throw new Exception($"Fishing-water capacity not capped at {Starfall.Food.ItemObservationMemory.FishingWaterCapacity}; actual: {waterCount}");
+            if (capModel.State.observedItems.Find(x => x.id == "spot-0") != null)
+                throw new Exception("Oldest fishing-water spot was not evicted upon exceeding capacity.");
+            if (capModel.State.observedItems.Find(x => x.id == "spot-19") == null)
+                throw new Exception("Newest fishing-water spot was not retained.");
+            if (Starfall.Food.ItemObservationMemory.Nearest(capModel.State, "rod", Vector3.zero)?.id != "perm-rod")
+                throw new Exception("Permanent rod evicted by fishing-water cap.");
+
+            // Observation churn throttling: jitter < 0.25m sqr within 10 ticks must not bump tick or re-hash
+            capModel.State.tick = 500;
+            Vector3 anchor = new Vector3(20, 0, 20);
+            Starfall.Food.ItemObservationMemory.Observe(capModel.State, "churn-target", "fishing-water", anchor, true, true, 100);
+            var baseline = capModel.State.observedItems.Find(x => x.id == "churn-target");
+            string hashBefore = baseline.hash;
+            int tickBefore = baseline.foodTick;
+            capModel.State.tick = 505;
+            Starfall.Food.ItemObservationMemory.Observe(capModel.State, "churn-target", "fishing-water", anchor + new Vector3(0.1f, 0, 0.1f), true, true, 105);
+            var afterJitter = capModel.State.observedItems.Find(x => x.id == "churn-target");
+            if (afterJitter.foodTick != tickBefore || afterJitter.hash != hashBefore)
+                throw new Exception("Observation churn throttling failed to suppress sub-threshold tick/hash update.");
+
+            var swimming = new NpcObservation { id = "river-carp-live", observedType = "swimming-fish", kind = NpcObjectKind.Item,
+                permission = true, available = true, distanceMillimetres = 10 };
+            var looseFood = new NpcObservation { id = "berry-ground", kind = NpcObjectKind.Item,
+                permission = true, available = true, distanceMillimetres = 500 };
+            if (NpcDecisionPolicy.Choose(new[] { swimming, looseFood }, false, new Dictionary<string, int>(), 22) != looseFood ||
+                NpcDecisionPolicy.Choose(new[] { swimming }, false, new Dictionary<string, int>(), 22) != null)
+                throw new Exception("Legacy pickup chose a swimming fish.");
+            checks.Add("Fish sighting memory survives reload; capped at 16 entries with churn throttling; generic item pickup excludes swimming fish.");
             checks.Add("Item memory: unseen absent; observed basket survives reload; tamper/scope rejected; changed availability supersedes");
         }
 
@@ -530,7 +578,7 @@ namespace CityLife.World.Editor
                     throw new InvalidOperationException("Club visibility was not restored after the fishing rod left the hand.");
 
                 // Verify: Command advanced to step 2
-                if (survival.ActiveCommandStepIndex != 1 || survival.ActiveCommandCurrentStep != "Select active fish & calculate casting bank")
+                if (survival.ActiveCommandStepIndex != 1 || survival.ActiveCommandCurrentStep != "Choose fishing spot from sightings")
                 {
                     throw new InvalidOperationException($"Command did not advance to step 2: index={survival.ActiveCommandStepIndex}, current='{survival.ActiveCommandCurrentStep}'.");
                 }
@@ -664,7 +712,7 @@ namespace CityLife.World.Editor
                 // Add all to perception
                 perception.Current.Add(new NpcObservation { id = fish1Ni.StableId, kind = NpcObjectKind.Item, position = fish1Pos, permission = true, available = true });
                 perception.Current.Add(new NpcObservation { id = fish2Ni.StableId, kind = NpcObjectKind.Item, position = fish2Pos, permission = true, available = true });
-                perception.Current.Add(new NpcObservation { id = fish3Ni.StableId, kind = NpcObjectKind.Item, position = fish3Pos, permission = true, available = true });
+                perception.Current.Add(new NpcObservation { id = fish3Ni.StableId, kind = NpcObjectKind.Item, position = fish3Pos, permission = true, available = false });
 
                 bool submitOk = survival.SubmitNaturalLanguageCommand("go fish");
                 if (!submitOk || !survival.HasActiveCommand)
@@ -676,9 +724,9 @@ namespace CityLife.World.Editor
                 survival.StepActiveCommand();
 
                 // Step 2: Select active fish & calculate casting bank
-                if (survival.ActiveCommandCurrentStep != "Select active fish & calculate casting bank")
+                if (survival.ActiveCommandCurrentStep != "Choose fishing spot from sightings")
                 {
-                    throw new InvalidOperationException($"Expected step 'Select active fish & calculate casting bank', got '{survival.ActiveCommandCurrentStep}'.");
+                    throw new InvalidOperationException($"Expected fishing spot selection, got '{survival.ActiveCommandCurrentStep}'.");
                 }
 
                 bool step2Done = survival.StepActiveCommand();
@@ -703,17 +751,32 @@ namespace CityLife.World.Editor
                     throw new InvalidOperationException("Reserved fish state was corrupted.");
                 }
 
-                // Verify: Fish 2 (nearer unreserved) was selected, NOT Fish 1
-                if (!inst2.isReserved)
-                {
-                    throw new InvalidOperationException("Nearest unreserved fish (fish2) was not reserved.");
-                }
-                if (inst1.isReserved)
-                {
-                    throw new InvalidOperationException("Farther fish (fish1) was reserved instead of nearest fish.");
-                }
-
-                checks.Add("[MultipleFishSelection] Verified deterministic selection of nearest reachable active fish and skipping of reserved fish.");
+                if (survival.CommandFishSightingId != fish2Ni.StableId ||
+                    Vector3.Distance(survival.CommandCastTarget, fish2Pos) > .001f)
+                    throw new InvalidOperationException("Nearest reachable sighting did not become the fixed fishing spot.");
+                if (inst1.isReserved || inst2.isReserved)
+                    throw new InvalidOperationException("Spot selection reserved a fish before it took bait.");
+                Vector3 chosenWater = survival.CommandCastTarget;
+                Vector3 chosenBank = survival.CommandCastingBank;
+                // Seen fish moves and leaves view during travel; another fish moves closer.
+                fish2Go.transform.position += Vector3.forward * 50f;
+                fish2Go.SetActive(false);
+                fish1Go.transform.position = chosenBank + Vector3.forward;
+                perception.Current.Clear();
+                actorGo.transform.position = chosenBank;
+                survival.StepActiveCommand();
+                survival.StepActiveCommand();
+                if (fishing.State != FishingState.Casting ||
+                    survival.ActiveCommandCurrentStep != "Wait for fish bite & strike" ||
+                    Vector3.Distance(fishing.CastTarget, chosenWater) > .001f ||
+                    Vector3.Distance(survival.CommandCastingBank, chosenBank) > .001f)
+                    throw new InvalidOperationException("Fish movement/loss of view retargeted or stalled the cast: " + survival.ActiveCommandStatus);
+                if (fishing.ReservedFish != null || fishing.BaitResponse.InterestedFish != null || inst1.isReserved || inst2.isReserved)
+                    throw new InvalidOperationException("Casting guaranteed a fish before a bait response.");
+                survival.StepActiveCommand();
+                if (survival.ActiveCommandCurrentStep != "Wait for fish bite & strike")
+                    throw new InvalidOperationException("Fishing advanced without a real bite.");
+                checks.Add("[FishingSpotCommitment] Moving/unseen fish cannot retarget a cast; no reservation before bait; waits for bite.");
             }
             finally
             {

@@ -116,7 +116,7 @@ namespace CityLife.World
             }
             if (Brain.Tick < nextRequestTick || count >= SessionRequestLimit)
             { if (count >= SessionRequestLimit) Status = "Session thought limit; rules active"; return false; }
-            var eligible = Brain.Perception.Current.Where(x => x.permission && x.available &&
+            var eligible = Brain.Perception.Current.Where(x => x.permission && x.available && x.observedType != "swimming-fish" &&
                 x.kind == (cargo.Length == 0 ? NpcObjectKind.Item : NpcObjectKind.Destination) &&
                 (!retry.TryGetValue(x.id, out int until) || until <= Brain.Tick)).Take(16).Select(x => new NpcObservation {
                     id = x.id, kind = x.kind, permission = true, available = true, distanceMillimetres = x.distanceMillimetres, seenAtTick = x.seenAtTick }).ToArray();

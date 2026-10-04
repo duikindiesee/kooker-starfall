@@ -13,7 +13,7 @@ namespace CityLife.World
             foreach (var candidate in visible)
             {
                 if (candidate.kind != (carrying ? NpcObjectKind.Destination : NpcObjectKind.Item) ||
-                    !candidate.permission || !candidate.available) continue;
+                    !candidate.permission || !candidate.available || candidate.observedType == "swimming-fish") continue;
                 if (retryAfterTick.TryGetValue(candidate.id, out int retry) && retry > tick) continue;
                 if (best == null || candidate.distanceMillimetres < best.distanceMillimetres ||
                     (candidate.distanceMillimetres == best.distanceMillimetres &&

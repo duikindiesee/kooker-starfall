@@ -19,7 +19,8 @@ namespace CityLife.World
             public float seconds;
             public string command, step, status, receipt, fishing, interestedFish;
             public string perception, nearbyFishDiagnostic;
-            public Vector3 knownWater, selectedBank;
+            public Vector3 knownWater, selectedBank, selectedWater;
+            public string fishSightingId;
             public Vector3 actor, fish, bait;
             public bool swimming, baitEaten;
         }
@@ -202,6 +203,8 @@ namespace CityLife.World
                         receipt = survival.LastCommandReceipt, actor = brain.transform.position,
                         perception = brain.DescribePerception(), knownWater = survival.FindGroundedRiverWaterTarget(brain.transform.position),
                         selectedBank = survival.CommandCastingBank,
+                        selectedWater = survival.CommandCastTarget,
+                        fishSightingId = survival.CommandFishSightingId,
                         nearbyFishDiagnostic = NearbyFishDiagnostic(),
                         swimming = brain.Actor != null && brain.Actor.IsSwimming,
                         fishing = fishing != null ? fishing.State.ToString() : "missing",

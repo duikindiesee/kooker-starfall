@@ -416,9 +416,9 @@ namespace CityLife.Items.Editor
                 var titles = survival.ActiveCommandStepTitles;
                 bool titlesMatch = titles != null && titles.Count == 6 &&
                     titles[0] == "Equip fishing rod" &&
-                    titles[1] == "Select active fish & calculate casting bank" &&
+                    titles[1] == "Choose fishing spot from sightings" &&
                     titles[2] == "Route to casting bank" &&
-                    titles[3] == "Face fish & cast fishing line" &&
+                    titles[3] == "Cast at chosen fishing spot" &&
                     titles[4] == "Wait for fish bite & strike" &&
                     titles[5] == "Land catch into hand";
                 Check(titlesMatch, "cmd-fish-sequence-contract-match");

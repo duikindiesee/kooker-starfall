@@ -69,26 +69,56 @@ namespace CityLife.World
         private RectTransform commandRect;
         private InputField commandInputField;
         private int commandSubmittedFrame = -1;
+        private bool commandEntryActive;
+        private int commandEntryExitFrame = -1;
+        private bool commandCaretRestorePending;
+        private Image commandInputBackground;
+        private Text commandPrefixLabel;
+        /// <summary>Input receipts for acceptance harnesses: what the HUD actually received.</summary>
+        public int CommandFocusCount { get; private set; }
+        public int CommandSubmitCount { get; private set; }
+        public string LastSubmittedCommandText { get; private set; } = "";
+        public float LastSubmittedCommandRealtime { get; private set; } = -1f;
 
         private void SubmitCommandField()
         {
             if (commandInputField == null || commandSubmittedFrame == Time.frameCount) return;
             commandSubmittedFrame = Time.frameCount;
             string text = commandInputField.text.Trim();
-            commandInputField.text = "";
-            commandInputField.DeactivateInputField();
-            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
-            if (!string.IsNullOrEmpty(text) && Brain?.Survival != null)
+            ExitCommandEntry(clearText: true);
+            if (string.IsNullOrEmpty(text)) return;
+            CommandSubmitCount++;
+            LastSubmittedCommandText = text;
+            LastSubmittedCommandRealtime = Time.realtimeSinceStartup;
+            if (Brain?.Survival != null)
                 _ = Brain.Survival.SubmitNaturalLanguageCommandAsync(text);
         }
 
-        public bool IsTypingCommand => commandInputField != null && commandInputField.isFocused;
+        private void ExitCommandEntry(bool clearText)
+        {
+            commandEntryActive = false;
+            commandEntryExitFrame = Time.frameCount;
+            if (commandInputField == null) return;
+            if (clearText) commandInputField.text = "";
+            commandInputField.DeactivateInputField();
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == commandInputField.gameObject)
+                EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        // True from the Enter press (InputField focus is deferred a frame) until submit/Esc,
+        // and on the exit frame itself so the same Enter/Esc is not re-read as a hotkey.
+        public bool IsTypingCommand => commandInputField != null &&
+            (commandEntryActive || commandInputField.isFocused || commandEntryExitFrame == Time.frameCount);
         public InputField CommandInputField => commandInputField;
 
         public void FocusCommandInput()
         {
             if (commandInputField != null)
             {
+                if (!commandEntryActive) CommandFocusCount++;
+                commandEntryActive = true;
+                if (Controls != null) Controls.ReleasePointer();
+                if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(commandInputField.gameObject);
                 commandInputField.ActivateInputField();
                 commandInputField.Select();
             }
@@ -276,12 +306,19 @@ namespace CityLife.World
 
             var prefixLabel = MakeLabel(commandPanel, "Prefix", 10, 0, 160, 34, 14, new Color(0.38f, 0.88f, 1.0f), FontStyle.Bold, TextAnchor.MiddleLeft);
             prefixLabel.text = "[Enter] Directive >";
+            commandPrefixLabel = prefixLabel;
 
             var inputGo = new GameObject("Command InputField", typeof(RectTransform), typeof(Image), typeof(InputField));
             MakeRt(inputGo, commandPanel.transform, 175, 2, 915, 30);
             var inputGoImg = inputGo.GetComponent<Image>();
             inputGoImg.color = new Color(0.05f, 0.10f, 0.15f, 0.85f);
             if (AlwaysOnTopMaterial != null) inputGoImg.material = AlwaysOnTopMaterial;
+            commandInputBackground = inputGoImg;
+            // Clicking the bar (pointer must be free) enters the same typing mode as Enter.
+            var clickTrigger = inputGo.AddComponent<EventTrigger>();
+            var clickEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            clickEntry.callback.AddListener(_ => FocusCommandInput());
+            clickTrigger.triggers.Add(clickEntry);
 
             var placeholderLabel = MakeLabel(inputGo, "Placeholder", 8, 0, 900, 30, 13, new Color(0.5f, 0.65f, 0.75f, 0.7f), FontStyle.Italic, TextAnchor.MiddleLeft);
             placeholderLabel.text = "Type directive (e.g. 'go fish', 'go river', 'eat catch', 'store catch') and press Enter... (Esc to cancel)";
@@ -335,40 +372,62 @@ namespace CityLife.World
             if (key == null) return;
 
             // Free-text command entry submission & cancellation
+            bool menuOpen = Controls != null && Controls.MenuOpen;
             if ((key.enterKey.wasPressedThisFrame || key.numpadEnterKey.wasPressedThisFrame) && commandSubmittedFrame != Time.frameCount)
             {
-                if (commandInputField != null && commandInputField.isFocused)
+                if (commandInputField != null && commandEntryActive)
                 {
                     SubmitCommandField();
                 }
-                else if (commandInputField != null && !commandInputField.isFocused && (Controls == null || !Controls.MenuOpen))
+                else if (commandInputField != null && commandEntryExitFrame != Time.frameCount && !menuOpen)
                 {
                     FocusCommandInput();
                 }
             }
             else if (key.escapeKey.wasPressedThisFrame)
             {
-                if (commandInputField != null && commandInputField.isFocused)
+                if (commandInputField != null && commandEntryActive)
                 {
-                    commandInputField.text = "";
-                    commandInputField.DeactivateInputField();
-                    if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+                    // Leave typing only; a running directive keeps running (C or a second Esc cancels it).
+                    ExitCommandEntry(clearText: true);
                 }
-                if (Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                else if (commandEntryExitFrame != Time.frameCount &&
+                         Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
                 {
                     Brain.Survival.CancelActiveCommand("user-cancelled-via-esc");
                 }
             }
             else if (key.cKey.wasPressedThisFrame)
             {
-                if ((commandInputField == null || !commandInputField.isFocused) &&
-                    Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
+                if (!IsTypingCommand && Brain != null && Brain.Survival != null &&
+                    (Brain.Survival.HasActiveCommand || Brain.Survival.HoldingAfterDirective))
                 {
                     Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");
                 }
             }
 
-            if (Detailed)
+            if (commandInputField != null)
+            {
+                if (commandEntryActive && menuOpen) ExitCommandEntry(clearText: false);
+                // A world click or focus loss deselects the field; keep entry until submit/Esc.
+                else if (commandEntryActive && !commandInputField.isFocused)
+                {
+                    commandInputField.ActivateInputField();
+                    commandCaretRestorePending = commandInputField.text.Length > 0;
+                }
+                else if (commandCaretRestorePending && commandInputField.isFocused)
+                {
+                    commandCaretRestorePending = false;
+                    commandInputField.MoveTextEnd(false);
+                }
+                bool typing = commandEntryActive || commandInputField.isFocused;
+                if (commandInputBackground != null)
+                    commandInputBackground.color = typing ? new Color(0.10f, 0.22f, 0.30f, 0.98f) : new Color(0.05f, 0.10f, 0.15f, 0.85f);
+                if (commandPrefixLabel != null)
+                    commandPrefixLabel.text = typing ? "TYPING > [Enter] send" : "[Enter] Directive >";
+            }
+
+            if (Detailed && !IsTypingCommand)
             {
                 if (key.digit1Key.wasPressedThisFrame || key.numpad1Key.wasPressedThisFrame) SetDrawerTab(0);
                 else if (key.digit2Key.wasPressedThisFrame || key.numpad2Key.wasPressedThisFrame) SetDrawerTab(1);
@@ -412,24 +471,36 @@ namespace CityLife.World
             mode += Brain.Possessed ? "Possession" : Controls != null && Controls.FreeSpectator ? "Spectator" : "Autonomous NPC";
 
             string currentGoal;
-            if (Brain.GoalId.Length > 0)
+            if (Brain.Survival != null && Brain.Survival.HasActiveCommand)
             {
-                currentGoal = Brain.GoalId;
+                currentGoal = "Directive: " + (Brain.Survival.IsInterpreting && !Brain.Survival.HasExecutableSteps
+                    ? "interpreting"
+                    : Brain.Survival.ActiveCommandTitle);
+            }
+            else if (Brain.Survival != null && Brain.Survival.HoldingAfterDirective)
+            {
+                currentGoal = "Directive done: " + Brain.Survival.ActiveCommandTitle + " - waiting [C: resume autonomy]";
+            }
+            else if (Brain.GoalId.Length > 0)
+            {
+                currentGoal = "Autonomous pickup: " + Brain.GoalId;
             }
             else if (Brain.Survival != null && Brain.Survival.Enabled)
             {
-                currentGoal = !string.IsNullOrEmpty(Brain.Survival.routePurpose)
+                currentGoal = "Survival: " + (!string.IsNullOrEmpty(Brain.Survival.routePurpose)
                     ? Brain.Survival.routePurpose
-                    : (!string.IsNullOrEmpty(Brain.Survival.LastChoice) ? Brain.Survival.LastChoice : "survive");
+                    : (!string.IsNullOrEmpty(Brain.Survival.LastChoice) ? Brain.Survival.LastChoice : "survive"));
             }
             else if (Brain.Foraging != null && !string.IsNullOrEmpty(Brain.Foraging.TargetResourceId))
             {
-                currentGoal = Brain.Foraging.TargetResourceId;
+                currentGoal = "Foraging: " + Brain.Foraging.TargetResourceId;
             }
             else
             {
                 currentGoal = "observe / wait";
             }
+            if (Brain.Survival != null && !Brain.Survival.Enabled)
+                currentGoal += "  <color=#FF7777>[SURVIVAL MIND OFF - directives refused]</color>";
 
             string FormatCargo()
             {
@@ -514,6 +585,16 @@ namespace CityLife.World
                         failure = failure.Replace('-', ' ');
                         commandAlert = $"  |  <color=#FF7777><b>[LAST COMMAND FAILED: {failure}]</b></color>";
                     }
+                    else if (!string.IsNullOrEmpty(Brain.Survival.LastDirectiveOutcome) &&
+                             Brain.Survival.LastDirectiveRealtime >= 0f &&
+                             Time.realtimeSinceStartup - Brain.Survival.LastDirectiveRealtime <= 10f)
+                    {
+                        string outcome = Brain.Survival.LastDirectiveOutcome;
+                        string colour = outcome == "accepted" ? "#55FF88" : outcome == "cancelled" ? "#C0C0C0" : "#FF7777";
+                        string said = (Brain.Survival.LastDirectiveText ?? "").Replace('<', '(').Replace('>', ')');
+                        string why = (Brain.Survival.LastDirectiveDetail ?? "").Replace('<', '(').Replace('>', ')');
+                        commandAlert = $"  |  <color={colour}><b>[DIRECTIVE {outcome.ToUpperInvariant()}: \"{said}\" - {why}]</b></color>";
+                    }
                 }
 
                 Summary.text = $"<b>{mode}</b>  |  Tick {Brain.Tick}  |  Goal: <color=#FFE680>{currentGoal}</color>  |  Cargo: {cargo}  |  Club: {weaponStatus}{airAlert}{wolfAlert}{fishingAlert}{commandAlert}";
@@ -576,6 +657,18 @@ namespace CityLife.World
                         "\n\n<b>Fictional dialogue:</b> " + planner.Dialogue + "\n\n<b>Generated reflection:</b> " + planner.Reflection;
                 }
                 if (!string.IsNullOrEmpty(LivingMemoryText)) thoughts.text = LivingMemoryText;
+                if (Brain.Survival != null && !Brain.Survival.Enabled)
+                {
+                    string unavailable = "<color=#FF7777><b>SURVIVAL MIND UNAVAILABLE</b> - directives are refused and the autonomous fallback policy is running.\nReason: " +
+                        (Brain.Survival.Status ?? "unknown").Replace('<', '(').Replace('>', ')') + "</color>\n\n";
+                    string rest = thoughts.text ?? "";
+                    if (rest.StartsWith("<color=#FF7777><b>SURVIVAL MIND UNAVAILABLE</b>", StringComparison.Ordinal))
+                    {
+                        int cut = rest.IndexOf("</color>\n\n", StringComparison.Ordinal);
+                        rest = cut >= 0 ? rest.Substring(cut + "</color>\n\n".Length) : "";
+                    }
+                    thoughts.text = unavailable + rest;
+                }
             }
 
             if (History != null)

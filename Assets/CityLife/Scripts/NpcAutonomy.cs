@@ -256,7 +256,8 @@ namespace CityLife.World
                 (Actions.Held.GetComponent<CityLife.Items.PhysicalItem>() != null &&
                  Actions.Held.GetComponent<CityLife.Items.PhysicalItem>().itemTypeId.StartsWith("tool")));
             bool allowSurvival = Actions == null || Actions.Held == null || isHoldingFood || isHoldingTool;
-            bool survivalPriority = Survival != null && Survival.Enabled && (Survival.HasActiveCommand || Survival.Food.Model.State.body.dead ||
+            bool directiveOwnsActor = Survival != null && (Survival.HasActiveCommand || Survival.HoldingAfterDirective);
+            bool survivalPriority = Survival != null && Survival.Enabled && (directiveOwnsActor || Survival.Food.Model.State.body.dead ||
                 isHoldingFood ||
                 (Survival.Food.Model.State.satiety < 7000 && allowSurvival) ||
                 (Survival.Food.Model.State.hydration < 7000 && allowSurvival) ||
@@ -269,6 +270,14 @@ namespace CityLife.World
                     Registry.Where(x => x.Kind == NpcObjectKind.Item && x.Permission && x.GetComponent<CityLife.Items.PhysicalItem>() == null).All(x => x.DeliveredTo.Length > 0)))));
             if (survivalPriority)
             { Phase = "Survive / grounded model"; if (Survival.StepTick()) return; }
+            if (directiveOwnsActor)
+            {
+                // Directive interpretation/execution (or the post-directive wait) owns the actor;
+                // never fall through to legacy item pickup (which otherwise chases the nearest swimming fish).
+                Phase = Survival.HasActiveCommand ? "Directive" : "Directive complete / waiting"; ClearLegacyGoal("directive-active");
+                Actor.Step(Vector3.zero, StepSeconds);
+                return;
+            }
             if (goal != null && Tick - lastSeenTick > 250)
             { Fail("perception-stale"); Actor.Step(Vector3.zero, StepSeconds); return; }
             if (gestureTicks > 0)
@@ -366,6 +375,15 @@ namespace CityLife.World
                 "keep cargo; exclude goal for 250 ticks; choose again; " + LastFailureDiagnostic);
             if (goal != null) retryAfter[goal.id] = Tick + 250;
             goal = null; route = null; gestureTicks = 0; stalledTicks = 0; Phase = "Fallback";
+        }
+        // A player directive supersedes the legacy nearest-item pickup loop. Clearing is not a
+        // failure: the item is not excluded, and nothing is dropped or released.
+        public void ClearLegacyGoal(string reason)
+        {
+            if (goal == null && route == null && gestureTicks == 0) return;
+            string previous = GoalId;
+            goal = null; route = null; gestureTicks = 0; stalledTicks = 0; Phase = "Directive";
+            if (Log != null) Log.Record(Tick, "decision", DescribePerception(), previous, "clear-legacy-goal", reason, "");
         }
         public string DescribePerception() => string.Join(", ", Perception.Current.Select(x =>
             x.id + (x.permission ? "" : " [denied]") + (x.available ? "" : " [unavailable]")));

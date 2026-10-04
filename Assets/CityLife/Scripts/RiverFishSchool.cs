@@ -214,6 +214,7 @@ namespace CityLife.World
                     continue;
 
                 var ni = child.GetComponent<NpcInteractable>();
+                if (ni != null) ni.ObservedType = "swimming-fish";
                 var phys = child.GetComponent<PhysicalItem>();
                 var anim = child.GetComponentInChildren<Animation>(true);
                 bool isCarp = name.StartsWith("river-carp-", StringComparison.Ordinal);
@@ -727,6 +728,7 @@ namespace CityLife.World
                 ni.StableId = fishId;
                 ni.WorldId = worldId;
                 ni.Kind = NpcObjectKind.Item;
+                ni.ObservedType = "swimming-fish";
                 ni.Permission = true;
                 ni.Approach = approach.transform;
 
@@ -889,6 +891,7 @@ namespace CityLife.World
                 ni.StableId = carpId;
                 ni.WorldId = worldId;
                 ni.Kind = NpcObjectKind.Item;
+                ni.ObservedType = "swimming-fish";
                 ni.Permission = true;
                 ni.Approach = approach.transform;
 
@@ -1059,6 +1062,7 @@ namespace CityLife.World
         {
             if (fish == null) return;
             fish.isReserved = false;
+            if (fish.interactable != null) fish.interactable.ObservedType = "";
             if (ActiveFish != null)
             {
                 ActiveFish.Remove(fish);
