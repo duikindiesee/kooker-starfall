@@ -4177,8 +4177,10 @@ namespace CityLife.World
                     var obs = Brain.Perception.Current[i];
                     if (obs != null && (obs.id.Contains("berry") || obs.id.Contains("sourfig") || obs.id.Contains("bush")))
                     {
-                        var ni = Brain.FindInteractable(obs.id);
-                        if (ni != null) return ni;
+                        if (Brain.Actions != null && Brain.Actions.TryGetRegisteredInteractable(obs.id, out var regNi))
+                            return regNi;
+                        if (Food != null && Food.Berry != null && string.Equals(Food.Berry.StableId, obs.id, StringComparison.Ordinal))
+                            return Food.Berry;
                     }
                 }
             }
@@ -4203,8 +4205,8 @@ namespace CityLife.World
                     var p = Food.Model.State.observedPlaces[i];
                     if (p != null && (p.id.Contains("berry") || p.id.Contains("sourfig")))
                     {
-                        var ni = Brain != null ? Brain.FindInteractable(p.id) : null;
-                        if (ni != null) return ni;
+                        if (Brain != null && Brain.Actions != null && Brain.Actions.TryGetRegisteredInteractable(p.id, out var regNi))
+                            return regNi;
                         if (Food.Berry != null && Vector3.Distance(p.position, Food.Berry.transform.position) <= 5.0f)
                             return Food.Berry;
                     }
