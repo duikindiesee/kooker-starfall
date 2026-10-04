@@ -1202,11 +1202,6 @@ namespace CityLife.World.Editor
                     survival.Brain = brain;
                     brain.Survival = survival;
 
-                    var foodRuntime = actorGo.AddComponent<IntegratedFoodRuntime>();
-                    foodRuntime.Model = new Starfall.Food.FoodModel("test-world", "test-gen", 1);
-                    foodRuntime.Model.State.actorId = "test-agent";
-                    survival.Food = foodRuntime;
-
                     bool submit = survival.SubmitNaturalLanguageCommand("eat a berry");
                     if (!submit || !survival.HasActiveCommand)
                         throw new InvalidOperationException("Failed to submit 'eat a berry' command with held berry.");
