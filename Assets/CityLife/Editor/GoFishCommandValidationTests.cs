@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using CityLife.Items;
 using CityLife.World;
+using CityLife.Food;
 
 namespace CityLife.World.Editor
 {
@@ -1181,7 +1182,7 @@ namespace CityLife.World.Editor
                     actions.PhysicalModel = itemModel;
 
                     var physBootstrap = actorGo.AddComponent<PhysicalItemBootstrap>();
-                    physBootstrap.Model = itemModel;
+                    physBootstrap.SetModelForTesting(itemModel, cat);
                     brain.PhysicalItems = physBootstrap;
 
                     var berryNi = berryGo.AddComponent<NpcInteractable>();
@@ -1239,9 +1240,10 @@ namespace CityLife.World.Editor
                     brain.InstanceWorldId = "test-world";
                     var bs = bsGo.AddComponent<PhysicalItemBootstrap>();
                     bs.Brain = brain;
-                    bs.Model = new ItemModel("test-world", "gen-01");
-                    bs.Catalog = PhysicalItemCatalog.CreateDefaultCatalog();
-                    bs.Catalog.PopulateModel(bs.Model);
+                    var cat = PhysicalItemCatalog.CreateDefaultCatalog();
+                    var model = new ItemModel("test-world", "gen-01");
+                    cat.PopulateModel(model);
+                    bs.SetModelForTesting(model, cat);
 
                     // Call through public test entry or invoke internal with null path
                     var method = typeof(PhysicalItemBootstrap).GetMethod("LoadSavePayloadInternal", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

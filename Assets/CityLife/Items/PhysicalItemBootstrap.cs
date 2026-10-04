@@ -214,6 +214,12 @@ namespace CityLife.Items
         private bool itemCreated;
 
         public PhysicalItemCatalog Catalog { get; private set; }
+
+        public void SetModelForTesting(ItemModel model, PhysicalItemCatalog catalog = null)
+        {
+            Model = model;
+            if (catalog != null) Catalog = catalog;
+        }
         private readonly List<PhysicalItemRuntimeBinding> bindings = new List<PhysicalItemRuntimeBinding>();
         public IReadOnlyList<PhysicalItemRuntimeBinding> Bindings => bindings;
 
