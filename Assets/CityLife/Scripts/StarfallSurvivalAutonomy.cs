@@ -3015,14 +3015,14 @@ namespace CityLife.World
                 CancelActiveCommand(timeoutCode);
                 LastCommandReceipt = timeoutCode;
                 if (Brain != null && Brain.Actor != null) Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
-                return true;
+                return false;
             }
 
             bool stepDone = currentStep.Execute(this);
             if (activeCommandSteps == null)
             {
                 if (Brain != null && Brain.Actor != null) Brain.Actor.Step(Vector3.zero, NpcAutonomy.StepSeconds);
-                return true;
+                return LastCommandReceipt != null && LastCommandReceipt.StartsWith("command-completed");
             }
 
             if (stepDone)
@@ -3394,8 +3394,9 @@ namespace CityLife.World
             var physical = rod != null ? rod.PhysicalItem : null;
             Transform rightBone = Brain != null && Brain.Actor != null && Brain.Actor.Animator != null && Brain.Actor.Animator.isHuman
                 ? Brain.Actor.Animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            Transform targetRight = rightBone != null ? rightBone : (Brain != null && Brain.Actions != null ? Brain.Actions.RightHandTransform : null);
             Transform carried = physical != null ? physical.CarriedHand : null;
-            bool onRightBone = carried != null && rightBone != null && (carried == rightBone || carried.IsChildOf(rightBone));
+            bool onRightBone = carried != null && targetRight != null && (carried == targetRight || carried.IsChildOf(targetRight));
             bool inRightSlot = Brain != null && Brain.Actions != null && Brain.Actions.HeldRight != null && rod != null &&
                 (Brain.Actions.HeldRight.transform == rod.transform || rod.transform.IsChildOf(Brain.Actions.HeldRight.transform) ||
                  Brain.Actions.HeldRight.transform.IsChildOf(rod.transform));
@@ -3404,7 +3405,7 @@ namespace CityLife.World
             bool clubStowed = carry == null || carry.Stowed;
             ok = onRightBone && inRightSlot && physical != null && !physical.IsLeftHand && clubStowed;
             return $"rod={(physical != null ? physical.itemId : "none")} carriedHand={(carried != null ? carried.name : "none")} " +
-                   $"rightBone={(rightBone != null ? rightBone.name : "none")} onRightBone={onRightBone} rightSlot={inRightSlot} " +
+                   $"rightBone={(rightBone != null ? rightBone.name : (targetRight != null ? targetRight.name : "none"))} onRightBone={onRightBone} rightSlot={inRightSlot} " +
                    $"left={(physical != null && physical.IsLeftHand)} clubStowed={clubStowed}";
         }
 
@@ -3412,7 +3413,14 @@ namespace CityLife.World
         {
             var fishing = Brain != null ? (Brain.GetComponent<FishingInteraction>() ?? Brain.GetComponentInChildren<FishingInteraction>()) : null;
             FishingRodItem rod = null;
-            if (fishing != null) fishing.IsHoldingFishingRod(out rod);
+            if (fishing != null)
+            {
+                fishing.IsHoldingFishingRod(out rod);
+            }
+            else if (Brain != null && Brain.Actions != null)
+            {
+                FishingInteraction.TryResolveFishingRod(Brain.Actions.HeldRight, out rod);
+            }
             string grip = how + ": " + DescribeRodGrip(rod, out bool ok);
             CommandRodGrip = grip;
             if (Brain != null && Brain.Log != null)
@@ -3563,7 +3571,7 @@ namespace CityLife.World
                     }
                     rodUnresolvedTicks = 0;
 
-                    Vector3 approachPoint = rNi.Approach != null ? rNi.Approach.position : groundRod.approach;
+                    Vector3 approachPoint = rNi.Approach != null ? rNi.Approach.position : (groundRod.approach != Vector3.zero ? groundRod.approach : (rNi.transform != null ? rNi.transform.position : groundRod.position));
                     Vector3 here = self.Brain.transform.position;
                     float flat = Vector2.Distance(new Vector2(here.x, here.z), new Vector2(approachPoint.x, approachPoint.z));
                     if (self.route.Count > 0 && self.routePurpose == "approach-rod")
@@ -3578,8 +3586,14 @@ namespace CityLife.World
                     {
                         if (self.Brain.Tick < rodNextAttemptTick) { self.ActiveCommandStatus = "Reaching for fishing rod..."; return false; }
                         var pickup = self.Brain.ExecutePlayerAction(NpcActionKind.Pickup, rNi.StableId);
+                        if (!pickup.success && (pickup.code == "physical-model-required" || (self.Brain.Actions != null && self.Brain.Actions.PhysicalModel == null)) && flat <= .65f)
+                        {
+                            self.Brain.Actions.HoldItemDirect(rNi, false);
+                            pickup = new NpcActionResult { success = true, code = "held-direct-offline" };
+                        }
                         var equippedFishing = self.Brain.GetComponent<FishingInteraction>() ?? self.Brain.GetComponentInChildren<FishingInteraction>();
-                        if (pickup.success && equippedFishing != null && equippedFishing.IsHoldingFishingRod(out _))
+                        bool isHoldingRod = equippedFishing != null ? equippedFishing.IsHoldingFishingRod(out _) : FishingInteraction.TryResolveFishingRod(self.Brain.Actions != null ? self.Brain.Actions.HeldRight : null, out _);
+                        if (pickup.success && isHoldingRod)
                         {
                             self.EnsureLeftHandFreeForLanding();
                             if (!self.VerifyCommandRodGrip("equipped-ground-rod")) return true;
@@ -3716,6 +3730,16 @@ namespace CityLife.World
                     forward.y = 0;
                     if (forward.sqrMagnitude > .01f) self.Brain.transform.rotation = Quaternion.LookRotation(forward);
                     self.Brain.Perception?.Sense(self.Brain.Tick);
+                    bool anyFish = self.Brain.Perception?.Current != null && self.Brain.Perception.Current.Any(p => p != null &&
+                        p.kind == NpcObjectKind.Item && !string.IsNullOrEmpty(p.id) && p.permission && p.available &&
+                        (p.observedType == "swimming-fish" ||
+                         p.id.StartsWith("river-fish-", StringComparison.Ordinal) ||
+                         p.id.StartsWith("river-carp-", StringComparison.Ordinal)));
+                    if (!anyFish)
+                    {
+                        self.CancelActiveCommand("command-failed-no-fish-perceived");
+                        return true;
+                    }
                     self.ActiveCommandStatus = "Watching known water for fish sightings";
                     return false;
                 }

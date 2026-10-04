@@ -179,7 +179,7 @@ namespace CityLife.World
             return false;
         }
 
-        private static bool TryResolveFishingRod(NpcInteractable held, out FishingRodItem rod)
+        public static bool TryResolveFishingRod(NpcInteractable held, out FishingRodItem rod)
         {
             rod = null;
             if (held == null) return false;

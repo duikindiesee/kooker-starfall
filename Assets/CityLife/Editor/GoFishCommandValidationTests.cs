@@ -495,21 +495,27 @@ namespace CityLife.World.Editor
                 rodGo.transform.position = actorGo.transform.position + Vector3.forward * 0.5f;
                 var rodNi = rodGo.AddComponent<NpcInteractable>();
                 rodNi.StableId = "tool-fishing-rod";
+                rodNi.WorldId = actions.WorldId;
                 rodNi.Kind = NpcObjectKind.Item;
                 rodNi.Permission = true;
                 rodNi.HeldBy = "";
                 rodNi.DeliveredTo = "";
+                rodNi.Approach = rodGo.transform;
                 actions.RegisterInteractable(rodNi);
 
                 var rodPhys = rodGo.AddComponent<PhysicalItem>();
                 rodPhys.itemId = "tool-fishing-rod";
                 rodPhys.itemTypeId = FishingRodItem.ItemTypeId;
+                rodPhys.massKg = FishingRodItem.RodMassKg;
+                rodPhys.dimensions = new PhysicalDimensions(0.08f, 0.08f, FishingRodItem.RodLength);
+                rodPhys.ConfigureComponents();
 
                 perception.Current.Add(new NpcObservation
                 {
                     id = "tool-fishing-rod",
                     kind = NpcObjectKind.Item,
                     position = rodGo.transform.position,
+                    approach = rodGo.transform.position,
                     permission = true,
                     available = true
                 });
