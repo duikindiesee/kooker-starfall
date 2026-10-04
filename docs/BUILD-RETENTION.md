@@ -32,14 +32,14 @@ rebuilding. The receipt is
 No ZIP was removed because there was no matching redundant player ZIP.
 
 New builds require an explicit verified fallback manifest and runtime receipt.
-After a successful Unity build, `build-integrated.ps1` invokes separate
-manifest/inventory-gated two-keep reconciliation: fallback plus an **unverified
-temporary** new candidate, never a survival promotion. A failed build still
-uses exact failed-output cleanup; a missing or ambiguous failure receipt leaves
-the output for review. Both paths reject active players, reparse points,
-user-state stores and unmanifested directories. The automatic success hook has
-parsed and passed a two-keep dry run; first real new-build execution remains
-to be tested. Keep this boundary distinct from release.
+After a successful Unity build, `build-integrated.ps1` invokes manifest/inventory-gated
+one-build reconciliation (`reconcile-integrated-builds.ps1`): the successful replacement
+candidate is retained, and superseded outputs (including previous fallback, unless actively
+running) are removed. A failed build still uses exact failed-output cleanup via
+`remove-failed-integrated-build.ps1`, strictly preserving the last usable build. Both paths
+defer deletion of any actively running build until it terminates, reject reparse points and
+user-state stores, and record exact per-target deletion receipts. Keep this disk lifecycle
+boundary distinct from release or survival promotion.
 
 - `build-integrated.ps1` removes an explicitly failed candidate through
   `remove-failed-integrated-build.ps1`. Missing or ambiguous failure receipts fail
@@ -119,3 +119,13 @@ process observation, model-linked fruit meals and freshwater drinking,
 matching full-content post-exit hash, and an explicitly accelerated same-build
 death/return diagnostic. This does not prove natural mortality timing, visual
 acceptance, sustained high-quality policy or a releasable package.
+
+## Canonical One-Build Retention Policy (4 October 2026 Directive)
+
+Whenever a new Starfall build is created, older builds are deleted to save space:
+1. **Replacement Trigger**: After a successful complete replacement build, superseded generated build outputs under verified Starfall build roots (`Builds/KookerStarfallIntegrated-*`) are removed.
+2. **Failure Protection**: A build failure must never delete the last usable build. Disposable failed artifacts are cleaned up only when the failure receipt is explicit.
+3. **Active Process Safety**: Defer deletion of an actively running build until it closes (verified via `Win32_Process` executable path inspection).
+4. **Preservation Scope**: Preserve source, user saves, compact test logs, recordings, manifests, and unique work outside disposable build outputs.
+5. **Folder Protection**: Battlefield and unrelated CityLife/Kooker folders are strictly protected.
+6. **Audit Accounting**: Every retention action records exact deleted target paths, reclaimed bytes, and drive free space in an audit receipt (`reconciliation.json` or `retention.json`).

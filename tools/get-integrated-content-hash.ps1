@@ -18,5 +18,8 @@ while ($pending.Count -gt 0) {
 }
 $entries.Sort([StringComparer]::Ordinal)
 $bytes = [Text.Encoding]::UTF8.GetBytes(($entries -join "`n") + "`n")
-$digest = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+$sha = [Security.Cryptography.SHA256]::Create()
+$hashBytes = $sha.ComputeHash($bytes)
+$digest = [BitConverter]::ToString($hashBytes).Replace('-','').ToLowerInvariant()
+$sha.Dispose()
 [pscustomobject]@{schema='starfall.build-content.v1'; sha256=$digest; files=$entries.Count}
