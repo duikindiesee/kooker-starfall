@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference='Stop'
 $candidateRoot=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 if (@(Get-Process Unity -ErrorAction SilentlyContinue).Count) { throw 'Another owner has the Unity build slot; coordinate before running.' }
-if (@(git -C $candidateRoot status --porcelain).Count) { throw 'Commit and review candidate source before building.' }
+if (@(git -C $candidateRoot status --porcelain Assets ProjectSettings Packages).Count) { throw 'Commit and review candidate source before building.' }
 if (!(Test-Path -LiteralPath (Join-Path $candidateRoot 'Assets/CityLife/Editor/HunterOutfitAuthoring.cs'))) { throw 'Accepted clothing source is required.' }
 if ($VerifiedFallbackRuntime) {
     $fallback=(& (Join-Path $PSScriptRoot 'check-integrated-build.ps1') -BuildManifest $VerifiedFallbackManifest -RuntimeDirectory $VerifiedFallbackRuntime | ConvertFrom-Json)
