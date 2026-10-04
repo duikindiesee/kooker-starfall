@@ -1264,6 +1264,48 @@ namespace CityLife.World.Editor
                     UnityEngine.Object.DestroyImmediate(bsGo);
                 }
             }
+
+            // 6. Startup Autonomy Reset with Hydrated Checkpoint and Scene Fishing Rod
+            {
+                var envJson = "{\"worldId\":\"test-world\",\"generationId\":\"gen-01\",\"actorId\":\"" + NpcAutonomy.AgentId + "\",\"tick\":0,\"isManaged\":false,\"issuanceHighWatermark\":0,\"items\":[{\"itemId\":\"canyon-artifact-01\",\"itemTypeId\":\"canyon-stone\",\"location\":0,\"holderActorId\":\"\",\"containerItemId\":\"\",\"containerSlot\":-1,\"massKg\":2.5,\"dimensions\":{\"width\":0.25,\"height\":0.25,\"depth\":0.25},\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"lastUpdatedTick\":0}],\"receipts\":[],\"tombstones\":[],\"materialReceipts\":[]}";
+                var bsGo = new GameObject("Test_BS_AutonomyReset");
+                GameObject rodGo = null;
+                try
+                {
+                    var brain = bsGo.AddComponent<NpcAutonomy>();
+                    brain.InstanceWorldId = "test-world";
+                    var bs = bsGo.AddComponent<PhysicalItemBootstrap>();
+                    bs.Brain = brain;
+                    brain.PhysicalItems = bs;
+                    var cat = PhysicalItemCatalog.CreateDefaultCatalog();
+                    var model = new ItemModel("test-world", "gen-01");
+                    cat.PopulateModel(model);
+                    bs.SetModelForTesting(model, cat);
+
+                    var method = typeof(PhysicalItemBootstrap).GetMethod("LoadSavePayloadInternal", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    bool hydrated = (bool)method.Invoke(bs, new object[] { null, envJson });
+                    if (!hydrated || bs.SaveRejected) throw new InvalidOperationException("Failed to hydrate checkpoint envelope for autonomy reset test.");
+
+                    rodGo = FishingRodItem.SpawnWorldFishingRod(null, "test-world", new Vector3(5, 0, 5), "tool-fishing-rod-01");
+                    var rodNi = rodGo.GetComponent<NpcInteractable>();
+                    brain.Registry = new[] { rodNi };
+
+                    bs.BindAuthoredSceneItems();
+
+                    bool resetOk = brain.ResetState();
+                    if (!resetOk) throw new InvalidOperationException("NpcAutonomy.ResetState() returned false on startup with hydrated checkpoint and scene fishing rod.");
+                    if (!brain.Ready) throw new InvalidOperationException("NpcAutonomy.Ready is false after successful ResetState().");
+                    if (brain.Actions == null || brain.Actions.PhysicalModel == null) throw new InvalidOperationException("NpcAutonomy.Actions or PhysicalModel is null after reset.");
+                    if (!brain.Actions.PhysicalModel.TryGetItem("tool-fishing-rod-01", out _)) throw new InvalidOperationException("Fishing rod was not registered in authoritative PhysicalModel.");
+
+                    checks.Add("[StartupAutonomy:CheckpointAndRod] Verified NpcAutonomy.ResetState() succeeds (Ready=true) with hydrated checkpoint and scene fishing rod.");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(bsGo);
+                    if (rodGo != null) UnityEngine.Object.DestroyImmediate(rodGo);
+                }
+            }
         }
     }
 }

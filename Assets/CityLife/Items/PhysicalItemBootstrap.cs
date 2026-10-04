@@ -930,38 +930,6 @@ namespace CityLife.Items
             if (Model == null) return;
             string worldId = Brain != null ? Brain.InstanceWorldId : Model.WorldId;
 
-            if (Brain != null && Brain.Registry != null)
-            {
-                for (int i = 0; i < Brain.Registry.Length; i++)
-                {
-                    var reg = Brain.Registry[i];
-                    if (reg == null) continue;
-                    var phys = reg.GetComponent<PhysicalItem>();
-                    if (phys == null || string.IsNullOrEmpty(phys.itemId)) continue;
-
-                    if (Model.IsRetired(phys.itemId))
-                    {
-                        reg.gameObject.SetActive(false);
-                        continue;
-                    }
-
-                    if (!Model.TryGetItem(phys.itemId, out _))
-                    {
-                        if (Catalog != null && Catalog.TryGet(phys.itemTypeId, out var catDef))
-                        {
-                            if (!Model.TryGetDefinition(phys.itemTypeId, out _))
-                                Model.RegisterDefinition(catDef);
-                        }
-                        Model.RegisterItem(phys.itemId, phys.itemTypeId, ItemLocationKind.Free, reg.transform.position, reg.transform.rotation);
-                    }
-
-                    if (!phys.IsBoundTo(Model, worldId, Model.GenerationId))
-                    {
-                        phys.Bind(Model, worldId, Model.GenerationId);
-                    }
-                }
-            }
-
             var sceneRods = UnityEngine.Object.FindObjectsByType<FishingRodItem>(UnityEngine.FindObjectsSortMode.None);
             for (int i = 0; i < sceneRods.Length; i++)
             {
@@ -985,6 +953,22 @@ namespace CityLife.Items
                 if (!rod.PhysicalItem.IsBoundTo(Model, worldId, Model.GenerationId))
                 {
                     rod.PhysicalItem.Bind(Model, worldId, Model.GenerationId);
+                }
+                if (rod.Interactable != null)
+                {
+                    bool alreadyBound = false;
+                    for (int b = 0; b < bindings.Count; b++)
+                    {
+                        if (bindings[b] != null && bindings[b].itemId == rodId)
+                        {
+                            alreadyBound = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyBound)
+                    {
+                        RegisterBinding(new PhysicalItemRuntimeBinding(rodId, rod.PhysicalItem, rod.Interactable));
+                    }
                 }
                 if (Brain != null && Brain.Actions != null && rod.Interactable != null)
                 {
@@ -1043,6 +1027,7 @@ namespace CityLife.Items
                 // Restore original context on failure with zero object mutations
                 actions.PhysicalModel = origModel;
                 actions.PhysicalAuthority = origAuth;
+                Debug.LogError($"[PhysicalItemBootstrap] RebindActions failed: RestoreRuntime returned false. Model items={Model.ItemCount}, bindings={bindings.Count}");
                 return false;
             }
 

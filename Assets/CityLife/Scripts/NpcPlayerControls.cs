@@ -80,11 +80,8 @@ namespace CityLife.World
         public void Update()
         {
             EnsureInitialized();
-            if (Brain == null || !Brain.Ready) return;
-            if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
-            cameraMotion = Vector3.zero;
+            if (Brain == null) return;
             if (SuppressInput || DisplayShortcutActive) return;
-            if (!Application.isFocused && !AllowUnfocusedTestInput) { ReleasePointer(); return; }
             var key = TestKeyboard ?? Keyboard.current; var mouse = TestMouse ?? Mouse.current;
             if (key == null) return;
 
@@ -98,7 +95,13 @@ namespace CityLife.World
             }
 
             if (key.f11Key.wasPressedThisFrame && !Display.IsChanging) { StartCoroutine(ToggleDisplayShortcut()); return; }
-            if (key.pKey.wasPressedThisFrame) { if (MenuOpen) Resume(); else OpenMenu(); }
+            if (key.pKey.wasPressedThisFrame) { if (MenuOpen) Resume(); else OpenMenu(); return; }
+            if (key.lKey.wasPressedThisFrame && Hud != null) Hud.ToggleDetailed();
+
+            if (!Brain.Ready) return;
+            if (!ExternalMovementInput) Brain.ManualDirection = Vector3.zero;
+            cameraMotion = Vector3.zero;
+            if (!Application.isFocused && !AllowUnfocusedTestInput) { ReleasePointer(); return; }
             else if (key.escapeKey.wasPressedThisFrame)
             {
                 if (Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
@@ -182,7 +185,6 @@ namespace CityLife.World
             {
                 View.CycleViewMode();
             }
-            if (key.lKey.wasPressedThisFrame && Hud != null) Hud.ToggleDetailed();
             if (key.cKey.wasPressedThisFrame && Brain != null && Brain.Survival != null && Brain.Survival.HasActiveCommand)
             {
                 Brain.Survival.CancelActiveCommand("user-cancelled-via-c-key");

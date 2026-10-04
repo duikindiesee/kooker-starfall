@@ -54,10 +54,29 @@ namespace CityLife.World
             }
             Ready = ResetState();
         }
-        public IEnumerable<NpcInteractable> AllInteractables =>
-            PhysicalItems != null && PhysicalItems.AllInteractables != null
-                ? (Registry != null ? Registry.Where(i => i != null).Concat(PhysicalItems.AllInteractables.Where(i => i != null)) : PhysicalItems.AllInteractables.Where(i => i != null))
-                : (IEnumerable<NpcInteractable>)(Registry ?? Array.Empty<NpcInteractable>());
+        public IEnumerable<NpcInteractable> AllInteractables
+        {
+            get
+            {
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                if (Registry != null)
+                {
+                    foreach (var i in Registry)
+                    {
+                        if (i != null && !string.IsNullOrEmpty(i.StableId) && seen.Add(i.StableId))
+                            yield return i;
+                    }
+                }
+                if (PhysicalItems != null && PhysicalItems.AllInteractables != null)
+                {
+                    foreach (var i in PhysicalItems.AllInteractables)
+                    {
+                        if (i != null && !string.IsNullOrEmpty(i.StableId) && seen.Add(i.StableId))
+                            yield return i;
+                    }
+                }
+            }
+        }
 
         public bool ResetState()
         {
@@ -68,8 +87,9 @@ namespace CityLife.World
             {
                 candidateActions = new NpcActionApi(AgentId, InstanceWorldId, transform, rightHand, leftHand, AllInteractables);
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.LogError($"[NpcAutonomy] ResetState candidateActions creation failed: {ex.Message}");
                 return false;
             }
 
@@ -84,6 +104,7 @@ namespace CityLife.World
                 bool physicalSuccess = PhysicalItems.OnActionsCreated(candidateActions);
                 if (!physicalSuccess)
                 {
+                    Debug.LogError("[NpcAutonomy] ResetState PhysicalItems.OnActionsCreated failed.");
                     return false;
                 }
             }

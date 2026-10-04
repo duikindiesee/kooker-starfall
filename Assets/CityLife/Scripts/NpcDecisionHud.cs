@@ -184,6 +184,17 @@ namespace CityLife.World
                 return rect;
             }
 
+            RectTransform MakeBottomRt(GameObject o, Transform parent, float yFromBottom, float w, float h)
+            {
+                var rect = o.GetComponent<RectTransform>();
+                rect.SetParent(parent, false);
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0);
+                rect.pivot = new Vector2(0.5f, 0);
+                rect.anchoredPosition = new Vector2(0, yFromBottom);
+                rect.sizeDelta = new Vector2(w, h);
+                return rect;
+            }
+
             Text MakeLabel(GameObject parent, string name, float x, float y, float w, float h, int size, Color color, FontStyle style = FontStyle.Normal, TextAnchor align = TextAnchor.UpperLeft)
             {
                 var o = new GameObject(name, typeof(RectTransform), typeof(Text));
@@ -235,6 +246,7 @@ namespace CityLife.World
                 if (AlwaysOnTopMaterial != null) fillImg.material = AlwaysOnTopMaterial;
 
                 valLabel = MakeLabel(bg, name + " label", 0, 0, 165, 22, 13, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
+                valLabel.text = $"{name}: 100%";
             }
 
             CreateGauge("HP", 15, new Color(0.85f, 0.22f, 0.22f, 0.92f), out healthBarFill, out healthLabel);
@@ -244,6 +256,7 @@ namespace CityLife.World
             CreateGauge("H2O", 715, new Color(0.22f, 0.72f, 0.95f, 0.92f), out hydrationBarFill, out hydrationLabel);
 
             statsInfoText = MakeLabel(headerPanel, "Stats info", 890, 44, 655, 22, 14, new Color(0.72f, 0.84f, 0.92f), FontStyle.Normal, TextAnchor.MiddleLeft);
+            statsInfoText.text = "<b>Water:</b> 250ml  ·  <b>Moonbag:</b> 0/2  ·  <b>Ready:</b> Booting...";
 
             // ==========================================
             // 2. Collapsible Survival Inspector Drawer (520 x 480)
@@ -299,7 +312,7 @@ namespace CityLife.World
             // 2b. Command Directive Entry Bar (1100 x 34)
             // ==========================================
             commandPanel = new GameObject("Command input panel", typeof(RectTransform), typeof(Image));
-            commandRect = MakeRt(commandPanel, panelGroup.transform, 250, 818, 1100, 34);
+            commandRect = MakeBottomRt(commandPanel, panelGroup.transform, 48, 1100, 34);
             var commandImg = commandPanel.GetComponent<Image>();
             commandImg.color = new Color(0.02f, 0.05f, 0.08f, 0.92f);
             if (AlwaysOnTopMaterial != null) commandImg.material = AlwaysOnTopMaterial;
@@ -341,7 +354,7 @@ namespace CityLife.World
             // 3. Docked Bottom Hotkey Pill Strip
             // ==========================================
             var footerPanel = new GameObject("Bottom hotkey strip", typeof(RectTransform), typeof(Image));
-            footerRect = MakeRt(footerPanel, panelGroup.transform, 250, 856, 1100, 34);
+            footerRect = MakeBottomRt(footerPanel, panelGroup.transform, 10, 1100, 34);
             var footerImg = footerPanel.GetComponent<Image>();
             footerImg.color = new Color(0.02f, 0.045f, 0.07f, 0.88f);
             if (AlwaysOnTopMaterial != null) footerImg.material = AlwaysOnTopMaterial;
@@ -460,11 +473,39 @@ namespace CityLife.World
                 if (decisionCanvas != null) decisionCanvas.enabled = !modal;
             }
             if (modal) return;
-            if (!Brain.Ready || Summary == null) return;
 
             if (drawerPanel != null && drawerPanel.activeSelf != Detailed)
             {
                 drawerPanel.SetActive(Detailed);
+            }
+
+            if (Brain == null || Summary == null) return;
+
+            if (!Brain.Ready)
+            {
+                Summary.text = "STARFALL / Autonomous NPC  |  Tick " + Brain.Tick + "  <color=#FF7777>[INITIALIZING / SURVIVAL MIND PAUSED]</color>";
+                var bootFoodRt = Brain.Survival != null ? Brain.Survival.Food : null;
+                if (bootFoodRt == null) bootFoodRt = FindAnyObjectByType<Starfall.Food.IntegratedFoodRuntime>();
+                if (bootFoodRt != null && bootFoodRt.Model != null)
+                {
+                    var f = bootFoodRt.Model.State;
+                    int hp = Mathf.Clamp(f.body.health / 100, 0, 100);
+                    int sp = Brain.Actor != null ? Mathf.Clamp(Mathf.RoundToInt(Brain.Actor.Stamina), 0, 100) : 100;
+                    int fp = Mathf.Clamp(f.satiety / 100, 0, 100);
+                    int pp = f.body != null ? Mathf.Clamp(f.body.protein / 100, 0, 100) : 100;
+                    int hyp = Mathf.Clamp(f.hydration / 100, 0, 100);
+                    if (healthBarFill != null) healthBarFill.sizeDelta = new Vector2(165f * (hp / 100f), 22f);
+                    if (healthLabel != null) healthLabel.text = $"HP: {hp}%";
+                    if (staminaBarFill != null) staminaBarFill.sizeDelta = new Vector2(165f * (sp / 100f), 22f);
+                    if (staminaLabel != null) staminaLabel.text = $"STA: {sp}%";
+                    if (fullnessBarFill != null) fullnessBarFill.sizeDelta = new Vector2(165f * (fp / 100f), 22f);
+                    if (fullnessLabel != null) fullnessLabel.text = $"FOOD: {fp}%";
+                    if (proteinBarFill != null) proteinBarFill.sizeDelta = new Vector2(165f * (pp / 100f), 22f);
+                    if (proteinLabel != null) proteinLabel.text = $"PROT: {pp}%";
+                    if (hydrationBarFill != null) hydrationBarFill.sizeDelta = new Vector2(165f * (hyp / 100f), 22f);
+                    if (hydrationLabel != null) hydrationLabel.text = $"H2O: {hyp}%";
+                }
+                return;
             }
 
             string mode = Brain.MenuPaused ? "PAUSED / " : "";
