@@ -409,6 +409,7 @@ namespace CityLife.World
 
             if (brain.PhysicalItems != null)
             {
+                brain.PhysicalItems.BindAuthoredSceneItems();
                 brain.PhysicalItems.SaveCurrentState();
             }
 
@@ -603,6 +604,10 @@ namespace CityLife.World
                 if (brain.Survival != null)
                 {
                     brain.Survival.SyncFoodRequestHighWatermark(foodModel.State != null ? foodModel.State.lastRequest : 0);
+                }
+                if (brain.PhysicalItems != null)
+                {
+                    brain.PhysicalItems.BindAuthoredSceneItems();
                 }
                 if (brain.PhysicalItems != null && brain.Actions != null)
                 {

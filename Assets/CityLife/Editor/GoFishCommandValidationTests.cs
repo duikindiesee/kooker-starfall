@@ -1298,6 +1298,13 @@ namespace CityLife.World.Editor
                     if (brain.Actions == null || brain.Actions.PhysicalModel == null) throw new InvalidOperationException("NpcAutonomy.Actions or PhysicalModel is null after reset.");
                     if (!brain.Actions.PhysicalModel.TryGetItem("tool-fishing-rod-01", out _)) throw new InvalidOperationException("Fishing rod was not registered in authoritative PhysicalModel.");
 
+                    // Verify checkpoint snapshot restore (mimicking FoodConsumptionBridge.TryRestoreFromAuthoritativeCheckpoint)
+                    var snapPayload = JsonUtility.FromJson<PhysicalSavePayload>(envJson);
+                    model.RestoreSnapshot(snapPayload);
+                    bs.BindAuthoredSceneItems();
+                    bool rebindOk = bs.RebindActions(brain.Actions);
+                    if (!rebindOk) throw new InvalidOperationException("PhysicalItemBootstrap.RebindActions() failed after snapshot restore and BindAuthoredSceneItems.");
+
                     checks.Add("[StartupAutonomy:CheckpointAndRod] Verified NpcAutonomy.ResetState() succeeds (Ready=true) with hydrated checkpoint and scene fishing rod.");
                 }
                 finally
