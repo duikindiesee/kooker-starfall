@@ -1227,7 +1227,7 @@ namespace CityLife.World.Editor
 
             // 5. Authoritative checkpoint hydration without PhysicalSavePath
             {
-                var envJson = "{\"worldId\":\"test-world\",\"generationId\":\"gen-01\",\"actorId\":\"test-agent\",\"tick\":0,\"isManaged\":false,\"issuanceHighWatermark\":0,\"items\":[{\"itemId\":\"canyon-artifact-01\",\"itemTypeId\":\"canyon-stone\",\"location\":0,\"holderActorId\":\"\",\"containerItemId\":\"\",\"containerSlot\":-1,\"massKg\":2.5,\"dimensions\":{\"width\":0.25,\"height\":0.25,\"depth\":0.25},\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"lastUpdatedTick\":0}],\"receipts\":[],\"tombstones\":[],\"materialReceipts\":[]}";
+                var envJson = "{\"worldId\":\"test-world\",\"generationId\":\"gen-01\",\"actorId\":\"" + NpcAutonomy.AgentId + "\",\"tick\":0,\"isManaged\":false,\"issuanceHighWatermark\":0,\"items\":[{\"itemId\":\"canyon-artifact-01\",\"itemTypeId\":\"canyon-stone\",\"location\":0,\"holderActorId\":\"\",\"containerItemId\":\"\",\"containerSlot\":-1,\"massKg\":2.5,\"dimensions\":{\"width\":0.25,\"height\":0.25,\"depth\":0.25},\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"lastUpdatedTick\":0}],\"receipts\":[],\"tombstones\":[],\"materialReceipts\":[]}";
                 var bsGo = new GameObject("Test_BS_AuthoritativeHydrate");
                 try
                 {
