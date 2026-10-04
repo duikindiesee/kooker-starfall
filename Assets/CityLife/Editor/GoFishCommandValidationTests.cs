@@ -514,6 +514,16 @@ namespace CityLife.World.Editor
                 rodPhys.dimensions = new PhysicalDimensions(0.08f, 0.08f, FishingRodItem.RodLength);
                 rodPhys.ConfigureComponents();
 
+                var testSpawnedRod = FishingRodItem.SpawnWorldFishingRod(null, actions.WorldId, Vector3.zero, "test-spawned-world-rod");
+                var spawnedPhys = testSpawnedRod.GetComponent<PhysicalItem>();
+                if (spawnedPhys == null || !spawnedPhys.IsValid())
+                {
+                    string diag = spawnedPhys != null ? spawnedPhys.GetDiagnosticMeasurements() : "null";
+                    UnityEngine.Object.DestroyImmediate(testSpawnedRod);
+                    throw new InvalidOperationException("SpawnWorldFishingRod produced a PhysicalItem that failed IsValid(): " + diag);
+                }
+                UnityEngine.Object.DestroyImmediate(testSpawnedRod);
+
                 perception.Current.Add(new NpcObservation
                 {
                     id = "tool-fishing-rod",

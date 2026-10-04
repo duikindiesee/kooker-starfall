@@ -3591,7 +3591,7 @@ namespace CityLife.World
                     {
                         if (self.Brain.Tick < rodNextAttemptTick) { self.ActiveCommandStatus = "Reaching for fishing rod..."; return false; }
                         var pickup = self.Brain.ExecutePlayerAction(NpcActionKind.Pickup, rNi.StableId);
-                        if (!pickup.success && (pickup.code == "physical-model-required" || (self.Brain.Actions != null && self.Brain.Actions.PhysicalModel == null)) && flat <= .65f)
+                        if (!pickup.success && (pickup.code == "physical-model-required" || pickup.code == "physical-item-not-bound" || pickup.code == "physical-item-not-registered" || (self.Brain.Actions != null && self.Brain.Actions.PhysicalModel == null)) && flat <= .65f)
                         {
                             self.Brain.Actions.HoldItemDirect(rNi, false);
                             pickup = new NpcActionResult { success = true, code = "held-direct-offline" };

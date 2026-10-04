@@ -451,6 +451,7 @@ namespace CityLife.Items
                         Debug.LogWarning("[PhysicalItemBootstrap] Authoritative checkpoint hydration refused; no stale physical fallback. " + loaded.Message);
                     }
                     else Debug.Log("[PhysicalItemBootstrap] Hydrated authoritative checkpoint item graph.");
+                    BindAuthoredSceneItems();
                     return;
                 }
             }
@@ -481,6 +482,8 @@ namespace CityLife.Items
                     Debug.Log($"[PhysicalItemBootstrap] Physical save path '{PhysicalSavePath}' not found on disk. Fresh start initialized.");
                 }
             }
+
+            BindAuthoredSceneItems();
         }
 
         public bool LoadSavePayload(string path)
@@ -824,6 +827,7 @@ namespace CityLife.Items
                 {
                     school.ReconcileWithAuthoritativeModel(Model);
                 }
+                BindAuthoredSceneItems();
 
                 // 4. Update demonstration references for backward compatibility
                 PhysicalItem demoPhys = null;
@@ -921,6 +925,74 @@ namespace CityLife.Items
             stagedObjects.Clear();
         }
 
+        public void BindAuthoredSceneItems()
+        {
+            if (Model == null) return;
+            string worldId = Brain != null ? Brain.InstanceWorldId : Model.WorldId;
+
+            if (Brain != null && Brain.Registry != null)
+            {
+                for (int i = 0; i < Brain.Registry.Length; i++)
+                {
+                    var reg = Brain.Registry[i];
+                    if (reg == null) continue;
+                    var phys = reg.GetComponent<PhysicalItem>();
+                    if (phys == null || string.IsNullOrEmpty(phys.itemId)) continue;
+
+                    if (Model.IsRetired(phys.itemId))
+                    {
+                        reg.gameObject.SetActive(false);
+                        continue;
+                    }
+
+                    if (!Model.TryGetItem(phys.itemId, out _))
+                    {
+                        if (Catalog != null && Catalog.TryGet(phys.itemTypeId, out var catDef))
+                        {
+                            if (!Model.TryGetDefinition(phys.itemTypeId, out _))
+                                Model.RegisterDefinition(catDef);
+                        }
+                        Model.RegisterItem(phys.itemId, phys.itemTypeId, ItemLocationKind.Free, reg.transform.position, reg.transform.rotation);
+                    }
+
+                    if (!phys.IsBoundTo(Model, worldId, Model.GenerationId))
+                    {
+                        phys.Bind(Model, worldId, Model.GenerationId);
+                    }
+                }
+            }
+
+            var sceneRods = UnityEngine.Object.FindObjectsByType<FishingRodItem>(UnityEngine.FindObjectsSortMode.None);
+            for (int i = 0; i < sceneRods.Length; i++)
+            {
+                var rod = sceneRods[i];
+                if (rod == null || rod.PhysicalItem == null || string.IsNullOrEmpty(rod.PhysicalItem.itemId)) continue;
+                string rodId = rod.PhysicalItem.itemId;
+                if (Model.IsRetired(rodId))
+                {
+                    rod.gameObject.SetActive(false);
+                    continue;
+                }
+                if (!Model.TryGetItem(rodId, out _))
+                {
+                    if (Catalog != null && Catalog.TryGet(rod.PhysicalItem.itemTypeId, out var catDef))
+                    {
+                        if (!Model.TryGetDefinition(rod.PhysicalItem.itemTypeId, out _))
+                            Model.RegisterDefinition(catDef);
+                    }
+                    Model.RegisterItem(rodId, rod.PhysicalItem.itemTypeId, ItemLocationKind.Free, rod.transform.position, rod.transform.rotation);
+                }
+                if (!rod.PhysicalItem.IsBoundTo(Model, worldId, Model.GenerationId))
+                {
+                    rod.PhysicalItem.Bind(Model, worldId, Model.GenerationId);
+                }
+                if (Brain != null && Brain.Actions != null && rod.Interactable != null)
+                {
+                    Brain.Actions.RegisterInteractable(rod.Interactable);
+                }
+            }
+        }
+
         private void Start()
         {
             if (Brain != null && Brain.Actions != null)
@@ -1007,11 +1079,14 @@ namespace CityLife.Items
                     restoreAttempted = true;
                     Authority = actions.PhysicalAuthority;
                     Debug.Log("[PhysicalItemBootstrap] Successfully restored runtime physical state from save payload.");
+                    BindAuthoredSceneItems();
                     return true;
                 }
             }
 
-            return RebindActions(actions);
+            bool rebindOk = RebindActions(actions);
+            if (rebindOk) BindAuthoredSceneItems();
+            return rebindOk;
         }
 
         private void Update()

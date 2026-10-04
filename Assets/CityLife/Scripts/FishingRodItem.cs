@@ -251,7 +251,7 @@ namespace CityLife.World
             grip.transform.localScale = new Vector3(0.044f, 0.175f, 0.044f);
             grip.GetComponent<Renderer>().sharedMaterial = corkMat != null ? corkMat : GetOrCreateCorkMaterial();
             var gripCollider = grip.GetComponent<Collider>();
-            if (gripCollider != null) Destroy(gripCollider);
+            if (gripCollider != null) SafeDestroy(gripCollider);
 
             var reel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             reel.name = "VisibleReelSpool";
@@ -262,7 +262,7 @@ namespace CityLife.World
             reel.transform.localScale = new Vector3(0.18f, 0.045f, 0.18f);
             reel.GetComponent<Renderer>().sharedMaterial = GetOrCreateReelMaterial();
             var reelCollider = reel.GetComponent<Collider>();
-            if (reelCollider != null) Destroy(reelCollider);
+            if (reelCollider != null) SafeDestroy(reelCollider);
 
             AddRodAccent(visual.transform, "ReelHub", new Vector3(0, -0.102f, 0.43f),
                 new Vector3(0.052f, 0.052f, 0.052f), GetOrCreateGuideMaterial());
@@ -284,6 +284,13 @@ namespace CityLife.World
             return visual;
         }
 
+        private static void SafeDestroy(UnityEngine.Object obj)
+        {
+            if (obj == null) return;
+            if (Application.isPlaying) UnityEngine.Object.Destroy(obj);
+            else UnityEngine.Object.DestroyImmediate(obj);
+        }
+
         private static GameObject AddRodAccent(Transform parent, string objectName, Vector3 localPosition,
             Vector3 localScale, Material material)
         {
@@ -294,14 +301,14 @@ namespace CityLife.World
             accent.transform.localScale = localScale;
             accent.GetComponent<Renderer>().sharedMaterial = material;
             var collider = accent.GetComponent<Collider>();
-            if (collider != null) Destroy(collider);
+            if (collider != null) SafeDestroy(collider);
             return accent;
         }
 
         public static GameObject SpawnWorldFishingRod(Transform parent, string worldId, Vector3 position, string stableId = "fishing-rod-01")
         {
             var rodGo = new GameObject(stableId);
-            rodGo.transform.SetParent(parent, false);
+            if (parent != null) rodGo.transform.SetParent(parent, false);
             rodGo.transform.position = position;
             // Lay naturally angled along rock / ground
             rodGo.transform.rotation = Quaternion.Euler(6f, 45f, 4f);
@@ -311,8 +318,8 @@ namespace CityLife.World
 
             var col = rodGo.AddComponent<BoxCollider>();
             col.center = new Vector3(0, 0, RodLength * 0.5f);
-            col.size = new Vector3(0.12f, 0.12f, RodLength);
-            col.isTrigger = true;
+            col.size = new Vector3(0.08f, 0.08f, RodLength);
+            col.isTrigger = false;
 
             var approach = new GameObject(stableId + " approach");
             approach.transform.SetParent(rodGo.transform, false);
@@ -332,11 +339,15 @@ namespace CityLife.World
             phys.dimensions = new PhysicalDimensions(0.08f, 0.08f, RodLength);
             phys.ConfigureComponents();
 
-            if (phys.Body != null)
+            // Maintain center along rod length after ConfigureComponents initializes dimensions
+            if (phys.ItemCollider is BoxCollider box)
             {
-                phys.Body.isKinematic = true;
-                phys.Body.useGravity = false;
+                box.center = new Vector3(0, 0, RodLength * 0.5f);
             }
+
+            // Ensure unit scale at root level to satisfy PhysicalItem lossyScale validation
+            rodGo.transform.SetParent(null, true);
+            rodGo.transform.localScale = Vector3.one;
 
             var rodComp = rodGo.AddComponent<FishingRodItem>();
             rodComp.PhysicalItem = phys;
