@@ -483,7 +483,7 @@ namespace CityLife.Items
         private bool LoadSavePayloadInternal(string path, string authoritativePayload)
         {
             SourceSaveRejected = true;
-            RejectedSourcePath = path;
+            RejectedSourcePath = !string.IsNullOrEmpty(path) ? path : (authoritativePayload != null ? "authoritative-checkpoint" : null);
 
             // 1. Explicit unsupported live reload refusal BEFORE ANY mutation
             if (Brain != null && Brain.Actions != null)
@@ -492,10 +492,21 @@ namespace CityLife.Items
                 return false;
             }
 
-            if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path) || (authoritativePayload == null && !File.Exists(path)))
+            if (authoritativePayload == null)
             {
-                SaveRejected = true;
-                return false;
+                if (string.IsNullOrEmpty(path) || !IsFullyQualifiedPath(path) || !File.Exists(path))
+                {
+                    SaveRejected = true;
+                    return false;
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(authoritativePayload) || authoritativePayload.Length > ItemPersistence.MaxFileSizeBytes)
+                {
+                    SaveRejected = true;
+                    return false;
+                }
             }
 
             string worldId = Brain != null ? Brain.InstanceWorldId : "starfall.coastal-canyon.v1";
@@ -514,11 +525,14 @@ namespace CityLife.Items
 
             try
             {
-                var fi = new FileInfo(path);
-                if (authoritativePayload == null && fi.Length > ItemPersistence.MaxFileSizeBytes)
+                if (authoritativePayload == null)
                 {
-                    SaveRejected = true;
-                    return false;
+                    var fi = new FileInfo(path);
+                    if (fi.Length > ItemPersistence.MaxFileSizeBytes)
+                    {
+                        SaveRejected = true;
+                        return false;
+                    }
                 }
 
                 string text = authoritativePayload == null ? File.ReadAllText(path) : JsonUtility.ToJson(new PhysicalSaveEnvelope

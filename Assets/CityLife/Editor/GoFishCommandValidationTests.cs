@@ -71,6 +71,9 @@ namespace CityLife.World.Editor
                 TestNegativeTerminalReceipts(checks);
                 TestObservedItemMemory(checks);
 
+                // 8. Grounded Berry Directive & Authoritative Checkpoint Hydration
+                TestEatBerryDirective(checks);
+
                 receipt = $"All {checks.Count} 'go fish' validation assertions passed:\n" + string.Join("\n", checks);
                 return true;
             }
@@ -1041,6 +1044,217 @@ namespace CityLife.World.Editor
                 finally
                 {
                     UnityEngine.Object.DestroyImmediate(actorGo);
+                }
+            }
+        }
+
+        private static void TestEatBerryDirective(List<string> checks)
+        {
+            // 1. Semantic normalization for berry directives
+            AssertAction("eat a berry", SemanticActionKind.EatBerry, "deterministic");
+            AssertAction("eat berry", SemanticActionKind.EatBerry, "deterministic");
+            AssertAction("eat fruit", SemanticActionKind.EatBerry, "deterministic");
+            AssertAction("eat sourfig", SemanticActionKind.EatBerry, "deterministic");
+            AssertAction("eat sourfig berry", SemanticActionKind.EatBerry, "deterministic");
+            AssertNegation("don't eat a berry");
+            AssertNegation("never eat berries");
+            AssertNegation("avoid eating fruit");
+
+            // 2. Negative receipt: Full Hands (no free hand to gather)
+            {
+                var actorGo = new GameObject("Test_Berry_FullHands");
+                var rightHandGo = new GameObject("RightHand");
+                var leftHandGo = new GameObject("LeftHand");
+                var rockGo = new GameObject("Rock");
+                var clubGo = new GameObject("Club");
+                try
+                {
+                    rightHandGo.transform.SetParent(actorGo.transform, false);
+                    leftHandGo.transform.SetParent(actorGo.transform, false);
+
+                    var brain = actorGo.AddComponent<NpcAutonomy>();
+                    var actions = new NpcActionApi("test-agent", "test-world", actorGo.transform, rightHandGo.transform, leftHandGo.transform, Array.Empty<NpcInteractable>());
+                    brain.SetActionsForTesting(actions);
+
+                    var rockNi = rockGo.AddComponent<NpcInteractable>();
+                    rockNi.StableId = "rock-01";
+                    rockNi.Kind = NpcObjectKind.Item;
+                    var rockPhys = rockGo.AddComponent<PhysicalItem>();
+                    rockPhys.itemId = "rock-01";
+                    rockPhys.itemTypeId = "canyon-stone";
+                    actions.RegisterInteractable(rockNi);
+                    actions.HoldItemDirect(rockNi, false); // Right hand
+
+                    var clubNi = clubGo.AddComponent<NpcInteractable>();
+                    clubNi.StableId = "tool-club";
+                    clubNi.Kind = NpcObjectKind.Item;
+                    var clubPhys = clubGo.AddComponent<PhysicalItem>();
+                    clubPhys.itemId = "tool-club";
+                    clubPhys.itemTypeId = "tool-club";
+                    actions.RegisterInteractable(clubNi);
+                    actions.HoldItemDirect(clubNi, true); // Left hand
+
+                    var survival = actorGo.AddComponent<StarfallSurvivalAutonomy>();
+                    survival.Brain = brain;
+                    brain.Survival = survival;
+
+                    bool submit = survival.SubmitNaturalLanguageCommand("eat a berry");
+                    if (!submit || !survival.HasActiveCommand)
+                        throw new InvalidOperationException("Failed to submit 'eat a berry' command with full hands.");
+
+                    survival.StepActiveCommand();
+
+                    if (survival.HasActiveCommand)
+                        throw new InvalidOperationException("Command still active when hands are full.");
+                    if (survival.LastCommandReceipt != "command-cancelled: command-failed-hands-full")
+                        throw new InvalidOperationException($"Expected 'command-cancelled: command-failed-hands-full', got '{survival.LastCommandReceipt}'.");
+
+                    checks.Add("[BerryDirective:FullHands] Verified terminal refusal receipt when hands are full.");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(actorGo);
+                    UnityEngine.Object.DestroyImmediate(rockGo);
+                    UnityEngine.Object.DestroyImmediate(clubGo);
+                }
+            }
+
+            // 3. Negative receipt: No Berry Observed or Known
+            {
+                var actorGo = new GameObject("Test_Berry_Unknown");
+                var rightHandGo = new GameObject("RightHand");
+                var leftHandGo = new GameObject("LeftHand");
+                try
+                {
+                    rightHandGo.transform.SetParent(actorGo.transform, false);
+                    leftHandGo.transform.SetParent(actorGo.transform, false);
+
+                    var brain = actorGo.AddComponent<NpcAutonomy>();
+                    var actions = new NpcActionApi("test-agent", "test-world", actorGo.transform, rightHandGo.transform, leftHandGo.transform, Array.Empty<NpcInteractable>());
+                    brain.SetActionsForTesting(actions);
+
+                    var perception = actorGo.AddComponent<NpcPerception>();
+                    brain.Perception = perception;
+
+                    var survival = actorGo.AddComponent<StarfallSurvivalAutonomy>();
+                    survival.Brain = brain;
+                    brain.Survival = survival;
+
+                    bool submit = survival.SubmitNaturalLanguageCommand("eat a berry");
+                    if (!submit || !survival.HasActiveCommand)
+                        throw new InvalidOperationException("Failed to submit 'eat a berry' command with unknown berry source.");
+
+                    survival.StepActiveCommand();
+
+                    if (survival.HasActiveCommand)
+                        throw new InvalidOperationException("Command still active when no berry source is known.");
+                    if (survival.LastCommandReceipt != "command-cancelled: command-failed-no-berry-observed")
+                        throw new InvalidOperationException($"Expected 'command-cancelled: command-failed-no-berry-observed', got '{survival.LastCommandReceipt}'.");
+
+                    checks.Add("[BerryDirective:UnknownSource] Verified terminal refusal receipt when berry source is unobserved.");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(actorGo);
+                }
+            }
+
+            // 4. Held berry consumption path: holding berry advances directly to consumption
+            {
+                var actorGo = new GameObject("Test_Berry_Held");
+                var rightHandGo = new GameObject("RightHand");
+                var leftHandGo = new GameObject("LeftHand");
+                var berryGo = new GameObject("HeldBerry");
+                try
+                {
+                    rightHandGo.transform.SetParent(actorGo.transform, false);
+                    leftHandGo.transform.SetParent(actorGo.transform, false);
+
+                    var brain = actorGo.AddComponent<NpcAutonomy>();
+                    brain.InstanceWorldId = "test-world";
+                    var actions = new NpcActionApi("test-agent", "test-world", actorGo.transform, rightHandGo.transform, leftHandGo.transform, Array.Empty<NpcInteractable>());
+                    brain.SetActionsForTesting(actions);
+
+                    var itemModel = new ItemModel("test-world", "gen-01");
+                    var cat = PhysicalItemCatalog.CreateDefaultCatalog();
+                    cat.PopulateModel(itemModel);
+                    actions.PhysicalModel = itemModel;
+
+                    var physBootstrap = actorGo.AddComponent<PhysicalItemBootstrap>();
+                    physBootstrap.Model = itemModel;
+                    brain.PhysicalItems = physBootstrap;
+
+                    var berryNi = berryGo.AddComponent<NpcInteractable>();
+                    berryNi.StableId = "held-berry-01";
+                    berryNi.WorldId = "test-world";
+                    berryNi.Kind = NpcObjectKind.Item;
+                    var berryPhys = berryGo.AddComponent<PhysicalItem>();
+                    berryPhys.itemId = "held-berry-01";
+                    berryPhys.itemTypeId = "food-sourfig-berry";
+                    berryPhys.massKg = 0.08f;
+                    berryPhys.dimensions = new PhysicalDimensions(0.08f, 0.08f, 0.08f);
+
+                    actions.RegisterInteractable(berryNi);
+                    actions.HoldItemDirect(berryNi, false); // Right hand
+
+                    var survival = actorGo.AddComponent<StarfallSurvivalAutonomy>();
+                    survival.Brain = brain;
+                    brain.Survival = survival;
+
+                    var foodRuntime = actorGo.AddComponent<IntegratedFoodRuntime>();
+                    foodRuntime.Model = new Starfall.Food.FoodModel("test-world", "test-gen", 1);
+                    foodRuntime.Model.State.actorId = "test-agent";
+                    survival.Food = foodRuntime;
+
+                    bool submit = survival.SubmitNaturalLanguageCommand("eat a berry");
+                    if (!submit || !survival.HasActiveCommand)
+                        throw new InvalidOperationException("Failed to submit 'eat a berry' command with held berry.");
+
+                    // Step 1: Locate berry source -> discovers held berry, completes immediately
+                    survival.StepActiveCommand();
+                    if (survival.ActiveCommandStepIndex != 1)
+                        throw new InvalidOperationException($"Expected step index 1 after held berry detection, got {survival.ActiveCommandStepIndex}.");
+
+                    // Step 2: Gather ripe berry -> held berry bypass, completes immediately
+                    survival.StepActiveCommand();
+                    if (survival.ActiveCommandStepIndex != 2)
+                        throw new InvalidOperationException($"Expected step index 2 after gather step, got {survival.ActiveCommandStepIndex}.");
+
+                    checks.Add("[BerryDirective:HeldBerry] Verified held berry bypasses search and advances directly to consumption.");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(actorGo);
+                    UnityEngine.Object.DestroyImmediate(berryGo);
+                }
+            }
+
+            // 5. Authoritative checkpoint hydration without PhysicalSavePath
+            {
+                var envJson = "{\"worldId\":\"test-world\",\"generationId\":\"gen-01\",\"actorId\":\"test-agent\",\"tick\":0,\"isManaged\":false,\"issuanceHighWatermark\":0,\"items\":[{\"itemId\":\"canyon-artifact-01\",\"itemTypeId\":\"canyon-stone\",\"location\":0,\"holderActorId\":\"\",\"containerItemId\":\"\",\"containerSlot\":-1,\"massKg\":2.5,\"dimensions\":{\"width\":0.25,\"height\":0.25,\"depth\":0.25},\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1},\"lastUpdatedTick\":0}],\"receipts\":[],\"tombstones\":[],\"materialReceipts\":[]}";
+                var bsGo = new GameObject("Test_BS_AuthoritativeHydrate");
+                try
+                {
+                    var brain = bsGo.AddComponent<NpcAutonomy>();
+                    brain.InstanceWorldId = "test-world";
+                    var bs = bsGo.AddComponent<PhysicalItemBootstrap>();
+                    bs.Brain = brain;
+                    bs.Model = new ItemModel("test-world", "gen-01");
+                    bs.Catalog = PhysicalItemCatalog.CreateDefaultCatalog();
+                    bs.Catalog.PopulateModel(bs.Model);
+
+                    // Call through public test entry or invoke internal with null path
+                    var method = typeof(PhysicalItemBootstrap).GetMethod("LoadSavePayloadInternal", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (method == null) throw new InvalidOperationException("LoadSavePayloadInternal method not found.");
+                    bool ok = (bool)method.Invoke(bs, new object[] { null, envJson });
+                    if (!ok) throw new InvalidOperationException("LoadSavePayloadInternal refused valid authoritativePayload when path was null.");
+                    if (bs.SaveRejected) throw new InvalidOperationException("SaveRejected is true after successful authoritative hydration.");
+
+                    checks.Add("[CheckpointHydration:NullPath] Verified authoritative checkpoint hydrates successfully without PhysicalSavePath.");
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(bsGo);
                 }
             }
         }

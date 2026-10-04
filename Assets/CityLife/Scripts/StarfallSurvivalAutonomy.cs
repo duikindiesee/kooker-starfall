@@ -2921,6 +2921,11 @@ namespace CityLife.World
                     AddRoastSteps(steps);
                     return true;
 
+                case SemanticActionKind.EatBerry:
+                    title = "Eat a berry";
+                    AddEatBerrySteps(steps);
+                    return true;
+
                 default:
                     failReason = "unrecognized-command: " + originalText;
                     return false;
@@ -4126,6 +4131,264 @@ namespace CityLife.World
                         }
                     }
                     return false;
+                }
+            });
+        }
+
+        public bool TryGetHeldBerry(out NpcInteractable berryNi, out PhysicalItem berryPhys, out bool isLeft)
+        {
+            berryNi = null;
+            berryPhys = null;
+            isLeft = false;
+            if (Brain == null || Brain.Actions == null) return false;
+
+            if (Brain.Actions.HeldRight != null)
+            {
+                var phys = Brain.Actions.HeldRight.GetComponent<PhysicalItem>();
+                if (phys != null && (phys.itemTypeId == "food-sourfig-berry" || phys.itemTypeId == "fruit"))
+                {
+                    berryNi = Brain.Actions.HeldRight;
+                    berryPhys = phys;
+                    isLeft = false;
+                    return true;
+                }
+            }
+            if (Brain.Actions.HeldLeft != null)
+            {
+                var phys = Brain.Actions.HeldLeft.GetComponent<PhysicalItem>();
+                if (phys != null && (phys.itemTypeId == "food-sourfig-berry" || phys.itemTypeId == "fruit"))
+                {
+                    berryNi = Brain.Actions.HeldLeft;
+                    berryPhys = phys;
+                    isLeft = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public NpcInteractable FindGroundedBerrySource()
+        {
+            // 1. Current visual perception
+            if (Brain != null && Brain.Perception != null && Brain.Perception.Current != null)
+            {
+                for (int i = 0; i < Brain.Perception.Current.Count; i++)
+                {
+                    var obs = Brain.Perception.Current[i];
+                    if (obs != null && (obs.id.Contains("berry") || obs.id.Contains("sourfig") || obs.id.Contains("bush")))
+                    {
+                        var ni = Brain.FindInteractable(obs.id);
+                        if (ni != null) return ni;
+                    }
+                }
+            }
+
+            // 2. Authored Food.Berry if within perception radius (< 25m) or previously known
+            if (Food != null && Food.Berry != null)
+            {
+                var s = Food.Model != null ? Food.Model.State : null;
+                bool known = s != null && (s.knowsBerry || (s.observedPlaces != null && s.observedPlaces.Exists(p => p != null && p.id.Contains("berry"))));
+                float dist = Brain != null ? Vector3.Distance(Brain.transform.position, Food.Berry.transform.position) : float.MaxValue;
+                if (known || dist <= 25.0f)
+                {
+                    return Food.Berry;
+                }
+            }
+
+            // 3. Remembered place
+            if (Food != null && Food.Model != null && Food.Model.State != null && Food.Model.State.observedPlaces != null)
+            {
+                for (int i = 0; i < Food.Model.State.observedPlaces.Count; i++)
+                {
+                    var p = Food.Model.State.observedPlaces[i];
+                    if (p != null && (p.id.Contains("berry") || p.id.Contains("sourfig")))
+                    {
+                        var ni = Brain != null ? Brain.FindInteractable(p.id) : null;
+                        if (ni != null) return ni;
+                        if (Food.Berry != null && Vector3.Distance(p.position, Food.Berry.transform.position) <= 5.0f)
+                            return Food.Berry;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void AddEatBerrySteps(List<ActiveCommandStep> steps)
+        {
+            // Step 1: Ensure or navigate to berry source
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Locate berry source",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    // 1. If already holding a berry in hand, proceed directly to consume
+                    if (self.TryGetHeldBerry(out _, out _, out _))
+                    {
+                        self.ActiveCommandStatus = "Holding berry; preparing to consume";
+                        return true;
+                    }
+
+                    // 2. Check if hands are full (cannot gather without a free hand)
+                    if (self.Brain != null && self.Brain.Actions != null)
+                    {
+                        if (self.Brain.Actions.HeldRight != null && self.Brain.Actions.HeldLeft != null)
+                        {
+                            self.ActiveCommandStatus = "Hands full: cannot gather berry without a free hand";
+                            self.CancelActiveCommand("command-failed-hands-full");
+                            return true;
+                        }
+                    }
+
+                    // 3. Locate grounded berry bush or ground berry
+                    var bush = self.FindGroundedBerrySource();
+                    if (bush == null)
+                    {
+                        self.ActiveCommandStatus = "Cannot find berries: no berry bush seen or remembered in territory";
+                        self.CancelActiveCommand("command-failed-no-berry-observed");
+                        return true;
+                    }
+
+                    // 4. Check reachability
+                    Vector3 bushPos = bush.transform.position;
+                    if (self.Brain != null && self.Brain.TerrainNavigation != null)
+                    {
+                        if (!self.Brain.TerrainNavigation.Walkable(bushPos, out _))
+                        {
+                            if (!self.TryFindWalkableNear(bushPos, 3.5f, out _))
+                            {
+                                self.ActiveCommandStatus = "Route to berry bush unreachable";
+                                self.CancelActiveCommand("command-failed-unreachable-route");
+                                return true;
+                            }
+                        }
+                    }
+
+                    // 5. Navigate toward bush
+                    float dist = Vector3.Distance(self.Brain.transform.position, bushPos);
+                    if (dist <= 2.5f)
+                    {
+                        self.ActiveCommandStatus = "Arrived at berry bush";
+                        return true;
+                    }
+
+                    self.ActiveCommandStatus = $"Walking to berry bush ({dist:F1}m)...";
+                    if (self.route.Count == 0)
+                    {
+                        self.routePurpose = "eat a berry";
+                        if (!self.StartRoute(bushPos))
+                        {
+                            self.ActiveCommandStatus = "Route to berry bush unreachable";
+                            self.CancelActiveCommand("command-failed-unreachable-route");
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            // Step 2: Revalidate availability and gather through authoritative ownership
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Gather ripe berry",
+                TimeoutSeconds = 8f,
+                Execute = self =>
+                {
+                    // If already holding berry, this step is trivially complete
+                    if (self.TryGetHeldBerry(out _, out _, out _))
+                    {
+                        return true;
+                    }
+
+                    var bush = self.FindGroundedBerrySource();
+                    if (bush == null)
+                    {
+                        self.ActiveCommandStatus = "Cannot find berries: no berry bush seen or remembered in territory";
+                        self.CancelActiveCommand("command-failed-no-berry-observed");
+                        return true;
+                    }
+
+                    // Revalidate availability (depleted check)
+                    int activeFruits = self.Food != null ? self.Food.GetBushActiveFruitCount(bush) : 0;
+                    if (string.Equals(bush.Occupant, "depleted", StringComparison.OrdinalIgnoreCase) || activeFruits <= 0)
+                    {
+                        self.ActiveCommandStatus = "Berry bush is depleted: no ripe berries available";
+                        self.CancelActiveCommand("command-failed-berry-depleted");
+                        return true;
+                    }
+
+                    // Authoritative ownership gather
+                    var food = self.Food;
+                    if (food == null || food.Model == null || food.Model.State == null)
+                    {
+                        self.ActiveCommandStatus = "Food authority unavailable";
+                        self.CancelActiveCommand("command-failed-food-authority-missing");
+                        return true;
+                    }
+
+                    var s = food.Model.State;
+                    if (self.AllocateFoodRequest(out int gatherReq))
+                    {
+                        var receipt = food.Model.Execute(s.world, s.generation, gatherReq, Starfall.Food.FoodAction.Gather, "berry", food);
+                        if (!receipt.success)
+                        {
+                            self.ActiveCommandStatus = "Gather refused: " + receipt.code;
+                            self.CancelActiveCommand("command-failed-gather: " + receipt.code);
+                            return true;
+                        }
+
+                        s.knowsBerry = true;
+                        food.HarvestBerry(bush);
+                        food.SyncFruitVisual();
+
+                        var controls = self.Brain.GetComponent<NpcPlayerControls>() ?? UnityEngine.Object.FindFirstObjectByType<NpcPlayerControls>();
+                        if (controls != null)
+                        {
+                            controls.SpawnBerryInHand();
+                        }
+                        s.carriedFruit = Mathf.Max(0, s.carriedFruit - 1);
+
+                        if (self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                        self.ActiveCommandStatus = "Gathered ripe sourfig berry into hand";
+                        return true;
+                    }
+                    else
+                    {
+                        self.ActiveCommandStatus = "Request ID exhausted";
+                        self.CancelActiveCommand("command-failed-request-id-exhausted");
+                        return true;
+                    }
+                }
+            });
+
+            // Step 3: Consume held berry once and show outcome
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Consume berry",
+                TimeoutSeconds = 5f,
+                Execute = self =>
+                {
+                    if (self.TryGetHeldBerry(out var foodNi, out var foodPhys, out bool isLeft))
+                    {
+                        bool ok = FoodConsumptionBridge.TryConsumeHeldFood(self.Brain, foodNi, foodPhys, isLeft, "consumed-berry-directive", out string code);
+                        if (ok)
+                        {
+                            self.ActiveCommandStatus = "Consumed ripe sourfig berry [Nutrition restored]";
+                            self.HoldingAfterDirective = true;
+                            if (self.Brain != null && self.Brain.Actor != null) self.Brain.Actor.Gesture();
+                            return true;
+                        }
+                        else
+                        {
+                            self.ActiveCommandStatus = "Consume berry refused: " + code;
+                            self.CancelActiveCommand("command-failed-consume: " + code);
+                            return true;
+                        }
+                    }
+                    self.ActiveCommandStatus = "Must hold berry to consume";
+                    self.CancelActiveCommand("command-failed-not-holding-berry");
+                    return true;
                 }
             });
         }

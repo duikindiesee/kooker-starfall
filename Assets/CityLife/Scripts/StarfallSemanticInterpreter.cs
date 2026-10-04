@@ -22,7 +22,8 @@ namespace CityLife.World
         GoRiverThenCatch = 8,
         CatchThenRoast = 9,
         Cancel = 10,
-        Rejected = 11
+        Rejected = 11,
+        EatBerry = 12
     }
 
     public struct SemanticInterpretationResult
@@ -92,6 +93,15 @@ namespace CityLife.World
             { "eat fish", SemanticActionKind.EatCatch },
             { "eat roasted catch", SemanticActionKind.EatCatch },
             { "eat", SemanticActionKind.EatCatch },
+
+            { "eat a berry", SemanticActionKind.EatBerry },
+            { "eat berry", SemanticActionKind.EatBerry },
+            { "eat berries", SemanticActionKind.EatBerry },
+            { "eat fruit", SemanticActionKind.EatBerry },
+            { "eat a fruit", SemanticActionKind.EatBerry },
+            { "eat sourfig", SemanticActionKind.EatBerry },
+            { "eat sourfig berry", SemanticActionKind.EatBerry },
+            { "eat a sourfig berry", SemanticActionKind.EatBerry },
 
             // Chained Actions
             { "go river then catch", SemanticActionKind.GoRiverThenCatch },
@@ -436,7 +446,7 @@ namespace CityLife.World
             string systemPrompt = "You are a gameplay command interpreter for an autonomous inhabitant in a survival game. " +
                                   "Classify the player's natural language directive into exact JSON with keys 'action' and 'reason'. " +
                                   "Allowed 'action' values: " +
-                                  "'go-to-river', 'catch-fish', 'roast-catch', 'store-fish-in-basket', 'eat-catch', " +
+                                  "'go-to-river', 'catch-fish', 'roast-catch', 'store-fish-in-basket', 'eat-catch', 'eat-berry', " +
                                   "'catch-then-eat', 'catch-then-store', 'go-river-then-catch', 'catch-then-roast', 'cancel', 'rejected'. " +
                                   "Negations (e.g. 'do not eat', 'don't fish') MUST be classified as 'rejected'. " +
                                   "Unsupported requests (e.g. 'build shelter', 'look at fish', 'sing song') MUST be classified as 'rejected'. " +
@@ -493,6 +503,7 @@ namespace CityLife.World
                     case "roast-catch": action = SemanticActionKind.RoastCatch; return true;
                     case "store-fish-in-basket": action = SemanticActionKind.StoreFishInBasket; return true;
                     case "eat-catch": action = SemanticActionKind.EatCatch; return true;
+                    case "eat-berry": action = SemanticActionKind.EatBerry; return true;
                     case "catch-then-eat": action = SemanticActionKind.CatchThenEat; return true;
                     case "catch-then-store": action = SemanticActionKind.CatchThenStore; return true;
                     case "go-river-then-catch": action = SemanticActionKind.GoRiverThenCatch; return true;
@@ -518,6 +529,7 @@ namespace CityLife.World
                 case SemanticActionKind.RoastCatch: return "roast-catch";
                 case SemanticActionKind.StoreFishInBasket: return "store-fish-in-basket";
                 case SemanticActionKind.EatCatch: return "eat-catch";
+                case SemanticActionKind.EatBerry: return "eat-berry";
                 case SemanticActionKind.CatchThenEat: return "catch-then-eat";
                 case SemanticActionKind.CatchThenStore: return "catch-then-store";
                 case SemanticActionKind.GoRiverThenCatch: return "go-river-then-catch";
