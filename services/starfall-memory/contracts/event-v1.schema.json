@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:starfall:event:v1",
+  "title": "Starfall authenticated Unity event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "world_id", "inhabitant_id", "source", "tick", "kind", "data"],
+  "properties": {
+    "schema": {"const": "starfall.event.v1"},
+    "world_id": {"$ref": "#/$defs/id"},
+    "inhabitant_id": {"$ref": "#/$defs/id"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["producer_id", "session_id", "build_id", "sequence"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/id"}, "session_id": {"$ref": "#/$defs/id"},
+        "build_id": {"$ref": "#/$defs/id"}, "sequence": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+      }
+    },
+    "tick": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+    "kind": {"enum": ["identity_registered", "action_completed", "sleep_started", "sleep_ended"]},
+    "data": {"type": "object"}
+  },
+  "allOf": [
+    {"if": {"properties": {"kind": {"const": "identity_registered"}}}, "then": {"properties": {"data": {
+      "type": "object", "additionalProperties": false, "required": ["display_name"],
+      "properties": {"display_name": {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[^\\x00-\\x1f\\x7f]+$"}}
+    }}}},
+    {"if": {"properties": {"kind": {"const": "action_completed"}}}, "then": {"properties": {"data": {
+      "type": "object", "additionalProperties": false, "required": ["action", "target_id", "item_id", "request_id", "outcome"],
+      "properties": {
+        "action": {"enum": ["pickup", "deliver"]}, "target_id": {"$ref": "#/$defs/id"}, "item_id": {"$ref": "#/$defs/id"},
+        "request_id": {"type": "integer", "minimum": 1, "maximum": 2147483647}, "outcome": {"enum": ["picked-up", "delivered"]}
+      },
+      "allOf": [{"if": {"properties": {"action": {"const": "pickup"}}}, "then": {"properties": {"outcome": {"const": "picked-up"}}}, "else": {"properties": {"outcome": {"const": "delivered"}}}}]
+    }}}},
+    {"if": {"properties": {"kind": {"enum": ["sleep_started", "sleep_ended"]}}}, "then": {"properties": {"data": {"type": "object", "maxProperties": 0}}}}
+  ],
+  "$defs": {"id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$"}},
+  "$comment": "Runtime also rejects duplicate JSON keys, unknown builds/publishers/worlds, whitespace-only names, gaps, regression, identity reuse, invalid cargo/ownership/capacity traces, and repeated action receipts. Publisher capability is mandatory; no client-supplied verified flag is accepted."
+}

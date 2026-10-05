@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  project:
+    name: Unity project and asset safeguards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Validate project data, public file boundary and asset licences
+        run: python3 tools/check-project.py --self-test
+      - name: Exercise distributable archive integrity and unsafe-entry guards
+        run: python3 tools/check-package.py --self-test
+      - name: Parse all PowerShell build and package scripts
+        shell: pwsh
+        run: ./tools/check-powershell.ps1
+      - name: Validate GitHub workflow syntax
+        shell: bash
+        env:
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/actionlint.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 \
+            --output "$archive" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "${ACTIONLINT_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" -C "${RUNNER_TEMP}" actionlint
+          "${RUNNER_TEMP}/actionlint" -color
+
+  source-oracle:
+    name: Original CityLife source oracle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out Unity project
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Check out the pinned public browser source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: duikindiesee/citylife
+          ref: b71307023aea600da27aa3eada6cdcce7ba758ed
+          path: .ci-source
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+      - name: Install the source lockfile without lifecycle scripts
+        working-directory: .ci-source
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Execute original TypeScript and compare every recorded value
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/reference-vectors.mjs .ci-source "${RUNNER_TEMP}/source-vectors.json"
+          python3 tools/check-oracle.py --source .ci-source --actual "${RUNNER_TEMP}/source-vectors.json" --self-test

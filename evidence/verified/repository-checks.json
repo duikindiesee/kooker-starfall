@@ -1,0 +1,46 @@
+{
+  "schema": "citylife.repository-checks.v1",
+  "checkedUtc": "2026-09-09T20:43:17.4650753Z",
+  "checkedGitHead": "0e6544efd926e5ab12983b9e0cf87050da495e4c",
+  "historyCommitsScanned": 1,
+  "workspaceState": "Implementation files were present but not committed at this check",
+  "package": {
+    "path": "Builds/Download/CityLife-Island-0.1.0-Windows.zip",
+    "bytes": 39727936,
+    "sha256": "f77dd9b6d1150ccd27705a19906c9d1e8f6e7fdcf114a902968a9994e3b7b2e9",
+    "verifiedEntries": 186,
+    "manifest": "Builds/Download/CityLife-Island-0.1.0-Windows.zip.manifest.json"
+  },
+  "checks": [
+    {
+      "name": "Independent ZIP integrity",
+      "status": "passed",
+      "command": "python tools/check-package.py --archive Builds/Download/CityLife-Island-0.1.0-Windows.zip",
+      "scope": "Complete archive SHA256, every entry byte length and SHA256, inventory, safe paths, required player files and portable notices"
+    },
+    {
+      "name": "Gitleaks repository and full reachable history",
+      "status": "passed",
+      "tool": "Gitleaks CLI 8.30.1, checksum-verified",
+      "command": "./tools/check-secrets.ps1 -DistributionArchive Builds/Download/CityLife-Island-0.1.0-Windows.zip",
+      "scope": "Every reachable commit plus current publishable tracked and untracked files",
+      "redactionPercent": 100,
+      "reportArtifactUploaded": false
+    },
+    {
+      "name": "Gitleaks final distribution",
+      "status": "passed",
+      "scope": "186 manifest-verified extracted ZIP entries; recursive archive detection disabled; three Mono Compat.browser XML files explicitly scanned through stdin",
+      "vendorMetadataExceptions": 3,
+      "exceptionPolicy": "Exact file/rule/line fingerprints generated only after whole-file vendor SHA256 verification; see docs/CI.md",
+      "syntheticCredentialCanary": "rejected as required",
+      "modifiedVendorCanary": "rejected as required",
+      "redactionPercent": 100
+    }
+  ],
+  "remainingGaps": [
+    "Rerun full-history scan after the implementation commit",
+    "Hosted pull-request CI results pending",
+    "Archive and security checks do not prove player visual or input behaviour"
+  ]
+}

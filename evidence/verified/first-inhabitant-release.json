@@ -1,0 +1,64 @@
+{
+  "build": {
+    "buildId": "KookerStarfallCharacter-0.0.3-preview.1-20260912-202143",
+    "version": "0.0.3-preview.1",
+    "output": "Builds/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/KookerStarfallCharacter.exe",
+    "scene": "Assets/CityLife/GeneratedPreview-Character-KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/FirstInhabitant.unity",
+    "status": "Succeeded",
+    "utc": "2026-09-12T20:21:48.4676271Z",
+    "scope": "Separate character courtyard; free Standard assets; scripted bounded roaming; no saved world or learning.",
+    "errors": 0,
+    "warnings": 0,
+    "bytes": 113315948,
+    "seconds": 4.1042841999999995,
+    "sourceCommit": "9b14eb88ec0abe4e6469db40231b414157aff957",
+    "library": {
+      "schema": "starfall.character-asset-revision.v1",
+      "library": "duikindiesee/kooker-assets",
+      "libraryCommit": "fe306300ea3fede74b4a5c87afc86a28bb7999bc",
+      "libraryBundle": "packages/unity/quaternius-standard/0.1.0",
+      "bundleManifestSha256": "8f36aa499ea085b03d26cd49668b2e8c316219f1cfd070f400ee0a0d7edc0648",
+      "edition": "Free Standard",
+      "remoteBinaryDelivery": "not-uploaded; quota review pending",
+      "verifiedFiles": 19,
+      "consumption": "Game contains versioned copies. All listed files matched the local immutable import bundle byte-for-byte before the final build.",
+      "assets": [
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Eye_Brown.png",
+          "bytes": 35958,
+          "sha256": "d08e3356a83211bc6ca21fe3a8e39f4b5c1a3b8f85457fc2c0fb57be09935025"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Dark.png",
+          "bytes": 1384380,
+          "sha256": "df680cbc1967a61e85998bfafb8f7bc0a36dd604bb3266486c4b06b1a184bb45"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Normal.png",
+          "bytes": 4252937,
+          "sha256": "9b25cf9200216eb754b79cf4c63b5380c419780788322f3c57cdd2b3e02679a6"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Superhero_Male_FullBody.fbx",
+          "bytes": 826876,
+          "sha256": "79344418d754a59730b79d1874752e9592143db34abe8adf138fa9a92a4768e9"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/UAL1_Standard.fbx",
+          "bytes": 23754684,
+          "sha256": "21b32d912da3cb93426d974fb945e86f5b2e86970acd2ce89905e0fbf9f1dcc2"
+        }
+      ]
+    }
+  },
+  "archive": "Builds/Download/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143-Windows.zip",
+  "archiveBytes": 44174526,
+  "archiveSha256": "1a3199fc31b1e6a902ffb03936b959b68136b93844f923108e30c9a2d5f3463a",
+  "runtimeChecks": 29,
+  "runtimeStatus": "PASS",
+  "runtimeEvidence": "evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/character-runtime.json",
+  "replay": "evidence/milestones/first-inhabitant/KookerStarfallCharacter-0.0.3-preview.1-20260912-202143/replay.html",
+  "recordedFrames": 77,
+  "nativeInput": "unverified; no desktop input performed",
+  "publication": "local only; no push or merge"
+}

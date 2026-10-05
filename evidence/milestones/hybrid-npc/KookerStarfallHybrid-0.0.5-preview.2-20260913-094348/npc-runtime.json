@@ -1,0 +1,1742 @@
+{
+    "status": "PASS",
+    "utc": "2026-09-13T09:44:22.0405042Z",
+    "unityVersion": "6000.6.0f1",
+    "version": "0.0.5-preview.2",
+    "buildId": "KookerStarfallHybrid-0.0.5-preview.2-20260913-094348",
+    "gpu": "AMD Radeon(TM) 8060S Graphics",
+    "failure": "",
+    "limit": "Actual offscreen standalone player. Fixed-tick deterministic rules, not learning. No native keyboard/mouse acceptance or cross-device bit-identical physics claim.",
+    "seconds": 9.01309871673584,
+    "checks": [
+        {
+            "name": "render-target",
+            "evidence": "1600 x 900 actual player view including camera-space HUD.",
+            "passed": true
+        },
+        {
+            "name": "urp-request",
+            "evidence": "Actual URP initialized.",
+            "passed": true
+        },
+        {
+            "name": "valid-human-avatar",
+            "evidence": "Verified adult body and existing mapped animation rig.",
+            "passed": true
+        },
+        {
+            "name": "perception-visible-item",
+            "evidence": "Nearby amber detected through actual overlap and ray queries.",
+            "passed": true
+        },
+        {
+            "name": "perception-hidden-item-excluded",
+            "evidence": "Solid route obstacle blocks initial sight.",
+            "passed": true
+        },
+        {
+            "name": "permission-filter",
+            "evidence": "The closer reserved object is perceived but cannot be chosen.",
+            "passed": true
+        },
+        {
+            "name": "nearest-goal-selected",
+            "evidence": "Goal selected from observations rather than an authored crystal sequence.",
+            "passed": true
+        },
+        {
+            "name": "hud-populated",
+            "evidence": "The live camera-space decision panel contains the current goal and denied perception.",
+            "passed": true
+        },
+        {
+            "name": "autonomous-delivery",
+            "evidence": "Perceived item picked up and delivered to a selected eligible depot.",
+            "passed": true
+        },
+        {
+            "name": "validated-result-journal",
+            "evidence": "The live log records successful deterministic API outcomes.",
+            "passed": true
+        },
+        {
+            "name": "repeatable-decision-and-action-trace",
+            "evidence": "Same scene reset reproduces the same goal/action/result/failure events at the same fixed ticks.",
+            "passed": true
+        },
+        {
+            "name": "layout-changes-goal",
+            "evidence": "Moving amber outside perception changes the first choice to blue without a sequence edit.",
+            "passed": true
+        },
+        {
+            "name": "permission-revocation-nonmutating",
+            "evidence": "Revoked permission rejects pickup after navigation/gesture without acquiring the object.",
+            "passed": true
+        },
+        {
+            "name": "failure-has-fallback",
+            "evidence": "Failure and deterministic retry/goal fallback are recorded.",
+            "passed": true
+        },
+        {
+            "name": "alternate-goal-after-failure",
+            "evidence": "After denied pickup, the inhabitant selects another perceived item and completes a delivery.",
+            "passed": true
+        },
+        {
+            "name": "full-destination-retains-cargo",
+            "evidence": "Live capacity rejection preserves owned carried cargo.",
+            "passed": true
+        },
+        {
+            "name": "delivery-fallback-chooses-another-depot",
+            "evidence": "A newly full depot is rejected and another perceived empty depot receives the retained cargo.",
+            "passed": true
+        },
+        {
+            "name": "offline-no-goal-fallback",
+            "evidence": "No permitted goal produces a safe wait/resense state with no network or LLM dependency.",
+            "passed": true
+        },
+        {
+            "name": "control-fixture-carrying-with-goal",
+            "evidence": "Control tests begin with a real carried item and active delivery goal.",
+            "passed": true
+        },
+        {
+            "name": "autonomous-mode-explicit",
+            "evidence": "Default mode follows the autonomous NPC.",
+            "passed": true
+        },
+        {
+            "name": "movement-does-not-possess",
+            "evidence": "W leaves ownership with autonomy.",
+            "passed": true
+        },
+        {
+            "name": "R-pauses-autonomy",
+            "evidence": "Actual R key event stops autonomous translation without clearing cargo or goal.",
+            "passed": true
+        },
+        {
+            "name": "R-resumes-autonomy",
+            "evidence": "Second R event resumes the existing route.",
+            "passed": true
+        },
+        {
+            "name": "spectator-camera-and-autonomous-NPC",
+            "evidence": "F selects free spectator; W moves its camera while the same NPC continues autonomous movement.",
+            "passed": true
+        },
+        {
+            "name": "explicit-possession-preserves-context",
+            "evidence": "Tab possesses the same body with cargo, goal context and prior decision events intact.",
+            "passed": true
+        },
+        {
+            "name": "arrow-and-WASD-equivalent-in-possession",
+            "evidence": "Up arrow and W produce equivalent movement through the actual input adapter and motor.",
+            "passed": true
+        },
+        {
+            "name": "right-mouse-look",
+            "evidence": "Actual right-button and delta events rotate the view.",
+            "passed": true
+        },
+        {
+            "name": "right-mouse-release",
+            "evidence": "Releasing right mouse ends look capture.",
+            "passed": true
+        },
+        {
+            "name": "P-is-true-simulation-pause",
+            "evidence": "P opens the menu and freezes fixed ticks, body translation and animated pose.",
+            "passed": true
+        },
+        {
+            "name": "controls-page-readable-guide",
+            "evidence": "Keyboard navigation opens the real Controls page with possession, movement, autonomy and Escape guidance.",
+            "passed": true
+        },
+        {
+            "name": "Escape-submenu-goes-back",
+            "evidence": "Escape closes the submenu first; simulation remains paused.",
+            "passed": true
+        },
+        {
+            "name": "Escape-root-resumes",
+            "evidence": "Escape from the root menu resumes the same world.",
+            "passed": true
+        },
+        {
+            "name": "graphics-page",
+            "evidence": "Keyboard navigation reaches Graphics.",
+            "passed": true
+        },
+        {
+            "name": "fullscreen-applied-in-player",
+            "evidence": "Menu invokes the existing display controller; actual Screen mode=FullScreenWindow 2880x1800",
+            "passed": true
+        },
+        {
+            "name": "windowed-restored-in-player",
+            "evidence": "Second menu display toggle restores the observed original mode and dimensions.",
+            "passed": true
+        },
+        {
+            "name": "display-preserves-NPC-world-state",
+            "evidence": "Both display transitions preserve identity, cargo, goal, decision history and paused simulation ticks.",
+            "passed": true
+        },
+        {
+            "name": "P-resumes-from-submenu",
+            "evidence": "P resumes directly from Graphics.",
+            "passed": true
+        },
+        {
+            "name": "F11-direct-fullscreen",
+            "evidence": "Actual F11 event changes display from gameplay, temporarily freezes the body and restores the previous running state.",
+            "passed": true
+        },
+        {
+            "name": "F11-restores-window-and-context",
+            "evidence": "Second F11 restores original dimensions and preserves identity, cargo, goal, log, position and pause state.",
+            "passed": true
+        },
+        {
+            "name": "release-possession-resumes-same-NPC",
+            "evidence": "Tab releases the same NPC, retains context, replans from its current position and resumes autonomy.",
+            "passed": true
+        },
+        {
+            "name": "autonomy-moves-after-release",
+            "evidence": "The retained NPC actually continues its delivery route after release.",
+            "passed": true
+        },
+        {
+            "name": "Escape-outside-menu-pauses-and-releases",
+            "evidence": "Outside menus, Escape pauses the world and releases look capture.",
+            "passed": true
+        },
+        {
+            "name": "exit-action-reaches-player-handler",
+            "evidence": "Exit preview is selected through actual key events. Smoke records this request before its final Application.Quit; production exits immediately.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-disabled-by-default",
+            "evidence": "All preceding deterministic baseline and control checks executed with optional thoughts off and no provider requests.",
+            "passed": true
+        },
+        {
+            "name": "local-thoughts-menu-default-off",
+            "evidence": "Actual keyboard events open Controls > Local thoughts; configured provider is still off.",
+            "passed": true
+        },
+        {
+            "name": "local-thoughts-explicit-menu-opt-in",
+            "evidence": "The menu enables configured local thoughts explicitly; paused simulation launches no request.",
+            "passed": true
+        },
+        {
+            "name": "provider-does-not-mutate-world",
+            "evidence": "Provider reply alone cannot navigate, pickup, deliver or mutate inventory; the decision boundary must consume and validate it.",
+            "passed": true
+        },
+        {
+            "name": "fake-provider-selects-eligible-nonnearest-goal",
+            "evidence": "A deterministic fake provider selects blue instead of nearest amber; fresh eligibility validation admits only the high-level goal.",
+            "passed": true
+        },
+        {
+            "name": "hybrid-HUD-source-and-text",
+            "evidence": "The live HUD distinguishes the fake source and exposes advisory plan, fictional dialogue and generated reflection.",
+            "passed": true
+        },
+        {
+            "name": "fake-goal-executes-through-validated-actions",
+            "evidence": "Actual humanoid navigates, carries blue and delivers using the unchanged deterministic NpcActionApi.",
+            "passed": true
+        },
+        {
+            "name": "invalid-live-proposal-falls-back",
+            "evidence": "Proposed denied target is rejected without pickup; deterministic policy selects amber immediately.",
+            "passed": true
+        },
+        {
+            "name": "actual-unavailable-endpoint-fallback",
+            "evidence": "Actual closed-loopback adapter outcome=timeout; goal=amber. An unavailable endpoint may fail immediately or hit the bounded deadline; both resume deterministic choice.",
+            "passed": true
+        },
+        {
+            "name": "unavailable-circuit-prevents-repeated-stalls",
+            "evidence": "The first unavailable/timeout reply disables optional thoughts until explicit retry, so later goals do not repeatedly wait for the service.",
+            "passed": true
+        },
+        {
+            "name": "offline-fallback-still-delivers",
+            "evidence": "The unavailable model never prevents the actual deterministic delivery flow.",
+            "passed": true
+        },
+        {
+            "name": "runtime-timeout-fallback",
+            "evidence": "A noncooperative delayed provider times out and deterministic choice resumes.",
+            "passed": true
+        },
+        {
+            "name": "runtime-late-reply-discarded",
+            "evidence": "Late blue proposal cannot replace the fallback amber goal or acquire cargo.",
+            "passed": true
+        },
+        {
+            "name": "pause-cancels-pending-proposal",
+            "evidence": "Opening P/options cancels the pending request immediately and preserves the same paused actor.",
+            "passed": true
+        },
+        {
+            "name": "cancelled-reply-cannot-mutate-paused-world",
+            "evidence": "A reply after cancellation cannot affect the paused world.",
+            "passed": true
+        },
+        {
+            "name": "disable-resumes-deterministic-goal",
+            "evidence": "Disabling thoughts resumes deterministic selection on the same NPC.",
+            "passed": true
+        },
+        {
+            "name": "no-runtime-errors",
+            "evidence": "No player error/assert/exception.",
+            "passed": true
+        }
+    ],
+    "scenarios": [
+        {
+            "name": "baseline",
+            "firstGoal": "amber",
+            "ticks": 588,
+            "deliveries": 1,
+            "failures": 0,
+            "chosenGoals": [
+                "amber",
+                "depot-west"
+            ],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "goal",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=5107mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 3,
+                    "tick": 111,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.72267746925354,
+                        "y": 0.019999880343675613,
+                        "z": -2.026623010635376
+                    }
+                },
+                {
+                    "sequence": 4,
+                    "tick": 131,
+                    "phase": "perception",
+                    "perception": "amber, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "3 visible; 4 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.3818988800048828,
+                        "y": 0.019999880343675613,
+                        "z": -2.006028175354004
+                    }
+                },
+                {
+                    "sequence": 5,
+                    "tick": 161,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.371873617172241,
+                        "y": 0.019999880343675613,
+                        "z": -2.0005064010620117
+                    }
+                },
+                {
+                    "sequence": 6,
+                    "tick": 177,
+                    "phase": "action",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 7,
+                    "tick": 181,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 8,
+                    "tick": 279,
+                    "phase": "result",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Pickup",
+                    "result": "picked-up",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 9,
+                    "tick": 280,
+                    "phase": "goal",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "deliver",
+                    "result": "nearest eligible perception; distance=5978mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 10,
+                    "tick": 281,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.932873487472534,
+                        "y": 0.019999820739030838,
+                        "z": -2.0000784397125244
+                    }
+                },
+                {
+                    "sequence": 11,
+                    "tick": 351,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.992626905441284,
+                        "y": 0.019999880343675613,
+                        "z": -0.6523918509483337
+                    }
+                },
+                {
+                    "sequence": 12,
+                    "tick": 381,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "7 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.999372959136963,
+                        "y": 0.019999880343675613,
+                        "z": 0.3375720679759979
+                    }
+                },
+                {
+                    "sequence": 13,
+                    "tick": 461,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.083497047424316,
+                        "y": 0.019999820739030838,
+                        "z": 1.9895089864730835
+                    }
+                },
+                {
+                    "sequence": 14,
+                    "tick": 486,
+                    "phase": "action",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 15,
+                    "tick": 588,
+                    "phase": "result",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Deliver",
+                    "result": "delivered",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                }
+            ]
+        },
+        {
+            "name": "identical-reset",
+            "firstGoal": "amber",
+            "ticks": 588,
+            "deliveries": 1,
+            "failures": 0,
+            "chosenGoals": [
+                "amber",
+                "depot-west"
+            ],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "goal",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=5107mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 3,
+                    "tick": 111,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.72267746925354,
+                        "y": 0.019999880343675613,
+                        "z": -2.026623010635376
+                    }
+                },
+                {
+                    "sequence": 4,
+                    "tick": 131,
+                    "phase": "perception",
+                    "perception": "amber, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "3 visible; 4 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.3818988800048828,
+                        "y": 0.019999880343675613,
+                        "z": -2.006028175354004
+                    }
+                },
+                {
+                    "sequence": 5,
+                    "tick": 161,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.371873617172241,
+                        "y": 0.019999880343675613,
+                        "z": -2.0005064010620117
+                    }
+                },
+                {
+                    "sequence": 6,
+                    "tick": 177,
+                    "phase": "action",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 7,
+                    "tick": 181,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 8,
+                    "tick": 279,
+                    "phase": "result",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Pickup",
+                    "result": "picked-up",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 9,
+                    "tick": 280,
+                    "phase": "goal",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "deliver",
+                    "result": "nearest eligible perception; distance=5978mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 10,
+                    "tick": 281,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.932873487472534,
+                        "y": 0.019999820739030838,
+                        "z": -2.0000784397125244
+                    }
+                },
+                {
+                    "sequence": 11,
+                    "tick": 351,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.992626905441284,
+                        "y": 0.019999880343675613,
+                        "z": -0.6523918509483337
+                    }
+                },
+                {
+                    "sequence": 12,
+                    "tick": 381,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "7 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.999372959136963,
+                        "y": 0.019999880343675613,
+                        "z": 0.3375720679759979
+                    }
+                },
+                {
+                    "sequence": 13,
+                    "tick": 461,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.083497047424316,
+                        "y": 0.019999820739030838,
+                        "z": 1.9895089864730835
+                    }
+                },
+                {
+                    "sequence": 14,
+                    "tick": 486,
+                    "phase": "action",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 15,
+                    "tick": 588,
+                    "phase": "result",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Deliver",
+                    "result": "delivered",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                }
+            ]
+        },
+        {
+            "name": "amber-outside-sensing-radius",
+            "firstGoal": "blue",
+            "ticks": 1,
+            "deliveries": 0,
+            "failures": 0,
+            "chosenGoals": [
+                "blue"
+            ],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "goal",
+                    "perception": "blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "blue",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=7286mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "permission-revoked-before-pickup",
+            "firstGoal": "amber",
+            "ticks": 856,
+            "deliveries": 1,
+            "failures": 1,
+            "chosenGoals": [
+                "amber",
+                "hidden-green",
+                "depot-north"
+            ],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "goal",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=5107mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 3,
+                    "tick": 111,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.72267746925354,
+                        "y": 0.019999880343675613,
+                        "z": -2.026623010635376
+                    }
+                },
+                {
+                    "sequence": 4,
+                    "tick": 131,
+                    "phase": "perception",
+                    "perception": "amber, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "3 visible; 4 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.3818988800048828,
+                        "y": 0.019999880343675613,
+                        "z": -2.006028175354004
+                    }
+                },
+                {
+                    "sequence": 5,
+                    "tick": 161,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.371873617172241,
+                        "y": 0.019999880343675613,
+                        "z": -2.0005064010620117
+                    }
+                },
+                {
+                    "sequence": 6,
+                    "tick": 177,
+                    "phase": "action",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 7,
+                    "tick": 181,
+                    "phase": "perception",
+                    "perception": "amber [denied], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 8,
+                    "tick": 279,
+                    "phase": "failure",
+                    "perception": "amber [denied], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Pickup",
+                    "result": "permission-denied",
+                    "fallback": "keep current cargo; exclude goal for 250 ticks; choose again",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 9,
+                    "tick": 280,
+                    "phase": "goal",
+                    "perception": "amber [denied], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "hidden-green",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=5873mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 10,
+                    "tick": 281,
+                    "phase": "perception",
+                    "perception": "amber [denied], depot-north, depot-west, reserved-red [denied]",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8668735027313232,
+                        "y": 0.019999820739030838,
+                        "z": -2.000077724456787
+                    }
+                },
+                {
+                    "sequence": 11,
+                    "tick": 351,
+                    "phase": "perception",
+                    "perception": "amber [denied], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.0050196647644043,
+                        "y": 0.019999880343675613,
+                        "z": -0.4541893005371094
+                    }
+                },
+                {
+                    "sequence": 12,
+                    "tick": 371,
+                    "phase": "perception",
+                    "perception": "amber [denied], depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.0007336139678955,
+                        "y": 0.019999820739030838,
+                        "z": 0.20578835904598236
+                    }
+                },
+                {
+                    "sequence": 13,
+                    "tick": 381,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "7 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.0004289150238037,
+                        "y": 0.019999880343675613,
+                        "z": 0.5357881784439087
+                    }
+                },
+                {
+                    "sequence": 14,
+                    "tick": 401,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.704602837562561,
+                        "y": 0.019999820739030838,
+                        "z": 0.9286924004554749
+                    }
+                },
+                {
+                    "sequence": 15,
+                    "tick": 431,
+                    "phase": "perception",
+                    "perception": "blue, depot-east, depot-north, depot-west, hidden-green",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.7176426649093628,
+                        "y": 0.019999820739030838,
+                        "z": 0.9925899505615234
+                    }
+                },
+                {
+                    "sequence": 16,
+                    "tick": 477,
+                    "phase": "action",
+                    "perception": "blue, depot-east, depot-north, depot-west, hidden-green",
+                    "goal": "hidden-green",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.01028846763074398,
+                        "y": 0.019999880343675613,
+                        "z": 1.8864299058914185
+                    }
+                },
+                {
+                    "sequence": 17,
+                    "tick": 481,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green",
+                    "goal": "hidden-green",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.01028846763074398,
+                        "y": 0.019999880343675613,
+                        "z": 1.8864299058914185
+                    }
+                },
+                {
+                    "sequence": 18,
+                    "tick": 579,
+                    "phase": "result",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green",
+                    "goal": "hidden-green",
+                    "action": "Pickup",
+                    "result": "picked-up",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.01028846763074398,
+                        "y": 0.019999880343675613,
+                        "z": 1.8864299058914185
+                    }
+                },
+                {
+                    "sequence": 19,
+                    "tick": 580,
+                    "phase": "goal",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "deliver",
+                    "result": "nearest eligible perception; distance=5222mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.01028846763074398,
+                        "y": 0.019999880343675613,
+                        "z": 1.8864299058914185
+                    }
+                },
+                {
+                    "sequence": 20,
+                    "tick": 581,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.022504979744553566,
+                        "y": 0.019999880343675613,
+                        "z": 1.8901163339614868
+                    }
+                },
+                {
+                    "sequence": 21,
+                    "tick": 591,
+                    "phase": "perception",
+                    "perception": "blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.3504394590854645,
+                        "y": 0.019999820739030838,
+                        "z": 1.9269806146621704
+                    }
+                },
+                {
+                    "sequence": 22,
+                    "tick": 631,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.9768093824386597,
+                        "y": 0.019999880343675613,
+                        "z": 2.7455177307128906
+                    }
+                },
+                {
+                    "sequence": 23,
+                    "tick": 754,
+                    "phase": "action",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.11236181855201721,
+                        "y": 0.019999880343675613,
+                        "z": 5.990202903747559
+                    }
+                },
+                {
+                    "sequence": 24,
+                    "tick": 856,
+                    "phase": "result",
+                    "perception": "amber [denied], blue, depot-east, depot-north, depot-west, hidden-green [unavailable]",
+                    "goal": "depot-north",
+                    "action": "Deliver",
+                    "result": "delivered",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.11236181855201721,
+                        "y": 0.019999880343675613,
+                        "z": 5.990202903747559
+                    }
+                }
+            ]
+        },
+        {
+            "name": "destination-filled-before-delivery",
+            "firstGoal": "amber",
+            "ticks": 980,
+            "deliveries": 1,
+            "failures": 1,
+            "chosenGoals": [
+                "amber",
+                "depot-west",
+                "depot-north"
+            ],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "goal",
+                    "perception": "amber, blue, depot-east, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "collect",
+                    "result": "nearest eligible perception; distance=5107mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 3,
+                    "tick": 111,
+                    "phase": "perception",
+                    "perception": "amber, blue, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.72267746925354,
+                        "y": 0.019999880343675613,
+                        "z": -2.026623010635376
+                    }
+                },
+                {
+                    "sequence": 4,
+                    "tick": 131,
+                    "phase": "perception",
+                    "perception": "amber, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "3 visible; 4 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.3818988800048828,
+                        "y": 0.019999880343675613,
+                        "z": -2.006028175354004
+                    }
+                },
+                {
+                    "sequence": 5,
+                    "tick": 161,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "4 visible; 3 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.371873617172241,
+                        "y": 0.019999880343675613,
+                        "z": -2.0005064010620117
+                    }
+                },
+                {
+                    "sequence": 6,
+                    "tick": 177,
+                    "phase": "action",
+                    "perception": "amber, depot-north, depot-west, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 7,
+                    "tick": 181,
+                    "phase": "perception",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 8,
+                    "tick": 279,
+                    "phase": "result",
+                    "perception": "amber, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "amber",
+                    "action": "Pickup",
+                    "result": "picked-up",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 9,
+                    "tick": 280,
+                    "phase": "goal",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "deliver",
+                    "result": "nearest eligible perception; distance=5978mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.8998734951019287,
+                        "y": 0.019999880343675613,
+                        "z": -2.0000808238983154
+                    }
+                },
+                {
+                    "sequence": 10,
+                    "tick": 281,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 2 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -2.932873487472534,
+                        "y": 0.019999820739030838,
+                        "z": -2.0000784397125244
+                    }
+                },
+                {
+                    "sequence": 11,
+                    "tick": 351,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.992626905441284,
+                        "y": 0.019999880343675613,
+                        "z": -0.6523918509483337
+                    }
+                },
+                {
+                    "sequence": 12,
+                    "tick": 381,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "7 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -3.999372959136963,
+                        "y": 0.019999880343675613,
+                        "z": 0.3375720679759979
+                    }
+                },
+                {
+                    "sequence": 13,
+                    "tick": 461,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.083497047424316,
+                        "y": 0.019999820739030838,
+                        "z": 1.9895089864730835
+                    }
+                },
+                {
+                    "sequence": 14,
+                    "tick": 486,
+                    "phase": "action",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west, hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 15,
+                    "tick": 491,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west [unavailable], hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 16,
+                    "tick": 588,
+                    "phase": "failure",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west [unavailable], hidden-green, reserved-red [denied]",
+                    "goal": "depot-west",
+                    "action": "Deliver",
+                    "result": "destination-full-or-invalid",
+                    "fallback": "keep current cargo; exclude goal for 250 ticks; choose again",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 17,
+                    "tick": 589,
+                    "phase": "goal",
+                    "perception": "amber [unavailable], blue, depot-north, depot-west [unavailable], hidden-green, reserved-red [denied]",
+                    "goal": "depot-north",
+                    "action": "deliver",
+                    "result": "nearest eligible perception; distance=7813mm; stable-id tie break",
+                    "fallback": "",
+                    "position": {
+                        "x": -5.908442974090576,
+                        "y": 0.019999880343675613,
+                        "z": 1.998952031135559
+                    }
+                },
+                {
+                    "sequence": 18,
+                    "tick": 631,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west [unavailable], hidden-green, reserved-red [denied]",
+                    "goal": "depot-north",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "7 visible; 0 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -4.5224432945251465,
+                        "y": 0.019999880343675613,
+                        "z": 1.9999371767044067
+                    }
+                },
+                {
+                    "sequence": 19,
+                    "tick": 711,
+                    "phase": "perception",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west [unavailable], hidden-green",
+                    "goal": "depot-north",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "6 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": -1.8824434280395508,
+                        "y": 0.019999820739030838,
+                        "z": 1.9999998807907104
+                    }
+                },
+                {
+                    "sequence": 20,
+                    "tick": 878,
+                    "phase": "action",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west [unavailable], hidden-green",
+                    "goal": "depot-north",
+                    "action": "Interact animation; then validate current world state",
+                    "result": "in progress",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.0009634313173592091,
+                        "y": 0.019999880343675613,
+                        "z": 5.898033142089844
+                    }
+                },
+                {
+                    "sequence": 21,
+                    "tick": 980,
+                    "phase": "result",
+                    "perception": "amber [unavailable], blue, depot-east, depot-north, depot-west [unavailable], hidden-green",
+                    "goal": "depot-north",
+                    "action": "Deliver",
+                    "result": "delivered",
+                    "fallback": "",
+                    "position": {
+                        "x": -0.0009634313173592091,
+                        "y": 0.019999880343675613,
+                        "z": 5.898033142089844
+                    }
+                }
+            ]
+        },
+        {
+            "name": "all-permissions-denied",
+            "firstGoal": "",
+            "ticks": 30,
+            "deliveries": 0,
+            "failures": 0,
+            "chosenGoals": [],
+            "events": [
+                {
+                    "sequence": 1,
+                    "tick": 1,
+                    "phase": "perception",
+                    "perception": "amber [denied], blue [denied], depot-east [denied], depot-west [denied], reserved-red [denied]",
+                    "goal": "",
+                    "action": "sense-radius-and-line-of-sight",
+                    "result": "5 visible; 1 occluded",
+                    "fallback": "",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                },
+                {
+                    "sequence": 2,
+                    "tick": 1,
+                    "phase": "fallback",
+                    "perception": "amber [denied], blue [denied], depot-east [denied], depot-west [denied], reserved-red [denied]",
+                    "goal": "",
+                    "action": "wait-and-resense",
+                    "result": "no eligible perceived item",
+                    "fallback": "sense again every 10 ticks",
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.019999999552965164,
+                        "z": -5.0
+                    }
+                }
+            ]
+        }
+    ],
+    "captures": [
+        "01-perception-and-goal.png",
+        "02-carrying-chosen-item.png",
+        "03-delivered-and-log.png",
+        "04-changed-perception-new-goal.png",
+        "05-permission-failure-and-fallback.png",
+        "06-fallback-delivery.png",
+        "07-full-depot-fallback.png",
+        "08-alternate-depot-delivery.png",
+        "09-no-permitted-goal.png",
+        "10-concise-autonomous-hud.png",
+        "11-free-spectator.png",
+        "12-explicit-possession.png",
+        "13-pause-options.png",
+        "14-controls-page.png",
+        "15-graphics-windowed.png",
+        "16-graphics-fullscreen.png",
+        "17-graphics-restored.png",
+        "20-F11-fullscreen.png",
+        "21-F11-windowed-restored.png",
+        "18-release-and-resume.png",
+        "19-exit-behavior.png",
+        "29-local-thoughts-options.png",
+        "30-fake-proposal-and-dialogue.png",
+        "31-fake-goal-delivered.png",
+        "32-rejected-proposal-fallback.png",
+        "33-offline-provider-delivery.png",
+        "34-timeout-and-late-discard.png",
+        "35-cancelled-model-rules-resumed.png"
+    ],
+    "errors": [],
+    "proposalAudit": [
+        {
+            "requestId": 1,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "accepted-high-level-goal",
+            "proposedGoal": "collect",
+            "proposedTarget": "blue",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [
+                "observe",
+                "collect"
+            ],
+            "milliseconds": 18,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 207
+        },
+        {
+            "requestId": 2,
+            "tick": 372,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "accepted-high-level-goal",
+            "proposedGoal": "deliver",
+            "proposedTarget": "depot-east",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "blue",
+            "lastOutcome": "picked-up",
+            "eligibleIds": [
+                "depot-east",
+                "depot-north",
+                "depot-west"
+            ],
+            "plan": [
+                "observe",
+                "deliver"
+            ],
+            "milliseconds": 0,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 213
+        },
+        {
+            "requestId": 3,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "target-not-in-request",
+            "proposedGoal": "collect",
+            "proposedTarget": "reserved-red",
+            "dialogue": "I will visit the selected crystal or depot.",
+            "reflection": "This is scripted test text, not learning.",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [
+                "observe",
+                "collect"
+            ],
+            "milliseconds": 0,
+            "schemaValid": true,
+            "rawReplyReceived": true,
+            "replyBytes": 215
+        },
+        {
+            "requestId": 4,
+            "tick": 1,
+            "provider": "local-lm-studio",
+            "outcome": "timeout",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [],
+            "milliseconds": 1565,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        },
+        {
+            "requestId": 5,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "timeout",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "Waiting for perception",
+            "eligibleIds": [
+                "amber",
+                "blue"
+            ],
+            "plan": [],
+            "milliseconds": 40,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        },
+        {
+            "requestId": 6,
+            "tick": 1,
+            "provider": "fake-provider / acceptance only",
+            "outcome": "options-opened",
+            "proposedGoal": "",
+            "proposedTarget": "",
+            "dialogue": "",
+            "reflection": "",
+            "cargo": "",
+            "lastOutcome": "",
+            "eligibleIds": [],
+            "plan": [],
+            "milliseconds": 0,
+            "schemaValid": false,
+            "rawReplyReceived": false,
+            "replyBytes": 0
+        }
+    ]
+}

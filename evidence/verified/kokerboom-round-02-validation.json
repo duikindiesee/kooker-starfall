@@ -1,0 +1,424 @@
+{
+    "schema": "citylife.kokerboom-validation.v1",
+    "utc": "2026-09-10T18:07:37.5005888Z",
+    "status": "PASS",
+    "geometryVersion": "citylife.aloidendron-dichotomum.v1",
+    "unityVersion": "6000.6.0f1",
+    "platform": "WindowsEditor",
+    "failure": "",
+    "assertions": 349,
+    "independentRegeneration": true,
+    "descriptorMeasurement": "Skeleton estimates; independently measured actual mesh bounds are recorded separately. Leaf-length metadata is not independently measured by this check.",
+    "visualAcceptance": "Unverified: independent rendered-image critique is required.",
+    "specimens": [
+        {
+            "seed": 4242,
+            "lod": 0,
+            "vertices": 421350,
+            "triangles": 594632,
+            "age01": 0.6000000238418579,
+            "meshSha256": "5fa14e19678b07c8ade6a3f59fa7cfb0d47af8ecd7ec55b390682bf59e95a505",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+            "actualMinimum": {
+                "x": -1.8061597347259521,
+                "y": -0.4754602313041687,
+                "z": -1.8326019048690796
+            },
+            "actualMaximum": {
+                "x": 2.106638193130493,
+                "y": 5.05377197265625,
+                "z": 1.9766185283660889
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 67482,
+            "triangles": 131632,
+            "age01": 0.6000000238418579,
+            "meshSha256": "75aa3b795116549c65a80d63fe8e8c9c801dccb205c7f8469382cb5446cf0278",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+            "actualMinimum": {
+                "x": -1.7930223941802979,
+                "y": -0.47538185119628906,
+                "z": -1.793475866317749
+            },
+            "actualMaximum": {
+                "x": 2.0909903049468994,
+                "y": 5.058560371398926,
+                "z": 1.9984285831451416
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 25268,
+            "triangles": 48612,
+            "age01": 0.6000000238418579,
+            "meshSha256": "28f82c4da0691dd276341574486f54cabb56635d25315eb18ec952b40cf903d7",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+            "actualMinimum": {
+                "x": -1.7976734638214111,
+                "y": -0.474383682012558,
+                "z": -1.7873529195785522
+            },
+            "actualMaximum": {
+                "x": 2.0759952068328857,
+                "y": 5.055291175842285,
+                "z": 1.9675379991531372
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 738,
+            "triangles": 1432,
+            "age01": 0.05000000074505806,
+            "meshSha256": "b1a1ce90afab12b27bac9347029d8d7269ebfc1617f98ea8e186658962fabb44",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":1,\"branchSegments\":12,\"forkGenerations\":0,\"age01\":0.05000000074505806,\"heightMetres\":0.6046000123023987,\"crownDiameterMetres\":0.6633613705635071,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.022677505388855934,\"y\":0.375,\"z\":0.0003798090619966388},\"trunkBark\":{\"x\":0.004535501357167959,\"y\":0.10450000315904617,\"z\":-0.04204178601503372},\"terminalRosette\":{\"x\":0.022677505388855934,\"y\":0.33000001311302185,\"z\":0.0003798090619966388}}",
+            "actualMinimum": {
+                "x": -0.06860018521547318,
+                "y": -0.16457082331180573,
+                "z": -0.2972230613231659
+            },
+            "actualMaximum": {
+                "x": 0.08700905740261078,
+                "y": 0.4909144639968872,
+                "z": 0.33940258622169495
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 9378,
+            "triangles": 18272,
+            "age01": 0.30000001192092896,
+            "meshSha256": "ab9284dffa82515bced073b772cbee6122c8b2b957ddf0431f361f2a474f2bcb",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":3.2226624488830566,\"crownDiameterMetres\":2.2280166149139404,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.06689219176769257,\"y\":1.7473429441452026,\"z\":0.0011203286703675985},\"trunkBark\":{\"x\":0.013378438539803028,\"y\":0.6259903311729431,\"z\":-0.12380807101726532},\"terminalRosette\":{\"x\":-0.020762531086802483,\"y\":2.7333638668060303,\"z\":-0.645593523979187}}",
+            "actualMinimum": {
+                "x": -0.8823394775390625,
+                "y": -0.29448673129081726,
+                "z": -0.9111099243164063
+            },
+            "actualMaximum": {
+                "x": 0.9757018089294434,
+                "y": 3.1117711067199707,
+                "z": 0.7002996206283569
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 54200,
+            "triangles": 104556,
+            "age01": 0.8999999761581421,
+            "meshSha256": "9447a3e310e25455dae114dd1eb32c7035fb727a4de215f7bb0c7ef630ef084a",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":6.993379592895508,\"crownDiameterMetres\":6.5486860275268555,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.151948019862175,\"y\":2.8695015907287598,\"z\":0.00254486664198339},\"trunkBark\":{\"x\":0.030389605090022087,\"y\":1.05241060256958,\"z\":-0.36157360672950745},\"terminalRosette\":{\"x\":0.128660187125206,\"y\":6.0361528396606445,\"z\":-2.6140682697296143}}",
+            "actualMinimum": {
+                "x": -2.7663424015045166,
+                "y": -0.668580174446106,
+                "z": -2.85604190826416
+            },
+            "actualMaximum": {
+                "x": 3.2253575325012207,
+                "y": 6.884767532348633,
+                "z": 3.0650672912597656
+            }
+        },
+        {
+            "seed": 314,
+            "lod": 2,
+            "vertices": 24952,
+            "triangles": 47980,
+            "age01": 0.6000000238418579,
+            "meshSha256": "33ccc835caee8bbbc1cf1674db4330ee83233e4595f8e440b06d09e18558c334",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":314,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.073976039886475,\"crownDiameterMetres\":3.8580124378204346,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.021279243752360344,\"y\":2.4328112602233887,\"z\":0.10620088130235672},\"trunkBark\":{\"x\":0.004255848936736584,\"y\":0.8864682912826538,\"z\":-0.2559469938278198},\"terminalRosette\":{\"x\":0.6921058893203735,\"y\":4.297425270080566,\"z\":-1.1714524030685425}}",
+            "actualMinimum": {
+                "x": -1.5733808279037476,
+                "y": -0.5035353302955627,
+                "z": -1.451765775680542
+            },
+            "actualMaximum": {
+                "x": 1.8047049045562744,
+                "y": 4.976984024047852,
+                "z": 1.8250503540039063
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 67482,
+            "triangles": 131632,
+            "age01": 0.6000000238418579,
+            "meshSha256": "75aa3b795116549c65a80d63fe8e8c9c801dccb205c7f8469382cb5446cf0278",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+            "actualMinimum": {
+                "x": -1.7930223941802979,
+                "y": -0.47538185119628906,
+                "z": -1.793475866317749
+            },
+            "actualMaximum": {
+                "x": 2.0909903049468994,
+                "y": 5.058560371398926,
+                "z": 1.9984285831451416
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 67482,
+            "triangles": 131632,
+            "age01": 0.6000000238418579,
+            "meshSha256": "75aa3b795116549c65a80d63fe8e8c9c801dccb205c7f8469382cb5446cf0278",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+            "actualMinimum": {
+                "x": -1.7930223941802979,
+                "y": -0.47538185119628906,
+                "z": -1.793475866317749
+            },
+            "actualMaximum": {
+                "x": 2.0909903049468994,
+                "y": 5.058560371398926,
+                "z": 1.9984285831451416
+            }
+        }
+    ],
+    "woodTopology": [
+        {
+            "mesh": "Kokerboom continuous wood LOD0 seed 4242",
+            "seed": 4242,
+            "lod": 0,
+            "age01": 0.6000000238418579,
+            "vertices": 186662,
+            "usedVertices": 186662,
+            "triangles": 373320,
+            "edges": 559980,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 36698,
+            "usedVertices": 36698,
+            "triangles": 73392,
+            "edges": 110088,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.6000000238418579,
+            "vertices": 13268,
+            "usedVertices": 13268,
+            "triangles": 26532,
+            "edges": 39798,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.05000000074505806,
+            "vertices": 488,
+            "usedVertices": 488,
+            "triangles": 972,
+            "edges": 1458,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.30000001192092896,
+            "vertices": 6378,
+            "usedVertices": 6378,
+            "triangles": 12752,
+            "edges": 19128,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.8999999761581421,
+            "vertices": 30200,
+            "usedVertices": 30200,
+            "triangles": 60396,
+            "edges": 90594,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 314",
+            "seed": 314,
+            "lod": 2,
+            "age01": 0.6000000238418579,
+            "vertices": 12952,
+            "usedVertices": 12952,
+            "triangles": 25900,
+            "edges": 38850,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 36698,
+            "usedVertices": 36698,
+            "triangles": 73392,
+            "edges": 110088,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 36698,
+            "usedVertices": 36698,
+            "triangles": 73392,
+            "edges": 110088,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        }
+    ],
+    "sources": [
+        {
+            "path": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+            "sha256": "477f6ca28a466162447d610a21388d113b9ffe7f14b9ac319ed737c4aeb9de67"
+        },
+        {
+            "path": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+            "sha256": "1b204bf2d5dfbe78eb8cbadd04b3eb995abc4701d8d79cfdc0bd4389c28c0060"
+        },
+        {
+            "path": "Assets/CityLife/Editor/KokerboomValidation.cs",
+            "sha256": "18b925c707380b9ac3a5631660a2e1d183fc083926fa701dd47e01d70b0327e8"
+        }
+    ],
+    "checks": [
+        "Invalid age and LOD rejection",
+        "Finite mesh attributes and bounds",
+        "Triangle index and area validity",
+        "Unit vertex normals",
+        "Source and actual mesh hashes",
+        "Seed diversity",
+        "Development and metre scale",
+        "LOD triangle reduction and envelope preservation",
+        "Repeat creation unaffected by intervening seed",
+        "Independent regeneration after explicit cache reset",
+        "World definition asset unchanged",
+        "Wood-only indexed connected components, closed manifold edges and vertex fans",
+        "Known topology canaries"
+    ]
+}

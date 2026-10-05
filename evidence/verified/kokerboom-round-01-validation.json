@@ -1,0 +1,213 @@
+{
+    "schema": "citylife.kokerboom-validation.v1",
+    "utc": "2026-09-10T17:45:41.5366081Z",
+    "status": "PASS",
+    "geometryVersion": "citylife.aloidendron-dichotomum.v1",
+    "unityVersion": "6000.6.0f1",
+    "platform": "WindowsEditor",
+    "failure": "",
+    "assertions": 325,
+    "independentRegeneration": true,
+    "descriptorMeasurement": "Skeleton estimates; independently measured actual mesh bounds are recorded separately. Leaf-length metadata is not independently measured by this check.",
+    "visualAcceptance": "Unverified: independent rendered-image critique is required.",
+    "specimens": [
+        {
+            "seed": 4242,
+            "lod": 0,
+            "vertices": 148136,
+            "triangles": 172224,
+            "age01": 0.6000000238418579,
+            "meshSha256": "ec1c49246f33bce5839f531d22bb7cfe436de4c04367f6741318a6ac608fd95c",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969303131103516,\"crownDiameterMetres\":3.913417339324951,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.011570503935217857,\"y\":4.484901428222656,\"z\":-1.647086262702942}}",
+            "actualMinimum": {
+                "x": -1.4066736698150635,
+                "y": -0.4749574363231659,
+                "z": -2.0175697803497314
+            },
+            "actualMaximum": {
+                "x": 1.448878526687622,
+                "y": 4.948858737945557,
+                "z": 1.9370646476745605
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 25100,
+            "triangles": 48364,
+            "age01": 0.6000000238418579,
+            "meshSha256": "e9fb96b75b068e13ebb55fa45333e8edb1ba10d1c3653a48b5c1144af9f8b55e",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969303131103516,\"crownDiameterMetres\":3.913417339324951,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.011570503935217857,\"y\":4.484901428222656,\"z\":-1.647086262702942}}",
+            "actualMinimum": {
+                "x": -1.3775458335876465,
+                "y": -0.4754592180252075,
+                "z": -1.9928767681121826
+            },
+            "actualMaximum": {
+                "x": 1.4456064701080322,
+                "y": 4.939881324768066,
+                "z": 1.8948949575424194
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 9760,
+            "triangles": 18476,
+            "age01": 0.6000000238418579,
+            "meshSha256": "fe378ee9ece7de2ba9be88ba8517d96b5b44dcf2db55251a57d53eaf91a52ca5",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969303131103516,\"crownDiameterMetres\":3.913417339324951,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.011570503935217857,\"y\":4.484901428222656,\"z\":-1.647086262702942}}",
+            "actualMinimum": {
+                "x": -1.42371666431427,
+                "y": -0.4718613624572754,
+                "z": -2.005324602127075
+            },
+            "actualMaximum": {
+                "x": 1.4411139488220215,
+                "y": 4.93060302734375,
+                "z": 1.9008467197418213
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 684,
+            "triangles": 1324,
+            "age01": 0.05000000074505806,
+            "meshSha256": "164ca2fdffedad0f2aced1266cb54f9fab21afe3894fb35c9140ad671a56d79e",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":1,\"branchSegments\":12,\"forkGenerations\":0,\"age01\":0.05000000074505806,\"heightMetres\":0.9236325025558472,\"crownDiameterMetres\":0.4953613877296448,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.022677505388855934,\"y\":0.7836325168609619,\"z\":0.0003798090619966388},\"trunkBark\":{\"x\":0.004535501357167959,\"y\":0.2597803473472595,\"z\":-0.04204178601503372},\"terminalRosette\":{\"x\":0.022677505388855934,\"y\":0.7386325001716614,\"z\":0.0003798090619966388}}",
+            "actualMinimum": {
+                "x": -0.06431392580270767,
+                "y": -0.1643139272928238,
+                "z": -0.21402958035469055
+            },
+            "actualMaximum": {
+                "x": 0.07756245881319046,
+                "y": 0.905230700969696,
+                "z": 0.2494383603334427
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 5746,
+            "triangles": 10932,
+            "age01": 0.30000001192092896,
+            "meshSha256": "6d1a77f176ab8ad90c13634b1fbe015d8f518475123ee35cedff5d0532d9d00b",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":3.1805191040039063,\"crownDiameterMetres\":2.848283290863037,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.06689219176769257,\"y\":1.7473429441452026,\"z\":0.0011203286703675985},\"trunkBark\":{\"x\":0.013378438539803028,\"y\":0.6259903311729431,\"z\":-0.12380807101726532},\"terminalRosette\":{\"x\":-0.10302918404340744,\"y\":2.586336851119995,\"z\":-1.0058785676956177}}",
+            "actualMinimum": {
+                "x": -0.7542012929916382,
+                "y": -0.291509211063385,
+                "z": -1.3451462984085083
+            },
+            "actualMaximum": {
+                "x": 1.2438545227050781,
+                "y": 3.132415533065796,
+                "z": 1.2851544618606567
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 19800,
+            "triangles": 37512,
+            "age01": 0.8999999761581421,
+            "meshSha256": "5f9196e01e1225d4a4d7df19190ccc4bd651865f447c48cc25b3a6f6bee50096",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.8999999761581421,\"heightMetres\":6.67996883392334,\"crownDiameterMetres\":6.162709712982178,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.151948019862175,\"y\":2.8695015907287598,\"z\":0.00254486664198339},\"trunkBark\":{\"x\":0.030389605090022087,\"y\":1.05241060256958,\"z\":-0.36157360672950745},\"terminalRosette\":{\"x\":-0.0582316517829895,\"y\":5.91683292388916,\"z\":-2.5395736694335938}}",
+            "actualMinimum": {
+                "x": -2.092195510864258,
+                "y": -0.6691612601280212,
+                "z": -2.89363694190979
+            },
+            "actualMaximum": {
+                "x": 2.4461724758148193,
+                "y": 6.640161991119385,
+                "z": 2.5269277095794678
+            }
+        },
+        {
+            "seed": 314,
+            "lod": 2,
+            "vertices": 10058,
+            "triangles": 19060,
+            "age01": 0.6000000238418579,
+            "meshSha256": "423876319e7bfa8a4781bb89c12b700455363188a1def1d96bfa7fb9edf62e89",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":314,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969923973083496,\"crownDiameterMetres\":3.992520809173584,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.021279243752360344,\"y\":2.4328112602233887,\"z\":0.10620088130235672},\"trunkBark\":{\"x\":0.004255848936736584,\"y\":0.8864682912826538,\"z\":-0.2559469938278198},\"terminalRosette\":{\"x\":-1.1880725622177124,\"y\":4.432695388793945,\"z\":-0.7552794218063354}}",
+            "actualMinimum": {
+                "x": -1.9181272983551025,
+                "y": -0.4983367323875427,
+                "z": -1.043501377105713
+            },
+            "actualMaximum": {
+                "x": 1.7041770219802856,
+                "y": 4.940877914428711,
+                "z": 1.2174360752105713
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 25100,
+            "triangles": 48364,
+            "age01": 0.6000000238418579,
+            "meshSha256": "e9fb96b75b068e13ebb55fa45333e8edb1ba10d1c3653a48b5c1144af9f8b55e",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969303131103516,\"crownDiameterMetres\":3.913417339324951,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.011570503935217857,\"y\":4.484901428222656,\"z\":-1.647086262702942}}",
+            "actualMinimum": {
+                "x": -1.3775458335876465,
+                "y": -0.4754592180252075,
+                "z": -1.9928767681121826
+            },
+            "actualMaximum": {
+                "x": 1.4456064701080322,
+                "y": 4.939881324768066,
+                "z": 1.8948949575424194
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 25100,
+            "triangles": 48364,
+            "age01": 0.6000000238418579,
+            "meshSha256": "e9fb96b75b068e13ebb55fa45333e8edb1ba10d1c3653a48b5c1144af9f8b55e",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":16,\"branchSegments\":228,\"forkGenerations\":4,\"age01\":0.6000000238418579,\"heightMetres\":4.969303131103516,\"crownDiameterMetres\":3.913417339324951,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.011570503935217857,\"y\":4.484901428222656,\"z\":-1.647086262702942}}",
+            "actualMinimum": {
+                "x": -1.3775458335876465,
+                "y": -0.4754592180252075,
+                "z": -1.9928767681121826
+            },
+            "actualMaximum": {
+                "x": 1.4456064701080322,
+                "y": 4.939881324768066,
+                "z": 1.8948949575424194
+            }
+        }
+    ],
+    "sources": [
+        {
+            "path": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+            "sha256": "541371c8224a80f9924fb6b83a1872c143004235e51f8fe0b20defd128b519fc"
+        },
+        {
+            "path": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+            "sha256": "8743d7e0621e3dd7e43d245c4ccd83fa61e53afee38238d327a4b5db09696005"
+        },
+        {
+            "path": "Assets/CityLife/Editor/KokerboomValidation.cs",
+            "sha256": "590b1bd9b3ef7810ca81ef6210d6af4e725a52ac892f8704d20695a9eeed77cf"
+        }
+    ],
+    "checks": [
+        "Invalid age and LOD rejection",
+        "Finite mesh attributes and bounds",
+        "Triangle index and area validity",
+        "Unit vertex normals",
+        "Source and actual mesh hashes",
+        "Seed diversity",
+        "Development and metre scale",
+        "LOD triangle reduction and envelope preservation",
+        "Repeat creation unaffected by intervening seed",
+        "Independent regeneration after explicit cache reset",
+        "World definition asset unchanged"
+    ]
+}

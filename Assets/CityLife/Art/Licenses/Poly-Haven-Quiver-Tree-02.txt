@@ -1,0 +1,24 @@
+Quiver Tree 02 - Poly Haven
+Source: https://polyhaven.com/a/quiver_tree_02
+Creators: Dario Barresi (photography), Rico Cilliers (modelling).
+Publisher licence: https://polyhaven.com/license
+Licence: CC0 1.0 Universal (CC0-1.0)
+Deed: https://creativecommons.org/publicdomain/zero/1.0/
+Complete unchanged legal text: CC0-1.0.txt in this directory.
+
+The publisher's 2K FBX option and four included texture files are retained
+unchanged as Unity comparison candidates. Exact paths, download URLs, byte
+counts, SHA256 and publisher MD5 values are in
+Assets/CityLife/Art/PolyHaven/QuiverTree02/provenance.json.
+These are publisher-labelled quiver-tree assets; no Latin species is asserted.
+World integration and visual acceptance have not been established.
+No publisher preview render or logo is included. Credits are voluntary and
+do not imply endorsement. Attribution and licence checked 2026-09-10.
+
+Editor-generated PH02 crown derivative trial (2026-09-10): source downloads stay
+unchanged. The explicit 0.65m horizontal cut preserves original vertex normals
+and polygon-corner UVs, interpolating boundary attributes in metre/Y-up output.
+The boundary stays open; no cap/socket/weld is added. A separate gray open
+support tests a translated attachment, without changing the source crown scale.
+Full/cut/attached comparison is unaccepted; complete leaves and fit need actual
+3D review. Source taxonomy remains publisher-labelled quiver tree only.

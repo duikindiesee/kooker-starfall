@@ -1,0 +1,114 @@
+{
+  "schema": "starfall.packed-edge-hash-validation.v1",
+  "utc": "2026-09-10T21:04:13.7010857Z",
+  "scope": "Bounded pure Mono CPU fixtures. No live stack trace, gameplay frame rate or full LOD0 performance claim.",
+  "change": "Full ulong key equality retained; only hash distribution and dictionary constructor changed. All topology assertions and polygonization arithmetic remain unchanged.",
+  "validatorSha256": "dea18e7c4ebd9e66a4891eca7afd283be31c3ce04319163d6da422fc6f4ce110",
+  "geometrySha256": "6edc8b91fe04e033dfced51a234e4e789a9c10fd217daff9f839d1f37bfee442",
+  "topologyFixtures": [
+    {
+      "vertices": 1024,
+      "triangles": 2048,
+      "edges": 3072,
+      "defaultDistinctHashes": 31,
+      "mixedDistinctHashes": 3072,
+      "defaultMaxBucket": 512,
+      "mixedMaxBucket": 1,
+      "existingMilliseconds": 4.943,
+      "mixedMilliseconds": 0.967,
+      "allFieldsEqual": true,
+      "closedManifold": true
+    },
+    {
+      "vertices": 4096,
+      "triangles": 8192,
+      "edges": 12288,
+      "defaultDistinctHashes": 39,
+      "mixedDistinctHashes": 12288,
+      "defaultMaxBucket": 2048,
+      "mixedMaxBucket": 1,
+      "existingMilliseconds": 69.676,
+      "mixedMilliseconds": 4.724,
+      "allFieldsEqual": true,
+      "closedManifold": true
+    },
+    {
+      "vertices": 8192,
+      "triangles": 16384,
+      "edges": 24576,
+      "defaultDistinctHashes": 43,
+      "mixedDistinctHashes": 24575,
+      "defaultMaxBucket": 4096,
+      "mixedMaxBucket": 2,
+      "existingMilliseconds": 345.748,
+      "mixedMilliseconds": 10.992,
+      "allFieldsEqual": true,
+      "closedManifold": true
+    },
+    {
+      "vertices": 16384,
+      "triangles": 32768,
+      "edges": 49152,
+      "defaultDistinctHashes": 47,
+      "mixedDistinctHashes": 49149,
+      "defaultMaxBucket": 8192,
+      "mixedMaxBucket": 2,
+      "existingMilliseconds": 1369.089,
+      "mixedMilliseconds": 30.367,
+      "allFieldsEqual": true,
+      "closedManifold": true
+    }
+  ],
+  "topologyCanaries": "Six original canaries passed with both comparers; closed, open, separate shells, pinched vertex, nonmanifold edge and inverted face.",
+  "woodFixtures": [
+    {
+      "seed": 4242,
+      "age": 0.05,
+      "lod": 0,
+      "vertices": 1670,
+      "triangles": 3336,
+      "fieldSha256": "fbfe73a012a5020c8c7c782d4cb6147703a49b2e762cbaefcc7f91b1ed10d3fd",
+      "orderedMeshBufferSha256": "324c9591632be4497a7ca58f41302ca1b181004af4c1a38b49b27a1b6cbd6e9a",
+      "exactFieldAndOrderedMeshBuffers": true,
+      "existingMilliseconds": 216.1669,
+      "mixedMilliseconds": 215.0829
+    },
+    {
+      "seed": 4242,
+      "age": 0.18,
+      "lod": 1,
+      "vertices": 15842,
+      "triangles": 31680,
+      "fieldSha256": "848384152f472afa80054fd244a7244bd8f459b6a58cc13283694ffd93bdad72",
+      "orderedMeshBufferSha256": "ac8b1708df8303d468ff7e6ea319e371e527dc5904886e2952554fbc704b5d89",
+      "exactFieldAndOrderedMeshBuffers": true,
+      "existingMilliseconds": 386.7189,
+      "mixedMilliseconds": 428.613
+    },
+    {
+      "seed": 314,
+      "age": 0.55,
+      "lod": 2,
+      "vertices": 11712,
+      "triangles": 23420,
+      "fieldSha256": "82fbbac6ec27e3ca07b6b15f029bad58320cb6dfbd8fd2e13e0afedb8686abf1",
+      "orderedMeshBufferSha256": "1e475cee0461433b830a5c810e69f60d9765c0345ffd64a659461a6396c1a0b2",
+      "exactFieldAndOrderedMeshBuffers": true,
+      "existingMilliseconds": 339.3113,
+      "mixedMilliseconds": 330.9151
+    },
+    {
+      "seed": 4242,
+      "age": 1,
+      "lod": 2,
+      "vertices": 57662,
+      "triangles": 115324,
+      "fieldSha256": "4e4a2c633c8cf3bd9ed531e58bae872f8736b43be4982ee8439153a98b9d68aa",
+      "orderedMeshBufferSha256": "5554abbde43005d9ff4f51715943e13469c73367681de38b4803c74c15f6e599",
+      "exactFieldAndOrderedMeshBuffers": true,
+      "existingMilliseconds": 1222.9714,
+      "mixedMilliseconds": 1154.5066
+    }
+  ],
+  "remainingGap": "Actual Unity whole-family validation and measured main LOD0 authoring cost recorded separately; CPU parity fixtures do not establish visual or native runtime acceptance."
+}

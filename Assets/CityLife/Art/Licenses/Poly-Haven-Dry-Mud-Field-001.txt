@@ -1,0 +1,24 @@
+Asset: Dry Mud Field 001
+Publisher: Poly Haven
+Authors: Rob Tuytel (photography); Rico Cilliers (processing)
+Source: https://polyhaven.com/a/dry_mud_field_001
+Downloaded file: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dry_mud_field_001/dry_mud_field_001_diff_1k.jpg
+Local file: Assets/CityLife/Art/Resources/CityLifeArt/DryGround_1K.jpg
+Original dimensions: 1024 x 1024 pixels; publisher physical tile height: 3 metres.
+Changes to downloaded image: none; filename changed only.
+
+License: CC0 1.0 Universal (SPDX: CC0-1.0)
+Publisher's asset licence: https://polyhaven.com/license
+CC0 deed: https://creativecommons.org/publicdomain/zero/1.0/
+CC0 legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
+An unmodified copy of the CC0 legal text is retained as CC0-1.0.txt.
+
+The asset is free for commercial use, modification and redistribution, including
+redistribution in source repositories and game packages. Attribution is optional;
+the authors and publisher are credited voluntarily. No endorsement is implied.
+This notice applies to the asset image, not Poly Haven branding, site text or
+example renders. No website example render is included.
+
+Verified from the official asset/licence pages and direct asset download on
+2026-09-09. Image SHA-256:
+fa527aa4eb6151c7dab4f0a7b31722d0aa180f728af694594439d106e76f6c6d

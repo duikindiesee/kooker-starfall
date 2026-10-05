@@ -1,0 +1,21 @@
+{
+  "status": "Succeeded",
+  "output": "Builds/KookerStarfallRefuge-0.0.8-refuge.2-20260913-191013/StarfallRefuge.exe",
+  "scene": "Assets/CityLife/GeneratedPreview-20260913-191013/CoastalPlayer.unity",
+  "product": "Starfall First Refuge",
+  "scope": "Isolated first-person refuge test player: cave, contained hearth, mat/rest/sleep and finite fuel storage. No flight, NPC executor, world-save or dream integration.",
+  "utc": "2026-09-13T19:13:05.2820432Z",
+  "buildId": "KookerStarfallRefuge-0.0.8-refuge.2-20260913-191013",
+  "version": "0.0.8-refuge.2",
+  "sourceCommit": "88827d8ba38e541270250e9e4096f3b8046c8a08",
+  "treeReview": "R19",
+  "frozenTreeCommit": "fc30b2857be419172e740f0d338d5913145d75fb",
+  "componentMeshSha256": "3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca",
+  "bytes": 665192442,
+  "seconds": 82.5171014,
+  "errors": 0,
+  "warnings": 21,
+  "woodColliders": 1,
+  "rockColliders": 84,
+  "scopeNote": "Scope corrected from generic inherited coastal build-report prose; other fields retained from builder report."
+}

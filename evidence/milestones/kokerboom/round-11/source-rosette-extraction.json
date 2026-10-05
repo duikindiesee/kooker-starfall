@@ -1,0 +1,310 @@
+{
+    "schema": "citylife.ph01-rosette-extraction.v1",
+    "status": "Extractable source geometry; hybrid appearance and botanical identity not accepted",
+    "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+    "sourceSha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+    "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+    "licenseUrl": "https://polyhaven.com/license",
+    "sourceMaterial": "quiver_tree_01_leaf",
+    "diffuse": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+    "normalOpenGL": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+    "roughness": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+    "coordinates": "Source FBX mesh coordinates are Z-up. Output (-X,Z,-Y) matches the observed Unity FBX handedness/orientation at metre scale; each measured root mean is subtracted before conversion. Source model scale100 and centimetre file units cancel. No shape normalization or per-rosette straightening.",
+    "preservation": "Whole source polygons; quad fan triangulation; source polygon-corner UVs and normals copied. Reflection reverses winding. Tangents are derived for normal mapping; normals are not recalculated. No caps, sockets, welds or replacement leaves.",
+    "basalPolicy": "11 closed leaf-material components assigned by nearest component centroid to a measured leaf-root group. Optional/separate; their semantic identity and suitability remain unverified.",
+    "sourceLeafComponents": 105,
+    "sourceClosedComponents": 11,
+    "groups": [
+        {
+            "id": "A",
+            "sourceRootFbx": {
+                "x": -0.17702636122703552,
+                "y": -0.23859678208827972,
+                "z": 2.2051517963409424
+            },
+            "sourceRootUnity": {
+                "x": 0.17702636122703552,
+                "y": 2.2051517963409424,
+                "z": 0.23859678208827972
+            },
+            "rootedLeafBounds": {
+                "m_Center": {
+                    "x": -0.006083950400352478,
+                    "y": -0.005786240100860596,
+                    "z": 0.03197939693927765
+                },
+                "m_Extent": {
+                    "x": 0.23482199013233185,
+                    "y": 0.2390003800392151,
+                    "z": 0.23181989789009094
+                }
+            },
+            "leafComponents": 21,
+            "leafTriangles": 9456,
+            "sourceLeafControlVertices": 4875,
+            "emittedLeafCornerVertices": 18912,
+            "basalComponents": 2,
+            "basalTriangles": 9050,
+            "sourceLeafComponentIds": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+            ],
+            "sourceBasalComponentIds": [
+                111,
+                115
+            ]
+        },
+        {
+            "id": "B",
+            "sourceRootFbx": {
+                "x": -0.11295545846223831,
+                "y": -0.05061671882867813,
+                "z": 2.205615282058716
+            },
+            "sourceRootUnity": {
+                "x": 0.11295545846223831,
+                "y": 2.205615282058716,
+                "z": 0.05061671882867813
+            },
+            "rootedLeafBounds": {
+                "m_Center": {
+                    "x": -0.00001823902130126953,
+                    "y": -0.008333206176757813,
+                    "z": 0.007419422268867493
+                },
+                "m_Extent": {
+                    "x": 0.21237504482269287,
+                    "y": 0.14793109893798828,
+                    "z": 0.21123109757900238
+                }
+            },
+            "leafComponents": 21,
+            "leafTriangles": 9408,
+            "sourceLeafControlVertices": 4851,
+            "emittedLeafCornerVertices": 18816,
+            "basalComponents": 2,
+            "basalTriangles": 13756,
+            "sourceLeafComponentIds": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+            ],
+            "sourceBasalComponentIds": [
+                109,
+                110
+            ]
+        },
+        {
+            "id": "C",
+            "sourceRootFbx": {
+                "x": -0.3081694543361664,
+                "y": -0.09782712906599045,
+                "z": 2.2237207889556885
+            },
+            "sourceRootUnity": {
+                "x": 0.3081694543361664,
+                "y": 2.2237207889556885,
+                "z": 0.09782712906599045
+            },
+            "rootedLeafBounds": {
+                "m_Center": {
+                    "x": 0.015451595187187195,
+                    "y": 0.01886606216430664,
+                    "z": -0.005698025226593018
+                },
+                "m_Extent": {
+                    "x": 0.22341912984848022,
+                    "y": 0.16289854049682617,
+                    "z": 0.22769635915756226
+                }
+            },
+            "leafComponents": 21,
+            "leafTriangles": 9408,
+            "sourceLeafControlVertices": 4851,
+            "emittedLeafCornerVertices": 18816,
+            "basalComponents": 2,
+            "basalTriangles": 10692,
+            "sourceLeafComponentIds": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+            ],
+            "sourceBasalComponentIds": [
+                112,
+                113
+            ]
+        },
+        {
+            "id": "D",
+            "sourceRootFbx": {
+                "x": 0.014842384494841099,
+                "y": 0.12494815140962601,
+                "z": 2.375136613845825
+            },
+            "sourceRootUnity": {
+                "x": -0.014842384494841099,
+                "y": 2.375136613845825,
+                "z": -0.12494815140962601
+            },
+            "rootedLeafBounds": {
+                "m_Center": {
+                    "x": 0.017719581723213196,
+                    "y": 0.036956787109375,
+                    "z": -0.011326849460601807
+                },
+                "m_Extent": {
+                    "x": 0.2222544550895691,
+                    "y": 0.26154541969299316,
+                    "z": 0.3071752190589905
+                }
+            },
+            "leafComponents": 21,
+            "leafTriangles": 9408,
+            "sourceLeafControlVertices": 4851,
+            "emittedLeafCornerVertices": 18816,
+            "basalComponents": 3,
+            "basalTriangles": 18994,
+            "sourceLeafComponentIds": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+            ],
+            "sourceBasalComponentIds": [
+                105,
+                106,
+                114
+            ]
+        },
+        {
+            "id": "E",
+            "sourceRootFbx": {
+                "x": 0.27949193120002747,
+                "y": 0.19215357303619385,
+                "z": 2.3940556049346924
+            },
+            "sourceRootUnity": {
+                "x": -0.27949193120002747,
+                "y": 2.3940556049346924,
+                "z": -0.19215357303619385
+            },
+            "rootedLeafBounds": {
+                "m_Center": {
+                    "x": 0.010391920804977417,
+                    "y": 0.02724480628967285,
+                    "z": 0.019251137971878052
+                },
+                "m_Extent": {
+                    "x": 0.3650953769683838,
+                    "y": 0.23804211616516113,
+                    "z": 0.2932069003582001
+                }
+            },
+            "leafComponents": 21,
+            "leafTriangles": 9408,
+            "sourceLeafControlVertices": 4851,
+            "emittedLeafCornerVertices": 18816,
+            "basalComponents": 2,
+            "basalTriangles": 13574,
+            "sourceLeafComponentIds": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+            ],
+            "sourceBasalComponentIds": [
+                107,
+                108
+            ]
+        }
+    ]
+}

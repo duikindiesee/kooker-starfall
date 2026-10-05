@@ -1,0 +1,132 @@
+{
+  "schema": "starfall.coastal-first-review.v1",
+  "utc": "2026-09-10T22:57:43.633201+00:00",
+  "status": "USER REVIEW CHECKPOINT; no further automatic visual iteration",
+  "reference": "User concept attachments02/03/06 provisional; exact requested artwork/camera match not confirmed",
+  "baselineSourceCommit": "0c40ab7",
+  "revisionSourceCommit": "616ca85",
+  "baselineMetrics": "evidence/milestones/coastal/round-01/metrics.json",
+  "revisionMetrics": "evidence/milestones/coastal/round-02/metrics.json",
+  "cameraComparison": [
+    {
+      "id": "01-coastal-side-composition",
+      "cameraFieldsIdentical": true,
+      "lightFieldsIdentical": true,
+      "dimensionsIdentical": true
+    },
+    {
+      "id": "02-water-to-sea",
+      "cameraFieldsIdentical": true,
+      "lightFieldsIdentical": true,
+      "dimensionsIdentical": true
+    },
+    {
+      "id": "03-rocky-tree-bank",
+      "cameraFieldsIdentical": true,
+      "lightFieldsIdentical": true,
+      "dimensionsIdentical": true
+    },
+    {
+      "id": "04-canyon-opening",
+      "cameraFieldsIdentical": true,
+      "lightFieldsIdentical": true,
+      "dimensionsIdentical": true
+    }
+  ],
+  "technicalCapturePass": true,
+  "captureErrors": 0,
+  "captureWarnings": 2,
+  "scores": [
+    {
+      "element": "Water and sea",
+      "baseline": 4,
+      "revision": 5,
+      "delta": 1,
+      "gain": "Turquoise saturation and broader blue sea horizon",
+      "remaining": "Opaque foreground, triangular outlet seam, striped distant sea, uniform mint shoreline halo",
+      "effort": "One shader/surface revision and measured visual-only ocean extension"
+    },
+    {
+      "element": "Terrain and canyons",
+      "baseline": 4,
+      "revision": 5.5,
+      "delta": 1.5,
+      "gain": "Broken lower-contrast layers, muted ochre, broad gullies/buttresses and bank feet",
+      "remaining": "Large smooth cliff faces, weak strata and looping drawn-looking cracks",
+      "effort": "One heightfield/shader revision; explicit terrain-r2-weathered-banks content revision"
+    },
+    {
+      "element": "Rocks",
+      "baseline": 5.5,
+      "revision": 6.5,
+      "delta": 1,
+      "gain": "Dark warm stone contrast and one excessive overhang corrected",
+      "remaining": "Repeated slab silhouettes, broad faces, limited descent through waterline",
+      "effort": "One material revision and one rock lowered1.15m"
+    },
+    {
+      "element": "Succulents",
+      "baseline": 4,
+      "revision": 4,
+      "delta": 0,
+      "gain": "No separate revision; small flowers and columns remain visible",
+      "remaining": "Rosettes obscured by rocks",
+      "effort": "Initial procedural set only; further work deferred"
+    },
+    {
+      "element": "Combined composition",
+      "baseline": 4.5,
+      "revision": 5.5,
+      "delta": 1,
+      "gain": "World colour hierarchy, continuous sky field and clearer river-to-sea composition",
+      "remaining": "Water realism/seam, broad cliff forms, rocky bank transition, provisional reference",
+      "effort": "Root retrospective comparison of both actual four-view sets; one sky-extent correction"
+    }
+  ],
+  "scoreMethod": "Subjective art-direction judgements, not objective measurements, user approval or a nine-point target. Element agents reviewed their owned elements; root judged combined composition. Different scores should not be interpreted as independent statistical evidence.",
+  "collision": {
+    "status": "PASS",
+    "rockColliders": 84,
+    "rockRayHits": 84,
+    "terrainRayHits": 8,
+    "scope": "Actual Unity scene PhysX rays against exact static rendered rock/terrain meshes. Not a native coastal player movement or swimming test."
+  },
+  "effortBoundary": "Three parallel workstreams, one baseline and one targeted revision, four1600x900views each. Render timings are synchronous GPU readback, not human effort or gameplay FPS. Dollar costs were not measured.",
+  "subjects": [
+    {
+      "name": "Mature inspection tree",
+      "kind": "tree",
+      "vertices": 3745751,
+      "triangles": 6550207,
+      "meshCount": 2
+    },
+    {
+      "name": "Coastal terrain starfall.coastal-slice.v1 seed 1904242",
+      "kind": "coastal-terrain",
+      "vertices": 64829,
+      "triangles": 128640,
+      "meshCount": 1
+    },
+    {
+      "name": "Coastal stratified rock bank and succulent study",
+      "kind": "coastal-rocks-and-succulents",
+      "vertices": 35298,
+      "triangles": 11766,
+      "meshCount": 85
+    },
+    {
+      "name": "Coastal water - luminous river and sea",
+      "kind": "coastal-water-surface",
+      "vertices": 16045,
+      "triangles": 31320,
+      "meshCount": 2
+    }
+  ],
+  "remainingGaps": [
+    "User review/exact reference choice",
+    "Native coastal movement and swimming",
+    "Clear underwater presentation and aquatic life",
+    "Sustained performance",
+    "Final world persistence/content integration"
+  ]
+}

@@ -1,0 +1,4 @@
+bank: proposed=-52,-55; selected=-52,-55; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-52.00, -0.45, -55.00); eye=(-52.00, 1.65, -55.00); water=-2; dryFreeboard=1.545499
+forward: proposed=-52,-5; selected=-64,-5; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-64.00, -0.72, -5.00); eye=(-64.00, 1.38, -5.00); water=-2; dryFreeboard=1.275342
+mouth: proposed=-38,5; selected=-62,5; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-62.00, -0.83, 5.00); eye=(-62.00, 1.27, 5.00); water=-2; dryFreeboard=1.171293
+lookout: proposed=-90,110; selected=-90,110; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-90.00, 1.84, 110.00); eye=(-90.00, 3.94, 110.00); water=-2; dryFreeboard=3.838757

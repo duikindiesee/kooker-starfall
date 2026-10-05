@@ -1,0 +1,28 @@
+{
+  "schema": "starfall.ph02-boundary-selection-diagnosis.v1",
+  "utc": "2026-09-10T20:02:13.593376+00:00",
+  "status": "CPU source-topology selection diagnosis verified; corrected actual Unity readback awaits a new run",
+  "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+  "sourceSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+  "extractorSha256": "9b12328f9140edc3815d68d1a9d2d8b9219356b7095d3bef6c2d28317d89b2dd",
+  "probeSha256": "45b474c991c5ec97358994f372395b68069334a9601e58ed7efc142b1aeed782",
+  "method": "Managed CPU call to the pinned extractor Build(0.65f), using actual emitted positions/normals/UVs/indices; only Application.dataPath replaced in an ignored host copy. No Mesh/native Unity creation or tangent calculation.",
+  "sourceTrianglesAfterClip": 71207,
+  "allCutPlaneCornerIndices": 172,
+  "trueCutEdges": 69,
+  "trueEdgeEndpointCornerIndices": 138,
+  "excludedNonBoundaryCorners": 34,
+  "trianglesWithOnlyOneCutPlaneCorner": 34,
+  "excludedCornersWithExactBoundaryPNU": 34,
+  "diagnosis": "Clipped-quad fan triangulation emits34 additional plane-coincident corners in triangles without a cut edge. The old harness treated their independently generated triangle tangent tuples as boundary obligations. The attachment contract belongs to actual cut-edge endpoints.",
+  "preservedR12Report": "evidence/milestones/kokerboom/round-12/ph02-fitted-support-checks.json",
+  "preservedR12ReportSha256": "288b581b1f8545bb73d4420f963b1b29e254fed1c73744fb0ed45b6a88fad0d3",
+  "preservedFailure": {
+    "sourceDistinctTuples": 171,
+    "supportDistinctTuples": 137,
+    "missingSourceTuples": 34,
+    "images": 0
+  },
+  "repair": "Harness selects geometric single-incidence plane edges. Requires69 source and support boundary edges, reversed endpoint order, exact P/N/UV/tangent4 equality, no missing/unmatched true-rim tuples and zero vertex-red blend. Excluded plane-corner counts remain visible. No geometry, shader or source attribute changes; no equality tolerances loosened.",
+  "remaining": "Actual corrected Unity Mesh readback and rendered visual review in a new preserved round; no R13 result claimed by this diagnosis."
+}

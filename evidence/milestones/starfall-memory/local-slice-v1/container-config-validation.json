@@ -1,0 +1,39 @@
+{
+  "schema": "starfall.memory.container-proof.v1",
+  "status": "CONFIG_VALIDATED_NOT_DEPLOYED",
+  "command": "docker compose -f services/starfall-memory/compose.yaml config --format json",
+  "user": "10001:10001",
+  "publishedPorts": [
+    {
+      "mode": "ingress",
+      "host_ip": "127.0.0.1",
+      "target": 17864,
+      "published": "17864",
+      "protocol": "tcp"
+    }
+  ],
+  "dataVolumes": [
+    {
+      "type": "volume",
+      "source": "starfall_memory_v1",
+      "target": "/data",
+      "volume": {}
+    }
+  ],
+  "internalNetwork": true,
+  "readOnlyRoot": true,
+  "droppedCapabilities": [
+    "ALL"
+  ],
+  "securityOptions": [
+    "no-new-privileges:true"
+  ],
+  "personalMounts": [],
+  "secretSource": ".local-memory/config.json",
+  "sourceSha256": {
+    "Dockerfile": "47aeb8d1cbc19480b2d74f9f68e2ef2856a532f190a9903c0a08e3133e467f14",
+    "compose.yaml": "734ed9a8dcf17dcead48f3c25897addfd11ea19707d964e7364d9ca361bd180d",
+    ".dockerignore": "96af913ef84beebaa34bdb0a32581a14058757d4e54d9d687d2f965194e3a11f"
+  },
+  "remaining": "Image build/startup, volume ownership and secret permissions have not been exercised in Docker. No deployment was performed."
+}

@@ -1,0 +1,1550 @@
+{
+    "schema": "citylife.kokerboom-inspection.v1",
+    "utc": "2026-09-10T18:50:27.6914345Z",
+    "status": "Rendered for independent critique",
+    "visualAcceptance": "Not scored. Independent critique is required.",
+    "scope": "Actual Unity URP GPU renders of a procedural tree and small inspection/prototype stage. No full terrain, native input, desktop presentation, player save access or reference-image billboard.",
+    "mode": "preacceptance-local-playable-preview-stage",
+    "referenceDirection": "User-provided Kooker Nexus artwork; gold/ochre tree, teal succulent leaves, navy/cobalt sky. Earth explicitly excluded; one procedural blue gas giant only.",
+    "unityVersion": "6000.6.0f1",
+    "graphicsDevice": "AMD Radeon(TM) 8060S Graphics",
+    "graphicsApi": "Direct3D11",
+    "renderPath": "URP SingleCameraRequest to GPU RenderTexture; synchronous RGB readback; editor batch process",
+    "timingScope": "Per-image render plus synchronous readback wall time after three warmup requests. Not gameplay FPS or a sustained runtime benchmark.",
+    "technicalChecksPassed": true,
+    "errors": 0,
+    "warnings": 1,
+    "expectedCaptures": 2,
+    "initialAmbientProbe": {
+        "scope": "Scene probe before explicit harness ambient",
+        "coefficientOrder": "RGB channels, nine SH coefficients each",
+        "directionOrder": "up,down,right,left,forward,back",
+        "coefficients": [
+            0.180283784866333,
+            -0.005682311486452818,
+            -0.012560680508613586,
+            0.007252015173435211,
+            0.0056999679654836655,
+            -0.00987242255359888,
+            0.010330158285796642,
+            -0.010436316952109337,
+            0.025035569444298744,
+            0.22571411728858948,
+            0.04134383052587509,
+            -0.019753262400627136,
+            0.011403260752558708,
+            0.009111973457038403,
+            -0.015783270820975304,
+            0.014379967004060745,
+            -0.015223595313727856,
+            0.03443606197834015,
+            0.3069228529930115,
+            0.12748494744300842,
+            -0.034053392708301544,
+            0.019656643271446228,
+            0.016365190967917442,
+            -0.028349149972200394,
+            0.01771555282175541,
+            -0.02208525687456131,
+            0.040465496480464935
+        ],
+        "evaluatedIrradiance": [
+            {
+                "r": 0.1392357498407364,
+                "g": 0.21824191510677338,
+                "b": 0.3762267529964447,
+                "a": 1.0
+            },
+            {
+                "r": 0.1506003588438034,
+                "g": 0.1355542689561844,
+                "b": 0.12125686556100845,
+                "a": 1.0
+            },
+            {
+                "r": 0.2022412270307541,
+                "g": 0.25717347860336304,
+                "b": 0.3493294417858124,
+                "a": 1.0
+            },
+            {
+                "r": 0.18773718178272247,
+                "g": 0.23436695337295532,
+                "b": 0.3100161850452423,
+                "a": 1.0
+            },
+            {
+                "r": 0.18838343024253845,
+                "g": 0.23472079634666443,
+                "b": 0.30830058455467224,
+                "a": 1.0
+            },
+            {
+                "r": 0.21350479125976563,
+                "g": 0.2742273211479187,
+                "b": 0.37640735507011414,
+                "a": 1.0
+            }
+        ]
+    },
+    "captures": [
+        {
+            "id": "01-preview-eye-level",
+            "purpose": "Current hybrid WIP stage with stronger cool fill, before standalone bake. Shader/frame verification; not family acceptance.",
+            "imagePath": "evidence/milestones/kokerboom/round-06/2026-09-10-01-preview-eye-level.png",
+            "widthPixels": 1600,
+            "heightPixels": 900,
+            "renderReadbackMilliseconds": 76.2469,
+            "camera": {
+                "position": {
+                    "x": 3.0263864994049072,
+                    "y": 0.9630221724510193,
+                    "z": -17.567745208740234
+                },
+                "rotationEuler": {
+                    "x": 352.5181884765625,
+                    "y": 350.74267578125,
+                    "z": -1.0763810109892802e-7
+                },
+                "orthographic": false,
+                "orthographicSizeMetres": 5.0,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 0.8700000047683716,
+                        "b": 0.6600000262260437,
+                        "a": 1.0
+                    },
+                    "intensity": 2.25,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 335.0,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 0.4300000071525574,
+                        "g": 0.7300000190734863,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.949999988079071,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 348.0,
+                        "y": 170.0,
+                        "z": -1.091059118607518e-7
+                    },
+                    "color": {
+                        "r": 0.30000001192092896,
+                        "g": 0.7699999809265137,
+                        "b": 0.8799999952316284,
+                        "a": 1.0
+                    },
+                    "intensity": 0.8500000238418579,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.20000000298023224,
+                "g": 0.25,
+                "b": 0.3700000047683716,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.1599999964237213,
+                "b": 0.10999999940395355,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.12999999523162842,
+                "g": 0.09000000357627869,
+                "b": 0.03999999910593033,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.26447057723999023,
+                    0.09694115817546844,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.03264705836772919,
+                    0.0,
+                    -0.09794116765260696,
+                    0.39847055077552795,
+                    0.15247055888175964,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.05264706164598465,
+                    0.0,
+                    -0.15794116258621216,
+                    0.5362353324890137,
+                    0.2616470456123352,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.07382354140281677,
+                    0.0,
+                    -0.22147059440612793
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.4919999837875366,
+                        "g": 0.7615293264389038,
+                        "b": 1.0931766033172607,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.29811766743659973,
+                        "g": 0.4565882086753845,
+                        "b": 0.5698824524879456,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.26447057723999023,
+                    0.09694115817546844,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.03264705836772919,
+                    0.0,
+                    -0.09794116765260696,
+                    0.39847055077552795,
+                    0.15247055888175964,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.05264706164598465,
+                    0.0,
+                    -0.15794116258621216,
+                    0.5362353324890137,
+                    0.2616470456123352,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.07382354140281677,
+                    0.0,
+                    -0.22147059440612793
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.4919999837875366,
+                        "g": 0.7615293264389038,
+                        "b": 1.0931766033172607,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.29811766743659973,
+                        "g": 0.4565882086753845,
+                        "b": 0.5698824524879456,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.028363138437271118,
+                "maximumLuminance": 0.8338651061058044,
+                "meanLuminance": 0.22648409008979797,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":98,\"branchSegments\":1376,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.007555961608887,\"crownDiameterMetres\":4.741593360900879,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0024893744848668575,\"y\":2.11932635307312,\"z\":0.05817292258143425},\"trunkBark\":{\"x\":0.0004978749202564359,\"y\":0.767344057559967,\"z\":-0.6000611186027527},\"terminalRosette\":{\"x\":0.20642951130867004,\"y\":5.3993330001831055,\"z\":-1.8593095541000366}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 2445892,
+                    "triangles": 2123524,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -0.007048606872558594,
+                            "y": 2.9459102153778076,
+                            "z": 0.011513233184814453
+                        },
+                        "m_Extent": {
+                            "x": 2.0175909996032715,
+                            "y": 3.9926693439483643,
+                            "z": 2.161129951477051
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 600388,
+                            "triangles": 1200772,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.021834254264831543,
+                                    "y": 2.8323471546173096,
+                                    "z": 0.0591241717338562
+                                },
+                                "m_Extent": {
+                                    "x": 1.7889984846115112,
+                                    "y": 3.879106283187866,
+                                    "z": 1.9483051300048828
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 1845504,
+                            "triangles": 922752,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.0070487260818481445,
+                                    "y": 5.847848892211914,
+                                    "z": 0.011513113975524902
+                                },
+                                "m_Extent": {
+                                    "x": 2.0175909996032715,
+                                    "y": 1.0907304286956787,
+                                    "z": 2.161129951477051
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype young tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4243,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":2.593812942504883,\"crownDiameterMetres\":1.7356867790222168,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.04148399457335472,\"y\":1.36808443069458,\"z\":-0.026796333491802216},\"trunkBark\":{\"x\":0.008296798914670944,\"y\":0.4818720817565918,\"z\":-0.1544989049434662},\"terminalRosette\":{\"x\":0.07245620340108871,\"y\":2.117279052734375,\"z\":-0.4118284583091736}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4243,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.30000001192092896,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 297634,
+                    "triangles": 369184,
+                    "position": {
+                        "x": -5.043977737426758,
+                        "y": -0.5075333118438721,
+                        "z": 7.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -4.998441696166992,
+                            "y": 0.607459306716919,
+                            "z": 6.921965599060059
+                        },
+                        "m_Extent": {
+                            "x": 0.6591522693634033,
+                            "y": 1.458754062652588,
+                            "z": 0.636786937713623
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4243",
+                            "objectName": "Bark",
+                            "vertices": 146914,
+                            "triangles": 293824,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.044535666704177856,
+                                    "y": 0.9896342754364014,
+                                    "z": -0.055279508233070374
+                                },
+                                "m_Extent": {
+                                    "x": 0.4712121784687042,
+                                    "y": 1.3333957195281982,
+                                    "z": 0.39114344120025635
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4243",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 150720,
+                            "triangles": 75360,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.045536041259765625,
+                                    "y": 2.102064847946167,
+                                    "z": -0.0780344009399414
+                                },
+                                "m_Extent": {
+                                    "x": 0.6591523885726929,
+                                    "y": 0.4716818332672119,
+                                    "z": 0.636786937713623
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype middle-aged tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4244,\"terminalRosettes\":49,\"branchSegments\":690,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.144834518432617,\"crownDiameterMetres\":3.17028546333313,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.11743208020925522,\"y\":2.576704978942871,\"z\":-0.015539921820163727},\"trunkBark\":{\"x\":0.023486416786909103,\"y\":0.9411479234695435,\"z\":-0.2794140577316284},\"terminalRosette\":{\"x\":-0.021770546212792397,\"y\":3.82739520072937,\"z\":-1.142486572265625}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4244,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.6000000238418579,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 1135932,
+                    "triangles": 887300,
+                    "position": {
+                        "x": 5.245736598968506,
+                        "y": 0.2916750907897949,
+                        "z": 11.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 5.447596549987793,
+                            "y": 2.5210464000701904,
+                            "z": 11.036050796508789
+                        },
+                        "m_Extent": {
+                            "x": 1.2982282638549805,
+                            "y": 2.770139455795288,
+                            "z": 1.4301834106445313
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4244",
+                            "objectName": "Bark",
+                            "vertices": 212892,
+                            "triangles": 425780,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.1659654676914215,
+                                    "y": 2.173574447631836,
+                                    "z": 0.06177777051925659
+                                },
+                                "m_Extent": {
+                                    "x": 1.0754718780517578,
+                                    "y": 2.7143425941467285,
+                                    "z": 1.234180212020874
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4244",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 923040,
+                            "triangles": 461520,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.2018599510192871,
+                                    "y": 3.973268985748291,
+                                    "z": 0.03605043888092041
+                                },
+                                "m_Extent": {
+                                    "x": 1.29822838306427,
+                                    "y": 1.0262417793273926,
+                                    "z": 1.4301835298538208
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "02-preview-overlook",
+            "purpose": "Current WIP stage overview before standalone bake. No larger world, galaxy or living sea yet.",
+            "imagePath": "evidence/milestones/kokerboom/round-06/2026-09-10-02-preview-overlook.png",
+            "widthPixels": 1600,
+            "heightPixels": 900,
+            "renderReadbackMilliseconds": 34.039,
+            "camera": {
+                "position": {
+                    "x": -7.263327598571777,
+                    "y": 6.787538051605225,
+                    "z": -14.37360954284668
+                },
+                "rotationEuler": {
+                    "x": 12.565852165222168,
+                    "y": 23.922054290771484,
+                    "z": -2.1868157773496932e-7
+                },
+                "orthographic": false,
+                "orthographicSizeMetres": 5.0,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 0.8700000047683716,
+                        "b": 0.6600000262260437,
+                        "a": 1.0
+                    },
+                    "intensity": 2.25,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 335.0,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 0.4300000071525574,
+                        "g": 0.7300000190734863,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.949999988079071,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 348.0,
+                        "y": 170.0,
+                        "z": -1.091059118607518e-7
+                    },
+                    "color": {
+                        "r": 0.30000001192092896,
+                        "g": 0.7699999809265137,
+                        "b": 0.8799999952316284,
+                        "a": 1.0
+                    },
+                    "intensity": 0.8500000238418579,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.20000000298023224,
+                "g": 0.25,
+                "b": 0.3700000047683716,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.1599999964237213,
+                "b": 0.10999999940395355,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.12999999523162842,
+                "g": 0.09000000357627869,
+                "b": 0.03999999910593033,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.26447057723999023,
+                    0.09694115817546844,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.03264705836772919,
+                    0.0,
+                    -0.09794116765260696,
+                    0.39847055077552795,
+                    0.15247055888175964,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.05264706164598465,
+                    0.0,
+                    -0.15794116258621216,
+                    0.5362353324890137,
+                    0.2616470456123352,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.07382354140281677,
+                    0.0,
+                    -0.22147059440612793
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.4919999837875366,
+                        "g": 0.7615293264389038,
+                        "b": 1.0931766033172607,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.29811766743659973,
+                        "g": 0.4565882086753845,
+                        "b": 0.5698824524879456,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.26447057723999023,
+                    0.09694115817546844,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.03264705836772919,
+                    0.0,
+                    -0.09794116765260696,
+                    0.39847055077552795,
+                    0.15247055888175964,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.05264706164598465,
+                    0.0,
+                    -0.15794116258621216,
+                    0.5362353324890137,
+                    0.2616470456123352,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.07382354140281677,
+                    0.0,
+                    -0.22147059440612793
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.4919999837875366,
+                        "g": 0.7615293264389038,
+                        "b": 1.0931766033172607,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.29811766743659973,
+                        "g": 0.4565882086753845,
+                        "b": 0.5698824524879456,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917649030685425,
+                        "g": 0.29317644238471985,
+                        "b": 0.3885883092880249,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.19917647540569305,
+                        "g": 0.29317641258239746,
+                        "b": 0.3885882794857025,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.028363138437271118,
+                "maximumLuminance": 0.6481623649597168,
+                "meanLuminance": 0.2921532094478607,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":98,\"branchSegments\":1376,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.007555961608887,\"crownDiameterMetres\":4.741593360900879,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0024893744848668575,\"y\":2.11932635307312,\"z\":0.05817292258143425},\"trunkBark\":{\"x\":0.0004978749202564359,\"y\":0.767344057559967,\"z\":-0.6000611186027527},\"terminalRosette\":{\"x\":0.20642951130867004,\"y\":5.3993330001831055,\"z\":-1.8593095541000366}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 2445892,
+                    "triangles": 2123524,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -0.007048606872558594,
+                            "y": 2.9459102153778076,
+                            "z": 0.011513233184814453
+                        },
+                        "m_Extent": {
+                            "x": 2.0175909996032715,
+                            "y": 3.9926693439483643,
+                            "z": 2.161129951477051
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 600388,
+                            "triangles": 1200772,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.021834254264831543,
+                                    "y": 2.8323471546173096,
+                                    "z": 0.0591241717338562
+                                },
+                                "m_Extent": {
+                                    "x": 1.7889984846115112,
+                                    "y": 3.879106283187866,
+                                    "z": 1.9483051300048828
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 1845504,
+                            "triangles": 922752,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.0070487260818481445,
+                                    "y": 5.847848892211914,
+                                    "z": 0.011513113975524902
+                                },
+                                "m_Extent": {
+                                    "x": 2.0175909996032715,
+                                    "y": 1.0907304286956787,
+                                    "z": 2.161129951477051
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype young tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4243,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":2.593812942504883,\"crownDiameterMetres\":1.7356867790222168,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.04148399457335472,\"y\":1.36808443069458,\"z\":-0.026796333491802216},\"trunkBark\":{\"x\":0.008296798914670944,\"y\":0.4818720817565918,\"z\":-0.1544989049434662},\"terminalRosette\":{\"x\":0.07245620340108871,\"y\":2.117279052734375,\"z\":-0.4118284583091736}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4243,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.30000001192092896,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 297634,
+                    "triangles": 369184,
+                    "position": {
+                        "x": -5.043977737426758,
+                        "y": -0.5075333118438721,
+                        "z": 7.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -4.998441696166992,
+                            "y": 0.607459306716919,
+                            "z": 6.921965599060059
+                        },
+                        "m_Extent": {
+                            "x": 0.6591522693634033,
+                            "y": 1.458754062652588,
+                            "z": 0.636786937713623
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4243",
+                            "objectName": "Bark",
+                            "vertices": 146914,
+                            "triangles": 293824,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.044535666704177856,
+                                    "y": 0.9896342754364014,
+                                    "z": -0.055279508233070374
+                                },
+                                "m_Extent": {
+                                    "x": 0.4712121784687042,
+                                    "y": 1.3333957195281982,
+                                    "z": 0.39114344120025635
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4243",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 150720,
+                            "triangles": 75360,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.045536041259765625,
+                                    "y": 2.102064847946167,
+                                    "z": -0.0780344009399414
+                                },
+                                "m_Extent": {
+                                    "x": 0.6591523885726929,
+                                    "y": 0.4716818332672119,
+                                    "z": 0.636786937713623
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype middle-aged tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4244,\"terminalRosettes\":49,\"branchSegments\":690,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.144834518432617,\"crownDiameterMetres\":3.17028546333313,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.11743208020925522,\"y\":2.576704978942871,\"z\":-0.015539921820163727},\"trunkBark\":{\"x\":0.023486416786909103,\"y\":0.9411479234695435,\"z\":-0.2794140577316284},\"terminalRosette\":{\"x\":-0.021770546212792397,\"y\":3.82739520072937,\"z\":-1.142486572265625}}",
+                    "sourceAssetPath": "",
+                    "sourceAssetSha256": "",
+                    "sourceNote": "",
+                    "proceduralIdentityApplicable": true,
+                    "importerUseFileScale": false,
+                    "originalMaterialNames": [],
+                    "seed": 4244,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.6000000238418579,
+                    "importerGlobalScale": 0.0,
+                    "vertices": 1135932,
+                    "triangles": 887300,
+                    "position": {
+                        "x": 5.245736598968506,
+                        "y": 0.2916750907897949,
+                        "z": 11.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 5.447596549987793,
+                            "y": 2.5210464000701904,
+                            "z": 11.036050796508789
+                        },
+                        "m_Extent": {
+                            "x": 1.2982282638549805,
+                            "y": 2.770139455795288,
+                            "z": 1.4301834106445313
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4244",
+                            "objectName": "Bark",
+                            "vertices": 212892,
+                            "triangles": 425780,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.1659654676914215,
+                                    "y": 2.173574447631836,
+                                    "z": 0.06177777051925659
+                                },
+                                "m_Extent": {
+                                    "x": 1.0754718780517578,
+                                    "y": 2.7143425941467285,
+                                    "z": 1.234180212020874
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 bark atlas interior mapping"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 bark atlas interior mapping",
+                                    "shader": "CityLife/KokerboomSurface",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_trunk_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hybrid PH01 source rosettes - experimental LOD0 seed 4244",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 923040,
+                            "triangles": 461520,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.2018599510192871,
+                                    "y": 3.973268985748291,
+                                    "z": 0.03605043888092041
+                                },
+                                "m_Extent": {
+                                    "x": 1.29822838306427,
+                                    "y": 1.0262417793273926,
+                                    "z": 1.4301835298538208
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "Hybrid PH01 source leaves - blue-green tint preserving source detail"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "Hybrid PH01 source leaves - blue-green tint preserving source detail",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                                            "runtimeTexture": "quiver_tree_01_leaf_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+# Physical environment foundation v1
+
+Isolated component workstream from coastal checkpoint `30bdefb`. No main-world, NPC-brain or memory branch is changed. Integration is opt-in. The panorama-scale coastal world remains a separate acceptance gate.
+
+## Contract and units
+
+- Contract `starfall.environment.v1`; environment seed 1904243, terrain fixture seed 1904242. Metres, kilograms, seconds, degrees Celsius. +Y up; wind vector points toward travel (+X east, +Z north), in m/s. Gravity (0,-9.81,0). Fixed simulation interval 0.02 s; maximum frame catch-up 0.1 s. Lost wall time is not silently added to environment time.
+- Weather uses integer ticks and a seeded stateless schedule: clear, rain, cold, storm, each 1500 ticks with 250-tick smooth transitions. The 30-second cycle segment is an accelerated test-world setting, not a climate simulation. A single sampled vector drives flexible vegetation, wave travel, precipitation and drag on opted-in bodies. Anchored trees/buildings do not translate.
+- Wind force: 0.5 * air density 1.225 kg/m³ * drag area * relative-speed * relative-velocity. Force capped at 200 N; speed capped at 30 m/s. Bodies use continuous collision, mass clamped to 0.1–1000 kg, finite bounds and recovery. No destructive weather.
+- Grounded capsule: 1.8 m height, 0.35 m radius, 45-degree slope limit, 0.25 m step limit, 4 m/s walk, terminal fall speed 40 m/s. Move through collision sweeps; no teleport-to-height walking. Dry-shore boundary rejects deep water; swimming is deliberately not supplied by this controller. Falling and water recovery return to validated dry ground.
+- Water exists only inside supplied terrain bounds where bed is below surface; distant decorative sea never implies playable bathymetry. Opted-in objects may have buoyancy (water density 1000 kg/m³, displaced volume in m³), with damping and capped force. Surface waves are visual, not collision displacement.
+- Perception snapshot: air and apparent temperature, wind, precipitation, wetness, cold flag, shelter recommendation, water depth and near-boundary flag. Apparent temperature is an authored gameplay exposure model, not medical wind-chill guidance. Cold enters at <=5°C, exits at >=7°C; sheltered actors dry/warm. AI consumes values without a backend dependency. A visible local probe may seek a marked shelter; this is not the NPC brain.
+- Save schema includes world ID/revision, contract ID, seed, tick and exposure; load validates the entire candidate before replacing state. Files use temporary write + atomic replace and backup. Invalid/mismatched input leaves state untouched. Physical-body save/restore is not promised in v1; transient bodies reset at session start.
+- Pause freezes clock, physics, wind-driven visuals and exposure. Resume advances from the retained tick. Finite bounds are adapter-owned; invalid samples block motion and retain last safe state. Unknown schemas fail closed.
+
+## Budgets and acceptance
+
+Target Windows D3D11 at 1280x720: p95 frame <=33.3 ms (30 FPS), p99 <=50 ms after warm-up; core clock/exposure update p95 <=2 ms, <=128 opted-in rigid bodies and <=512 precipitation samples. `stepP95ms` measures the core clock/exposure/probe update only; PhysX, per-body forces and visual updates are included in total frame time but are not individually profiled. Record hardware, resolution on every frame, competing processes and real elapsed time; a small fixture benchmark does not establish main-world performance. `-environmentStress` selects the upper fixture load; it is a tested capacity envelope, not an engine-wide object-count limiter.
+
+Focused checks run before player build: schedule endpoint/transition continuity; identical-seed repeatability; different-seed divergence; finite/ranged output; pause; save/load continuation; invalid save rejection; coastal water/bounds query. Actual compiled player probes cover mass-independent free fall, floor/wall collision, slope acceptance/rejection, constraints, wind direction/force, buoyancy, boundary recovery, cold/shelter behavior and scripted controller traversal. Screenshots are automatically captured from the rendered player, with frame-time samples retained. Scripted-player checks and visual inspection are reported separately from human keyboard/mouse acceptance.
+
+Main-world acceptance additionally needs the coastal branch's finalized world ID/bounds/heightfield, full environment visuals at landscape scale, traversed shore/cliff routes and a joint performance run. This fixture cannot close those gates.

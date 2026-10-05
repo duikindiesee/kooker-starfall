@@ -1,0 +1,176 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using Object=UnityEngine.Object;
+
+namespace CityLife.World.Editor
+{
+    /// <summary>Bakes the inspected local stage, never an IslandBootstrap or user world/save.</summary>
+    public static class CosmicPreviewBuild
+    {
+        public const string R19Version="0.0.2-preview.2";
+        public const string FrozenTreeCommit="fc30b2857be419172e740f0d338d5913145d75fb";
+        public const string FrozenComponentHash="3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca";
+        public static void Build(Camera camera,GameObject ground,Dictionary<string,string> shaderSources,string evidenceDirectory,bool frozenR19=false,string sourceCommit="",string componentHash="",bool coastalPreview=false,GameObject coastalGround=null)
+        {
+            if(!Application.isBatchMode)throw new InvalidOperationException("Use isolated preview batch.");
+            if(frozenR19&&(!System.Text.RegularExpressions.Regex.IsMatch(sourceCommit,"^[0-9a-f]{40}$")||componentHash!=FrozenComponentHash))
+                throw new InvalidOperationException("Frozen R19 build requires an exact source commit and unchanged component mesh hash.");
+            IslandValidation.Run();
+            bool integrated=IntegratedCoastalBuild.Requested;
+            string id=DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            string folder="Assets/CityLife/GeneratedPreview-"+id;
+            string buildName=integrated?"KookerStarfallIntegrated-"+IntegratedCoastalBuild.Version+"-"+id:coastalPreview?"KookerStarfallCoastal-0.0.6-preview.1-"+id:frozenR19?"KookerStarfallR19-"+R19Version+"-"+id:"KookerStarfall-"+id;
+            string buildDirectory="Builds/"+buildName;
+            if(Directory.Exists(folder)||Directory.Exists(buildDirectory))throw new IOException("Preview output already exists; existing builds are preserved.");
+            Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+            if(integrated)IntegratedCoastalBuild.Attach(camera,coastalGround!=null?coastalGround:ground,folder);
+            var persisted=new Dictionary<Object,Object>();int assetIndex=0;
+            Object Persist(Object source)
+            {
+                if(source==null)return null;
+                if(persisted.TryGetValue(source,out Object cached))return cached;
+                string existing=AssetDatabase.GetAssetPath(source);
+                if(!string.IsNullOrEmpty(existing))return source;
+                if(source is Shader shader)
+                {
+                    if(!shaderSources.TryGetValue(shader.name,out string code))return source;
+                    string shaderPath=folder+"/Shader-"+(assetIndex++)+".shader";
+                    File.WriteAllText(shaderPath,code);AssetDatabase.ImportAsset(shaderPath,ImportAssetOptions.ForceSynchronousImport);
+                    var result=AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);persisted.Add(source,result);return result;
+                }
+                Object clone=Object.Instantiate(source);clone.hideFlags=HideFlags.None;
+                persisted.Add(source,clone);
+                if(clone is Material material)
+                {
+                    material.shader=(Shader)Persist(material.shader);
+                    foreach(string property in material.GetTexturePropertyNames())
+                        if(material.GetTexture(property)!=null)material.SetTexture(property,(Texture)Persist(material.GetTexture(property)));
+                }
+                AssetDatabase.CreateAsset(clone,folder+"/Asset-"+(assetIndex++)+".asset");return clone;
+            }
+            if(integrated||coastalPreview)
+            {
+                var unneeded=new[]{"Prototype companion trees","Neutral inspection ground","Cosmic study floor","Age lineup - same seed, unscaled metre geometry"};
+                foreach(var name in unneeded)
+                {
+                    var go=GameObject.Find(name);
+                    if(go!=null)Object.DestroyImmediate(go);
+                }
+            }
+            foreach(MeshFilter filter in Object.FindObjectsByType<MeshFilter>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+                filter.sharedMesh=(Mesh)Persist(filter.sharedMesh);
+            foreach(Renderer renderer in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+            {
+                Material[] materials=renderer.sharedMaterials;
+                for(int i=0;i<materials.Length;i++)materials[i]=(Material)Persist(materials[i]);
+                renderer.sharedMaterials=materials;
+            }
+            if(coastalPreview&&coastalGround!=null)ground=coastalGround;
+            foreach(var existingCollider in Object.FindObjectsByType<MeshCollider>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+                existingCollider.sharedMesh=(Mesh)Persist(existingCollider.sharedMesh);
+            MeshCollider collider=ground.GetComponent<MeshCollider>();if(collider==null)collider=ground.AddComponent<MeshCollider>();
+            collider.sharedMesh=ground.GetComponent<MeshFilter>().sharedMesh;
+            int woodColliders=0;
+            foreach(MeshFilter filter in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
+                if(filter.name=="Bark")
+                {
+                    if (integrated)
+                    {
+                        // Use a trunk capsule collider so the tree blocks movement at ground level
+                        // without allowing the character to climb branches or walk across the canopy.
+                        var c = filter.gameObject.AddComponent<CapsuleCollider>();
+                        c.center = new Vector3(0, 1.4f, 0);
+                        c.height = 2.8f;
+                        c.radius = 0.55f;
+                        filter.gameObject.layer = 8;
+                    }
+                    else
+                    {
+                        var c=filter.gameObject.AddComponent<MeshCollider>();
+                        if(frozenR19&&filter.name=="Bark")c.cookingOptions&=~MeshColliderCookingOptions.UseFastMidphase;
+                        c.sharedMesh=filter.sharedMesh;
+                    }
+                    woodColliders++;
+                }
+            camera.enabled=true;camera.tag="MainCamera";
+            if(integrated) ground.layer=10;
+            else
+            {
+            ground.layer=8;
+            var explorer=camera.gameObject.AddComponent<CosmicPreviewExplorer>();explorer.Camera=camera;explorer.GroundMask=1<<8;
+            if(coastalPreview){explorer.MinimumX=CoastalTerrain.MinX+2;explorer.MaximumX=CoastalTerrain.MaxX-2;explorer.MinimumZ=CoastalTerrain.MinZ+2;explorer.MaximumZ=CoastalTerrain.MaxZ-2;camera.gameObject.AddComponent<CoastalPreviewSmoke>();}
+            else if(frozenR19)camera.gameObject.AddComponent<CosmicPreviewSmoke>();
+            if(frozenR19)camera.gameObject.AddComponent<PreviewDisplayMode>();
+
+            }
+            if(camera.GetComponent<AudioListener>()==null)camera.gameObject.AddComponent<AudioListener>();
+
+            var pipeline=Object.Instantiate((UniversalRenderPipelineAsset)GraphicsSettings.defaultRenderPipeline);
+            pipeline.hideFlags=HideFlags.None;
+            var pipelineSettings=new SerializedObject(pipeline);var renderers=pipelineSettings.FindProperty("m_RendererDataList");
+            for(int i=0;i<renderers.arraySize;i++)
+            {
+                var renderer=Object.Instantiate(renderers.GetArrayElementAtIndex(i).objectReferenceValue);renderer.hideFlags=HideFlags.None;
+                AssetDatabase.CreateAsset(renderer,folder+"/Renderer-"+i+".asset");renderers.GetArrayElementAtIndex(i).objectReferenceValue=renderer;
+            }
+            pipelineSettings.ApplyModifiedPropertiesWithoutUndo();AssetDatabase.CreateAsset(pipeline,folder+"/Pipeline.asset");
+            string oldCompany=PlayerSettings.companyName,oldProduct=PlayerSettings.productName,oldVersion=PlayerSettings.bundleVersion;
+            int oldWidth=PlayerSettings.defaultScreenWidth,oldHeight=PlayerSettings.defaultScreenHeight,oldQuality=QualitySettings.GetQualityLevel();
+            bool oldBackground=PlayerSettings.runInBackground,oldResize=PlayerSettings.resizableWindow,oldSwitch=PlayerSettings.allowFullscreenSwitch;
+            FullScreenMode oldMode=PlayerSettings.fullScreenMode;
+            RenderPipelineAsset oldGraphics=GraphicsSettings.defaultRenderPipeline;
+            var oldPipelines=new RenderPipelineAsset[QualitySettings.names.Length];
+            int capturedPipelines=0;
+            try
+            {
+                for(int i=0;i<oldPipelines.Length;i++)
+                {QualitySettings.SetQualityLevel(i);oldPipelines[i]=QualitySettings.renderPipeline;capturedPipelines=i+1;}
+                QualitySettings.SetQualityLevel(oldQuality);
+                PlayerSettings.companyName="LocalWorldStudy";PlayerSettings.productName=integrated?"Kooker Starfall - Integrated Coastal Candidate":coastalPreview?"Kooker Starfall Coastal Preview":frozenR19?"Kooker Starfall R19 "+R19Version:"Kooker Starfall";PlayerSettings.bundleVersion=integrated?IntegratedCoastalBuild.Version:coastalPreview?"0.0.6-preview.1":frozenR19?R19Version:"0.0.1-wip";
+                PlayerSettings.defaultScreenWidth=1600;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;PlayerSettings.runInBackground=true;
+                if(frozenR19){PlayerSettings.resizableWindow=true;PlayerSettings.allowFullscreenSwitch=false;}
+                GraphicsSettings.defaultRenderPipeline=pipeline;
+                for(int i=0;i<oldPipelines.Length;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=pipeline;}
+                QualitySettings.SetQualityLevel(oldQuality);
+                string scene=folder+"/CosmicPreview.unity";EditorSceneManager.SaveScene(camera.gameObject.scene,scene);AssetDatabase.SaveAssets();
+                string output=buildDirectory+(integrated?"/KookerStarfallIntegrated.exe":coastalPreview?"/KookerStarfallCoastal.exe":frozenR19?"/KookerStarfallR19.exe":"/KookerStarfall.exe");Directory.CreateDirectory(buildDirectory);
+                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scene},locationPathName=Path.GetFullPath(output),target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
+                var evidence=new BuildEvidence{status=report.summary.result.ToString(),output=output,scene=scene,product=PlayerSettings.productName,bytes=(long)report.summary.totalSize,seconds=report.summary.totalTime.TotalSeconds,errors=(int)report.summary.totalErrors,warnings=(int)report.summary.totalWarnings,scope="Separate local WIP tree and blue-giant inspection stage. No IslandBootstrap, saved world, multiplayer or bot integrations. Visual gate not passed; source hybrid and runtime movement remain under review.",utc=DateTime.UtcNow.ToString("O")};
+                evidence.buildId=buildName;evidence.version=PlayerSettings.bundleVersion;evidence.sourceCommit=sourceCommit;
+                evidence.woodColliders=woodColliders;evidence.rockColliders=0;
+                if(frozenR19)
+                {
+                    evidence.treeReview="R19";evidence.frozenTreeCommit=FrozenTreeCommit;evidence.componentMeshSha256=componentHash;
+                    evidence.scope="Separate versioned local player using the frozen R19 PH02 tree and existing study stage. Preserves R06. No saved-world loading, multiplayer, bot integrations, living sea or wider landscape. Actual player startup/input/collision acceptance recorded separately.";
+                }
+                if(coastalPreview)
+                {
+                    evidence.rockColliders=Object.FindObjectsByType<MeshCollider>(FindObjectsSortMode.None).Count(c=>c.gameObject.name.StartsWith("Stratified shore rock ",StringComparison.Ordinal));
+                    evidence.scope="Separate bounded coastal player using starfall.coastal-slice.v1: frozen R19 tree, rocky bank, luminous turquoise river/sea, canyon terrain, blue giant and procedural galaxy. Actual runtime acceptance is recorded separately. No living-sea populations, swimming, save loading, bots, networking or current-player replacement.";
+                }
+                if(integrated)evidence.scope="Finite coastal integration candidate with environment adapter, autonomous inhabitant and hunter clothing. Actual combined-player acceptance recorded separately; no full-world, save/load, swimming or boat claim.";
+                File.WriteAllText(Path.Combine(evidenceDirectory,"preview-build.json"),JsonUtility.ToJson(evidence,true));
+                if(report.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Cosmic WIP preview build failed.");
+                Debug.Log("COSMIC_PREVIEW_BUILD_SUCCEEDED "+output);
+            }
+            finally
+            {
+                PlayerSettings.companyName=oldCompany;PlayerSettings.productName=oldProduct;PlayerSettings.bundleVersion=oldVersion;
+                PlayerSettings.defaultScreenWidth=oldWidth;PlayerSettings.defaultScreenHeight=oldHeight;PlayerSettings.fullScreenMode=oldMode;PlayerSettings.runInBackground=oldBackground;
+                PlayerSettings.resizableWindow=oldResize;PlayerSettings.allowFullscreenSwitch=oldSwitch;
+                GraphicsSettings.defaultRenderPipeline=oldGraphics;
+                for(int i=0;i<capturedPipelines;i++){QualitySettings.SetQualityLevel(i);QualitySettings.renderPipeline=oldPipelines[i];}
+                QualitySettings.SetQualityLevel(oldQuality);AssetDatabase.SaveAssets();
+            }
+        }
+        [Serializable]sealed class BuildEvidence{public string status,output,scene,product,scope,utc,buildId,version,sourceCommit,treeReview,frozenTreeCommit,componentMeshSha256;public long bytes;public double seconds;public int errors,warnings,woodColliders,rockColliders;}
+    }
+}

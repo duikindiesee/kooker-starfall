@@ -1,0 +1,23 @@
+{
+  "schema": "starfall.round16-authoring-cost.v1",
+  "renderCompletedUtc": "2026-09-10T20:42:38.8895966Z",
+  "scope": "Cold editor main-tree creation wrapper: KokerboomGeometry.Create plus object naming, positioning and subject registration. Not gameplay FPS, render-frame timing, sustained runtime benchmark or per-stage bottleneck attribution.",
+  "subject": {
+    "seed": 4242,
+    "age01": 1,
+    "lod": 0,
+    "vertices": 3766337,
+    "triangles": 6591379
+  },
+  "coldCreationMilliseconds": 517901,
+  "seconds": 517.901,
+  "sourceLogSha256": "dec4558241a6a331f46747f62bf0c5dedaf2f2d608931e0fbd30ed534f6d82d8",
+  "sanitizedLogLines": [
+    "KOKERBOOM_CREATE_BEGIN seed=4242 age=1.00 lod=0",
+    "KOKERBOOM_CREATE_END seed=4242 age=1.00 milliseconds=517901"
+  ],
+  "geometrySourceSha256": "d051e8f9871fab0187fbd825af0dd98fe51d6e2f38b9c9c62ee3105c6fe1addf",
+  "captureManifest": "evidence/milestones/kokerboom/round-16/metrics.json",
+  "captureManifestSha256": "b21b5439b5639b222ec3e96746261e1804548cdf2eee628a0b6d8bbaee30a349",
+  "remainingGap": "R16 did not record individual Skeleton/Wood/Leaves timings. Later instrumentation and fresh family validation are separate; no optimization or runtime acceptance inferred."
+}

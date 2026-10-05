@@ -1,0 +1,32 @@
+{
+  "has_more": false,
+  "items": [
+    {
+      "cursor": 4,
+      "epistemic_status": "confirmed_event",
+      "evidence_ids": [
+        "083ae6985f7c4e49400f59d166390f707e492046ac144d69f09b181b16c217ab"
+      ],
+      "inhabitant_id": "inhabitant-02",
+      "kind": "episode",
+      "schema": "starfall.memory.record.v1",
+      "summary": "inhabitant-02 was registered as Mira.",
+      "tick": 0,
+      "world_id": "starfall.memory-proof.v1"
+    },
+    {
+      "cursor": 12,
+      "epistemic_status": "confirmed_event",
+      "evidence_ids": [
+        "f3788f94fdfce8e80a71d07baa38cef77e9f07c0a9f435881e97a415fc7dd5c8"
+      ],
+      "inhabitant_id": "inhabitant-02",
+      "kind": "episode",
+      "schema": "starfall.memory.record.v1",
+      "summary": "inhabitant-02 started sleeping at tick 30.",
+      "tick": 30,
+      "world_id": "starfall.memory-proof.v1"
+    }
+  ],
+  "next_after": 12
+}

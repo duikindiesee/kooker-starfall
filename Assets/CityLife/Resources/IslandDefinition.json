@@ -1,0 +1,17 @@
+{
+  "schema": "citylife.unity.world.v1",
+  "worldId": "citylife-island-foundation-4242-v1",
+  "generator": "citylife.desert-island.v1",
+  "sourceCommit": "b71307023aea600da27aa3eada6cdcce7ba758ed",
+  "seed": 4242,
+  "cells": 1024,
+  "cellMetres": 4,
+  "heightScale": 240,
+  "seaLevel": 0.34,
+  "chunkCells": 64,
+  "elevationFrequency": 2.6,
+  "mountainFrequency": 3.1,
+  "moistureFrequency": 1.7,
+  "elevationOctaves": 5,
+  "moistureOctaves": 4
+}

@@ -1,0 +1,1125 @@
+{
+    "schema": "citylife.kokerboom-validation.v1",
+    "utc": "2026-09-10T19:29:03.5351796Z",
+    "status": "PASS",
+    "geometryVersion": "citylife.aloidendron-dichotomum.v1",
+    "unityVersion": "6000.6.0f1",
+    "platform": "WindowsEditor",
+    "failure": "",
+    "componentMode": "hybrid-ph01-source-rosettes",
+    "leafTopologyPolicy": "105 original open-base leaves in five groups; 12 source boundary edges per leaf. Source polygon corners retain UV/normal seams; leaves are not subjected to the closed-wood topology test. Eleven closed basal pieces are excluded. Original position/normal/UV identity is checked; tangent differences remain diagnostic.",
+    "cleanupFailure": "",
+    "hybridComponentsConfigured": true,
+    "sourceInputsUnchanged": true,
+    "hybridCleanupComplete": true,
+    "sourceExtraction": {
+        "schema": "citylife.ph01-rosette-extraction.v1",
+        "status": "Extractable source geometry; hybrid appearance and botanical identity not accepted",
+        "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+        "sourceSha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+        "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+        "licenseUrl": "https://polyhaven.com/license",
+        "sourceMaterial": "quiver_tree_01_leaf",
+        "diffuse": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+        "normalOpenGL": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+        "roughness": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+        "coordinates": "Source FBX mesh coordinates are Z-up. Output (-X,Z,-Y) matches the observed Unity FBX handedness/orientation at metre scale; each measured root mean is subtracted before conversion. Source model scale100 and centimetre file units cancel. No shape normalization or per-rosette straightening.",
+        "preservation": "Whole source polygons; quad fan triangulation; source polygon-corner UVs and normals copied. Reflection reverses winding. Tangents are derived for normal mapping; normals are not recalculated. No caps, sockets, welds or replacement leaves.",
+        "basalPolicy": "11 closed leaf-material components assigned by nearest component centroid to a measured leaf-root group. Optional/separate; their semantic identity and suitability remain unverified.",
+        "sourceLeafComponents": 105,
+        "sourceClosedComponents": 11,
+        "groups": [
+            {
+                "id": "A",
+                "sourceRootFbx": {
+                    "x": -0.17702636122703552,
+                    "y": -0.23859678208827972,
+                    "z": 2.2051517963409424
+                },
+                "sourceRootUnity": {
+                    "x": 0.17702636122703552,
+                    "y": 2.2051517963409424,
+                    "z": 0.23859678208827972
+                },
+                "rootedLeafBounds": {
+                    "m_Center": {
+                        "x": -0.006083950400352478,
+                        "y": -0.005786240100860596,
+                        "z": 0.03197939693927765
+                    },
+                    "m_Extent": {
+                        "x": 0.23482199013233185,
+                        "y": 0.2390003800392151,
+                        "z": 0.23181989789009094
+                    }
+                },
+                "leafComponents": 21,
+                "leafTriangles": 9456,
+                "sourceLeafControlVertices": 4875,
+                "emittedLeafCornerVertices": 18912,
+                "basalComponents": 2,
+                "basalTriangles": 9050,
+                "sourceLeafComponentIds": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20
+                ],
+                "sourceBasalComponentIds": [
+                    111,
+                    115
+                ]
+            },
+            {
+                "id": "B",
+                "sourceRootFbx": {
+                    "x": -0.11295545846223831,
+                    "y": -0.05061671882867813,
+                    "z": 2.205615282058716
+                },
+                "sourceRootUnity": {
+                    "x": 0.11295545846223831,
+                    "y": 2.205615282058716,
+                    "z": 0.05061671882867813
+                },
+                "rootedLeafBounds": {
+                    "m_Center": {
+                        "x": -0.00001823902130126953,
+                        "y": -0.008333206176757813,
+                        "z": 0.007419422268867493
+                    },
+                    "m_Extent": {
+                        "x": 0.21237504482269287,
+                        "y": 0.14793109893798828,
+                        "z": 0.21123109757900238
+                    }
+                },
+                "leafComponents": 21,
+                "leafTriangles": 9408,
+                "sourceLeafControlVertices": 4851,
+                "emittedLeafCornerVertices": 18816,
+                "basalComponents": 2,
+                "basalTriangles": 13756,
+                "sourceLeafComponentIds": [
+                    84,
+                    85,
+                    86,
+                    87,
+                    88,
+                    89,
+                    90,
+                    91,
+                    92,
+                    93,
+                    94,
+                    95,
+                    96,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104
+                ],
+                "sourceBasalComponentIds": [
+                    109,
+                    110
+                ]
+            },
+            {
+                "id": "C",
+                "sourceRootFbx": {
+                    "x": -0.3081694543361664,
+                    "y": -0.09782712906599045,
+                    "z": 2.2237207889556885
+                },
+                "sourceRootUnity": {
+                    "x": 0.3081694543361664,
+                    "y": 2.2237207889556885,
+                    "z": 0.09782712906599045
+                },
+                "rootedLeafBounds": {
+                    "m_Center": {
+                        "x": 0.015451595187187195,
+                        "y": 0.01886606216430664,
+                        "z": -0.005698025226593018
+                    },
+                    "m_Extent": {
+                        "x": 0.22341912984848022,
+                        "y": 0.16289854049682617,
+                        "z": 0.22769635915756226
+                    }
+                },
+                "leafComponents": 21,
+                "leafTriangles": 9408,
+                "sourceLeafControlVertices": 4851,
+                "emittedLeafCornerVertices": 18816,
+                "basalComponents": 2,
+                "basalTriangles": 10692,
+                "sourceLeafComponentIds": [
+                    63,
+                    64,
+                    65,
+                    66,
+                    67,
+                    68,
+                    69,
+                    70,
+                    71,
+                    72,
+                    73,
+                    74,
+                    75,
+                    76,
+                    77,
+                    78,
+                    79,
+                    80,
+                    81,
+                    82,
+                    83
+                ],
+                "sourceBasalComponentIds": [
+                    112,
+                    113
+                ]
+            },
+            {
+                "id": "D",
+                "sourceRootFbx": {
+                    "x": 0.014842384494841099,
+                    "y": 0.12494815140962601,
+                    "z": 2.375136613845825
+                },
+                "sourceRootUnity": {
+                    "x": -0.014842384494841099,
+                    "y": 2.375136613845825,
+                    "z": -0.12494815140962601
+                },
+                "rootedLeafBounds": {
+                    "m_Center": {
+                        "x": 0.017719581723213196,
+                        "y": 0.036956787109375,
+                        "z": -0.011326849460601807
+                    },
+                    "m_Extent": {
+                        "x": 0.2222544550895691,
+                        "y": 0.26154541969299316,
+                        "z": 0.3071752190589905
+                    }
+                },
+                "leafComponents": 21,
+                "leafTriangles": 9408,
+                "sourceLeafControlVertices": 4851,
+                "emittedLeafCornerVertices": 18816,
+                "basalComponents": 3,
+                "basalTriangles": 18994,
+                "sourceLeafComponentIds": [
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52,
+                    53,
+                    54,
+                    55,
+                    56,
+                    57,
+                    58,
+                    59,
+                    60,
+                    61,
+                    62
+                ],
+                "sourceBasalComponentIds": [
+                    105,
+                    106,
+                    114
+                ]
+            },
+            {
+                "id": "E",
+                "sourceRootFbx": {
+                    "x": 0.27949193120002747,
+                    "y": 0.19215357303619385,
+                    "z": 2.3940556049346924
+                },
+                "sourceRootUnity": {
+                    "x": -0.27949193120002747,
+                    "y": 2.3940556049346924,
+                    "z": -0.19215357303619385
+                },
+                "rootedLeafBounds": {
+                    "m_Center": {
+                        "x": 0.010391920804977417,
+                        "y": 0.02724480628967285,
+                        "z": 0.019251137971878052
+                    },
+                    "m_Extent": {
+                        "x": 0.3650953769683838,
+                        "y": 0.23804211616516113,
+                        "z": 0.2932069003582001
+                    }
+                },
+                "leafComponents": 21,
+                "leafTriangles": 9408,
+                "sourceLeafControlVertices": 4851,
+                "emittedLeafCornerVertices": 18816,
+                "basalComponents": 2,
+                "basalTriangles": 13574,
+                "sourceLeafComponentIds": [
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41
+                ],
+                "sourceBasalComponentIds": [
+                    107,
+                    108
+                ]
+            }
+        ]
+    },
+    "sourceIdentity": {
+        "schema": "citylife.ph01-source-identity.v1",
+        "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+        "sourceSha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+        "unityVersion": "6000.6.0f1",
+        "scope": "Source identity diagnostic only; no appearance acceptance. Imported leaf slot includes closed basal pieces; extracted groups contain 21 open-base leaves each. Triangle statistics use each mesh's existing triangulation. Reconstructed source roots are added back before matching. Tangents may differ because extraction currently duplicates polygon corners before RecalculateTangents.",
+        "normalImportMode": "Import",
+        "tangentImportMode": "CalculateMikk",
+        "rootPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rootEuler": {
+            "x": 270.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "rootScale": {
+            "x": 100.0,
+            "y": 100.00003051757813,
+            "z": 100.00003051757813
+        },
+        "positionToleranceMetres": 0.000019999999494757503,
+        "uvTolerance": 0.000009999999747378752,
+        "normalDotThreshold": 0.9998999834060669,
+        "globalScale": 1.0,
+        "useFileUnits": true,
+        "bakeAxisConversion": false,
+        "weldVertices": true,
+        "allCornersMatchImportedPositionNormalUv": true,
+        "importedLeafVertices": 69628,
+        "importedMeshes": [
+            {
+                "name": "quiver_tree_01_LOD0",
+                "vertices": 88854,
+                "selectedLeafVertices": 69628,
+                "selectedLeafTriangles": 113154,
+                "localBounds": {
+                    "m_Center": {
+                        "x": -0.00043577561154961586,
+                        "y": -0.00018143374472856522,
+                        "z": 0.013159284368157387
+                    },
+                    "m_Extent": {
+                        "x": 0.0059061781503260136,
+                        "y": 0.004842527210712433,
+                        "z": 0.013577103614807129
+                    }
+                },
+                "worldMatrix": {
+                    "e00": 100.0,
+                    "e01": 0.0,
+                    "e02": 0.0,
+                    "e03": 0.0,
+                    "e10": 0.0,
+                    "e11": -0.000011920928955078125,
+                    "e12": 100.00001525878906,
+                    "e13": 0.0,
+                    "e20": 0.0,
+                    "e21": -100.00001525878906,
+                    "e22": -0.000011920928955078125,
+                    "e23": 0.0,
+                    "e30": 0.0,
+                    "e31": 0.0,
+                    "e32": 0.0,
+                    "e33": 1.0
+                },
+                "hasTangents": true,
+                "materialNames": [
+                    "quiver_tree_01_trunk",
+                    "quiver_tree_01_leaf"
+                ]
+            }
+        ],
+        "textures": [
+            {
+                "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+                "type": "Default",
+                "compression": "Compressed",
+                "filter": "Bilinear",
+                "srgb": true,
+                "flipGreen": false,
+                "mipmaps": true,
+                "aniso": 1
+            },
+            {
+                "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+                "type": "Default",
+                "compression": "Compressed",
+                "filter": "Bilinear",
+                "srgb": true,
+                "flipGreen": false,
+                "mipmaps": true,
+                "aniso": 1
+            },
+            {
+                "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+                "type": "Default",
+                "compression": "Compressed",
+                "filter": "Bilinear",
+                "srgb": true,
+                "flipGreen": false,
+                "mipmaps": true,
+                "aniso": 1
+            }
+        ],
+        "groups": [
+            {
+                "id": "A",
+                "sourceRootUnity": {
+                    "x": 0.17702636122703552,
+                    "y": 2.2051517963409424,
+                    "z": 0.23859678208827972
+                },
+                "rootedBounds": {
+                    "m_Center": {
+                        "x": -0.006083950400352478,
+                        "y": -0.005786240100860596,
+                        "z": 0.031979404389858246
+                    },
+                    "m_Extent": {
+                        "x": 0.23482199013233185,
+                        "y": 0.2390003800392151,
+                        "z": 0.23181989789009094
+                    }
+                },
+                "vertices": 18912,
+                "triangles": 9456,
+                "exactPositionNormalUvVertices": 5698,
+                "positionMatches": 18912,
+                "positionUvMatches": 18912,
+                "positionFlippedVMatches": 0,
+                "positionNormalUvMatches": 18912,
+                "oppositeNormalCorners": 0,
+                "tangentDirectionMatches": 11141,
+                "tangentHandednessMatches": 18911,
+                "maximumNearestPositionError": 5.547556156670908e-7,
+                "maximumMinimumUvErrorAtPosition": 0.0,
+                "minimumBestNormalDot": 0.9999998807907104,
+                "minimumNormalLength": 0.9999998807907104,
+                "maximumNormalLength": 1.0000001192092896,
+                "minimumBestTangentDot": -0.7348595857620239,
+                "triangleStats": {
+                    "triangles": 9456,
+                    "degenerateTriangles": 0,
+                    "normalComparisons": 28368,
+                    "negativeNormalDots": 0,
+                    "minimumDot": 0.0,
+                    "meanDot": 0.7177805304527283
+                },
+                "firstMismatches": []
+            },
+            {
+                "id": "B",
+                "sourceRootUnity": {
+                    "x": 0.11295545846223831,
+                    "y": 2.205615282058716,
+                    "z": 0.05061671882867813
+                },
+                "rootedBounds": {
+                    "m_Center": {
+                        "x": -0.00001823902130126953,
+                        "y": -0.008333206176757813,
+                        "z": 0.007419422268867493
+                    },
+                    "m_Extent": {
+                        "x": 0.21237504482269287,
+                        "y": 0.14793109893798828,
+                        "z": 0.21123109757900238
+                    }
+                },
+                "vertices": 18816,
+                "triangles": 9408,
+                "exactPositionNormalUvVertices": 5670,
+                "positionMatches": 18816,
+                "positionUvMatches": 18816,
+                "positionFlippedVMatches": 0,
+                "positionNormalUvMatches": 18816,
+                "oppositeNormalCorners": 0,
+                "tangentDirectionMatches": 7582,
+                "tangentHandednessMatches": 18809,
+                "maximumNearestPositionError": 5.546680768020451e-7,
+                "maximumMinimumUvErrorAtPosition": 0.0,
+                "minimumBestNormalDot": 0.9999998807907104,
+                "minimumNormalLength": 0.9999998807907104,
+                "maximumNormalLength": 1.0000001192092896,
+                "minimumBestTangentDot": 0.07600779831409454,
+                "triangleStats": {
+                    "triangles": 9408,
+                    "degenerateTriangles": 0,
+                    "normalComparisons": 28224,
+                    "negativeNormalDots": 0,
+                    "minimumDot": 0.0,
+                    "meanDot": 0.6518984436988831
+                },
+                "firstMismatches": []
+            },
+            {
+                "id": "C",
+                "sourceRootUnity": {
+                    "x": 0.3081694543361664,
+                    "y": 2.2237207889556885,
+                    "z": 0.09782712906599045
+                },
+                "rootedBounds": {
+                    "m_Center": {
+                        "x": 0.015451647341251373,
+                        "y": 0.01886606216430664,
+                        "z": -0.005698025226593018
+                    },
+                    "m_Extent": {
+                        "x": 0.223419189453125,
+                        "y": 0.16289854049682617,
+                        "z": 0.22769635915756226
+                    }
+                },
+                "vertices": 18816,
+                "triangles": 9408,
+                "exactPositionNormalUvVertices": 5670,
+                "positionMatches": 18816,
+                "positionUvMatches": 18816,
+                "positionFlippedVMatches": 0,
+                "positionNormalUvMatches": 18816,
+                "oppositeNormalCorners": 0,
+                "tangentDirectionMatches": 7143,
+                "tangentHandednessMatches": 18811,
+                "maximumNearestPositionError": 5.625065000458562e-7,
+                "maximumMinimumUvErrorAtPosition": 0.0,
+                "minimumBestNormalDot": 0.9999998807907104,
+                "minimumNormalLength": 0.9999998807907104,
+                "maximumNormalLength": 1.0000001192092896,
+                "minimumBestTangentDot": -0.13482370972633362,
+                "triangleStats": {
+                    "triangles": 9408,
+                    "degenerateTriangles": 0,
+                    "normalComparisons": 28224,
+                    "negativeNormalDots": 0,
+                    "minimumDot": 0.0,
+                    "meanDot": 0.6855432391166687
+                },
+                "firstMismatches": []
+            },
+            {
+                "id": "D",
+                "sourceRootUnity": {
+                    "x": -0.014842384494841099,
+                    "y": 2.375136613845825,
+                    "z": -0.12494815140962601
+                },
+                "rootedBounds": {
+                    "m_Center": {
+                        "x": 0.017719581723213196,
+                        "y": 0.036956787109375,
+                        "z": -0.011326834559440613
+                    },
+                    "m_Extent": {
+                        "x": 0.2222544550895691,
+                        "y": 0.26154541969299316,
+                        "z": 0.3071752190589905
+                    }
+                },
+                "vertices": 18816,
+                "triangles": 9408,
+                "exactPositionNormalUvVertices": 5670,
+                "positionMatches": 18816,
+                "positionUvMatches": 18816,
+                "positionFlippedVMatches": 0,
+                "positionNormalUvMatches": 18816,
+                "oppositeNormalCorners": 0,
+                "tangentDirectionMatches": 7678,
+                "tangentHandednessMatches": 18811,
+                "maximumNearestPositionError": 5.960493467682682e-7,
+                "maximumMinimumUvErrorAtPosition": 0.0,
+                "minimumBestNormalDot": 0.9999998807907104,
+                "minimumNormalLength": 0.9999998807907104,
+                "maximumNormalLength": 1.0000001192092896,
+                "minimumBestTangentDot": -0.5728253722190857,
+                "triangleStats": {
+                    "triangles": 9408,
+                    "degenerateTriangles": 0,
+                    "normalComparisons": 28224,
+                    "negativeNormalDots": 0,
+                    "minimumDot": 0.0,
+                    "meanDot": 0.7597325444221497
+                },
+                "firstMismatches": []
+            },
+            {
+                "id": "E",
+                "sourceRootUnity": {
+                    "x": -0.27949193120002747,
+                    "y": 2.3940556049346924,
+                    "z": -0.19215357303619385
+                },
+                "rootedBounds": {
+                    "m_Center": {
+                        "x": 0.01039193570613861,
+                        "y": 0.02724480628967285,
+                        "z": 0.019251137971878052
+                    },
+                    "m_Extent": {
+                        "x": 0.3650953769683838,
+                        "y": 0.23804211616516113,
+                        "z": 0.2932069003582001
+                    }
+                },
+                "vertices": 18816,
+                "triangles": 9408,
+                "exactPositionNormalUvVertices": 5670,
+                "positionMatches": 18816,
+                "positionUvMatches": 18816,
+                "positionFlippedVMatches": 0,
+                "positionNormalUvMatches": 18816,
+                "oppositeNormalCorners": 0,
+                "tangentDirectionMatches": 11607,
+                "tangentHandednessMatches": 18815,
+                "maximumNearestPositionError": 5.962326667940943e-7,
+                "maximumMinimumUvErrorAtPosition": 0.0,
+                "minimumBestNormalDot": 0.9999998211860657,
+                "minimumNormalLength": 0.9999998807907104,
+                "maximumNormalLength": 1.0000001192092896,
+                "minimumBestTangentDot": 0.4853164851665497,
+                "triangleStats": {
+                    "triangles": 9408,
+                    "degenerateTriangles": 0,
+                    "normalComparisons": 28224,
+                    "negativeNormalDots": 0,
+                    "minimumDot": 0.0,
+                    "meanDot": 0.7837754487991333
+                },
+                "firstMismatches": []
+            }
+        ],
+        "importedLeafTriangleStats": {
+            "triangles": 113154,
+            "degenerateTriangles": 0,
+            "normalComparisons": 339462,
+            "negativeNormalDots": 16,
+            "minimumDot": -0.6176316142082214,
+            "meanDot": 0.3818039298057556
+        }
+    },
+    "assertions": 380,
+    "independentRegeneration": true,
+    "descriptorMeasurement": "Skeleton estimates; independently measured actual mesh bounds are recorded separately. Leaf-length metadata is not independently measured by this check.",
+    "visualAcceptance": "Unverified: independent rendered-image critique is required.",
+    "specimens": [
+        {
+            "seed": 4242,
+            "lod": 0,
+            "vertices": 968508,
+            "triangles": 807332,
+            "age01": 0.6000000238418579,
+            "meshSha256": "39b408dadecc27cd00dc20002862fffc6d28d44bba656915044d96734873b817",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.708475589752197,\"crownDiameterMetres\":3.16595721244812,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0016852866392582655,\"y\":1.8783942461013794,\"z\":0.03938260301947594},\"trunkBark\":{\"x\":0.0003370573394931853,\"y\":0.6757897734642029,\"z\":-0.36573466658592224},\"terminalRosette\":{\"x\":-0.2082366645336151,\"y\":4.213598728179932,\"z\":-1.1009904146194458}}",
+            "actualMinimum": {
+                "x": -1.3726221323013306,
+                "y": -0.6770127415657043,
+                "z": -1.3495776653289795
+            },
+            "actualMaximum": {
+                "x": 1.5702825784683228,
+                "y": 4.60910177230835,
+                "z": 1.4651857614517212
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 798284,
+            "triangles": 466888,
+            "age01": 0.6000000238418579,
+            "meshSha256": "143cb32238c96ef7e80f57742d1abeb5e641ff416d99eeba0430fc097d6f6028",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.708475589752197,\"crownDiameterMetres\":3.16595721244812,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0016852866392582655,\"y\":1.8783942461013794,\"z\":0.03938260301947594},\"trunkBark\":{\"x\":0.0003370573394931853,\"y\":0.6757897734642029,\"z\":-0.36573466658592224},\"terminalRosette\":{\"x\":-0.2082366645336151,\"y\":4.213598728179932,\"z\":-1.1009904146194458}}",
+            "actualMinimum": {
+                "x": -1.3726221323013306,
+                "y": -0.676704466342926,
+                "z": -1.3495776653289795
+            },
+            "actualMaximum": {
+                "x": 1.5702825784683228,
+                "y": 4.60910177230835,
+                "z": 1.4651857614517212
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 768360,
+            "triangles": 407040,
+            "age01": 0.6000000238418579,
+            "meshSha256": "b8ccdb7755745e4b19a6303ee32cc7d57997d71c15367f78d512049359b57679",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.708475589752197,\"crownDiameterMetres\":3.16595721244812,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0016852866392582655,\"y\":1.8783942461013794,\"z\":0.03938260301947594},\"trunkBark\":{\"x\":0.0003370573394931853,\"y\":0.6757897734642029,\"z\":-0.36573466658592224},\"terminalRosette\":{\"x\":-0.2082366645336151,\"y\":4.213598728179932,\"z\":-1.1009904146194458}}",
+            "actualMinimum": {
+                "x": -1.3726221323013306,
+                "y": -0.6763479709625244,
+                "z": -1.3495776653289795
+            },
+            "actualMaximum": {
+                "x": 1.5702825784683228,
+                "y": 4.60910177230835,
+                "z": 1.4651857614517212
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 19344,
+            "triangles": 10460,
+            "age01": 0.05000000074505806,
+            "meshSha256": "eada111fcde7b56b38f439870a623eab095433d96383fb1e3eb6b0512aa4db41",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":1,\"branchSegments\":12,\"forkGenerations\":0,\"age01\":0.05000000074505806,\"heightMetres\":0.44209998846054077,\"crownDiameterMetres\":0.6346588134765625,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.00035611086059361696,\"y\":0.21250000596046448,\"z\":0.008321773260831833},\"trunkBark\":{\"x\":0.00007122217357391492,\"y\":0.042750000953674316,\"z\":-0.059893980622291565},\"terminalRosette\":{\"x\":0.00035611086059361696,\"y\":0.16750000417232513,\"z\":0.008321773260831833}}",
+            "actualMinimum": {
+                "x": -0.20491968095302582,
+                "y": -0.19443069398403168,
+                "z": -0.2123500406742096
+            },
+            "actualMaximum": {
+                "x": 0.22917933762073517,
+                "y": 0.25628581643104553,
+                "z": 0.2256792038679123
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 160034,
+            "triangles": 94272,
+            "age01": 0.30000001192092896,
+            "meshSha256": "89a5ee6e9ccdce9f41a15352b01159022bb21800a296133f84678a1802d8a8e3",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":2.899449348449707,\"crownDiameterMetres\":1.8938007354736328,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0010191145120188594,\"y\":1.427887201309204,\"z\":0.02381516806781292},\"trunkBark\":{\"x\":0.00020382289949338883,\"y\":0.5045971274375916,\"z\":-0.1950429081916809},\"terminalRosette\":{\"x\":0.08817251771688461,\"y\":2.5361671447753906,\"z\":-0.40558183193206787}}",
+            "actualMinimum": {
+                "x": -0.6801654100418091,
+                "y": -0.40694865584373474,
+                "z": -0.7534292936325073
+            },
+            "actualMaximum": {
+                "x": 0.6506755948066711,
+                "y": 2.7969467639923096,
+                "z": 0.8354637622833252
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 2,
+            "vertices": 1804172,
+            "triangles": 953132,
+            "age01": 0.8999999761581421,
+            "meshSha256": "757cb903e48ffb9309801275786a3d3c505460143b318c426a323f0e7c6c05d0",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":94,\"branchSegments\":1320,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":6.3381667137146,\"crownDiameterMetres\":4.953710079193115,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.00229453481733799,\"y\":1.9528677463531494,\"z\":0.05361981689929962},\"trunkBark\":{\"x\":0.00045890695764683187,\"y\":0.7040897011756897,\"z\":-0.5409454107284546},\"terminalRosette\":{\"x\":-0.3085256516933441,\"y\":5.54025411605835,\"z\":-1.9936072826385498}}",
+            "actualMinimum": {
+                "x": -2.155836343765259,
+                "y": -0.9531518816947937,
+                "z": -2.22747802734375
+            },
+            "actualMaximum": {
+                "x": 2.1787796020507813,
+                "y": 6.309501647949219,
+                "z": 2.4001035690307617
+            }
+        },
+        {
+            "seed": 314,
+            "lod": 2,
+            "vertices": 768746,
+            "triangles": 406956,
+            "age01": 0.6000000238418579,
+            "meshSha256": "a4cd270985730bc986e8f6bdd29f3e8ca9af62bf972fcf61abedaf0ce4c62beb",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":314,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.574695110321045,\"crownDiameterMetres\":3.4608542919158936,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0938081219792366,\"y\":1.943911075592041,\"z\":0.024221146479249},\"trunkBark\":{\"x\":0.01876162551343441,\"y\":0.7006862163543701,\"z\":-0.3331710398197174},\"terminalRosette\":{\"x\":0.14483778178691864,\"y\":3.8981223106384277,\"z\":-1.3200037479400635}}",
+            "actualMinimum": {
+                "x": -1.1409697532653809,
+                "y": -0.6250863075256348,
+                "z": -1.5240510702133179
+            },
+            "actualMaximum": {
+                "x": 1.5824886560440063,
+                "y": 4.553830146789551,
+                "z": 1.485633134841919
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 798284,
+            "triangles": 466888,
+            "age01": 0.6000000238418579,
+            "meshSha256": "143cb32238c96ef7e80f57742d1abeb5e641ff416d99eeba0430fc097d6f6028",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.708475589752197,\"crownDiameterMetres\":3.16595721244812,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0016852866392582655,\"y\":1.8783942461013794,\"z\":0.03938260301947594},\"trunkBark\":{\"x\":0.0003370573394931853,\"y\":0.6757897734642029,\"z\":-0.36573466658592224},\"terminalRosette\":{\"x\":-0.2082366645336151,\"y\":4.213598728179932,\"z\":-1.1009904146194458}}",
+            "actualMinimum": {
+                "x": -1.3726221323013306,
+                "y": -0.676704466342926,
+                "z": -1.3495776653289795
+            },
+            "actualMaximum": {
+                "x": 1.5702825784683228,
+                "y": 4.60910177230835,
+                "z": 1.4651857614517212
+            }
+        },
+        {
+            "seed": 4242,
+            "lod": 1,
+            "vertices": 798284,
+            "triangles": 466888,
+            "age01": 0.6000000238418579,
+            "meshSha256": "143cb32238c96ef7e80f57742d1abeb5e641ff416d99eeba0430fc097d6f6028",
+            "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":40,\"branchSegments\":564,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":4.708475589752197,\"crownDiameterMetres\":3.16595721244812,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.0016852866392582655,\"y\":1.8783942461013794,\"z\":0.03938260301947594},\"trunkBark\":{\"x\":0.0003370573394931853,\"y\":0.6757897734642029,\"z\":-0.36573466658592224},\"terminalRosette\":{\"x\":-0.2082366645336151,\"y\":4.213598728179932,\"z\":-1.1009904146194458}}",
+            "actualMinimum": {
+                "x": -1.3726221323013306,
+                "y": -0.676704466342926,
+                "z": -1.3495776653289795
+            },
+            "actualMaximum": {
+                "x": 1.5702825784683228,
+                "y": 4.60910177230835,
+                "z": 1.4651857614517212
+            }
+        }
+    ],
+    "woodTopology": [
+        {
+            "mesh": "Kokerboom continuous wood LOD0 seed 4242",
+            "seed": 4242,
+            "lod": 0,
+            "age01": 0.6000000238418579,
+            "vertices": 215388,
+            "usedVertices": 215388,
+            "triangles": 430772,
+            "edges": 646158,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 45164,
+            "usedVertices": 45164,
+            "triangles": 90328,
+            "edges": 135492,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.6000000238418579,
+            "vertices": 15240,
+            "usedVertices": 15240,
+            "triangles": 30480,
+            "edges": 45720,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.05000000074505806,
+            "vertices": 528,
+            "usedVertices": 528,
+            "triangles": 1052,
+            "edges": 1578,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.30000001192092896,
+            "vertices": 9506,
+            "usedVertices": 9506,
+            "triangles": 19008,
+            "edges": 28512,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 4242",
+            "seed": 4242,
+            "lod": 2,
+            "age01": 0.8999999761581421,
+            "vertices": 34028,
+            "usedVertices": 34028,
+            "triangles": 68060,
+            "edges": 102090,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD2 seed 314",
+            "seed": 314,
+            "lod": 2,
+            "age01": 0.6000000238418579,
+            "vertices": 15050,
+            "usedVertices": 15050,
+            "triangles": 30108,
+            "edges": 45162,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 45164,
+            "usedVertices": 45164,
+            "triangles": 90328,
+            "edges": 135492,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        },
+        {
+            "mesh": "Kokerboom continuous wood LOD1 seed 4242",
+            "seed": 4242,
+            "lod": 1,
+            "age01": 0.6000000238418579,
+            "vertices": 45164,
+            "usedVertices": 45164,
+            "triangles": 90328,
+            "edges": 135492,
+            "connectedComponents": 1,
+            "boundaryEdges": 0,
+            "nonManifoldEdges": 0,
+            "inconsistentWindingEdges": 0,
+            "nonManifoldVertices": 0,
+            "duplicateTriangles": 0,
+            "degenerateIndexTriangles": 0,
+            "invalidIndexTriangles": 0,
+            "trailingIndices": 0,
+            "firstBoundaryA": -1,
+            "firstBoundaryB": -1,
+            "firstNonManifoldA": -1,
+            "firstNonManifoldB": -1
+        }
+    ],
+    "sources": [
+        {
+            "path": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+            "sha256": "ea49d0c552cbc2b61440a4d31d9f152356529126b05dc6e2eeeff1d7db27ce9d",
+            "sha256Before": "ea49d0c552cbc2b61440a4d31d9f152356529126b05dc6e2eeeff1d7db27ce9d",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+            "sha256": "a4e0accb534f75a6f9c157feb2d46663d043818036b1f708b03b4a3b4fec0c55",
+            "sha256Before": "a4e0accb534f75a6f9c157feb2d46663d043818036b1f708b03b4a3b4fec0c55",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Editor/KokerboomValidation.cs",
+            "sha256": "fb05add997d46e558e46c6a36aa277a88a5f65e3e58a5e2b7c5c79c69d9bca6c",
+            "sha256Before": "fb05add997d46e558e46c6a36aa277a88a5f65e3e58a5e2b7c5c79c69d9bca6c",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Editor/KokerboomSourceRosettes.cs",
+            "sha256": "ab5fdeff390462401ec946eb133ea416433192f1ca9a597c5d5a3ede65d7ad19",
+            "sha256Before": "ab5fdeff390462401ec946eb133ea416433192f1ca9a597c5d5a3ede65d7ad19",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Editor/KokerboomSourceIdentity.cs",
+            "sha256": "0869d598e22342afcc4f49c7e19f8f7be78776669d8514df1f2a478144bbf1f2",
+            "sha256Before": "0869d598e22342afcc4f49c7e19f8f7be78776669d8514df1f2a478144bbf1f2",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+            "sha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+            "sha256Before": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        },
+        {
+            "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx.meta",
+            "sha256": "dafe5b7cc609a46399a50a6abe8a4ee60108d17105cdd71b2bbf5a5565cf1557",
+            "sha256Before": "dafe5b7cc609a46399a50a6abe8a4ee60108d17105cdd71b2bbf5a5565cf1557",
+            "comparedBeforeAfter": true,
+            "unchanged": true
+        }
+    ],
+    "checks": [
+        "Invalid age and LOD rejection",
+        "Finite mesh attributes and bounds",
+        "Triangle index and area validity",
+        "Unit vertex normals",
+        "Source and actual mesh hashes",
+        "Seed diversity",
+        "Development and metre scale",
+        "LOD triangle reduction and envelope preservation",
+        "Repeat creation unaffected by intervening seed",
+        "Independent regeneration after explicit cache reset",
+        "World definition asset unchanged",
+        "Wood-only indexed connected components, closed manifold edges and vertex fans",
+        "Known topology canaries",
+        "Configured PH01 hybrid component path",
+        "Pinned FBX and extractor/identity source hashes",
+        "Source leaf positions/normals/UVs match actual Unity import",
+        "Source inputs unchanged across validation",
+        "Owned hybrid meshes/materials and static configuration cleanup"
+    ]
+}

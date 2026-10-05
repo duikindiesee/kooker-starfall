@@ -1,0 +1,13 @@
+# Future standalone signing; Editor development acceptance
+
+Recorded 14 September 2026. Smart App Control remains On. The blocked v0.1.5 candidate and Code Integrity events are preserved in [the blocker report](FOOD-VISUAL-BLOCKER.md). Running the exact source in the trusted installed Unity Editor is a separately labelled development test, not standalone acceptance.
+
+Microsoft documents no per-app Smart App Control bypass. Do not turn it off, add local trust exceptions, rename/copy the blocked executable to evade a decision, or treat an Editor test as a release test. [Microsoft FAQ](https://support.microsoft.com/en-US/Windows/Security/Threat-Malware-Protection/smart-app-control-frequently-asked-questions)
+
+The future release needs a publisher-controlled RSA code-signing certificate issued through a provider trusted by Windows. The SAC signing guidance does not support ECC signatures for this purpose. A self-signed development certificate is not a substitute for the required public trust. A managed signing service or trusted CA must be selected after verifying the publisher's identity, regional eligibility and release authority; no certificate/service has been purchased or configured here. [Microsoft SAC signing requirements](https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/code-signing-for-smart-app-control)
+
+The release workflow should build from the reviewed exact source, inventory the full payload and its existing signatures, and sign the publisher-controlled executable and applicable libraries with protected signing credentials. Retain valid vendor signatures and review any unsigned dependencies individually. Keep keys and signing permissions outside the repository. Perform signing on a new release artifact, retaining the original blocked development evidence.
+
+Use the supported Windows SDK SignTool workflow with SHA-256 file digest and an RFC 3161 timestamp using SHA-256. Verify each applicable signed artifact with Authenticode policy (`signtool verify /pa /all /v <file>`), recording the signer, chain, timestamp, verification result and final hashes. This is a future workflow, not a command already executed or authority to sign/publish. [Microsoft SignTool reference](https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool)
+
+After signing, test installation and actual launch on a representative protected Windows machine with SAC On, inspect fresh Code Integrity events and exercise the real native UI. A successful signature check alone is not that acceptance. Submit the exact source/artifact evidence through the protected integration/review queue before any authorized release; no public release or policy change is part of this food task.

@@ -1,0 +1,258 @@
+{
+  "schema": "starfall.tree-baseline.v1",
+  "utc": "2026-09-10T21:45:59.648482+00:00",
+  "status": "FROZEN BY USER DIRECTION",
+  "scope": "Close current review and preserve two distinct baselines. No further tree polishing, new player build, replacement, restart, or wider-world implementation is part of this closeout.",
+  "userDecision": {
+    "approvedVisualReference": "The tree in the running R06 preview used for the user screenshots.",
+    "stopCondition": "Record the honest final R19 review and defer its defects; do not continue iterating to reach the historical 9/10 target.",
+    "acceptanceBoundary": "User visual approval of R06 is distinct from critic scoring, numerical validation and full native-runtime acceptance."
+  },
+  "retainedR06": {
+    "buildDirectory": "Builds/CosmicPreview-20260910-185028",
+    "executable": "CosmicWorldPreview.exe",
+    "executableSha256": "a4c71b1bfc3e42d02f2f129fe04adef3ebf2343a662884e4b99598e9dfc90e7d",
+    "runtimeFilesRechecked": 183,
+    "allRuntimeBytesMatchRetainedManifest": true,
+    "archive": "Builds/Download/Kooker-Starfall-WIP-R06-Windows.zip",
+    "archiveBytes": 169258413,
+    "archiveSha256": "f24e31dc973ef8eb3addf8a9b457e142b736ad03ba4845841fd9dfe12c471bf9",
+    "packageManifestSha256": "90a7f5699a3adb1394cd2d74606042e9c5937cd941ac7274f8e3dd3e9ac64ed1",
+    "buildRecord": "evidence/milestones/kokerboom/round-06/preview-build.json",
+    "packageCheck": "evidence/verified/starfall-r06-package-check.json",
+    "localSourceSnapshot": "evidence/local/cosmic-preview-20260910-185028-source",
+    "localSourceSnapshotFiles": [
+      {
+        "file": "CosmicPreviewBuild.cs",
+        "sha256": "a616f9909268dc3dfe8d554f43fc994b15fbf0be4428bb06fbf7fc0c8ac67f25"
+      },
+      {
+        "file": "CosmicPreviewExplorer.cs",
+        "sha256": "16ef778ca64dbd3cb00cd57a185bd2819acdbe9946ea9f3401e2b4be10fd65ad"
+      },
+      {
+        "file": "KokerboomGeometry.cs",
+        "sha256": "661be2903d45c9a1484df82c29c79b90efb85c8d768b059dcc20546505e1ef8b"
+      },
+      {
+        "file": "KokerboomRender.cs",
+        "sha256": "a6d1316cdb87bf4576014b897c138b799589ab7f8ce0d1188bfed681529fb763"
+      },
+      {
+        "file": "KokerboomSourceRosettes.cs",
+        "sha256": "ab5fdeff390462401ec946eb133ea416433192f1ca9a597c5d5a3ede65d7ad19"
+      },
+      {
+        "file": "KokerboomSurface.shader",
+        "sha256": "e4b0105c0fa6a247e54d317e3613f92b1837eb2506d36e3efadffcca25bb7bc0"
+      },
+      {
+        "file": "render-kokerboom.ps1",
+        "sha256": "faceb6f50df1ea73c6f5fb95a8e53c8c5d88d18a97d66b783111f90cad0080a6"
+      }
+    ],
+    "localBakedScene": "Assets/CityLife/GeneratedPreview-20260910-185028/CosmicPreview.unity",
+    "localBakedSceneSha256": "34fc592a72d43d6baddff2dc032dd7238794ee6a71eb1e394f538bba51b676d6",
+    "localPreservationBoundary": "Seven-file historical source snapshot and baked scene/assets remain local and ignored. These locations are recovery pointers, not public artifact downloads or a claim that the snapshot alone reproduces the player.",
+    "note": "No player input, launch, rebuild or replacement performed by these read-only checks. Retain the existing distribution to recover this exact player; building later source does not reproduce its bytes."
+  },
+  "frozenR19Candidate": {
+    "sourceFiles": [
+      {
+        "source": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+        "sha256": "75aa85987cf823ba6e4aa60f441f3b9d268ec9b70f83487dea0a17326b56704c"
+      },
+      {
+        "source": "Assets/CityLife/Editor/KokerboomValidation.cs",
+        "sha256": "667cabda5b7c4a881f5b036683051b31302cc663944ba11d2b2f523e7360d451"
+      },
+      {
+        "source": "Assets/CityLife/Editor/KokerboomRender.cs",
+        "sha256": "7e6e5aa34f589a3cbc877445cab61eb621a8e5146d85360d1e90ac72c3b29484"
+      },
+      {
+        "source": "Assets/CityLife/Editor/PH02FamilyComponent.cs",
+        "sha256": "4db45f339bb267fa2fe73ee229a8dbc997413a51e1debe074b4e89b95506050d"
+      },
+      {
+        "source": "Assets/CityLife/Editor/PH02FittedSupportCandidate.cs",
+        "sha256": "b2e01e44bd908132358167990178d9e0ee2f84a90270f00b31308d87b2b7fbf5"
+      },
+      {
+        "source": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+        "sha256": "c1dffe83751105ae80c755d89e167733adf2e7dc1aaf447bf7b6521b9705041f"
+      },
+      {
+        "source": "Assets/CityLife/Shaders/PH02FittedSupport.shader",
+        "sha256": "e24242c5a1ac57a4a16cb5f5f3c56ba5e1164b3948c0e7132a6f7fd6366f16b7"
+      },
+      {
+        "source": "Assets/CityLife/Shaders/KokerboomBranchSkin.hlsl",
+        "sha256": "4970845df6c8fd4604e3111649d493895a8d070cd6daa4d927578ca5244150ca"
+      },
+      {
+        "source": "tools/render-kokerboom.ps1",
+        "sha256": "e53c489323b9539670f98d7da79e90d80795287c2816fa3e6e8818f2cdef1ec9"
+      }
+    ],
+    "renderManifest": "evidence/milestones/kokerboom/round-19/metrics.json",
+    "renderManifestSha256": "dd2958639f0e732fb101c626a218d039c8a2c4ea92348c1f94f6a05ba6b8c4ea",
+    "renderUtc": "2026-09-10T21:38:24.4067079Z",
+    "captureCount": 21,
+    "technicalCaptureChecksPassed": true,
+    "captureErrors": 0,
+    "captureWarnings": 1,
+    "numericalReport": "evidence/verified/kokerboom-round-18-family-validation.json",
+    "numericalReportSha256": "0169a3187f420f8f4166d88806c38ef1bf6bbbcf09f4e3bd32222c57ac5435c1",
+    "numericalAssertions": 536,
+    "numericalStatus": "PASS",
+    "independentRegeneration": true,
+    "unchangedSourceInputs": true,
+    "componentSha256": "3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca",
+    "nativePlayerBuiltFromCandidate": false,
+    "automaticallyPromotedOverR06": false,
+    "criticRecord": "docs/KOKERBOOM-CRITIQUE.md#round-19-frozen-family-review",
+    "independentCritic": {
+      "all21ImagesReviewed": true,
+      "scoresInFixedCriterionOrder": [
+        7.5,
+        7.0,
+        8.0,
+        7.0,
+        7.5,
+        7.5
+      ],
+      "botanicalMean": 7.375,
+      "artMean": 7.5,
+      "overallLowerMean": 7.375,
+      "historicalRubricVerdict": "REJECTED against the historical9/10 target",
+      "currentDecision": "Freeze by user direction; no further polishing round and no promotion over R06",
+      "deferredDefects": [
+        "Thick angular bends/internal openings and similar family branching",
+        "Small rim-like attachment in18; bend shading steps in04/10/15",
+        "Repeated bark scars and weak peeling relief in05/21",
+        "Repeated juvenile/mature rosettes and uniform cyan weathering",
+        "Bright wood and limited distant leaf readability"
+      ],
+      "observedGains": [
+        "Continuous blue-green foliage",
+        "Previous alternating material bands removed",
+        "Improved juvenile stem and ground contact; no clear floating gap in20/21"
+      ]
+    },
+    "authorVisualInspection": "All21 original PNGs inspected after capture; no self-awarded visual score. Dark support rim, bend shading, repeated bark scars and limited gameplay canopy mass remain visible; final independent result is separate.",
+    "images": [
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-01-neutral-front.png",
+        "sha256": "6c0265ed8bc0395c29077667bd72fa9818b7aa0d36540ead972f760927b28fc3",
+        "bytes": 536905
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-02-neutral-three-quarter.png",
+        "sha256": "39731f4fae98492c4874cc69790378a519454410334f15280f51501439950b71",
+        "bytes": 676336
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-03-neutral-rear.png",
+        "sha256": "9c8ef359fbf1f15083a81a8a1f0782daf5f3fd33579952d6bf0277def2fa14da",
+        "bytes": 641079
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-04-branch-union-closeup.png",
+        "sha256": "372310ffbef403857592f6bf01febf159eae355abe8a2bb18df828941a272ad6",
+        "bytes": 926088
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-05-trunk-bark-closeup.png",
+        "sha256": "9a64d79081e130e1a77b398f7957e28e461f931b8e4298760a5ed3c2802bb950",
+        "bytes": 1035832
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-06-terminal-rosette-closeup.png",
+        "sha256": "18c6ffae5257325467a8a2e36e18bd297225676c5fc8fa33328d0bf0f67ac629",
+        "bytes": 1433721
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-07-age-lineup-metres.png",
+        "sha256": "5626770827ef511ae530d72c0fb291e76e31d04a6d5923b6bbb5df7e27b38167",
+        "bytes": 345221
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-08-cosmic-gameplay-eye-level.png",
+        "sha256": "02972e96501bb861879628212d83ae1444cc20a9f77d1a98dc849d2cf9a253e3",
+        "bytes": 1134455
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-09-cosmic-gameplay-overlook.png",
+        "sha256": "fb547beb67c9dd8fda55f58d24fd1b6ad80e644e320c6fba20a33772a5b2adee",
+        "bytes": 1332728
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-10-neutral-front-no-shadows.png",
+        "sha256": "2d55108cac1ea0f7506903dd3cf322f080950c69a43539bd482b3114871ec0b5",
+        "bytes": 518472
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-11-isolated-rosette-above.png",
+        "sha256": "ba876061eae70858d0d7a1fea9deae3c4a029f27f42da0581ba437d738946b25",
+        "bytes": 303550
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-12-isolated-rosette-side.png",
+        "sha256": "fa5dc5b58616601ca6badd1508ac2f33ca0d57a14014d193fab2873ca99179ac",
+        "bytes": 472090
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-13-juvenile-closeup.png",
+        "sha256": "123e98e25be8738836f833249e74f5be326313c47e2eb7b38805bb5c27ff0df9",
+        "bytes": 656744
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-14-adult-seed-variation.png",
+        "sha256": "2cdb2517e1fafed5a2c9bd56e276aa643eade2967326549b7754d12c1e3b64d6",
+        "bytes": 491043
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-15-untextured-branch-union-closeup.png",
+        "sha256": "9565fa3bfe9a19c5dd6926cf5c3dfca6546c5eafdcd6aebd4870970f6a108344",
+        "bytes": 525632
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-16-cosmic-leaf-albedo-only.png",
+        "sha256": "13364af25cdc6681f7e9da3614567e28405e3d62b7e386bf89972ee9b5ec5c97",
+        "bytes": 1110991
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-17-cosmic-strong-cool-fill.png",
+        "sha256": "775e550ef0d0c1abc4fa5ca55d6569747cc1048c9df5d52bdf8dad70c41aa9a8",
+        "bytes": 1172326
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-18-ph02-lower-crown-wood-join-side.png",
+        "sha256": "f280456c3ebdf00a94492cdb9078b77db8e5a08147ca5702be52ef03956320cd",
+        "bytes": 1398766
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-19-ph02-lower-crown-wood-join-underside.png",
+        "sha256": "18f5f7ed176733f0b1df70e7e058e829b2f1f3a74ea924c158bf5d51f1ad6fc5",
+        "bytes": 2053448
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-20-ph02-juvenile-base.png",
+        "sha256": "5313829bd2affc156e07e3fd99d9e28e53320de70298d8ff0c96ff41c8729286",
+        "bytes": 626453
+      },
+      {
+        "path": "evidence/milestones/kokerboom/round-19/2026-09-10-21-ph02-mature-base-second-angle.png",
+        "sha256": "1ada50f10edea234f5be63eccb7d9c5d93ec93319a72a3ff9bcf4fbe8cdb46f4",
+        "bytes": 679771
+      }
+    ]
+  },
+  "remainingGaps": [
+    "The independent critic did not accept R19 against the historical target; remaining defects are deferred by user direction. Technical checks award no visual score.",
+    "Full native controls, collision, measured runtime performance and other-device acceptance remain unverified.",
+    "Landscape, galaxy and living sea remain recorded future direction, outside this closeout.",
+    "Draft PR remains unmerged. Hosted checks must run on the actual final commit; this source record is not a hosted CI claim."
+  ]
+}

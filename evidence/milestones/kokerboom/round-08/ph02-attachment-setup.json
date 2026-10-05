@@ -1,0 +1,22 @@
+{
+    "sourceBoundaryCentre": {
+        "x": 0.029266102239489555,
+        "y": 0.6499999761581421,
+        "z": 0.0016288438346236944
+    },
+    "attachmentTarget": {
+        "x": 0.0,
+        "y": 0.8999999761581421,
+        "z": 0.0
+    },
+    "crownTranslation": {
+        "x": -0.029266102239489555,
+        "y": 0.25,
+        "z": -0.0016288438346236944
+    },
+    "cutHeightMetres": 0.6499999761581421,
+    "supportTopMetres": 0.9399999976158142,
+    "supportBottomRadius": 0.10999999940395355,
+    "supportTopRadius": 0.06800000369548798,
+    "note": "Original source crown scale1; translation only. Separate 32-sided mid-gray open tapered support from y0 to0.94; cut centre at y0.90 gives0.04m overlap. Neither mesh is welded or capped; the fit is a diagnostic, not an accepted branch join or species claim."
+}

@@ -1,0 +1,29 @@
+# Tree baseline and closeout
+
+**Later authorized integration:** [0.0.2-preview.1](RELEASE-0.0.2-preview.1.md) now provides a separate R19 player. The freeze below is preserved historical context; its no-new-build statements describe the closeout scope at that time. R06 stays the retained visual reference and its bytes/process were preserved. No tree polishing was reopened.
+
+**R06 is the user-approved visual reference.** The user is satisfied with the running R06 tree and directed this work to stop after the numerical check and full R19 review, both now complete. There will be no further tree-polishing rounds to chase the historical 9/10 target. Remaining critic defects are **deferred**. This supersedes the earlier requirement to pass the tree rubric before world work.
+
+The preserved Starfall study player is the R06 `CosmicWorldPreview.exe`. It remains untouched. R17/R18 are scoped experiments, and R19 is a separate offscreen experimental candidate; none is automatically promoted to the player or approved visual baseline. The wider world is later direction, not additional work in this closeout.
+
+| Record | Current status | Evidence | Remaining boundary |
+|---|---|---|---|
+| R06 visual reference | **User approved** by the latest direction relayed through the coordinating task | [R06 study captures](VISUAL-MILESTONES.md#kokerboom-follow-up--round-06-scoped-wip-preview--2026-09-10), [native build record](../evidence/milestones/kokerboom/round-06/preview-build.json) | Visual approval is not a claim of verified collision, complete native controls, telemetry/offline behaviour or sustained performance |
+| Exact R06 distribution | Packaged without rebuilding or changing runtime bytes | [Package check](../evidence/verified/starfall-r06-package-check.json): 186 entries, 183 runtime files unchanged, 161.42 MiB | Keeps the earlier executable/product name; no R19 player is included |
+| Historical R16 full critique | Rejected under the historical critic rubric: overall **5.75**, botanical 6.75, art 5.75 | [Exact review](KOKERBOOM-CRITIQUE.md#round-16-ph02-fitted-crown-family-rejected), [21 original views](../evidence/milestones/kokerboom/round-16/metrics.json) | Historical scores remain truthful; they no longer block world work or require another polishing round |
+| Historical R16 numeric failure | Preserved failure at assertion 522, buried full-age root | [Exact failure report](../evidence/verified/kokerboom-round-16-ph02-validation-failed.json) | Later passing source does not rewrite this failure |
+| R17/R18 six-view pilots | Completed technical captures; **unscored** | [R17](../evidence/milestones/kokerboom/round-17/metrics.json), [R18](../evidence/milestones/kokerboom/round-18/metrics.json) | Camera fields differ from R16; selected views are not full-family acceptance |
+| R18 experimental-source numeric check | **PASS, 536 assertions** | [Exact report](../evidence/verified/kokerboom-round-18-family-validation.json) | Ten wood topology samples, ten specimens, regeneration, eleven unchanged inputs and PH02 cleanup; not visual or player acceptance |
+| R19 full experimental review | **21 captures complete; independent result 7.375/10, frozen** | [Full images](VISUAL-MILESTONES.md#round-19-frozen-family-review), [closing critique](KOKERBOOM-CRITIQUE.md#round-19-frozen-family-review), [technical freeze](../evidence/verified/starfall-tree-baseline.json) | Frozen; deferred defects; no automatic promotion or new player |
+
+R18's numeric report has SHA256 `0169a3187f420f8f4166d88806c38ef1bf6bbbcf09f4e3bd32222c57ac5435c1`. The captured experimental source includes a flatter lower support, shared branch skin, smooth foliage-damage weighting, root buttresses, shorter young placement and adaptive curve segments. These are recorded implementation choices, not botanical certification or visual approval. The source model files retain their credited provenance; see [asset credits](ASSET-CREDITS.md).
+
+The former six-criterion rubric and its arithmetic remain in the [critique history](KOKERBOOM-CRITIQUE.md). They are historical/independent evaluation, not the user's current approval rule. R19's final independent scores are `[7.5, 7, 8, 7, 7.5, 7.5]`; the lower mean is 7.375. This critic result and the user's R06 approval are separate decisions.
+
+The blue gas giant, distant galaxy, continuous landscape and living sea remain the user's [world direction](STARFALL.md) and [sea plan](STARFALL-LIVING-SEA.md). They are not completed features of R06 or this tree closeout. No further tree or world implementation is implied by freezing these records.
+
+The [technical freeze record](../evidence/verified/starfall-tree-baseline.json) rechecks all 183 R06 runtime files and the existing ZIP, and records the exact nine-file experimental source set. It also lists local, ignored historical source/baked-scene recovery pointers; those are not public downloads or a claim that the snapshot alone reproduces the player.
+
+**Rebuild boundary:** the current `-PlayablePreview` route selects the later PH01 hybrid path. It neither recreates byte-identical R06 nor builds the PH02 R19 inspection family. R19 remains offscreen-only. No new build, replacement, launch or restart is part of this freeze.
+
+The R19 critic retained continuous blue-green foliage, the removal of alternating material bands and improved juvenile stem/ground contact, with no clear floating gap in views 20/21. Deferred defects include angular bends/internal openings, family repetition, a small rim at view 18, bend shading steps, repeated scars/weak peeling, repeated rosettes/uniform cyan weathering, and bright wood versus distant foliage readability. [Exact criterion scores and findings](KOKERBOOM-CRITIQUE.md#round-19-frozen-family-review) remain available without prescribing another revision.

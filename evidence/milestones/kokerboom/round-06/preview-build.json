@@ -1,0 +1,12 @@
+{
+    "status": "Succeeded",
+    "output": "Builds/CosmicPreview-20260910-185028/CosmicWorldPreview.exe",
+    "scene": "Assets/CityLife/GeneratedPreview-20260910-185028/CosmicPreview.unity",
+    "product": "Cosmic World Preview",
+    "scope": "Separate local WIP tree and blue-giant inspection stage. No IslandBootstrap, saved world, multiplayer or bot integrations. Visual gate not passed; source hybrid and runtime movement remain under review.",
+    "utc": "2026-09-10T18:51:21.1822134Z",
+    "bytes": 472974886,
+    "seconds": 42.6363823,
+    "errors": 0,
+    "warnings": 1
+}

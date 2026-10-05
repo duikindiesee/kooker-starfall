@@ -1,0 +1,77 @@
+{
+  "build": {
+    "buildId": "KookerStarfallHybrid-0.0.5-preview.2-20260913-094348",
+    "version": "0.0.5-preview.2",
+    "output": "Builds/KookerStarfallHybrid-0.0.5-preview.2-20260913-094348/KookerStarfallHybrid.exe",
+    "scene": "Assets/CityLife/GeneratedPreview-Character-KookerStarfallHybrid-0.0.5-preview.2-20260913-094348/InhabitantDecisions.unity",
+    "status": "Succeeded",
+    "utc": "2026-09-13T09:44:06.3677921Z",
+    "scope": "Optional local high-level proposals; disabled by default; deterministic world actions and offline fallback; no learning.",
+    "errors": 0,
+    "warnings": 0,
+    "bytes": 113239150,
+    "seconds": 15.812329799999999,
+    "sourceCommit": "585f2c1b2a168c5f800b6c7a84f41e4f0b4d1b29",
+    "library": {
+      "schema": "starfall.character-asset-revision.v1",
+      "library": "duikindiesee/kooker-assets",
+      "libraryCommit": "fe306300ea3fede74b4a5c87afc86a28bb7999bc",
+      "libraryBundle": "packages/unity/quaternius-standard/0.1.0",
+      "bundleManifestSha256": "8f36aa499ea085b03d26cd49668b2e8c316219f1cfd070f400ee0a0d7edc0648",
+      "edition": "Free Standard",
+      "remoteBinaryDelivery": "not-uploaded; quota review pending",
+      "verifiedFiles": 19,
+      "consumption": "Game contains versioned copies. All listed files matched the local immutable import bundle byte-for-byte before the final build.",
+      "assets": [
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Eye_Brown.png",
+          "bytes": 35958,
+          "sha256": "d08e3356a83211bc6ca21fe3a8e39f4b5c1a3b8f85457fc2c0fb57be09935025"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Dark.png",
+          "bytes": 1384380,
+          "sha256": "df680cbc1967a61e85998bfafb8f7bc0a36dd604bb3266486c4b06b1a184bb45"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Skin_Normal.png",
+          "bytes": 4252937,
+          "sha256": "9b25cf9200216eb754b79cf4c63b5380c419780788322f3c57cdd2b3e02679a6"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/Superhero_Male_FullBody.fbx",
+          "bytes": 826876,
+          "sha256": "79344418d754a59730b79d1874752e9592143db34abe8adf138fa9a92a4768e9"
+        },
+        {
+          "path": "Assets/CityLife/Characters/QuaterniusStandard/UAL1_Standard.fbx",
+          "bytes": 23754684,
+          "sha256": "21b32d912da3cb93426d974fb945e86f5b2e86970acd2ce89905e0fbf9f1dcc2"
+        }
+      ]
+    }
+  },
+  "archive": "Builds/Download/KookerStarfallHybrid-0.0.5-preview.2-20260913-094348-Windows.zip",
+  "archiveBytes": 44075029,
+  "archiveSha256": "52454d2b3f0c65caad391c37e4750cbe900c767aa77f1a1c727c12ef79e151d0",
+  "runtimeChecks": 60,
+  "runtimeStatus": "PASS",
+  "evidence": "evidence/milestones/hybrid-npc/KookerStarfallHybrid-0.0.5-preview.2-20260913-094348",
+  "review": "evidence/milestones/hybrid-npc/KookerStarfallHybrid-0.0.5-preview.2-20260913-094348/review.html",
+  "nativeInput": "Unity input handlers passed; physical keyboard/mouse routing unverified",
+  "publication": "local only",
+  "diagnostic": {
+    "deadlineMilliseconds": 30000,
+    "normalGameplayMilliseconds": 1500,
+    "focusedChecks": 48,
+    "offlineRuntimeChecks": 60,
+    "preservedFiles": 990,
+    "packageEntries": 189,
+    "manualCommand": "docs/DIAGNOSTIC-30S-COMMAND.txt",
+    "actual30SecondRun": "PASS66; one completion attempted; no completion response; timeout at30003ms; deterministic fallback delivery",
+    "priorManual5SecondRun": "PASS64; one completion attempted; no completion response; timeout at5000ms; deterministic fallback delivery",
+    "manual30SecondEvidence": "evidence/milestones/hybrid-npc/manual-real-30s-20260913",
+    "actual30SecondRunUtc": "2026-09-13T12:35:25.3383221Z",
+    "realProposalTextStatus": "UNVERIFIED: no raw reply, admitted proposal, dialogue or reflection"
+  }
+}

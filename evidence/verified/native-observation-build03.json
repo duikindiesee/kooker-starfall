@@ -1,0 +1,13 @@
+{
+  "schema": "citylife.unity.native-observation.v1",
+  "observationUtc": "2026-09-09T20:12:43.1237410Z",
+  "build": "Build 03",
+  "scope": "Read-only extraction from the open visible player log. Only explicit game events included.",
+  "nativeEvents": [
+    "CITYLIFE_WORLD_READY {\"worldId\":\"citylife-island-foundation-4242-v1\",\"fingerprint\":\"abc96bc4923f46fa59814967f151f582186aca69a3ed4e52c9ea37e6f1a9a859\",\"baseHeightHash\":\"9153406293803b911c566c57ca14fd92ac8c0dd13b8dde8e630ab44a1e205c77\",\"sourceCommit\":\"b71307023aea600da27aa3eada6cdcce7ba758ed\",\"graphicsDevice\":\"AMD Radeon(TM) 8060S Graphics\",\"widthMetres\":4096.0,\"landKm2\":6.007008075714111,\"gentleLandKm2\":3.2856318950653076,\"maxHeightMetres\":126.50155639648438,\"generationMs\":1027,\"graphicsMemoryMb\":101292,\"editsRevision\":0}",
+    "CITYLIFE_INPUT {\"timestampUtc\":\"2026-09-09T20:04:15.9533509Z\",\"source\":\"gui\",\"action\":\"N  Night\",\"mode\":\"Fly\",\"view\":\"Island vista\",\"automaticRoute\":false,\"fast\":false,\"hudVisible\":true,\"night\":true,\"frame\":4045,\"position\":{\"x\":-1392.6400146484375,\"y\":2334.719970703125,\"z\":-2580.47998046875},\"rotationDegrees\":{\"x\":38.14698791503906,\"y\":28.35495948791504,\"z\":0.0},\"localDirection\":{\"x\":0.0,\"y\":0.0,\"z\":0.0},\"travelledMeters\":0.0}"
+  ],
+  "image": "evidence/milestones/02-visible-night-player-2026-09-09.png",
+  "confirmed": "World visible; native GUI Night control responded.",
+  "remainingGap": "Native keyboard/mouse traversal and screenshot shortcuts unverified. Desktop control paused by user."
+}

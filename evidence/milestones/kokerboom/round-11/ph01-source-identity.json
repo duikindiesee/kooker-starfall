@@ -1,0 +1,343 @@
+{
+    "schema": "citylife.ph01-source-identity.v1",
+    "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+    "sourceSha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+    "unityVersion": "6000.6.0f1",
+    "scope": "Source identity diagnostic only; no appearance acceptance. Imported leaf slot includes closed basal pieces; extracted groups contain 21 open-base leaves each. Triangle statistics use each mesh's existing triangulation. Reconstructed source roots are added back before matching. Tangents may differ because extraction currently duplicates polygon corners before RecalculateTangents.",
+    "normalImportMode": "Import",
+    "tangentImportMode": "CalculateMikk",
+    "rootPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "rootEuler": {
+        "x": 270.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "rootScale": {
+        "x": 100.0,
+        "y": 100.00003051757813,
+        "z": 100.00003051757813
+    },
+    "positionToleranceMetres": 0.000019999999494757503,
+    "uvTolerance": 0.000009999999747378752,
+    "normalDotThreshold": 0.9998999834060669,
+    "globalScale": 1.0,
+    "useFileUnits": true,
+    "bakeAxisConversion": false,
+    "weldVertices": true,
+    "allCornersMatchImportedPositionNormalUv": true,
+    "importedLeafVertices": 69628,
+    "importedMeshes": [
+        {
+            "name": "quiver_tree_01_LOD0",
+            "vertices": 88854,
+            "selectedLeafVertices": 69628,
+            "selectedLeafTriangles": 113154,
+            "localBounds": {
+                "m_Center": {
+                    "x": -0.00043577561154961586,
+                    "y": -0.00018143374472856522,
+                    "z": 0.013159284368157387
+                },
+                "m_Extent": {
+                    "x": 0.0059061781503260136,
+                    "y": 0.004842527210712433,
+                    "z": 0.013577103614807129
+                }
+            },
+            "worldMatrix": {
+                "e00": 100.0,
+                "e01": 0.0,
+                "e02": 0.0,
+                "e03": 0.0,
+                "e10": 0.0,
+                "e11": -0.000011920928955078125,
+                "e12": 100.00001525878906,
+                "e13": 0.0,
+                "e20": 0.0,
+                "e21": -100.00001525878906,
+                "e22": -0.000011920928955078125,
+                "e23": 0.0,
+                "e30": 0.0,
+                "e31": 0.0,
+                "e32": 0.0,
+                "e33": 1.0
+            },
+            "hasTangents": true,
+            "materialNames": [
+                "quiver_tree_01_trunk",
+                "quiver_tree_01_leaf"
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+            "type": "Default",
+            "compression": "Compressed",
+            "filter": "Bilinear",
+            "srgb": true,
+            "flipGreen": false,
+            "mipmaps": true,
+            "aniso": 1
+        },
+        {
+            "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+            "type": "Default",
+            "compression": "Compressed",
+            "filter": "Bilinear",
+            "srgb": true,
+            "flipGreen": false,
+            "mipmaps": true,
+            "aniso": 1
+        },
+        {
+            "path": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+            "type": "Default",
+            "compression": "Compressed",
+            "filter": "Bilinear",
+            "srgb": true,
+            "flipGreen": false,
+            "mipmaps": true,
+            "aniso": 1
+        }
+    ],
+    "groups": [
+        {
+            "id": "A",
+            "sourceRootUnity": {
+                "x": 0.17702636122703552,
+                "y": 2.2051517963409424,
+                "z": 0.23859678208827972
+            },
+            "rootedBounds": {
+                "m_Center": {
+                    "x": -0.006083950400352478,
+                    "y": -0.005786240100860596,
+                    "z": 0.031979404389858246
+                },
+                "m_Extent": {
+                    "x": 0.23482199013233185,
+                    "y": 0.2390003800392151,
+                    "z": 0.23181989789009094
+                }
+            },
+            "vertices": 18912,
+            "triangles": 9456,
+            "exactPositionNormalUvVertices": 5698,
+            "positionMatches": 18912,
+            "positionUvMatches": 18912,
+            "positionFlippedVMatches": 0,
+            "positionNormalUvMatches": 18912,
+            "oppositeNormalCorners": 0,
+            "tangentDirectionMatches": 11141,
+            "tangentHandednessMatches": 18911,
+            "maximumNearestPositionError": 5.547556156670908e-7,
+            "maximumMinimumUvErrorAtPosition": 0.0,
+            "minimumBestNormalDot": 0.9999998807907104,
+            "minimumNormalLength": 0.9999998807907104,
+            "maximumNormalLength": 1.0000001192092896,
+            "minimumBestTangentDot": -0.7348595857620239,
+            "triangleStats": {
+                "triangles": 9456,
+                "degenerateTriangles": 0,
+                "normalComparisons": 28368,
+                "negativeNormalDots": 0,
+                "minimumDot": 0.0,
+                "meanDot": 0.7177805304527283
+            },
+            "firstMismatches": []
+        },
+        {
+            "id": "B",
+            "sourceRootUnity": {
+                "x": 0.11295545846223831,
+                "y": 2.205615282058716,
+                "z": 0.05061671882867813
+            },
+            "rootedBounds": {
+                "m_Center": {
+                    "x": -0.00001823902130126953,
+                    "y": -0.008333206176757813,
+                    "z": 0.007419422268867493
+                },
+                "m_Extent": {
+                    "x": 0.21237504482269287,
+                    "y": 0.14793109893798828,
+                    "z": 0.21123109757900238
+                }
+            },
+            "vertices": 18816,
+            "triangles": 9408,
+            "exactPositionNormalUvVertices": 5670,
+            "positionMatches": 18816,
+            "positionUvMatches": 18816,
+            "positionFlippedVMatches": 0,
+            "positionNormalUvMatches": 18816,
+            "oppositeNormalCorners": 0,
+            "tangentDirectionMatches": 7582,
+            "tangentHandednessMatches": 18809,
+            "maximumNearestPositionError": 5.546680768020451e-7,
+            "maximumMinimumUvErrorAtPosition": 0.0,
+            "minimumBestNormalDot": 0.9999998807907104,
+            "minimumNormalLength": 0.9999998807907104,
+            "maximumNormalLength": 1.0000001192092896,
+            "minimumBestTangentDot": 0.07600779831409454,
+            "triangleStats": {
+                "triangles": 9408,
+                "degenerateTriangles": 0,
+                "normalComparisons": 28224,
+                "negativeNormalDots": 0,
+                "minimumDot": 0.0,
+                "meanDot": 0.6518984436988831
+            },
+            "firstMismatches": []
+        },
+        {
+            "id": "C",
+            "sourceRootUnity": {
+                "x": 0.3081694543361664,
+                "y": 2.2237207889556885,
+                "z": 0.09782712906599045
+            },
+            "rootedBounds": {
+                "m_Center": {
+                    "x": 0.015451647341251373,
+                    "y": 0.01886606216430664,
+                    "z": -0.005698025226593018
+                },
+                "m_Extent": {
+                    "x": 0.223419189453125,
+                    "y": 0.16289854049682617,
+                    "z": 0.22769635915756226
+                }
+            },
+            "vertices": 18816,
+            "triangles": 9408,
+            "exactPositionNormalUvVertices": 5670,
+            "positionMatches": 18816,
+            "positionUvMatches": 18816,
+            "positionFlippedVMatches": 0,
+            "positionNormalUvMatches": 18816,
+            "oppositeNormalCorners": 0,
+            "tangentDirectionMatches": 7143,
+            "tangentHandednessMatches": 18811,
+            "maximumNearestPositionError": 5.625065000458562e-7,
+            "maximumMinimumUvErrorAtPosition": 0.0,
+            "minimumBestNormalDot": 0.9999998807907104,
+            "minimumNormalLength": 0.9999998807907104,
+            "maximumNormalLength": 1.0000001192092896,
+            "minimumBestTangentDot": -0.13482370972633362,
+            "triangleStats": {
+                "triangles": 9408,
+                "degenerateTriangles": 0,
+                "normalComparisons": 28224,
+                "negativeNormalDots": 0,
+                "minimumDot": 0.0,
+                "meanDot": 0.6855432391166687
+            },
+            "firstMismatches": []
+        },
+        {
+            "id": "D",
+            "sourceRootUnity": {
+                "x": -0.014842384494841099,
+                "y": 2.375136613845825,
+                "z": -0.12494815140962601
+            },
+            "rootedBounds": {
+                "m_Center": {
+                    "x": 0.017719581723213196,
+                    "y": 0.036956787109375,
+                    "z": -0.011326834559440613
+                },
+                "m_Extent": {
+                    "x": 0.2222544550895691,
+                    "y": 0.26154541969299316,
+                    "z": 0.3071752190589905
+                }
+            },
+            "vertices": 18816,
+            "triangles": 9408,
+            "exactPositionNormalUvVertices": 5670,
+            "positionMatches": 18816,
+            "positionUvMatches": 18816,
+            "positionFlippedVMatches": 0,
+            "positionNormalUvMatches": 18816,
+            "oppositeNormalCorners": 0,
+            "tangentDirectionMatches": 7678,
+            "tangentHandednessMatches": 18811,
+            "maximumNearestPositionError": 5.960493467682682e-7,
+            "maximumMinimumUvErrorAtPosition": 0.0,
+            "minimumBestNormalDot": 0.9999998807907104,
+            "minimumNormalLength": 0.9999998807907104,
+            "maximumNormalLength": 1.0000001192092896,
+            "minimumBestTangentDot": -0.5728253722190857,
+            "triangleStats": {
+                "triangles": 9408,
+                "degenerateTriangles": 0,
+                "normalComparisons": 28224,
+                "negativeNormalDots": 0,
+                "minimumDot": 0.0,
+                "meanDot": 0.7597325444221497
+            },
+            "firstMismatches": []
+        },
+        {
+            "id": "E",
+            "sourceRootUnity": {
+                "x": -0.27949193120002747,
+                "y": 2.3940556049346924,
+                "z": -0.19215357303619385
+            },
+            "rootedBounds": {
+                "m_Center": {
+                    "x": 0.01039193570613861,
+                    "y": 0.02724480628967285,
+                    "z": 0.019251137971878052
+                },
+                "m_Extent": {
+                    "x": 0.3650953769683838,
+                    "y": 0.23804211616516113,
+                    "z": 0.2932069003582001
+                }
+            },
+            "vertices": 18816,
+            "triangles": 9408,
+            "exactPositionNormalUvVertices": 5670,
+            "positionMatches": 18816,
+            "positionUvMatches": 18816,
+            "positionFlippedVMatches": 0,
+            "positionNormalUvMatches": 18816,
+            "oppositeNormalCorners": 0,
+            "tangentDirectionMatches": 11607,
+            "tangentHandednessMatches": 18815,
+            "maximumNearestPositionError": 5.962326667940943e-7,
+            "maximumMinimumUvErrorAtPosition": 0.0,
+            "minimumBestNormalDot": 0.9999998211860657,
+            "minimumNormalLength": 0.9999998807907104,
+            "maximumNormalLength": 1.0000001192092896,
+            "minimumBestTangentDot": 0.4853164851665497,
+            "triangleStats": {
+                "triangles": 9408,
+                "degenerateTriangles": 0,
+                "normalComparisons": 28224,
+                "negativeNormalDots": 0,
+                "minimumDot": 0.0,
+                "meanDot": 0.7837754487991333
+            },
+            "firstMismatches": []
+        }
+    ],
+    "importedLeafTriangleStats": {
+        "triangles": 113154,
+        "degenerateTriangles": 0,
+        "normalComparisons": 339462,
+        "negativeNormalDots": 16,
+        "minimumDot": -0.6176316142082214,
+        "meanDot": 0.3818039298057556
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "approach": {
+        "x": 127.55000305175781,
+        "y": 4.0,
+        "z": -80.0
+    },
+    "pivot": {
+        "x": 127.55000305175781,
+        "y": 5.050000190734863,
+        "z": -80.0
+    },
+    "eye": {
+        "x": 127.55000305175781,
+        "y": 4.63165283203125,
+        "z": -84.78173828125
+    },
+    "actualDistance": 4.800000190734863,
+    "yaw": 0.0,
+    "pitch": -5.0,
+    "occluded": false,
+    "scope": "Editor pose computed with CharacterPreviewCamera.Follow equations (distance4.8,FOV60) and actual terrain/rock spherecast. Actor rig, HUD, input and ordinary compiled-camera acceptance absent."
+}

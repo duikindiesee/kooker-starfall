@@ -1,0 +1,117 @@
+{
+  "schema": "starfall.display-release.v1",
+  "utc": "2026-09-12T18:51:18.5071854Z",
+  "version": "0.0.2-preview.2",
+  "buildSourceCommit": "97975d121ca97e965be1144c1fb5f42efe68a018",
+  "buildId": "KookerStarfallR19-0.0.2-preview.2-20260912-183552",
+  "buildErrors": 0,
+  "buildWarnings": 1,
+  "islandAssertions": 2841,
+  "playerSmokeChecks": 146,
+  "playerRuntimeErrors": 0,
+  "nativeButtonTransitions": [
+    {
+      "utc": "2026-09-12T18:42:25.7032861Z",
+      "version": "0.0.2-preview.2",
+      "source": "button",
+      "beforeMode": "Windowed",
+      "requestedMode": "FullScreenWindow",
+      "afterMode": "FullScreenWindow",
+      "beforeControllerMode": "Walk",
+      "afterControllerMode": "Walk",
+      "beforeWidth": 1280,
+      "beforeHeight": 720,
+      "requestedWidth": 2880,
+      "requestedHeight": 1800,
+      "rememberedWidth": 1280,
+      "rememberedHeight": 720,
+      "afterWidth": 2880,
+      "afterHeight": 1800,
+      "beforeFrame": 2985,
+      "afterFrame": 2988,
+      "beforeSceneHandle": 1099511629316,
+      "afterSceneHandle": 1099511629316,
+      "beforePosition": {
+        "x": 5.0407328605651855,
+        "y": 0.9379091262817383,
+        "z": -18.85378074645996
+      },
+      "afterPosition": {
+        "x": 5.0407328605651855,
+        "y": 0.9379091262817383,
+        "z": -18.85378074645996
+      },
+      "beforeRotation": {
+        "x": 352.3544006347656,
+        "y": 345.7540283203125,
+        "z": -1.076789786225163E-07
+      },
+      "afterRotation": {
+        "x": 352.3544006347656,
+        "y": 345.7540283203125,
+        "z": -1.076789786225163E-07
+      },
+      "beforeTravelled": 0.0,
+      "afterTravelled": 0.0,
+      "displayApplied": true,
+      "scenePreserved": true,
+      "playerStateUnchanged": true
+    },
+    {
+      "utc": "2026-09-12T18:43:01.7517857Z",
+      "version": "0.0.2-preview.2",
+      "source": "button",
+      "beforeMode": "FullScreenWindow",
+      "requestedMode": "Windowed",
+      "afterMode": "Windowed",
+      "beforeControllerMode": "Walk",
+      "afterControllerMode": "Walk",
+      "beforeWidth": 2880,
+      "beforeHeight": 1800,
+      "requestedWidth": 1280,
+      "requestedHeight": 720,
+      "rememberedWidth": 1280,
+      "rememberedHeight": 720,
+      "afterWidth": 1280,
+      "afterHeight": 720,
+      "beforeFrame": 4387,
+      "afterFrame": 4390,
+      "beforeSceneHandle": 1099511629316,
+      "afterSceneHandle": 1099511629316,
+      "beforePosition": {
+        "x": 5.0407328605651855,
+        "y": 0.9379091262817383,
+        "z": -18.85378074645996
+      },
+      "afterPosition": {
+        "x": 5.0407328605651855,
+        "y": 0.9379091262817383,
+        "z": -18.85378074645996
+      },
+      "beforeRotation": {
+        "x": 352.3544006347656,
+        "y": 345.7540283203125,
+        "z": -1.076789786225163E-07
+      },
+      "afterRotation": {
+        "x": 352.3544006347656,
+        "y": 345.7540283203125,
+        "z": -1.076789786225163E-07
+      },
+      "beforeTravelled": 0.0,
+      "afterTravelled": 0.0,
+      "displayApplied": true,
+      "scenePreserved": true,
+      "playerStateUnchanged": true
+    }
+  ],
+  "resizedWindowAcceptance": "UNVERIFIED",
+  "shortcutAcceptance": "UNVERIFIED: Computer Use stopped by user Escape",
+  "desktopInputStopped": true,
+  "oldRuntimeFilesRehashedUnchanged": 368,
+  "zipSha256": "e6e63fc0e225cc0d3db10ce5a5247dfe68b20e1f9cab659706342a6b05943c4c",
+  "archiveEntries": 187,
+  "runtimeFiles": 183,
+  "localProjectAndDistributionSafeguards": "PASS",
+  "remaining": "Other devices, manual resize restoration, Alt+Enter, sustained FPS; character/physical sandbox not implemented."
+}

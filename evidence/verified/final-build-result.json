@@ -1,0 +1,10 @@
+{
+    "result": "Succeeded",
+    "output": "Builds/Candidate/CityLife.exe",
+    "editor": "6000.6.0f1",
+    "utc": "2026-09-09T20:34:05.0167945Z",
+    "sizeBytes": 103263367,
+    "seconds": 19.0393401,
+    "errors": 0,
+    "warnings": 0
+}

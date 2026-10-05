@@ -1,0 +1,59 @@
+{
+  "schema": "starfall.r19-release.v1",
+  "utc": "2026-09-10T22:41:30.472329+00:00",
+  "version": "0.0.2-preview.1",
+  "buildId": "KookerStarfallR19-0.0.2-preview.1-20260910-223113",
+  "sourceCommit": "a8946a069a3ab3ae47f6b5c54ce1c6a7fd6c421c",
+  "frozenTreeCommit": "fc30b2857be419172e740f0d338d5913145d75fb",
+  "treeReview": "R19",
+  "buildReport": "evidence/milestones/kokerboom/round-20/preview-build.json",
+  "executable": "Builds/KookerStarfallR19-0.0.2-preview.1-20260910-223113/KookerStarfallR19.exe",
+  "executableSha256": "a4c71b1bfc3e42d02f2f129fe04adef3ebf2343a662884e4b99598e9dfc90e7d",
+  "archive": "Builds/Download/KookerStarfallR19-0.0.2-preview.1-20260910-223113-Windows.zip",
+  "archiveBytes": 307958420,
+  "archiveSha256": "8a133417d788bc2c43287e947bccb030390c453f11c45609efe7650926df4804",
+  "manifestSha256": "57e24aa09bde224b43f8d05dd42a564cc1d6d883a3edf5c09f53ff93d6593675",
+  "packageEntries": 187,
+  "runtimeFilesUnchanged": 183,
+  "buildErrors": 0,
+  "buildWarnings": 1,
+  "islandValidation": {
+    "status": "PASS",
+    "assertions": 2841,
+    "worldFingerprint": "abc96bc4923f46fa59814967f151f582186aca69a3ed4e52c9ea37e6f1a9a859"
+  },
+  "playerSmoke": {
+    "report": "evidence/milestones/starfall-r19-player/preview-smoke-20260910-223430-378.json",
+    "status": "PASS",
+    "checks": 146,
+    "captures": 3,
+    "runtimeErrors": 0,
+    "scope": "R19 baked standalone player: automatic controller-method verification and actual URP camera RenderTexture captures. No real keyboard/mouse, native window, HUD, user acceptance, offline/telemetry or FPS verification."
+  },
+  "nativeWindow": {
+    "status": "Observed after user-authorized visible launch",
+    "screenshot": "evidence/milestones/starfall-r19-player/2026-09-10-native-r19-window.png",
+    "title": "Kooker Starfall R19 0.0.2-preview.1",
+    "inputScope": "No agent movement input. User exploration began; native movement acceptance not inferred."
+  },
+  "retainedR06": {
+    "archive": "Builds/Download/Kooker-Starfall-WIP-R06-Windows.zip",
+    "archiveSha256": "f24e31dc973ef8eb3addf8a9b457e142b736ad03ba4845841fd9dfe12c471bf9",
+    "preservationFilesRechecked": 194,
+    "allBytesUnchanged": true,
+    "scope": "Runtime files, original ZIP/manifest, seven-file source snapshot and baked scene; existing process remained running with its original start time."
+  },
+  "secretScan": {
+    "status": "PASS",
+    "scanner": "Gitleaks8.30.1",
+    "scope": "Full reachable history, current publishable files, final ZIP bytes/extracted entries, exact original Mono public-key exceptions and modified-vendor rejection canary"
+  },
+  "remainingGaps": [
+    "Native keyboard/mouse movement acceptance",
+    "Sustained gameplay performance",
+    "Other-device execution",
+    "Rock collision (next world milestone)",
+    "Wider landscape and living sea",
+    "Offline/telemetry acceptance"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "projectSafeguards": "PASS: python tools/check-project.py",
+  "powershellSyntax": "PASS: tools/check-powershell.ps1",
+  "diffWhitespace": "PASS: git diff --check",
+  "secrets": "PASS: Gitleaks 8.30.1 all reachable history and publishable candidates",
+  "runtime": "PASS: player-07-terrace",
+  "sourceManifestScope": "Runtime/editor source and shader inputs; generated scene excluded. Build file hashes cover compiled scene and managed assembly.",
+  "utc": "2026-09-13T15:54:52.7661036Z"
+}

@@ -1,0 +1,22 @@
+{
+    "schema": "starfall.memory.unity-proof.v1",
+    "status": "PASS",
+    "sourceCommit": "ad6013873ea7c360c571e83dc097712a5501db71",
+    "exportSha256": "371bbdeada72c45e77c982b780c7f087db13321359d1f1733cb0e31094b69e6b",
+    "limitation": "Isolated Unity editor fixture; actual action API mutations and explicit test sleep transitions. No running player integration or visual acceptance claim.",
+    "eventCount": 8,
+    "checks": [
+        "separate-stable-identities-exported",
+        "actual-remote-pickup-rejected",
+        "denied-receipt-is-not-confirmed-event",
+        "actual-authorized-pickup-and-ownership",
+        "successful-pickup-exported",
+        "duplicate-action-not-exported-twice",
+        "actual-delivery-updated-world",
+        "delivery-receipt-exported",
+        "explicit-fixture-sleep-wake-events-exported",
+        "tick-regression-does-not-append",
+        "eight-durable-jsonl-records",
+        "prior-export-overwrite-refused"
+    ]
+}

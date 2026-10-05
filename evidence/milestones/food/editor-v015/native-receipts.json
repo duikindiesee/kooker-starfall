@@ -1,0 +1,32 @@
+[
+  {
+    "tick": 37,
+    "action": 0,
+    "target": "berry",
+    "code": "observed-signed-ripe-berry-lesson",
+    "success": true,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "inventoryDelta": 0
+  },
+  {
+    "tick": 47,
+    "action": 1,
+    "target": "berry",
+    "code": "gathered-ripe-berry",
+    "success": true,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "inventoryDelta": 1
+  },
+  {
+    "tick": 57,
+    "action": 2,
+    "target": "inventory",
+    "code": "ate-ripe-berry-and-kept-visible-seed",
+    "success": true,
+    "foodDelta": 1200,
+    "waterDelta": 400,
+    "inventoryDelta": -1
+  }
+]

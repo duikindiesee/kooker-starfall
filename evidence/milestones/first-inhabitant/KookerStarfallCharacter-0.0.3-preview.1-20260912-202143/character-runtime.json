@@ -1,0 +1,250 @@
+{
+    "status": "PASS",
+    "utc": "2026-09-12T20:21:56.6273967Z",
+    "version": "0.0.3-preview.1",
+    "unityVersion": "6000.6.0f1",
+    "gpu": "AMD Radeon(TM) 8060S Graphics",
+    "failure": "",
+    "acceptanceLimit": "Automated actual standalone player and offscreen rendering. Native keyboard/mouse flow and sustained performance remain unverified. Scripted behavior, not learning.",
+    "seconds": 13.825981140136719,
+    "walkedMetres": 3.3000001907348633,
+    "footRotationChange": 31.32035255432129,
+    "groundedY": 0.019999921321868896,
+    "maxDetourX": 5.856457233428955,
+    "lowestIdleVertexY": 0.005275018513202667,
+    "lowestWalkVertexY": -0.01000126451253891,
+    "highestWalkSoleY": 0.00813581794500351,
+    "barrierPassX": 1.9999871253967285,
+    "frames": 776,
+    "wallContacts": 67,
+    "plans": 2,
+    "blockedCells": 9,
+    "checks": [
+        {
+            "name": "render-target-created",
+            "evidence": "1280 x 720 colour and depth target.",
+            "passed": true
+        },
+        {
+            "name": "urp-render-request",
+            "evidence": "Actual player URP initialized.",
+            "passed": true
+        },
+        {
+            "name": "human-avatar",
+            "evidence": "Imported adult male avatar is valid and human.",
+            "passed": true
+        },
+        {
+            "name": "bone-Hips",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-Head",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-LeftHand",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-RightHand",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-LeftFoot",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-RightFoot",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-LeftUpperArm",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "bone-RightUpperArm",
+            "evidence": "Mapped bone exists in the instantiated body.",
+            "passed": true
+        },
+        {
+            "name": "root-motion-disabled",
+            "evidence": "Controller owns movement; imported no-root-motion walk owns the pose.",
+            "passed": true
+        },
+        {
+            "name": "idle-state",
+            "evidence": "Idle state after settling.",
+            "passed": true
+        },
+        {
+            "name": "initial-ground-contact",
+            "evidence": "CharacterController below collision at stage floor.",
+            "passed": true
+        },
+        {
+            "name": "visible-idle-grounding",
+            "evidence": "Lowest deformed body vertex y=0.005275019 above the y=0 floor.",
+            "passed": true
+        },
+        {
+            "name": "walk-state",
+            "evidence": "Walk state active while character moves.",
+            "passed": true
+        },
+        {
+            "name": "walk-distance",
+            "evidence": "Two simulated seconds: 3.3 metres.",
+            "passed": true
+        },
+        {
+            "name": "retargeted-foot-pose-changes",
+            "evidence": "Actual rendered body's foot rotation changed 31.32035 degrees.",
+            "passed": true
+        },
+        {
+            "name": "visible-walk-grounding",
+            "evidence": "Lowest body vertex across walk frames: -0.01000126 to 0.008135818 metres.",
+            "passed": true
+        },
+        {
+            "name": "return-to-idle",
+            "evidence": "Stopped motion transitions to idle.",
+            "passed": true
+        },
+        {
+            "name": "wall-stops-capsule",
+            "evidence": "Actor z=-0.725; actual side contacts=67.",
+            "passed": true
+        },
+        {
+            "name": "gravity-and-floor",
+            "evidence": "Fall from 3m ended grounded at y=0.01999992.",
+            "passed": true
+        },
+        {
+            "name": "camera-obstacle-avoidance",
+            "evidence": "Sphere cast shortened following distance to 1.32 metres before the wall.",
+            "passed": true
+        },
+        {
+            "name": "roamer-completed",
+            "evidence": "Bounded scripted collect-and-deliver sequence finished.",
+            "passed": true
+        },
+        {
+            "name": "route-avoided-obstacle",
+            "evidence": "Two routes; 9 blocked cells, minimum x clearance while passing wall 1.999987.",
+            "passed": true
+        },
+        {
+            "name": "crystal-delivered",
+            "evidence": "Actual crystal reparented from source via right hand to destination socket.",
+            "passed": true
+        },
+        {
+            "name": "observable-actions",
+            "evidence": "6 observation/action/outcome entries.",
+            "passed": true
+        },
+        {
+            "name": "camera-follows-actor",
+            "evidence": "Camera remains close to moved actor after the full route.",
+            "passed": true
+        },
+        {
+            "name": "no-runtime-errors",
+            "evidence": "Actual player reported no error/assert/exception.",
+            "passed": true
+        }
+    ],
+    "captures": [
+        "01-idle.png",
+        "02-walking.png",
+        "03-carrying.png",
+        "04-delivered.png"
+    ],
+    "errors": [],
+    "observations": [
+        {
+            "sequence": 1,
+            "seconds": 10.266666412353516,
+            "position": {
+                "x": 0.0,
+                "y": 0.019999910145998,
+                "z": -5.0
+            },
+            "observation": "Authored destination; collision queries found 4 blocked grid cells.",
+            "action": "Search a bounded one-metre grid.",
+            "outcome": "Route contains 12 clear steps; no learning involved."
+        },
+        {
+            "sequence": 2,
+            "seconds": 17.299999237060547,
+            "position": {
+                "x": 0.13892559707164764,
+                "y": 0.019999850541353226,
+                "z": 2.997741937637329
+            },
+            "observation": "Reached the authored interaction stand; range checked.",
+            "action": "Play the free Interact clip.",
+            "outcome": "Interaction in progress."
+        },
+        {
+            "sequence": 3,
+            "seconds": 19.366666793823242,
+            "position": {
+                "x": 0.13892559707164764,
+                "y": 0.019999850541353226,
+                "z": 2.997741937637329
+            },
+            "observation": "Crystal still present at the source stand.",
+            "action": "Attach the crystal to the right hand.",
+            "outcome": "Carrying one crystal."
+        },
+        {
+            "sequence": 4,
+            "seconds": 19.366666793823242,
+            "position": {
+                "x": 0.13892559707164764,
+                "y": 0.019999850541353226,
+                "z": 2.997741937637329
+            },
+            "observation": "Authored destination; collision queries found 5 blocked grid cells.",
+            "action": "Search a bounded one-metre grid.",
+            "outcome": "Route contains 7 clear steps; no learning involved."
+        },
+        {
+            "sequence": 5,
+            "seconds": 23.299999237060547,
+            "position": {
+                "x": 5.856457233428955,
+                "y": 0.019999850541353226,
+                "z": 2.017995834350586
+            },
+            "observation": "Reached the authored interaction stand; range checked.",
+            "action": "Play the free Interact clip.",
+            "outcome": "Interaction in progress."
+        },
+        {
+            "sequence": 6,
+            "seconds": 25.366666793823242,
+            "position": {
+                "x": 5.856457233428955,
+                "y": 0.019999850541353226,
+                "z": 2.017995834350586
+            },
+            "observation": "Carried crystal and destination are within reach.",
+            "action": "Place the crystal on the destination.",
+            "outcome": "Source empty; destination occupied. Expedition complete."
+        }
+    ]
+}

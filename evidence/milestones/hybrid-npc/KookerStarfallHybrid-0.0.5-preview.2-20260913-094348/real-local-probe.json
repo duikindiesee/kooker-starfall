@@ -1,0 +1,10 @@
+{
+  "status": "PREPARED_NOT_EXECUTED",
+  "diagnosticDeadlineMilliseconds": 30000,
+  "normalGameplayDeadlineMilliseconds": 1500,
+  "inferenceRequestsFromThisPreparedRun": 0,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "remainingGap": "User manual invocation required; no 30-second result claimed",
+  "previousRun": "Manual 5000ms run PASS64 with one completion attempted, no reply and deterministic fallback delivery",
+  "manualCommand": "docs/DIAGNOSTIC-30S-COMMAND.txt"
+}

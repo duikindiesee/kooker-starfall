@@ -1,0 +1,20 @@
+{
+    "status": "Succeeded",
+    "output": "Builds/KookerStarfallR19-0.0.2-preview.2-20260912-183552/KookerStarfallR19.exe",
+    "scene": "Assets/CityLife/GeneratedPreview-20260912-183552/CosmicPreview.unity",
+    "product": "Kooker Starfall R19 0.0.2-preview.2",
+    "scope": "Separate versioned local player using the frozen R19 PH02 tree and existing study stage. Preserves R06. No saved-world loading, multiplayer, bot integrations, living sea or wider landscape. Actual player startup/input/collision acceptance recorded separately.",
+    "utc": "2026-09-12T18:38:15.2254529Z",
+    "buildId": "KookerStarfallR19-0.0.2-preview.2-20260912-183552",
+    "version": "0.0.2-preview.2",
+    "sourceCommit": "97975d121ca97e965be1144c1fb5f42efe68a018",
+    "treeReview": "R19",
+    "frozenTreeCommit": "fc30b2857be419172e740f0d338d5913145d75fb",
+    "componentMeshSha256": "3fee339d4fddf09846ff6c8f97f3bc89fa1c31faf8f7a1036879d9d90a72c1ca",
+    "bytes": 658451598,
+    "seconds": 97.5648212,
+    "errors": 0,
+    "warnings": 1,
+    "woodColliders": 3,
+    "rockColliders": 0
+}

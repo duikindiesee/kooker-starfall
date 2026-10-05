@@ -1,0 +1,26 @@
+{
+  "schema": "starfall.r06-package-check.v1",
+  "utc": "2026-09-10T22:41:11.486451+02:00",
+  "status": "PASS",
+  "archive": "Kooker-Starfall-WIP-R06-Windows.zip",
+  "archiveBytes": 169258413,
+  "sha256": "f24e31dc973ef8eb3addf8a9b457e142b736ad03ba4845841fd9dfe12c471bf9",
+  "sourceBuild": "Builds/CosmicPreview-20260910-185028",
+  "sourcePlayerProduct": "Cosmic World Preview",
+  "verifiedEntryCount": 186,
+  "unchangedBuildFiles": 183,
+  "allBuildBytesUnchanged": true,
+  "excludedUnityBackupFiles": 1,
+  "sdkRuntimeConfigurationMatchCount": 18,
+  "checks": [
+    "Exact executable hash from preserved R06 build",
+    "All runtime file hashes before/after",
+    "ZIP entry paths and per-entry hashes",
+    "Case-insensitive duplicate and path escape rejection",
+    "Private/debug/runtime-state and nested-archive exclusion",
+    "Portable controls and CC0 art notices",
+    "Mono configuration equals pinned Unity SDK"
+  ],
+  "scope": "Exact previously running R06 distribution plus three documentation files. Packaging did not rebuild, launch, restart, control or upload a player.",
+  "remainingGap": "Other-device execution, full native controls, collision, performance and offline/telemetry acceptance remain unverified."
+}

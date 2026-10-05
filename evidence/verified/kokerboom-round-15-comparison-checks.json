@@ -1,0 +1,82 @@
+{
+  "schema": "starfall.ph02-imported-comparison-verification.v1",
+  "utc": "2026-09-10T20:23:43.803709+00:00",
+  "scope": "Actual R15 report values verified against R13 records; no visual score or sustained runtime claim.",
+  "matchedSourceTriangles": 82074,
+  "retainedCrownTriangles": 71207,
+  "expandedCorners": 213621,
+  "actualCrownVertices": 43200,
+  "vertexReductionPercent": 79.77726908871318,
+  "expandedTupleHash": "423dced590276ea61c471242b065180bfe928520bc5553b1fc604aa137dd8cf2",
+  "expandedActualMeshHashMatches": true,
+  "callerAndCloneUnchanged": true,
+  "priorDistinctRimTuples": 137,
+  "importedDistinctRimTuples": 70,
+  "priorSupportVertices": 1841,
+  "importedSupportVertices": 1775,
+  "sourceAndSupportBoundaryEdges": 69,
+  "exactReversedEndpointAttributes": true,
+  "cameraChecks": [
+    {
+      "id": "01-ph02-fitted-neutral-front",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 0.0
+    },
+    {
+      "id": "02-ph02-fitted-neutral-side",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 1.0680707873689244e-07
+    },
+    {
+      "id": "03-ph02-fitted-neutral-oblique-under",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 1.1681248679451528e-07
+    },
+    {
+      "id": "04-ph02-fitted-neutral-above",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 7.62939453125e-06
+    },
+    {
+      "id": "05-ph02-fitted-textured-join",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 0.0
+    },
+    {
+      "id": "06-ph02-fitted-gray-join",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 0.0
+    },
+    {
+      "id": "07-ph02-fitted-cosmic-whole",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 4.76837158203125e-07
+    },
+    {
+      "id": "08-ph02-source-underside-comparison",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 4.567122459775419e-06
+    },
+    {
+      "id": "09-ph02-prior-support-underside",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 4.567122459775419e-06
+    },
+    {
+      "id": "10-ph02-fitted-underside-comparison",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 4.567122459775419e-06
+    },
+    {
+      "id": "11-ph02-prior-support-join",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 0.0
+    },
+    {
+      "id": "12-ph02-source-original-join",
+      "positionProjectionAndLightsExactlyEqual": true,
+      "maximumEulerRoundTripDifferenceDegrees": 0.0
+    }
+  ],
+  "interpretation": "Imported Mikk tangents replace R13 per-triangle recalculated tangents, so identical pixels or identical rim tuple counts are not expected. Vertex dedup preserves the imported path expanded tuples exactly; this does not establish an appearance improvement or FPS benefit."
+}

@@ -1,0 +1,3124 @@
+{
+    "schema": "citylife.kokerboom-inspection.v1",
+    "utc": "2026-09-10T19:16:24.8950315Z",
+    "status": "Rendered for independent critique",
+    "visualAcceptance": "Not scored. Independent critique is required.",
+    "scope": "Scoped PH02 original/cut/attachment comparison at original metre scale with explicit source maps. The crown cut is open and leaf completeness/attachment remain unaccepted. No procedural family, native input, world integration or earlier numeric validation claim.",
+    "mode": "ph02-source-crown-comparison",
+    "referenceDirection": "User-provided Kooker Nexus artwork; gold/ochre tree, teal succulent leaves, navy/cobalt sky. Earth explicitly excluded; one procedural blue gas giant only.",
+    "unityVersion": "6000.6.0f1",
+    "graphicsDevice": "AMD Radeon(TM) 8060S Graphics",
+    "graphicsApi": "Direct3D11",
+    "renderPath": "URP SingleCameraRequest to GPU RenderTexture; synchronous RGB readback; editor batch process",
+    "timingScope": "Per-image render plus synchronous readback wall time after three warmup requests. Not gameplay FPS or a sustained runtime benchmark.",
+    "technicalChecksPassed": true,
+    "errors": 0,
+    "warnings": 1,
+    "expectedCaptures": 8,
+    "initialAmbientProbe": {
+        "scope": "Scene probe before explicit harness ambient",
+        "coefficientOrder": "RGB channels, nine SH coefficients each",
+        "directionOrder": "up,down,right,left,forward,back",
+        "coefficients": [
+            0.180283784866333,
+            -0.005682311486452818,
+            -0.012560680508613586,
+            0.007252015173435211,
+            0.0056999679654836655,
+            -0.00987242255359888,
+            0.010330158285796642,
+            -0.010436316952109337,
+            0.025035569444298744,
+            0.22571411728858948,
+            0.04134383052587509,
+            -0.019753262400627136,
+            0.011403260752558708,
+            0.009111973457038403,
+            -0.015783270820975304,
+            0.014379967004060745,
+            -0.015223595313727856,
+            0.03443606197834015,
+            0.3069228529930115,
+            0.12748494744300842,
+            -0.034053392708301544,
+            0.019656643271446228,
+            0.016365190967917442,
+            -0.028349149972200394,
+            0.01771555282175541,
+            -0.02208525687456131,
+            0.040465496480464935
+        ],
+        "evaluatedIrradiance": [
+            {
+                "r": 0.1392357498407364,
+                "g": 0.21824191510677338,
+                "b": 0.3762267529964447,
+                "a": 1.0
+            },
+            {
+                "r": 0.1506003588438034,
+                "g": 0.1355542689561844,
+                "b": 0.12125686556100845,
+                "a": 1.0
+            },
+            {
+                "r": 0.2022412270307541,
+                "g": 0.25717347860336304,
+                "b": 0.3493294417858124,
+                "a": 1.0
+            },
+            {
+                "r": 0.18773718178272247,
+                "g": 0.23436695337295532,
+                "b": 0.3100161850452423,
+                "a": 1.0
+            },
+            {
+                "r": 0.18838343024253845,
+                "g": 0.23472079634666443,
+                "b": 0.30830058455467224,
+                "a": 1.0
+            },
+            {
+                "r": 0.21350479125976563,
+                "g": 0.2742273211479187,
+                "b": 0.37640735507011414,
+                "a": 1.0
+            }
+        ]
+    },
+    "captures": [
+        {
+            "id": "01-ph02-full-original-neutral",
+            "purpose": "Pinned full PH02 source at original metre scale, original mapped vertex normals and polygon-corner UVs. Neutral original comparison; no age/seed/family acceptance.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-01-ph02-full-original-neutral.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 27.2438,
+            "camera": {
+                "position": {
+                    "x": 3.935723066329956,
+                    "y": 2.0673398971557617,
+                    "z": -11.09921932220459
+                },
+                "rotationEuler": {
+                    "x": 6.461953639984131,
+                    "y": 340.7099609375,
+                    "z": 2.1480809664353728e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.9354451298713684,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.07898196578025818,
+                "maximumLuminance": 0.6318557262420654,
+                "meanLuminance": 0.2958180904388428,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 full original - retained metre scale",
+                    "kind": "ph02-full-source-comparison",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 246222,
+                    "triangles": 82074,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.04930222034454346,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 0.7344303131103516,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.7344303131103516,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 full original source - comparison only",
+                            "objectName": "PH02 full original - retained metre scale",
+                            "vertices": 246222,
+                            "triangles": 82074,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 0.6851280927658081,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.7344303131103516,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "02-ph02-full-original-cosmic",
+            "purpose": "Same full source geometry and white-tinted source maps on cosmic prototype ground at original scale. Single candidate palette/readability comparison only.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-02-ph02-full-original-cosmic.png",
+            "widthPixels": 1600,
+            "heightPixels": 900,
+            "renderReadbackMilliseconds": 26.6291,
+            "camera": {
+                "position": {
+                    "x": 0.6537289619445801,
+                    "y": 1.7097795009613037,
+                    "z": -3.5
+                },
+                "rotationEuler": {
+                    "x": 15.320569038391113,
+                    "y": 350.20538330078125,
+                    "z": -2.2130811316856125e-7
+                },
+                "orthographic": false,
+                "orthographicSizeMetres": 0.9354451298713684,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 0.8700000047683716,
+                        "b": 0.6600000262260437,
+                        "a": 1.0
+                    },
+                    "intensity": 2.25,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 0.41999998688697815,
+                        "g": 0.6600000262260437,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.5199999809265137,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 0.30000001192092896,
+                        "g": 0.7699999809265137,
+                        "b": 0.8799999952316284,
+                        "a": 1.0
+                    },
+                    "intensity": 0.6499999761581421,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.20000000298023224,
+                "g": 0.25,
+                "b": 0.3700000047683716,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.1599999964237213,
+                "b": 0.10999999940395355,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.12999999523162842,
+                "g": 0.09000000357627869,
+                "b": 0.03999999910593033,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.028121065348386765,
+                    0.004838981665670872,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0003051620442420244,
+                    0.0,
+                    0.0009154881117865443,
+                    0.024556711316108704,
+                    0.011522318236529827,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.00040246383287012577,
+                    0.0,
+                    -0.0012073891703039408,
+                    0.027080411091446877,
+                    0.02985895611345768,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.002411717316135764,
+                    0.0,
+                    -0.007235147524625063
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.03173939883708954,
+                        "g": 0.037688881158828735,
+                        "b": 0.06658623367547989,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.022061431780457497,
+                        "g": 0.014644245617091656,
+                        "b": 0.0068683200515806675,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731390833854675,
+                        "g": 0.02375178597867489,
+                        "b": 0.02225698158144951,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731390833854675,
+                        "g": 0.02375178597867489,
+                        "b": 0.02225698158144951,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731388971209526,
+                        "g": 0.02375178411602974,
+                        "b": 0.02225697785615921,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731388971209526,
+                        "g": 0.02375178411602974,
+                        "b": 0.02225697785615921,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.028121065348386765,
+                    0.004838981665670872,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0003051620442420244,
+                    0.0,
+                    0.0009154881117865443,
+                    0.024556711316108704,
+                    0.011522318236529827,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.00040246383287012577,
+                    0.0,
+                    -0.0012073891703039408,
+                    0.027080411091446877,
+                    0.02985895611345768,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.002411717316135764,
+                    0.0,
+                    -0.007235147524625063
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.03173939883708954,
+                        "g": 0.037688881158828735,
+                        "b": 0.06658623367547989,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.022061431780457497,
+                        "g": 0.014644245617091656,
+                        "b": 0.0068683200515806675,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731390833854675,
+                        "g": 0.02375178597867489,
+                        "b": 0.02225698158144951,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731390833854675,
+                        "g": 0.02375178597867489,
+                        "b": 0.02225698158144951,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731388971209526,
+                        "g": 0.02375178411602974,
+                        "b": 0.02225697785615921,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.028731388971209526,
+                        "g": 0.02375178411602974,
+                        "b": 0.02225697785615921,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.028363138437271118,
+                "maximumLuminance": 0.7094870805740356,
+                "meanLuminance": 0.31478580832481384,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 full original - retained metre scale",
+                    "kind": "ph02-full-source-comparison",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 246222,
+                    "triangles": 82074,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.04930222034454346,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 0.7344303131103516,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.7344303131103516,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 full original source - comparison only",
+                            "objectName": "PH02 full original - retained metre scale",
+                            "vertices": 246222,
+                            "triangles": 82074,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 0.6851280927658081,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.7344303131103516,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "03-ph02-cut-crown-front",
+            "purpose": "Original-scale crown after the recorded explicit horizontal stem cut; front. No cap/socket or leaf-completeness claim.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-03-ph02-cut-crown-front.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 27.2326,
+            "camera": {
+                "position": {
+                    "x": 0.048070162534713745,
+                    "y": 1.688647747039795,
+                    "z": -10.889449119567871
+                },
+                "rotationEuler": {
+                    "x": 3.43363094329834,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.48434942960739136,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.07002196460962296,
+                "maximumLuminance": 0.6427866816520691,
+                "meanLuminance": 0.3068368136882782,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown - explicit open horizontal cut",
+                    "kind": "ph02-open-cut-crown",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213621,
+                    "triangles": 71207,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 1.0347791910171509,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.3847792148590088,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "PH02 crown - explicit open horizontal cut",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "04-ph02-cut-crown-side",
+            "purpose": "Same clipped source crown, side view exposes hanging leaves and retained short stem; no resizing.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-04-ph02-cut-crown-side.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 31.748,
+            "camera": {
+                "position": {
+                    "x": 10.956754684448242,
+                    "y": 1.4711265563964844,
+                    "z": 0.00836019217967987
+                },
+                "rotationEuler": {
+                    "x": 2.2906100749969482,
+                    "y": 270.0,
+                    "z": -1.0680703610432829e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.47423088550567627,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.06610039621591568,
+                "maximumLuminance": 0.6195403933525085,
+                "meanLuminance": 0.3066513240337372,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown - explicit open horizontal cut",
+                    "kind": "ph02-open-cut-crown",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213621,
+                    "triangles": 71207,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 1.0347791910171509,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.3847792148590088,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "PH02 crown - explicit open horizontal cut",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "05-ph02-cut-crown-underside",
+            "purpose": "Clipped crown underside: explicit open boundary, retained leaf attachments and source topology without a fabricated socket.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-05-ph02-cut-crown-underside.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 20.293200000000002,
+            "camera": {
+                "position": {
+                    "x": 2.0732009410858154,
+                    "y": -9.090873718261719,
+                    "z": -3.535618305206299
+                },
+                "rotationEuler": {
+                    "x": 291.9549865722656,
+                    "y": 330.255126953125,
+                    "z": 0.0000022835608888271963
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.8248882293701172,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.0652666687965393,
+                "maximumLuminance": 0.4803396165370941,
+                "meanLuminance": 0.306552529335022,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown - explicit open horizontal cut",
+                    "kind": "ph02-open-cut-crown",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213621,
+                    "triangles": 71207,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 1.0347791910171509,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.3847792148590088,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "PH02 crown - explicit open horizontal cut",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "06-ph02-cut-crown-above",
+            "purpose": "Clipped crown from above: source leaf overlap and coverage with original source maps and scale.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-06-ph02-cut-crown-above.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 30.678800000000003,
+            "camera": {
+                "position": {
+                    "x": 2.102116823196411,
+                    "y": 11.305012702941895,
+                    "z": -3.072709798812866
+                },
+                "rotationEuler": {
+                    "x": 70.17298126220703,
+                    "y": 326.3099365234375,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.8291260600090027,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.14877255260944366,
+                "maximumLuminance": 0.5410470962524414,
+                "meanLuminance": 0.3273886442184448,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown - explicit open horizontal cut",
+                    "kind": "ph02-open-cut-crown",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213621,
+                    "triangles": 71207,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.048070162534713745,
+                            "y": 1.0347791910171509,
+                            "z": 0.00836019217967987
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.3847792148590088,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "PH02 crown - explicit open horizontal cut",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "07-ph02-diagnostic-attachment",
+            "purpose": "Original-scale source crown translated by its recorded boundary centre onto a separate mid-gray open tapered support. Four-centimetre overlap is an unaccepted fit test, not a welded branch or full family.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-07-ph02-diagnostic-attachment.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 33.7032,
+            "camera": {
+                "position": {
+                    "x": 7.290596961975098,
+                    "y": 1.804351568222046,
+                    "z": -9.688992500305176
+                },
+                "rotationEuler": {
+                    "x": 4.573920726776123,
+                    "y": 323.1300964355469,
+                    "z": 3.211880255094002e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 1.0396623611450195,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.08206980675458908,
+                "maximumLuminance": 0.5570110082626343,
+                "meanLuminance": 0.29050835967063904,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown on separate diagnostic support - unaccepted join",
+                    "kind": "ph02-unaccepted-attachment",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213687,
+                    "triangles": 71271,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.018804073333740234,
+                            "y": 0.8347792029380798,
+                            "z": 0.006731361150741577
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.8347792029380798,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "Original-scale clipped source crown",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "PH02 separate open diagnostic support",
+                            "objectName": "Separate mid-gray open tapered support - not source geometry",
+                            "vertices": 66,
+                            "triangles": 64,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0,
+                                    "y": 0.4699999988079071,
+                                    "z": 0.0
+                                },
+                                "m_Extent": {
+                                    "x": 0.10999999940395355,
+                                    "y": 0.4699999988079071,
+                                    "z": 0.10999999940395355
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "PH02 diagnostic support - mid-gray"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "PH02 diagnostic support - mid-gray",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "08-ph02-attachment-join-closeup",
+            "purpose": "Close side/underside of the explicit crown/support overlap around y0.90m. Reveals gaps/intersections without a new cap or socket; original source scale retained.",
+            "imagePath": "evidence/milestones/kokerboom/round-08/2026-09-10-08-ph02-attachment-join-closeup.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 20.2107,
+            "camera": {
+                "position": {
+                    "x": 3.52834415435791,
+                    "y": -0.8241720795631409,
+                    "z": -8.820859909057617
+                },
+                "rotationEuler": {
+                    "x": 349.4802551269531,
+                    "y": 338.1985778808594,
+                    "z": -2.1709227837618528e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.32807424664497375,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "ambientProbeBeforeRendering": {
+                "scope": "Before warmup render requests",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "ambientProbeAfterRendering": {
+                "scope": "After captured render request",
+                "coefficientOrder": "RGB channels, nine SH coefficients each",
+                "directionOrder": "up,down,right,left,forward,back",
+                "coefficients": [
+                    0.03539532423019409,
+                    0.02041097916662693,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.000831440556794405,
+                    0.0,
+                    -0.0024943191092461348,
+                    0.03938549757003784,
+                    0.02323349379003048,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0009813666110858321,
+                    0.0,
+                    -0.0029440950602293015,
+                    0.04363132640719414,
+                    0.02626843750476837,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.0011445097625255585,
+                    0.0,
+                    -0.003433524165302515
+                ],
+                "evaluatedIrradiance": [
+                    {
+                        "r": 0.059132061898708344,
+                        "g": 0.06654445827007294,
+                        "b": 0.07447779923677444,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.018310103565454483,
+                        "g": 0.02007746696472168,
+                        "b": 0.021940922364592552,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276877164841,
+                        "b": 0.04134231060743332,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    },
+                    {
+                        "r": 0.033732444047927856,
+                        "g": 0.03742276504635811,
+                        "b": 0.04134230688214302,
+                        "a": 1.0
+                    }
+                ]
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.07030510157346725,
+                "maximumLuminance": 0.6433011889457703,
+                "meanLuminance": 0.3056771457195282,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "PH02 crown on separate diagnostic support - unaccepted join",
+                    "kind": "ph02-unaccepted-attachment",
+                    "descriptorJson": "",
+                    "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+                    "sourceAssetSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+                    "sourceNote": "Pinned PH02 source decoded at metre scale with control-vertex-indexed normals and corner-indexed UVs; reflected winding and derived tangents. Full original and explicit open-cut crown are separate candidates. Attachment adds only a separately labelled mid-gray support and recorded translation; no source crown resizing, cap, weld or acceptance. See ph02-crown-extraction.json and ph02-attachment-setup.json. Mask is not assumed opacity.",
+                    "proceduralIdentityApplicable": false,
+                    "importerUseFileScale": true,
+                    "originalMaterialNames": [
+                        "quiver_tree_02"
+                    ],
+                    "seed": 0,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": -1.0,
+                    "importerGlobalScale": 1.0,
+                    "vertices": 213687,
+                    "triangles": 71271,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.018804073333740234,
+                            "y": 0.8347792029380798,
+                            "z": 0.006731361150741577
+                        },
+                        "m_Extent": {
+                            "x": 0.4358192980289459,
+                            "y": 0.8347792029380798,
+                            "z": 0.44040989875793457
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "PH02 clipped crown candidate - open boundary",
+                            "objectName": "Original-scale clipped source crown",
+                            "vertices": 213621,
+                            "triangles": 71207,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.048070162534713745,
+                                    "y": 1.0347791910171509,
+                                    "z": 0.00836019217967987
+                                },
+                                "m_Extent": {
+                                    "x": 0.4358192980289459,
+                                    "y": 0.3847792148590088,
+                                    "z": 0.44040989875793457
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "quiver_tree_02 explicit original URP maps"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "quiver_tree_02 explicit original URP maps",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": [
+                                        {
+                                            "property": "_BaseMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_diff_2k.jpg",
+                                            "runtimeTexture": "quiver_tree_02_diff_2k",
+                                            "conversion": "Original diffuse; white tint; source alpha ignored because opaque geometry is under inspection"
+                                        },
+                                        {
+                                            "property": "_BumpMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_nor_gl_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_nor_gl_2k - temporary linear RG normal",
+                                            "conversion": "OpenGL +Y normal; existing normal import or temporary linear RG data; no source/importer mutation"
+                                        },
+                                        {
+                                            "property": "_MetallicGlossMap",
+                                            "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/textures/quiver_tree_02_rough_2k.exr",
+                                            "runtimeTexture": "quiver_tree_02_rough_2k - temporary metallic0 smoothness1-roughness",
+                                            "conversion": "Temporary linear RGBA: metallicRGB0, alpha1-minus-source-roughness"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "PH02 separate open diagnostic support",
+                            "objectName": "Separate mid-gray open tapered support - not source geometry",
+                            "vertices": 66,
+                            "triangles": 64,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0,
+                                    "y": 0.4699999988079071,
+                                    "z": 0.0
+                                },
+                                "m_Extent": {
+                                    "x": 0.10999999940395355,
+                                    "y": 0.4699999988079071,
+                                    "z": 0.10999999940395355
+                                }
+                            },
+                            "objectWorldScale": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "materialNames": [
+                                "PH02 diagnostic support - mid-gray"
+                            ],
+                            "shaders": [
+                                "Universal Render Pipeline/Lit"
+                            ],
+                            "materials": [
+                                {
+                                    "name": "PH02 diagnostic support - mid-gray",
+                                    "shader": "Universal Render Pipeline/Lit",
+                                    "bindings": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

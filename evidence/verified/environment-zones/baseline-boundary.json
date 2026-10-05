@@ -1,0 +1,6 @@
+{
+  "acceptedBaselineCommit": "47d1cdbacda347e12ca8410e4ba061be78ca35a5",
+  "acceptedWorktreeClean": true,
+  "acceptedSourceChanged": false,
+  "scope": "Additive zone helper, documentation and standalone shared-source tests only; no Unity run or existing build mutation."
+}

@@ -1,0 +1,5 @@
+near-south: camera=(128.00, 18.05, -100.00); actorProxy=(116.00, 4.02, -85.00); floor=(128.00, 14.05, -100.00); floorFreeboard=16.04982; FOV=60; not ordinary player capture
+high-south candidate (128.00, -112.00): rejected floor=(128.00, 14.79, -112.00) eye=(128.00, 18.79, -112.00) dry/sight/clear guard
+high-south: camera=(120.00, 16.65, -105.00); actorProxy=(116.00, 4.02, -85.00); floor=(120.00, 12.65, -105.00); floorFreeboard=14.65014; FOV=60; not ordinary player capture
+east-oblique candidate (145.00, -110.00): rejected floor=(145.00, 23.50, -110.00) eye=(145.00, 27.50, -110.00) dry/sight/clear guard
+east-oblique: camera=(135.00, 26.17, -100.00); actorProxy=(116.00, 4.02, -85.00); floor=(135.00, 22.17, -100.00); floorFreeboard=24.16731; FOV=60; not ordinary player capture

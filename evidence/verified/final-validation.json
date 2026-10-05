@@ -1,0 +1,26 @@
+{
+    "utc": "2026-09-09T20:33:45.4480607Z",
+    "status": "passed",
+    "baseHash": "9153406293803b911c566c57ca14fd92ac8c0dd13b8dde8e630ab44a1e205c77",
+    "fingerprint": "abc96bc4923f46fa59814967f151f582186aca69a3ed4e52c9ea37e6f1a9a859",
+    "assertions": 2841,
+    "sourceTerrainVectors": 210,
+    "sourceRngValues": 96,
+    "sourceNoiseVectors": 42,
+    "maxSourceHeightError": 0.000003433227547589013,
+    "widthMetres": 4096.0,
+    "landKm2": 6.007008075714111,
+    "gentleLandKm2": 3.2856318950653076,
+    "maxHeightMetres": 126.50155639648438,
+    "generationMs": 946,
+    "checks": [
+        "source JavaScript arithmetic oracle",
+        "full-grid regeneration",
+        "different seed",
+        "reverse chunk traversal",
+        "closed coastline",
+        "ground mesh mapping",
+        "immutable base and atomic edit save/reload",
+        "mismatch/invalid data rejection"
+    ]
+}

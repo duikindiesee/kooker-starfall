@@ -1,0 +1,232 @@
+Shader "CityLife/CoastalWater"
+{
+    Properties
+    {
+        _ShallowColor ("Luminous turquoise shallows", Color) = (.008,.83,.75,1)
+        _RiverColor ("Turquoise channel", Color) = (.004,.64,.72,1)
+        _DeepColor ("Deep blue sea", Color) = (.006,.12,.34,1)
+        _SkyReflection ("Navy sky reflection", Color) = (.035,.085,.19,1)
+        _FoamColor ("Fine shore edge", Color) = (.40,.85,.74,1)
+        _WaterLevel ("World water level", Float) = -2
+        _UseSceneDepth ("Use available camera depth", Range(0,1)) = 1
+        _WaveStrength ("Wave strength", Range(0,1)) = 1
+        _ReflectionStrength ("Bounded scene reflection strength", Range(0,1)) = 1
+        [HideInInspector] _WaterDebugMode ("Acceptance diagnostic mode", Float) = 0
+    }
+    SubShader
+    {
+        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Transparent" "Queue"="Transparent" }
+        Pass
+        {
+            Name "CoastalWaterForward"
+            Tags { "LightMode"="UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
+            ZTest LEqual
+            Cull Back
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_fog
+            #pragma multi_compile_instancing
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                half4 _ShallowColor, _RiverColor, _DeepColor, _SkyReflection, _FoamColor;
+                float _WaterLevel, _UseSceneDepth, _WaveStrength, _ReflectionStrength, _PlanarReflectionAvailable, _WaterDebugMode;
+                float4x4 _PlanarReflectionVP;
+            CBUFFER_END
+            TEXTURE2D(_PlanarReflectionTexture); SAMPLER(sampler_PlanarReflectionTexture);
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                half fog : TEXCOORD1;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
+
+            float3 _StarfallWind;
+            float _StarfallEnvironmentTime, _StarfallIntegratedWeather;
+            float3 WavePhase(float2 p)
+            {
+                float t = _Time.y;
+                if (_StarfallIntegratedWeather > .5)
+                {
+                    float speed = length(_StarfallWind.xz);
+                    float2 direction = speed > .001 ? _StarfallWind.xz / speed : float2(1,0);
+                    p = float2(dot(p,direction), dot(p,float2(-direction.y,direction.x)));
+                    t = _StarfallEnvironmentTime * max(.3,sqrt(speed)*.5);
+                }
+                return float3(dot(p,float2(.31,.19)) + t*.62,
+                    dot(p,float2(-.16,.37)) - t*.47,
+                    dot(p,float2(.09,.12)) + t*.29);
+            }
+            float SeaBlend(float z) { return smoothstep(50,95,z); }
+
+            Varyings Vert(Attributes input)
+            {
+                Varyings o;
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_TRANSFER_INSTANCE_ID(input,o);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+                float3 p = TransformObjectToWorld(input.positionOS.xyz);
+                // The open-sea mesh becomes coarse beyond the playable bathymetry. Keep its
+                // vertex displacement below a pixel at distance; detailed motion remains in
+                // the fragment normal instead of aliasing into broad radial bands.
+                float strength = lerp(.42,.18,SeaBlend(p.z)) * saturate(_WaveStrength);
+                p.y += dot(sin(WavePhase(p.xz)),float3(.045,.034,.032)) * strength;
+                o.positionWS = p;
+                o.positionCS = TransformWorldToHClip(p);
+                o.fog = ComputeFogFactor(o.positionCS.z);
+                return o;
+            }
+
+            float WaterDepth(Varyings input, out float measured)
+            {
+                // The fallback is an explicit art direction for this bounded river/estuary,
+                // not a claimed terrain measurement. Camera depth replaces it when available.
+                float depth = lerp(2.3,25,SeaBlend(input.positionWS.z));
+                measured = 0;
+                if (_UseSceneDepth > .5 && _CameraDepthTexture_TexelSize.z > 2 && _CameraDepthTexture_TexelSize.w > 2)
+                {
+                    float2 screenUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                    float raw = SampleSceneDepth(screenUV);
+                    #if UNITY_REVERSED_Z
+                        bool surfaceHit = raw > .000001;
+                    #else
+                        bool surfaceHit = raw < .999999;
+                        raw = lerp(UNITY_NEAR_CLIP_VALUE,1,raw);
+                    #endif
+                    if (surfaceHit)
+                    {
+                        float3 sceneWS = ComputeWorldSpacePosition(screenUV,raw,UNITY_MATRIX_I_VP);
+                        // Ignore foreground depth and invalid projections. Opaque land in front
+                        // already rejects the water through ZTest; a submerged bed gives depth.
+                        float difference = input.positionWS.y - sceneWS.y;
+                        if (difference >= -.08 && difference < 250)
+                        {
+                            depth = max(0,difference);
+                            measured = 1;
+                        }
+                    }
+                }
+                // The authored bathymetry ends at z=900 while the visual ocean continues.
+                // Fade measured estuary depth into the open-sea fallback before that boundary,
+                // avoiding a hard horizontal colour/transmission seam at the mesh join.
+                depth = lerp(depth,25,smoothstep(520,880,input.positionWS.z));
+                return depth;
+            }
+
+            half4 Frag(Varyings input) : SV_Target
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                float measured;
+                float depth = WaterDepth(input,measured);
+                float2 mainCameraUV=GetNormalizedScreenSpaceUV(input.positionCS);
+                half3 mainCameraOpaque=SampleSceneColor(mainCameraUV);
+                float river = 1-exp(-depth*.30);
+                float deep = smoothstep(4,24,depth);
+                half3 water = lerp(_ShallowColor.rgb,_RiverColor.rgb,river);
+                water = lerp(water,_DeepColor.rgb,deep);
+                // Transmit the captured bed once. Optical path depends on depth and
+                // viewing angle; the shallow-angle clamp bounds this stylized model.
+                float transmission = 0;
+                if (measured > .5 && _CameraOpaqueTexture_TexelSize.z > 2 && _CameraOpaqueTexture_TexelSize.w > 2)
+                {
+                    half3 bed = mainCameraOpaque;
+                    // Art-directed wavelength attenuation preserves contact detail and
+                    // removes warm bed colour progressively along the underwater ray.
+                    float viewCosine=max(.18,abs(GetWorldSpaceNormalizeViewDir(input.positionWS).y));
+                    float opticalPath=depth/viewCosine;
+                    half3 bedTransmission=exp(-opticalPath*half3(.42,.095,.035));
+                    transmission=dot(bedTransmission,half3(.2126,.7152,.0722));
+                    half3 transmittedBed = min(bed,half3(1.5,1.5,1.5))*bedTransmission;
+                    // Use a separate scalar scattering path, not inverse RGB absorption:
+                    // the latter washed the measured bed green in comparison round192.
+                    float scattering=1-exp(-opticalPath*.12);
+                    water = transmittedBed + water*scattering*.60;
+                }
+                // Retained acceptance diagnostics from the same main-camera render. These modes
+                // isolate input provenance; they are never enabled during ordinary play.
+                if (_WaterDebugMode>.5 && _WaterDebugMode<1.5) return half4(mainCameraOpaque,1);
+                if (_WaterDebugMode>1.5 && _WaterDebugMode<2.5) return half4(saturate(depth/8).xxx,1);
+                if (_WaterDebugMode>2.5 && _WaterDebugMode<3.5) return half4(measured.xxx,1);
+                if (_WaterDebugMode>3.5 && _WaterDebugMode<4.5) return half4(transmission.xxx,1);
+
+                float strength = lerp(.42,1,SeaBlend(input.positionWS.z)) * saturate(_WaveStrength);
+                float3 phase = WavePhase(input.positionWS.xz);
+                // Derivative filtering prevents fine wave fields shimmering into distant stripes.
+                float3 attenuation = 1-smoothstep(.6,2.1,abs(ddx(phase))+abs(ddy(phase)));
+                float3 c = cos(phase)*attenuation;
+                float nx = (c.x*.045*.31 + c.y*.034*-.16 + c.z*.032*.09)*strength;
+                float nz = (c.x*.045*.19 + c.y*.034*.37 + c.z*.032*.12)*strength;
+                float ripple = dot(input.positionWS.xz,float2(4.4,3.1)) + _Time.y*1.18;
+                float rippleFilter = 1-smoothstep(.6,2.0,fwidth(ripple));
+                nx += sin(ripple)*.018*rippleFilter*_WaveStrength;
+                nz += cos(ripple*.79)*.015*rippleFilter*_WaveStrength;
+                half3 normalWS = normalize(float3(-nx,1,-nz));
+                half3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
+                float fresnel = pow(1-saturate(dot(normalWS,view)),4);
+                // The ordinary-play planar camera supplies the actual canyon, sky and celestial
+                // scene. URP's environment lookup remains a bounded fallback.
+                half3 reflectionDirection=reflect(-view,normalWS);
+                half3 environment=GlossyEnvironmentReflection(reflectionDirection,input.positionWS,.24,1,GetNormalizedScreenSpaceUV(input.positionCS));
+                float4 planarCS=mul(_PlanarReflectionVP,float4(input.positionWS,1));
+                float2 planarUV=planarCS.xy/max(.0001,planarCS.w)*.5+.5;
+                #if UNITY_UV_STARTS_AT_TOP
+                    planarUV.y=1-planarUV.y;
+                #endif
+                float planarInside=step(.001,planarCS.w)*step(0,planarUV.x)*step(planarUV.x,1)*step(0,planarUV.y)*step(planarUV.y,1)*saturate(_PlanarReflectionAvailable);
+                half3 planarEnvironment=SAMPLE_TEXTURE2D(_PlanarReflectionTexture,sampler_PlanarReflectionTexture,saturate(planarUV)).rgb;
+                // Opt-in reflection provenance only; ordinary mode zero is unchanged.
+                // Compare these in the compiled player: Editor captures may lack
+                // the LateUpdate-driven planar camera and use only fallback sky.
+                if (_WaterDebugMode>4.5 && _WaterDebugMode<5.5) return half4(environment,1);
+                if (_WaterDebugMode>5.5 && _WaterDebugMode<6.5) return half4(planarEnvironment,1);
+                if (_WaterDebugMode>6.5 && _WaterDebugMode<7.5) return half4(planarInside.xxx,1);
+                environment=lerp(environment,planarEnvironment,planarInside);
+                environment=max(environment,_SkyReflection.rgb*.18);
+                // Water reflects a small amount even head-on and grows strongly toward
+                // grazing angles; this avoids hiding a valid probe behind a zero-Fresnel floor.
+                float reflectionWeight=(.03+fresnel*.62)*saturate(_ReflectionStrength);
+                water = lerp(water,environment,reflectionWeight);
+                Light sun = GetMainLight();
+                float glint = pow(saturate(dot(normalWS,normalize(view+sun.direction))),190);
+                // A small neutral/cool glint keeps the warm key from bleaching the whole colour.
+                float sunStrength = min(1.5,max(sun.color.r,max(sun.color.g,sun.color.b)));
+                water += half3(.55,.85,.95)*sunStrength*glint*.24;
+                float glimmer = sin(phase.x+phase.y*.47)*cos(phase.z-phase.y*.24);
+                // Surface light is restrained to broad microvariation and specular glint.
+                // The visible connected caustic network belongs on the real bed below.
+                water += half3(.34,.72,.76)*glimmer*.006*(1-deep*.65);
+
+                // Thin intermittent contact edge only when depth is measured, never a false
+                // white line generated from the fallback colour gradient.
+                float shore = (1-smoothstep(.015,.14,depth))*measured;
+                float pulse = .45+.55*smoothstep(-.5,.65,sin(phase.x*2.1-phase.y*.4));
+                water = lerp(water,_FoamColor.rgb,shore*pulse*.22);
+                // The opaque scene was already transmitted above. Do not add the warm bed a
+                // second time through ordinary alpha; retain only a narrow actual contact fade.
+                float alpha=lerp(1,smoothstep(0,.045,depth),measured);
+                water = MixFog(water,input.fog);
+                return half4(water,alpha);
+            }
+            ENDHLSL
+        }
+    }
+    FallBack "Universal Render Pipeline/Unlit"
+}

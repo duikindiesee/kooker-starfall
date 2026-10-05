@@ -1,0 +1,3667 @@
+{
+    "schema": "citylife.kokerboom-inspection.v1",
+    "utc": "2026-09-10T18:11:24.2779683Z",
+    "status": "Rendered for independent critique",
+    "visualAcceptance": "Not scored. Independent critique is required.",
+    "scope": "Actual Unity URP GPU renders of a procedural tree and small inspection/prototype stage. No full terrain, native input, desktop presentation, player save access or reference-image billboard.",
+    "referenceDirection": "User-provided Kooker Nexus artwork; gold/ochre tree, teal succulent leaves, navy/cobalt sky. Earth explicitly excluded; one procedural blue gas giant only.",
+    "unityVersion": "6000.6.0f1",
+    "graphicsDevice": "AMD Radeon(TM) 8060S Graphics",
+    "graphicsApi": "Direct3D11",
+    "renderPath": "URP SingleCameraRequest to GPU RenderTexture; synchronous RGB readback; editor batch process",
+    "timingScope": "Per-image render plus synchronous readback wall time after three warmup requests. Not gameplay FPS or a sustained runtime benchmark.",
+    "technicalChecksPassed": true,
+    "errors": 0,
+    "warnings": 1,
+    "expectedCaptures": 14,
+    "captures": [
+        {
+            "id": "01-neutral-front",
+            "purpose": "Neutral front: silhouette, age form, colour separation and connected crown.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-01-neutral-front.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 59.220000000000006,
+            "camera": {
+                "position": {
+                    "x": 0.26048970222473145,
+                    "y": 6.339234828948975,
+                    "z": -33.01201629638672
+                },
+                "rotationEuler": {
+                    "x": 5.142764568328857,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 5.174493789672852,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.13113568723201752,
+                "maximumLuminance": 0.958362340927124,
+                "meanLuminance": 0.32717078924179077,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "02-neutral-three-quarter",
+            "purpose": "Neutral three-quarter: branch depth and crown volume.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-02-neutral-three-quarter.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 21.163800000000002,
+            "camera": {
+                "position": {
+                    "x": 23.577543258666992,
+                    "y": 7.556629180908203,
+                    "z": -23.221561431884766
+                },
+                "rotationEuler": {
+                    "x": 7.253561019897461,
+                    "y": 315.0,
+                    "z": 2.1516537174193218e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 5.511188983917236,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.14451608061790466,
+                "maximumLuminance": 0.9320282340049744,
+                "meanLuminance": 0.3129698634147644,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "03-neutral-rear",
+            "purpose": "Neutral rear: concealed intersections and rosette distribution.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-03-neutral-rear.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 17.7757,
+            "camera": {
+                "position": {
+                    "x": 0.26048970222473145,
+                    "y": 6.339234828948975,
+                    "z": 33.2030029296875
+                },
+                "rotationEuler": {
+                    "x": 5.142764568328857,
+                    "y": 180.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 5.174493789672852,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.1599349081516266,
+                "maximumLuminance": 0.8222714066505432,
+                "meanLuminance": 0.3334744870662689,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "04-branch-union-closeup",
+            "purpose": "Actual branch-union anchor: continuity, pinching, seams and bark-to-upper-branch treatment.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-04-branch-union-closeup.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 21.6497,
+            "camera": {
+                "position": {
+                    "x": 8.626144409179688,
+                    "y": 5.0131449699401855,
+                    "z": -13.014472007751465
+                },
+                "rotationEuler": {
+                    "x": 7.640668869018555,
+                    "y": 326.97613525390625,
+                    "z": -2.1535545613460272e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 1.4039475917816162,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.1599349081516266,
+                "maximumLuminance": 0.973518431186676,
+                "meanLuminance": 0.3730374574661255,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "05-trunk-bark-closeup",
+            "purpose": "Actual trunk-bark anchor: surface structure without lighting camouflage.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-05-trunk-bark-closeup.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 16.500600000000002,
+            "camera": {
+                "position": {
+                    "x": 3.4089529514312744,
+                    "y": 2.155855894088745,
+                    "z": -13.90812873840332
+                },
+                "rotationEuler": {
+                    "x": 4.4379096031188965,
+                    "y": 345.9637451171875,
+                    "z": 5.352132603775317e-8
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 1.01369047164917,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.15794824063777924,
+                "maximumLuminance": 0.8412541151046753,
+                "meanLuminance": 0.4237166941165924,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "06-terminal-rosette-closeup",
+            "purpose": "Actual terminal rosette: succulent leaf thickness, taper, curvature and attachment.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-06-terminal-rosette-closeup.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 24.368100000000002,
+            "camera": {
+                "position": {
+                    "x": 5.309476375579834,
+                    "y": 11.063346862792969,
+                    "z": -12.398119926452637
+                },
+                "rotationEuler": {
+                    "x": 22.810823440551758,
+                    "y": 331.189208984375,
+                    "z": 4.631064314253308e-7
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.8235464692115784,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.17954275012016296,
+                "maximumLuminance": 0.9889576435089111,
+                "meanLuminance": 0.38792842626571655,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "07-age-lineup-metres",
+            "purpose": "Same seed at age 0.05 / 0.30 / 0.60 / 0.90, left to right. Ruler ticks and numeral labels are spaced exactly one Unity metre apart. Trees are not rescaled.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-07-age-lineup-metres.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 19.4391,
+            "camera": {
+                "position": {
+                    "x": -0.6761703491210938,
+                    "y": 5.574710369110107,
+                    "z": -52.14425277709961
+                },
+                "rotationEuler": {
+                    "x": 2.5765719413757324,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 8.47866439819336,
+                "fieldOfView": 60.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.18042823672294617,
+                "maximumLuminance": 0.8886235356330872,
+                "meanLuminance": 0.33757635951042175,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Age 0.05",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":1,\"branchSegments\":12,\"forkGenerations\":0,\"age01\":0.05000000074505806,\"heightMetres\":0.6046000123023987,\"crownDiameterMetres\":0.6633613705635071,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.022677505388855934,\"y\":0.375,\"z\":0.0003798090619966388},\"trunkBark\":{\"x\":0.004535501357167959,\"y\":0.10450000315904617,\"z\":-0.04204178601503372},\"terminalRosette\":{\"x\":0.022677505388855934,\"y\":0.33000001311302185,\"z\":0.0003798090619966388}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.05000000074505806,
+                    "vertices": 12150,
+                    "triangles": 20624,
+                    "position": {
+                        "x": -8.91463851928711,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -8.896843910217285,
+                            "y": 0.15819060802459717,
+                            "z": 0.013080239295959473
+                        },
+                        "m_Extent": {
+                            "x": 0.0863943099975586,
+                            "y": 0.3244798183441162,
+                            "z": 0.32632237672805786
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 8676,
+                            "triangles": 17348,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 4.470348358154297e-8,
+                                    "y": 0.0678388923406601,
+                                    "z": 4.470348358154297e-8
+                                },
+                                "m_Extent": {
+                                    "x": 0.0662892535328865,
+                                    "y": 0.23412810266017914,
+                                    "z": 0.0662892535328865
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 3474,
+                            "triangles": 3276,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.017794359475374222,
+                                    "y": 0.34323588013648987,
+                                    "z": 0.013080224394798279
+                                },
+                                "m_Extent": {
+                                    "x": 0.0863945484161377,
+                                    "y": 0.13943451642990112,
+                                    "z": 0.32632237672805786
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 0.30",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":3.2226624488830566,\"crownDiameterMetres\":2.2280166149139404,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.06689219176769257,\"y\":1.7473429441452026,\"z\":0.0011203286703675985},\"trunkBark\":{\"x\":0.013378438539803028,\"y\":0.6259903311729431,\"z\":-0.12380807101726532},\"terminalRosette\":{\"x\":-0.020762531086802483,\"y\":2.7333638668060303,\"z\":-0.645593523979187}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.30000001192092896,
+                    "vertices": 170290,
+                    "triangles": 278560,
+                    "position": {
+                        "x": -5.873594760894775,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -5.863283157348633,
+                            "y": 1.4054195880889893,
+                            "z": -0.11771601438522339
+                        },
+                        "m_Extent": {
+                            "x": 0.9546489715576172,
+                            "y": 1.7007067203521729,
+                            "z": 0.8781309723854065
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 111618,
+                            "triangles": 223232,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.004417330026626587,
+                                    "y": 1.3160264492034912,
+                                    "z": -0.09894436597824097
+                                },
+                                "m_Extent": {
+                                    "x": 0.7057650089263916,
+                                    "y": 1.6113135814666748,
+                                    "z": 0.5805514454841614
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 58672,
+                            "triangles": 55328,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.010311365127563477,
+                                    "y": 2.795182704925537,
+                                    "z": -0.11771601438522339
+                                },
+                                "m_Extent": {
+                                    "x": 0.9546489715576172,
+                                    "y": 0.31094372272491455,
+                                    "z": 0.8781309723854065
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 0.60",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.157156467437744,\"crownDiameterMetres\":4.408982276916504,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.1113181933760643,\"y\":2.4851856231689453,\"z\":0.001864387420937419},\"trunkBark\":{\"x\":0.02226363867521286,\"y\":0.9063705801963806,\"z\":-0.23804481327533722},\"terminalRosette\":{\"x\":0.23573830723762512,\"y\":4.4799323081970215,\"z\":-1.5313118696212769}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.6000000238418579,
+                    "vertices": 421350,
+                    "triangles": 594632,
+                    "position": {
+                        "x": -0.9625463485717773,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -0.8123071193695068,
+                            "y": 2.289155960083008,
+                            "z": 0.07200837135314941
+                        },
+                        "m_Extent": {
+                            "x": 1.9563989639282227,
+                            "y": 2.764616012573242,
+                            "z": 1.9046101570129395
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 186662,
+                            "triangles": 373320,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.1622515320777893,
+                                    "y": 2.2062039375305176,
+                                    "z": 0.055677711963653564
+                                },
+                                "m_Extent": {
+                                    "x": 1.681670904159546,
+                                    "y": 2.681663990020752,
+                                    "z": 1.6152725219726563
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 234688,
+                            "triangles": 221312,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.1502392292022705,
+                                    "y": 4.570365905761719,
+                                    "z": 0.07200831174850464
+                                },
+                                "m_Extent": {
+                                    "x": 1.9563989639282227,
+                                    "y": 0.48340582847595215,
+                                    "z": 1.9046101570129395
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 0.90",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":6.993379592895508,\"crownDiameterMetres\":6.5486860275268555,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.151948019862175,\"y\":2.8695015907287598,\"z\":0.00254486664198339},\"trunkBark\":{\"x\":0.030389605090022087,\"y\":1.05241060256958,\"z\":-0.36157360672950745},\"terminalRosette\":{\"x\":0.128660187125206,\"y\":6.0361528396606445,\"z\":-2.6140682697296143}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.8999999761581421,
+                    "vertices": 904772,
+                    "triangles": 1313412,
+                    "position": {
+                        "x": 5.997442245483398,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 6.2368059158325195,
+                            "y": 3.1086885929107666,
+                            "z": 0.08236384391784668
+                        },
+                        "m_Extent": {
+                            "x": 3.0035910606384277,
+                            "y": 3.779162645339966,
+                            "z": 3.0054500102996826
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 435396,
+                            "triangles": 870788,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.22630643844604492,
+                                    "y": 3.0215139389038086,
+                                    "z": 0.0922706127166748
+                                },
+                                "m_Extent": {
+                                    "x": 2.729621171951294,
+                                    "y": 3.691987991333008,
+                                    "z": 2.736236095428467
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.23936307430267334,
+                                    "y": 6.306044578552246,
+                                    "z": 0.08236384391784668
+                                },
+                                "m_Extent": {
+                                    "x": 3.0035905838012695,
+                                    "y": 0.5818066596984863,
+                                    "z": 3.0054500102996826
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "08-cosmic-gameplay-eye-level",
+            "purpose": "Small sculpted 60m prototype ground, actual 1.85m eye clearance, rocks and several grounded trees. Warm key/cool fill and one blue gas giant; no Earth, water or reference-image billboards.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-08-cosmic-gameplay-eye-level.png",
+            "widthPixels": 1600,
+            "heightPixels": 900,
+            "renderReadbackMilliseconds": 42.3956,
+            "camera": {
+                "position": {
+                    "x": 5.088165760040283,
+                    "y": 0.8873746395111084,
+                    "z": -18.028310775756836
+                },
+                "rotationEuler": {
+                    "x": 352.3764953613281,
+                    "y": 345.02935791015625,
+                    "z": 1.0767340796746794e-7
+                },
+                "orthographic": false,
+                "orthographicSizeMetres": 8.47866439819336,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 0.8700000047683716,
+                        "b": 0.6600000262260437,
+                        "a": 1.0
+                    },
+                    "intensity": 2.25,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 0.41999998688697815,
+                        "g": 0.6600000262260437,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.5199999809265137,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 0.30000001192092896,
+                        "g": 0.7699999809265137,
+                        "b": 0.8799999952316284,
+                        "a": 1.0
+                    },
+                    "intensity": 0.6499999761581421,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.20000000298023224,
+                "g": 0.25,
+                "b": 0.3700000047683716,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.1599999964237213,
+                "b": 0.10999999940395355,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.12999999523162842,
+                "g": 0.09000000357627869,
+                "b": 0.03999999910593033,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.028363138437271118,
+                "maximumLuminance": 0.9001529216766357,
+                "meanLuminance": 0.2209579199552536,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype young tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4243,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":3.002148151397705,\"crownDiameterMetres\":2.0073916912078857,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.054435472935438156,\"y\":1.626186728477478,\"z\":0.049011364579200745},\"trunkBark\":{\"x\":-0.010887094773352146,\"y\":0.5799509286880493,\"z\":-0.12352422624826431},\"terminalRosette\":{\"x\":0.23604433238506317,\"y\":2.6161911487579346,\"z\":-0.38584256172180176}}",
+                    "seed": 4243,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.30000001192092896,
+                    "vertices": 176412,
+                    "triangles": 290804,
+                    "position": {
+                        "x": -8.480276107788086,
+                        "y": -0.634377121925354,
+                        "z": 7.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -8.441186904907227,
+                            "y": 0.6692310571670532,
+                            "z": 7.1293182373046875
+                        },
+                        "m_Extent": {
+                            "x": 0.9503870010375977,
+                            "y": 1.5984182357788086,
+                            "z": 0.8340139389038086
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4243",
+                            "objectName": "Bark",
+                            "vertices": 117740,
+                            "triangles": 235476,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0214693546295166,
+                                    "y": 1.222500205039978,
+                                    "z": 0.13994856178760529
+                                },
+                                "m_Extent": {
+                                    "x": 0.6856550574302673,
+                                    "y": 1.5173102617263794,
+                                    "z": 0.5588149428367615
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4243",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 58672,
+                            "triangles": 55328,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.039089590311050415,
+                                    "y": 2.603883743286133,
+                                    "z": 0.12931802868843079
+                                },
+                                "m_Extent": {
+                                    "x": 0.9503871202468872,
+                                    "y": 0.29814255237579346,
+                                    "z": 0.834013819694519
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype middle-aged tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4244,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.470125198364258,\"crownDiameterMetres\":4.535269737243652,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.1303379088640213,\"y\":2.5654776096343994,\"z\":0.12574949860572815},\"trunkBark\":{\"x\":-0.02606758289039135,\"y\":0.9368815422058105,\"z\":-0.27003714442253113},\"terminalRosette\":{\"x\":-0.3712468147277832,\"y\":4.500347137451172,\"z\":-1.526463508605957}}",
+                    "seed": 4244,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.6000000238418579,
+                    "vertices": 443566,
+                    "triangles": 639064,
+                    "position": {
+                        "x": 8.819487571716309,
+                        "y": 0.49204757809638977,
+                        "z": 11.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 8.643352508544922,
+                            "y": 2.907243490219116,
+                            "z": 11.223322868347168
+                        },
+                        "m_Extent": {
+                            "x": 1.904994010925293,
+                            "y": 2.9412074089050293,
+                            "z": 2.0426130294799805
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4244",
+                            "objectName": "Bark",
+                            "vertices": 208878,
+                            "triangles": 417752,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.1870863437652588,
+                                    "y": 2.315767765045166,
+                                    "z": 0.2150173783302307
+                                },
+                                "m_Extent": {
+                                    "x": 1.5994583368301392,
+                                    "y": 2.8417792320251465,
+                                    "z": 1.7700369358062744
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4244",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 234688,
+                            "triangles": 221312,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.17613482475280762,
+                                    "y": 4.814022064208984,
+                                    "z": 0.2233232855796814
+                                },
+                                "m_Extent": {
+                                    "x": 1.904994010925293,
+                                    "y": 0.5423812866210938,
+                                    "z": 2.0426127910614014
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "09-cosmic-gameplay-overlook",
+            "purpose": "Second real prototype-ground view: tree spacing, ground contact and intended gold/teal/cobalt palette. Scene stage only; no new world terrain.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-09-cosmic-gameplay-overlook.png",
+            "widthPixels": 1600,
+            "heightPixels": 900,
+            "renderReadbackMilliseconds": 19.5562,
+            "camera": {
+                "position": {
+                    "x": -12.211597442626953,
+                    "y": 6.965484142303467,
+                    "z": -14.750435829162598
+                },
+                "rotationEuler": {
+                    "x": 11.18097972869873,
+                    "y": 36.09323501586914,
+                    "z": 0.0
+                },
+                "orthographic": false,
+                "orthographicSizeMetres": 8.47866439819336,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 0.8700000047683716,
+                        "b": 0.6600000262260437,
+                        "a": 1.0
+                    },
+                    "intensity": 2.25,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 0.41999998688697815,
+                        "g": 0.6600000262260437,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.5199999809265137,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 0.30000001192092896,
+                        "g": 0.7699999809265137,
+                        "b": 0.8799999952316284,
+                        "a": 1.0
+                    },
+                    "intensity": 0.6499999761581421,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.20000000298023224,
+                "g": 0.25,
+                "b": 0.3700000047683716,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.1599999964237213,
+                "b": 0.10999999940395355,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.12999999523162842,
+                "g": 0.09000000357627869,
+                "b": 0.03999999910593033,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.028363138437271118,
+                "maximumLuminance": 0.886978805065155,
+                "meanLuminance": 0.2656826674938202,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype young tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4243,\"terminalRosettes\":8,\"branchSegments\":116,\"forkGenerations\":3,\"age01\":0.30000001192092896,\"heightMetres\":3.002148151397705,\"crownDiameterMetres\":2.0073916912078857,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.054435472935438156,\"y\":1.626186728477478,\"z\":0.049011364579200745},\"trunkBark\":{\"x\":-0.010887094773352146,\"y\":0.5799509286880493,\"z\":-0.12352422624826431},\"terminalRosette\":{\"x\":0.23604433238506317,\"y\":2.6161911487579346,\"z\":-0.38584256172180176}}",
+                    "seed": 4243,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.30000001192092896,
+                    "vertices": 176412,
+                    "triangles": 290804,
+                    "position": {
+                        "x": -8.480276107788086,
+                        "y": -0.634377121925354,
+                        "z": 7.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -8.441186904907227,
+                            "y": 0.6692310571670532,
+                            "z": 7.1293182373046875
+                        },
+                        "m_Extent": {
+                            "x": 0.9503870010375977,
+                            "y": 1.5984182357788086,
+                            "z": 0.8340139389038086
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4243",
+                            "objectName": "Bark",
+                            "vertices": 117740,
+                            "triangles": 235476,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0214693546295166,
+                                    "y": 1.222500205039978,
+                                    "z": 0.13994856178760529
+                                },
+                                "m_Extent": {
+                                    "x": 0.6856550574302673,
+                                    "y": 1.5173102617263794,
+                                    "z": 0.5588149428367615
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4243",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 58672,
+                            "triangles": 55328,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.039089590311050415,
+                                    "y": 2.603883743286133,
+                                    "z": 0.12931802868843079
+                                },
+                                "m_Extent": {
+                                    "x": 0.9503871202468872,
+                                    "y": 0.29814255237579346,
+                                    "z": 0.834013819694519
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prototype middle-aged tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4244,\"terminalRosettes\":32,\"branchSegments\":452,\"forkGenerations\":5,\"age01\":0.6000000238418579,\"heightMetres\":5.470125198364258,\"crownDiameterMetres\":4.535269737243652,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.1303379088640213,\"y\":2.5654776096343994,\"z\":0.12574949860572815},\"trunkBark\":{\"x\":-0.02606758289039135,\"y\":0.9368815422058105,\"z\":-0.27003714442253113},\"terminalRosette\":{\"x\":-0.3712468147277832,\"y\":4.500347137451172,\"z\":-1.526463508605957}}",
+                    "seed": 4244,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.6000000238418579,
+                    "vertices": 443566,
+                    "triangles": 639064,
+                    "position": {
+                        "x": 8.819487571716309,
+                        "y": 0.49204757809638977,
+                        "z": 11.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 8.643352508544922,
+                            "y": 2.907243490219116,
+                            "z": 11.223322868347168
+                        },
+                        "m_Extent": {
+                            "x": 1.904994010925293,
+                            "y": 2.9412074089050293,
+                            "z": 2.0426130294799805
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4244",
+                            "objectName": "Bark",
+                            "vertices": 208878,
+                            "triangles": 417752,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.1870863437652588,
+                                    "y": 2.315767765045166,
+                                    "z": 0.2150173783302307
+                                },
+                                "m_Extent": {
+                                    "x": 1.5994583368301392,
+                                    "y": 2.8417792320251465,
+                                    "z": 1.7700369358062744
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4244",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 234688,
+                            "triangles": 221312,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.17613482475280762,
+                                    "y": 4.814022064208984,
+                                    "z": 0.2233232855796814
+                                },
+                                "m_Extent": {
+                                    "x": 1.904994010925293,
+                                    "y": 0.5423812866210938,
+                                    "z": 2.0426127910614014
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "10-neutral-front-no-shadows",
+            "purpose": "Diagnostic only. Same tree, camera, materials and lighting as 01; key-light shadows disabled to separate shadow artefacts from mesh/normal defects. Does not replace the required normal-lighting captures.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-10-neutral-front-no-shadows.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 37.189,
+            "camera": {
+                "position": {
+                    "x": 0.26048970222473145,
+                    "y": 6.339234828948975,
+                    "z": -33.01201629638672
+                },
+                "rotationEuler": {
+                    "x": 5.142764568328857,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 5.174493789672852,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.13113568723201752,
+                "maximumLuminance": 0.9712799787521362,
+                "meanLuminance": 0.33209559321403503,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Mature inspection tree",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":1.0,\"heightMetres\":7.562379360198975,\"crownDiameterMetres\":7.394251346588135,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.16494154930114746,\"y\":2.930387258529663,\"z\":0.0027624862268567085},\"trunkBark\":{\"x\":0.03298830986022949,\"y\":1.075547218322754,\"z\":-0.4042702913284302},\"terminalRosette\":{\"x\":0.135243758559227,\"y\":6.5476531982421875,\"z\":-2.9904251098632813}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 1.0,
+                    "vertices": 992916,
+                    "triangles": 1489700,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.26048970222473145,
+                            "y": 3.3595590591430664,
+                            "z": 0.09549212455749512
+                        },
+                        "m_Extent": {
+                            "x": 3.392110586166382,
+                            "y": 4.097343444824219,
+                            "z": 3.394942045211792
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 523540,
+                            "triangles": 1047076,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.247170090675354,
+                                    "y": 3.273075580596924,
+                                    "z": 0.1057509183883667
+                                },
+                                "m_Extent": {
+                                    "x": 3.117595672607422,
+                                    "y": 4.010859966278076,
+                                    "z": 3.12595272064209
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.26048970222473145,
+                                    "y": 6.837564468383789,
+                                    "z": 0.09549212455749512
+                                },
+                                "m_Extent": {
+                                    "x": 3.392110586166382,
+                                    "y": 0.619337797164917,
+                                    "z": 3.394942045211792
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "11-isolated-rosette-above",
+            "purpose": "Actual CreateRosette source geometry and material, isolated above view. No stand-in leaves, surrounding crown or decorative stump; inspect phyllotaxis, taper and leaflet overlap.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-11-isolated-rosette-above.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 10.601,
+            "camera": {
+                "position": {
+                    "x": 1.696739673614502,
+                    "y": 9.410622596740723,
+                    "z": -3.2722764015197754
+                },
+                "rotationEuler": {
+                    "x": 68.51673889160156,
+                    "y": 332.78387451171875,
+                    "z": -0.000002331252971998765
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.584622323513031,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.324991375207901,
+                "maximumLuminance": 0.9059223532676697,
+                "meanLuminance": 0.3545052707195282,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Isolated actual terminal rosette - source leaf geometry and material",
+                    "kind": "isolated-terminal-rosette",
+                    "descriptorJson": "",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": 1.0,
+                    "vertices": 7334,
+                    "triangles": 6916,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.0126066654920578,
+                            "y": 0.054329246282577515,
+                            "z": 0.0024266839027404785
+                        },
+                        "m_Extent": {
+                            "x": 0.3328953981399536,
+                            "y": 0.17266087234020233,
+                            "z": 0.3511011600494385
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosette",
+                            "vertices": 7334,
+                            "triangles": 6916,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0126066654920578,
+                                    "y": 0.054329246282577515,
+                                    "z": 0.0024266839027404785
+                                },
+                                "m_Extent": {
+                                    "x": 0.3328953981399536,
+                                    "y": 0.17266087234020233,
+                                    "z": 0.3511011600494385
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "12-isolated-rosette-side",
+            "purpose": "Same actual isolated rosette in side view; inspect thickness, upward inner growth, drooping outer leaves and attachment volume.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-12-isolated-rosette-side.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 11.2516,
+            "camera": {
+                "position": {
+                    "x": 0.0126066654920578,
+                    "y": 0.6565378904342651,
+                    "z": -10.034382820129395
+                },
+                "rotationEuler": {
+                    "x": 3.4336304664611816,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.29461240768432617,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.11739999800920486,
+                "maximumLuminance": 0.9305254817008972,
+                "meanLuminance": 0.349202036857605,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Isolated actual terminal rosette - source leaf geometry and material",
+                    "kind": "isolated-terminal-rosette",
+                    "descriptorJson": "",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 1,
+                    "meshCount": 1,
+                    "age01": 1.0,
+                    "vertices": 7334,
+                    "triangles": 6916,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.0126066654920578,
+                            "y": 0.054329246282577515,
+                            "z": 0.0024266839027404785
+                        },
+                        "m_Extent": {
+                            "x": 0.3328953981399536,
+                            "y": 0.17266087234020233,
+                            "z": 0.3511011600494385
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosette",
+                            "vertices": 7334,
+                            "triangles": 6916,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.0126066654920578,
+                                    "y": 0.054329246282577515,
+                                    "z": 0.0024266839027404785
+                                },
+                                "m_Extent": {
+                                    "x": 0.3328953981399536,
+                                    "y": 0.17266087234020233,
+                                    "z": 0.3511011600494385
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "13-juvenile-closeup",
+            "purpose": "Seed4242 (or selected seed), age .05, actual juvenile geometry closeup. Verify unbranched form and persistent vertical leaf rows at true model proportions.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-13-juvenile-closeup.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 13.8404,
+            "camera": {
+                "position": {
+                    "x": 2.8464627265930176,
+                    "y": 0.912502110004425,
+                    "z": -9.415813446044922
+                },
+                "rotationEuler": {
+                    "x": 4.381789684295654,
+                    "y": 343.3007507324219,
+                    "z": 5.3517279496873016e-8
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 0.40519770979881287,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.15661568939685822,
+                "maximumLuminance": 0.9014298319816589,
+                "meanLuminance": 0.31259292364120483,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Juvenile age .05 - unscaled closeup",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":1,\"branchSegments\":12,\"forkGenerations\":0,\"age01\":0.05000000074505806,\"heightMetres\":0.6046000123023987,\"crownDiameterMetres\":0.6633613705635071,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.022677505388855934,\"y\":0.375,\"z\":0.0003798090619966388},\"trunkBark\":{\"x\":0.004535501357167959,\"y\":0.10450000315904617,\"z\":-0.04204178601503372},\"terminalRosette\":{\"x\":0.022677505388855934,\"y\":0.33000001311302185,\"z\":0.0003798090619966388}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.05000000074505806,
+                    "vertices": 12150,
+                    "triangles": 20624,
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 0.017794355750083923,
+                            "y": 0.15819060802459717,
+                            "z": 0.013080239295959473
+                        },
+                        "m_Extent": {
+                            "x": 0.0863945484161377,
+                            "y": 0.3244798183441162,
+                            "z": 0.32632237672805786
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 8676,
+                            "triangles": 17348,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 4.470348358154297e-8,
+                                    "y": 0.0678388923406601,
+                                    "z": 4.470348358154297e-8
+                                },
+                                "m_Extent": {
+                                    "x": 0.0662892535328865,
+                                    "y": 0.23412810266017914,
+                                    "z": 0.0662892535328865
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 3474,
+                            "triangles": 3276,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.017794359475374222,
+                                    "y": 0.34323588013648987,
+                                    "z": 0.013080224394798279
+                                },
+                                "m_Extent": {
+                                    "x": 0.0863945484161377,
+                                    "y": 0.13943451642990112,
+                                    "z": 0.32632237672805786
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "14-adult-seed-variation",
+            "purpose": "Same adult age .90, selected seed / seed+1 / seed+2 from left to right; unscaled geometry and identical light/camera. Inspect within-age identity and actual variation.",
+            "imagePath": "evidence/milestones/kokerboom/round-02/2026-09-10-14-adult-seed-variation.png",
+            "widthPixels": 1600,
+            "heightPixels": 1200,
+            "renderReadbackMilliseconds": 29.088800000000003,
+            "camera": {
+                "position": {
+                    "x": -0.07040023803710938,
+                    "y": 5.401700019836426,
+                    "z": -54.30644607543945
+                },
+                "rotationEuler": {
+                    "x": 2.290609836578369,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "orthographic": true,
+                "orthographicSizeMetres": 8.964527130126953,
+                "fieldOfView": 52.0,
+                "nearClip": 0.019999999552965164,
+                "farClip": 1500.0
+            },
+            "lights": [
+                {
+                    "name": "Key",
+                    "type": "Directional",
+                    "shadows": "Soft",
+                    "position": {
+                        "x": -8.0,
+                        "y": 12.0,
+                        "z": -10.0
+                    },
+                    "rotationEuler": {
+                        "x": 38.000003814697266,
+                        "y": 325.0,
+                        "z": -0.0000010834542081283871
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 1.5499999523162842,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Fill",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 9.0,
+                        "y": 7.0,
+                        "z": -3.0
+                    },
+                    "rotationEuler": {
+                        "x": 24.000001907348633,
+                        "y": 99.99999237060547,
+                        "z": 0.0
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.47999998927116394,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                },
+                {
+                    "name": "Rim",
+                    "type": "Directional",
+                    "shadows": "None",
+                    "position": {
+                        "x": 3.0,
+                        "y": 10.0,
+                        "z": 12.0
+                    },
+                    "rotationEuler": {
+                        "x": 35.00000762939453,
+                        "y": 170.0,
+                        "z": 2.605662814403331e-7
+                    },
+                    "color": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "intensity": 0.550000011920929,
+                    "shadowBias": 0.05000000074505806,
+                    "shadowNormalBias": 0.4000000059604645
+                }
+            ],
+            "ambientSky": {
+                "r": 0.3199999928474426,
+                "g": 0.3400000035762787,
+                "b": 0.36000001430511475,
+                "a": 1.0
+            },
+            "ambientEquator": {
+                "r": 0.1899999976158142,
+                "g": 0.20000000298023224,
+                "b": 0.20999999344348907,
+                "a": 1.0
+            },
+            "ambientGround": {
+                "r": 0.09000000357627869,
+                "g": 0.0949999988079071,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "image": {
+                "sampledPixels": 1200,
+                "minimumLuminance": 0.1510266661643982,
+                "maximumLuminance": 0.9283897876739502,
+                "meanLuminance": 0.33587074279785156,
+                "nonUniformContent": true
+            },
+            "subjects": [
+                {
+                    "name": "Adult .90 seed 4242",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4242,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":6.993379592895508,\"crownDiameterMetres\":6.5486860275268555,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":0.151948019862175,\"y\":2.8695015907287598,\"z\":0.00254486664198339},\"trunkBark\":{\"x\":0.030389605090022087,\"y\":1.05241060256958,\"z\":-0.36157360672950745},\"terminalRosette\":{\"x\":0.128660187125206,\"y\":6.0361528396606445,\"z\":-2.6140682697296143}}",
+                    "seed": 4242,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.8999999761581421,
+                    "vertices": 904772,
+                    "triangles": 1313412,
+                    "position": {
+                        "x": -7.790999412536621,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -7.551636695861816,
+                            "y": 3.1086885929107666,
+                            "z": 0.08236384391784668
+                        },
+                        "m_Extent": {
+                            "x": 3.0035908222198486,
+                            "y": 3.779162645339966,
+                            "z": 3.0054500102996826
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4242",
+                            "objectName": "Bark",
+                            "vertices": 435396,
+                            "triangles": 870788,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.22630643844604492,
+                                    "y": 3.0215139389038086,
+                                    "z": 0.0922706127166748
+                                },
+                                "m_Extent": {
+                                    "x": 2.729621171951294,
+                                    "y": 3.691987991333008,
+                                    "z": 2.736236095428467
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4242",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": 0.23936307430267334,
+                                    "y": 6.306044578552246,
+                                    "z": 0.08236384391784668
+                                },
+                                "m_Extent": {
+                                    "x": 3.0035905838012695,
+                                    "y": 0.5818066596984863,
+                                    "z": 3.0054500102996826
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Adult .90 seed 4243",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4243,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":6.529213905334473,\"crownDiameterMetres\":6.16150426864624,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.1236521303653717,\"y\":2.6658146381378174,\"z\":0.11133106797933578},\"trunkBark\":{\"x\":-0.02473042719066143,\"y\":0.975009560585022,\"z\":-0.3607446551322937},\"terminalRosette\":{\"x\":-0.6528376936912537,\"y\":5.4918389320373535,\"z\":-2.211778402328491}}",
+                    "seed": 4243,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.8999999761581421,
+                    "vertices": 859802,
+                    "triangles": 1223472,
+                    "position": {
+                        "x": -0.10973739624023438,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": -0.2296597957611084,
+                            "y": 2.8706929683685303,
+                            "z": 0.1559586524963379
+                        },
+                        "m_Extent": {
+                            "x": 2.677671194076538,
+                            "y": 3.5397884845733643,
+                            "z": 2.7274439334869385
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4243",
+                            "objectName": "Bark",
+                            "vertices": 390426,
+                            "triangles": 780848,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.13523972034454346,
+                                    "y": 2.781851053237915,
+                                    "z": 0.17023992538452148
+                                },
+                                "m_Extent": {
+                                    "x": 2.436501979827881,
+                                    "y": 3.450946569442749,
+                                    "z": 2.412982940673828
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4243",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.11992239952087402,
+                                    "y": 5.826601982116699,
+                                    "z": 0.1559586524963379
+                                },
+                                "m_Extent": {
+                                    "x": 2.677671194076538,
+                                    "y": 0.5838797092437744,
+                                    "z": 2.7274439334869385
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Adult .90 seed 4244",
+                    "kind": "tree",
+                    "descriptorJson": "{\"generator\":\"citylife.aloidendron-dichotomum.v1\",\"seed\":4244,\"terminalRosettes\":64,\"branchSegments\":900,\"forkGenerations\":6,\"age01\":0.8999999761581421,\"heightMetres\":7.297209739685059,\"crownDiameterMetres\":7.06333065032959,\"leafLengthMin\":0.20000000298023224,\"leafLengthMax\":0.38999998569488525,\"branchUnion\":{\"x\":-0.1779097020626068,\"y\":2.962730884552002,\"z\":0.1716465950012207},\"trunkBark\":{\"x\":-0.03558194264769554,\"y\":1.087837815284729,\"z\":-0.41016772389411926},\"terminalRosette\":{\"x\":-1.0841771364212036,\"y\":6.072947978973389,\"z\":-2.4671270847320557}}",
+                    "seed": 4244,
+                    "lod": 0,
+                    "rendererCount": 2,
+                    "meshCount": 2,
+                    "age01": 0.8999999761581421,
+                    "vertices": 952208,
+                    "triangles": 1408284,
+                    "position": {
+                        "x": 7.681262969970703,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "scale": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "bounds": {
+                        "m_Center": {
+                            "x": 7.301098346710205,
+                            "y": 3.2242939472198486,
+                            "z": 0.22745656967163086
+                        },
+                        "m_Extent": {
+                            "x": 3.113328456878662,
+                            "y": 3.971360445022583,
+                            "z": 2.9530510902404785
+                        }
+                    },
+                    "meshes": [
+                        {
+                            "name": "Kokerboom continuous wood LOD0 seed 4244",
+                            "objectName": "Bark",
+                            "vertices": 482832,
+                            "triangles": 965660,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.3563828468322754,
+                                    "y": 3.1445095539093018,
+                                    "z": 0.2147306203842163
+                                },
+                                "m_Extent": {
+                                    "x": 2.8377935886383057,
+                                    "y": 3.891576051712036,
+                                    "z": 2.7098875045776367
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · ochre peeling bark / pale powdery branches"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        },
+                        {
+                            "name": "Kokerboom closed succulent rosettes LOD0 seed 4244",
+                            "objectName": "Succulent rosettes",
+                            "vertices": 469376,
+                            "triangles": 442624,
+                            "localBounds": {
+                                "m_Center": {
+                                    "x": -0.3801647424697876,
+                                    "y": 6.540970802307129,
+                                    "z": 0.2274566888809204
+                                },
+                                "m_Extent": {
+                                    "x": 3.113328456878662,
+                                    "y": 0.6546835899353027,
+                                    "z": 2.9530510902404785
+                                }
+                            },
+                            "materialNames": [
+                                "Kokerboom · waxy blue-green succulent leaves"
+                            ],
+                            "shaders": [
+                                "CityLife/KokerboomSurface"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

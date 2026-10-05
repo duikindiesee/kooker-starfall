@@ -1,0 +1,16 @@
+{
+  "schema": "citylife.unity.delivery.v1",
+  "utc": "2026-09-09T20:46:59.2573895Z",
+  "sourceCommitContainingTestedCode": "c8b83264871050bfd2283515d3c9964d735e74f8",
+  "package": "Builds/Download/CityLife-Island-0.1.0-Windows.zip",
+  "packageSha256": "f77dd9b6d1150ccd27705a19906c9d1e8f6e7fdcf114a902968a9994e3b7b2e9",
+  "packageBytes": 39727936,
+  "packageFiles": 186,
+  "buildEvidence": "evidence/verified/final-build-result.json",
+  "validationEvidence": "evidence/verified/final-validation.json",
+  "routeEvidence": "evidence/verified/final-candidate-route.json",
+  "packageEvidence": "evidence/verified/package-manifest.json",
+  "repositoryEvidence": "evidence/verified/repository-checks.json",
+  "nativeAcceptance": "Keyboard, mouse, candidate HUD and presented-frame timing remain unverified. No desktop interaction is authorized for this delivery.",
+  "cataloguePresentation": "HTML browser layout unverified because local URL preview was blocked by browser policy."
+}

@@ -1,0 +1,306 @@
+{
+  "publisher": "Poly Haven",
+  "files": [
+    {
+      "md5": "fd5317cc80931e8de532259817de189b",
+      "sha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+      "bytes": 4859020,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/quiver_tree_01/quiver_tree_01_2k.fbx",
+      "path": "quiver_tree_01_2k.fbx"
+    },
+    {
+      "md5": "9c7e4193cf4357398464eb50f713a68e",
+      "sha256": "0a904739463a80b373a20797d055794eb629fe0915bf1fd08566b762080c7566",
+      "bytes": 18000206,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_diff_2k.png",
+      "path": "textures/quiver_tree_01_leaf_diff_2k.png"
+    },
+    {
+      "md5": "578b21809d05443c51bcf319bc8f4995",
+      "sha256": "adb4e25016cde64dc871fc6f1f5cf90f989efdadebcb4ba3118dd7a8ee6c4103",
+      "bytes": 5824381,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_rough_2k.png",
+      "path": "textures/quiver_tree_01_leaf_rough_2k.png"
+    },
+    {
+      "md5": "ac1e6b5e2d96331e54e051cadd24b454",
+      "sha256": "f7d4e7345943bad063ffd8097fc835721e59c2e11c078e36f1efdc4f43f971b3",
+      "bytes": 18585833,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_diff_2k.png",
+      "path": "textures/quiver_tree_01_trunk_diff_2k.png"
+    },
+    {
+      "md5": "a34a4f83d21cd07d8c0cf4f1cfdd0aa8",
+      "sha256": "892aa14cc191a49eb50591191506853fa3afc4680ef0db7038cdb53df6ee0506",
+      "bytes": 19069974,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_nor_gl_2k.png",
+      "path": "textures/quiver_tree_01_leaf_nor_gl_2k.png"
+    },
+    {
+      "md5": "20c983c396cc137348190a8b04ecac45",
+      "sha256": "d894866691cfc6c2e2c83a9f1615c0bce30e6f8f62d19e6d722b51e81651a26c",
+      "bytes": 5429575,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_rough_2k.png",
+      "path": "textures/quiver_tree_01_trunk_rough_2k.png"
+    },
+    {
+      "md5": "347dd344c7baa7ac923407984fbed2c8",
+      "sha256": "599d508f017e96d958ae07335d2dae2b64052fb5695ee0e74804a194fbc779cf",
+      "bytes": 19753063,
+      "source": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_nor_gl_2k.png",
+      "path": "textures/quiver_tree_01_trunk_nor_gl_2k.png"
+    }
+  ],
+  "asset": "quiver_tree_01",
+  "licenseSource": "https://polyhaven.com/license",
+  "source": "https://polyhaven.com/a/quiver_tree_01",
+  "claim": "Publisher-labelled quiver tree; exact Latin species not asserted. R03 original-model comparison and separate unaccepted R05 derivatives; downloaded files unchanged.",
+  "license": "CC0-1.0",
+  "utc": "2026-09-10T18:09:34.8311661Z",
+  "schema": "citylife.external-art-provenance.v1",
+  "verifiedDate": "2026-09-10",
+  "assets": [
+    {
+      "id": "polyhaven_quiver_tree_01_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_2k.fbx",
+      "role": "unity-comparison-candidate-model",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/quiver_tree_01/quiver_tree_01_2k.fbx",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+      "sha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+      "bytes": 4859020,
+      "publisherMd5": "fd5317cc80931e8de532259817de189b",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted."
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_leaf_diff_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_leaf_diff_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_diff_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_diff_2k.png",
+      "sha256": "0a904739463a80b373a20797d055794eb629fe0915bf1fd08566b762080c7566",
+      "bytes": 18000206,
+      "publisherMd5": "9c7e4193cf4357398464eb50f713a68e",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_leaf_rough_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_leaf_rough_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_rough_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_rough_2k.png",
+      "sha256": "adb4e25016cde64dc871fc6f1f5cf90f989efdadebcb4ba3118dd7a8ee6c4103",
+      "bytes": 5824381,
+      "publisherMd5": "578b21809d05443c51bcf319bc8f4995",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_trunk_diff_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_trunk_diff_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_diff_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_diff_2k.png",
+      "sha256": "f7d4e7345943bad063ffd8097fc835721e59c2e11c078e36f1efdc4f43f971b3",
+      "bytes": 18585833,
+      "publisherMd5": "ac1e6b5e2d96331e54e051cadd24b454",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_leaf_nor_gl_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_leaf_nor_gl_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_leaf_nor_gl_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_leaf_nor_gl_2k.png",
+      "sha256": "892aa14cc191a49eb50591191506853fa3afc4680ef0db7038cdb53df6ee0506",
+      "bytes": 19069974,
+      "publisherMd5": "a34a4f83d21cd07d8c0cf4f1cfdd0aa8",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_trunk_rough_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_trunk_rough_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_rough_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_rough_2k.png",
+      "sha256": "d894866691cfc6c2e2c83a9f1615c0bce30e6f8f62d19e6d722b51e81651a26c",
+      "bytes": 5429575,
+      "publisherMd5": "20c983c396cc137348190a8b04ecac45",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    },
+    {
+      "id": "polyhaven_quiver_tree_01_trunk_nor_gl_2k",
+      "name": "Quiver Tree 01 - quiver_tree_01_trunk_nor_gl_2k.png",
+      "role": "unity-comparison-candidate-texture",
+      "sourceUrl": "https://polyhaven.com/a/quiver_tree_01",
+      "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/png/2k/quiver_tree_01/quiver_tree_01_trunk_nor_gl_2k.png",
+      "publisher": "Poly Haven",
+      "authors": [
+        "Dario Barresi (photography)",
+        "James Ray Cock (photography)",
+        "Rico Cilliers (modelling)"
+      ],
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "publisherLicenseUrl": "https://polyhaven.com/license",
+      "licenseNoticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt",
+      "localPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/textures/quiver_tree_01_trunk_nor_gl_2k.png",
+      "sha256": "599d508f017e96d958ae07335d2dae2b64052fb5695ee0e74804a194fbc779cf",
+      "bytes": 19753063,
+      "publisherMd5": "347dd344c7baa7ac923407984fbed2c8",
+      "downloadedUtc": "2026-09-10T18:09:34.8311661Z",
+      "modifications": "Downloaded file bytes unchanged. R03 used the original model; R05 creates separate mesh/material derivatives described in derivativeUses.",
+      "useStatus": "Source for original-model comparison and an unaccepted hybrid derivative; no world integration established.",
+      "identity": "Publisher-labelled quiver tree; Latin species not asserted.",
+      "widthPixels": 2048,
+      "heightPixels": 2048
+    }
+  ],
+  "derivativeUses": [
+    {
+      "id": "citylife.ph01.hybrid-rosettes.r05",
+      "sourceAssetPath": "Assets/CityLife/Art/PolyHaven/QuiverTree01/quiver_tree_01_2k.fbx",
+      "sourceAssetSha256": "1ecf41e21e4e42ab55e5374f8302d08533d40540507314966f01f5c393e851c5",
+      "kind": "Generated inspection mesh and material derivatives; original downloaded files unchanged",
+      "extractionSource": "Assets/CityLife/Editor/KokerboomSourceRosettes.cs",
+      "architectureSource": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+      "setupSource": "Assets/CityLife/Editor/KokerboomRender.cs",
+      "materialSource": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+      "sourceRosetteGroups": 5,
+      "sourceLeafComponentsPerGroup": 21,
+      "geometryChanges": "Source polygons triangulated, handedness/winding converted and pivots centred on measured root means; source corner normals/UVs retained. Groups selected, rotated, scaled and placed on modified procedural branches.",
+      "leafMaterialChanges": {
+        "sourceAlbedoMultiplierRgba": [
+          0.79,
+          1.0,
+          0.96,
+          1.0
+        ],
+        "description": "Modest blue-green tint; original downloaded texture bytes unchanged."
+      },
+      "barkMaterialChanges": {
+        "description": "Source texture sampling limited to interior UV-atlas rectangles; complete atlas not treated as a seamless tile.",
+        "rectangleConvention": "normalized UV x,y,width,height; initial R05 setup values",
+        "trunkRectangle": [
+          0.43,
+          0.16,
+          0.33,
+          0.55
+        ],
+        "branchRectangle": [
+          0.1,
+          0.21,
+          0.11,
+          0.59
+        ]
+      },
+      "basalComponents": {
+        "includedInHybridTrees": false,
+        "diagnosticCaptureIds": [
+          18,
+          19,
+          20,
+          21
+        ],
+        "identity": "Separate nearby closed source components; semantic identity and suitability unverified."
+      },
+      "taxonomy": "Publisher-labelled quiver-tree basis; source component extraction is not Latin-species certification.",
+      "validation": "No fresh full numeric validation for this hybrid. R04 349-assertion pass does not apply. Full successful capture, source/extraction, reproducible bake and LOD checks remain unverified.",
+      "plannedCaptureCount": 21,
+      "acceptance": "Unverified; no independent score or accepted world integration.",
+      "noticePath": "Assets/CityLife/Art/Licenses/Poly-Haven-Quiver-Tree-01.txt"
+    }
+  ]
+}

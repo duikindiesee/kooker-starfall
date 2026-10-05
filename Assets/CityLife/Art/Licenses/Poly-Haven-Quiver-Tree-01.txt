@@ -1,0 +1,27 @@
+Quiver Tree 01 - Poly Haven
+Source: https://polyhaven.com/a/quiver_tree_01
+Creators: Dario Barresi (photography), James Ray Cock (photography),
+Rico Cilliers (modelling).
+Publisher licence: https://polyhaven.com/license
+Licence: CC0 1.0 Universal (CC0-1.0)
+Deed: https://creativecommons.org/publicdomain/zero/1.0/
+Complete unchanged legal text: CC0-1.0.txt in this directory.
+
+The publisher's 2K FBX option and six included texture files are retained
+unchanged as Unity comparison candidates. Exact paths, download URLs, byte
+counts, SHA256 and publisher MD5 values are in
+Assets/CityLife/Art/PolyHaven/QuiverTree01/provenance.json.
+These are publisher-labelled quiver-tree assets; no Latin species is asserted.
+World integration and visual acceptance have not been established.
+No publisher preview render or logo is included. Credits are voluntary and
+do not imply endorsement. Attribution and licence checked 2026-09-10.
+
+R05 derivative use (2026-09-10): the downloaded files stay unchanged. Five
+source rosette groups of 21 leaf components are extracted, converted around
+root pivots, and placed on modified procedural architecture. Source UVs and
+normals are retained; generated leaf materials have a modest colour tint.
+Generated bark maps use interior rectangles of the source UV atlas. This is
+a modified inspection asset, separate from the R03 original-model comparison.
+Nearby closed basal components remain unidentified and are used only in
+separate diagnostics 18-21, not in the hybrid trees. Full rendering, fresh
+numeric/bake/LOD validation and visual acceptance are not established here.

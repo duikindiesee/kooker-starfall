@@ -1,0 +1,11 @@
+{
+  "status": "BUILD_SUCCESS",
+  "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260926-072027",
+  "buildGuid": "c3207a7e6a8b4a62a761e4da5de733a7",
+  "namedIntegratedChecks": 2072,
+  "sourceFileManifestCount": 350,
+  "playerPath": "Windows standalone",
+  "binarySha256": "A4C71B1BFC3E42D02F2F129FE04ADEF3EBF2343A662884E4B99598E9DFC90E7D",
+  "changedSourceHashMismatches": [],
+  "assemblySha256": "A9F397D49E085185959F03971CE8FF4A36BC21CEA296493135091B3CFAE44069"
+}

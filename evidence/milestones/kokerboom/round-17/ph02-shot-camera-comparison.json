@@ -1,0 +1,162 @@
+{
+  "schema": "starfall.ph02-selected-shot-camera-fields.v1",
+  "scope": "Same-view categories, not a replay. Camera functions are unchanged but bounds-dependent fields can differ. Signed raw Euler deltas are not quaternion-angle differences. Inactive orthographic/perspective fields are retained. R16 did not record camera matrices; no matrix equality, lighting equality, geometry parity or full-family acceptance inferred.",
+  "referenceManifest": "evidence/milestones/kokerboom/round-16/metrics.json",
+  "referenceManifestSha256": "b21b5439b5639b222ec3e96746261e1804548cdf2eee628a0b6d8bbaee30a349",
+  "actualManifestSha256": "872cf4b0e7800c6886f4d772b49a729ba9db41f3aa15d0c488fc3d9d8440cf3c",
+  "selectedShotIds": [
+    "05-trunk-bark-closeup",
+    "08-cosmic-gameplay-eye-level",
+    "13-juvenile-closeup",
+    "18-ph02-lower-crown-wood-join-side",
+    "20-ph02-juvenile-base",
+    "21-ph02-mature-base-second-angle"
+  ],
+  "comparisons": [
+    {
+      "id": "05-trunk-bark-closeup",
+      "recordedFieldsExactlyEqual": false,
+      "differentFields": [
+        "position.x",
+        "position.y",
+        "position.z",
+        "rotationEuler.x",
+        "orthographicSizeMetres"
+      ],
+      "signedActualMinusReference": {
+        "position.x": -0.026974916458129883,
+        "position.y": -0.008632183074951172,
+        "position.z": 0.10789966583251953,
+        "rotationEuler.x": -9.5367431640625E-07,
+        "rotationEuler.y": 0.0,
+        "rotationEuler.z": 0.0,
+        "orthographicSizeMetres": -0.01896953582763672,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    },
+    {
+      "id": "08-cosmic-gameplay-eye-level",
+      "recordedFieldsExactlyEqual": false,
+      "differentFields": [
+        "position.y",
+        "position.z",
+        "rotationEuler.x",
+        "rotationEuler.y",
+        "orthographicSizeMetres"
+      ],
+      "signedActualMinusReference": {
+        "position.x": 0.0,
+        "position.y": -0.02082735300064087,
+        "position.z": 0.3373680114746094,
+        "rotationEuler.x": 0.00323486328125,
+        "rotationEuler.y": -0.228424072265625,
+        "rotationEuler.z": 0.0,
+        "orthographicSizeMetres": -8.180832266807556,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    },
+    {
+      "id": "13-juvenile-closeup",
+      "recordedFieldsExactlyEqual": false,
+      "differentFields": [
+        "position.x",
+        "position.y",
+        "position.z",
+        "orthographicSizeMetres"
+      ],
+      "signedActualMinusReference": {
+        "position.x": -0.03743624687194824,
+        "position.y": -0.32408607006073,
+        "position.z": 0.1247873306274414,
+        "rotationEuler.x": 0.0,
+        "rotationEuler.y": 0.0,
+        "rotationEuler.z": 0.0,
+        "orthographicSizeMetres": -0.0530848503112793,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    },
+    {
+      "id": "18-ph02-lower-crown-wood-join-side",
+      "recordedFieldsExactlyEqual": true,
+      "differentFields": [],
+      "signedActualMinusReference": {
+        "position.x": 0.0,
+        "position.y": 0.0,
+        "position.z": 0.0,
+        "rotationEuler.x": 0.0,
+        "rotationEuler.y": 0.0,
+        "rotationEuler.z": 0.0,
+        "orthographicSizeMetres": 0.0,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    },
+    {
+      "id": "20-ph02-juvenile-base",
+      "recordedFieldsExactlyEqual": false,
+      "differentFields": [
+        "position.x",
+        "position.y",
+        "position.z",
+        "rotationEuler.x",
+        "rotationEuler.y",
+        "rotationEuler.z",
+        "orthographicSizeMetres"
+      ],
+      "signedActualMinusReference": {
+        "position.x": -0.017746448516845703,
+        "position.y": 0.007846415042877197,
+        "position.z": 0.029630184173583984,
+        "rotationEuler.x": 4.76837158203125E-07,
+        "rotationEuler.y": -3.0517578125E-05,
+        "rotationEuler.z": -2.1457041299299817E-07,
+        "orthographicSizeMetres": -0.013067454099655151,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    },
+    {
+      "id": "21-ph02-mature-base-second-angle",
+      "recordedFieldsExactlyEqual": false,
+      "differentFields": [
+        "position.x",
+        "position.y",
+        "position.z",
+        "rotationEuler.z",
+        "orthographicSizeMetres"
+      ],
+      "signedActualMinusReference": {
+        "position.x": 0.06608009338378906,
+        "position.y": 0.13423645496368408,
+        "position.z": 0.08259963989257812,
+        "rotationEuler.x": 0.0,
+        "rotationEuler.y": 0.0,
+        "rotationEuler.z": 2.1437844566207787E-07,
+        "orthographicSizeMetres": -0.019870877265930176,
+        "fieldOfView": 0.0,
+        "nearClip": 0.0,
+        "farClip": 0.0
+      },
+      "projectionModeSame": true,
+      "imageDimensionsSame": true
+    }
+  ]
+}

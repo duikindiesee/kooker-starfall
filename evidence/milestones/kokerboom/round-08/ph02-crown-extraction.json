@@ -1,0 +1,67 @@
+{
+    "schema": "citylife.ph02-crown-candidate.v1",
+    "status": "Unaccepted open-boundary candidate; semantic leaf completeness and attachment unverified",
+    "sourceAsset": "Assets/CityLife/Art/PolyHaven/QuiverTree02/quiver_tree_02_2k.fbx",
+    "sourceSha256": "350984fbf9fc2168357ed812913aa937524c3935ca3263cb95877b6504c951f8",
+    "sourceUrl": "https://polyhaven.com/a/quiver_tree_02",
+    "licenseUrl": "https://polyhaven.com/license",
+    "coordinates": "Metres/Y-up, (-X,Z,-Y); original source origin retained for full and cut meshes. FBX model scale100 cancels centimetre units; source X rotation is -90 degrees (exporter error below 0.000003 degrees). No pivot shift.",
+    "preservation": "Control-vertex normals mapped through NormalsIndex[controlVertex]; UVs through UVIndex[polygonCorner]. Unchanged corner attributes copied; cut positions/UVs linearly interpolated, cut normals interpolated then normalized. Reversed winding; derived tangents. Per-corner output vertices preserve seams; no cap/socket/weld.",
+    "limitation": "One stem-like section is geometric evidence, not proof of intact botanical leaves. Inspect source/cut/attached textured 3D views. No full-family score or previous procedural validation applies.",
+    "sourceControlVertices": 41073,
+    "sourceTriangles": 82074,
+    "isClipped": true,
+    "boundaryAllDegreeTwo": true,
+    "cutHeightMetres": 0.6499999761581421,
+    "fullyKeptSourceTriangles": 71104,
+    "discardedSourceTriangles": 10901,
+    "clippedSourceTriangles": 69,
+    "outputTriangles": 71207,
+    "outputCornerVertices": 213621,
+    "exactZeroAreaTrianglesOmitted": 0,
+    "cutBoundarySegments": 69,
+    "boundaryVertices": 69,
+    "boundaryComponents": 1,
+    "sourceBounds": {
+        "m_Center": {
+            "x": 0.048070162534713745,
+            "y": 0.6851281523704529,
+            "z": 0.008360177278518677
+        },
+        "m_Extent": {
+            "x": 0.4358192980289459,
+            "y": 0.7344303727149963,
+            "z": 0.44040989875793457
+        }
+    },
+    "outputBounds": {
+        "m_Center": {
+            "x": 0.048070162534713745,
+            "y": 1.0347790718078613,
+            "z": 0.008360177278518677
+        },
+        "m_Extent": {
+            "x": 0.4358192980289459,
+            "y": 0.3847792148590088,
+            "z": 0.44040989875793457
+        }
+    },
+    "boundaryBounds": {
+        "m_Center": {
+            "x": 0.027911260724067688,
+            "y": 0.6499999761581421,
+            "z": 0.0025232434272766113
+        },
+        "m_Extent": {
+            "x": 0.07396009564399719,
+            "y": 0.0,
+            "z": 0.07482431083917618
+        }
+    },
+    "boundaryCentre": {
+        "x": 0.029266102239489555,
+        "y": 0.6499999761581421,
+        "z": 0.0016288438346236944
+    },
+    "minimumOutputTriangleArea": 3.222670958287048e-8
+}

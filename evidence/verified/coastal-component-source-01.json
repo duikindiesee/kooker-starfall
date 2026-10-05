@@ -1,0 +1,26 @@
+{
+  "checkpoint": "coastal-component-player-source-01",
+  "baseCommit": "30bdefbbc6731b611848054d9aa86887cd7a7799",
+  "branch": "codex/starfall-coastal-playable",
+  "status": "UNVERIFIED Unity compile and runtime; source safeguards passed",
+  "sources": [
+    {
+      "path": "Assets/CityLife/Editor/CoastalPlayerBuild.cs",
+      "sha256": "853e5780d4b8ec2077efe92303fb0398a0a6321d3b34537323f863b950d032d7"
+    },
+    {
+      "path": "Assets/CityLife/Editor/KokerboomRender.cs",
+      "sha256": "e1f201677524b15065aee022a2178eb7c2a444f5dfbbe3981bdc9fb553c93b59"
+    },
+    {
+      "path": "Assets/CityLife/Scripts/CoastalExplorer.cs",
+      "sha256": "34b5b641446279050910063fd515f4771fd1e67227c67257f7b43b12462fb101"
+    },
+    {
+      "path": "Assets/CityLife/Scripts/CoastalSmoke.cs",
+      "sha256": "b64d50518b095a53e95595c9b1e76fbbf1896616891d72c209b7c4e5ae9ff843"
+    }
+  ],
+  "build": "No build result; isolated editor PID 14424 exited during initial compilation",
+  "remainingGap": "Coordinate duplicate component bake before another Unity run. Main-world terrain, swimming, native traversal, scale and visual acceptance remain incomplete."
+}

@@ -1,0 +1,410 @@
+{
+  "confirmed_facts": {
+    "has_more": false,
+    "items": [
+      {
+        "cursor": 2,
+        "epistemic_status": "confirmed_event",
+        "evidence_ids": [
+          "ccf1ed567814fb64d13d4a82eda182f00b5f0a417fdebc80d0bfc60ea1ac8e11"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "wiki_fact",
+        "schema": "starfall.memory.record.v1",
+        "subjects": [
+          "inhabitant-01"
+        ],
+        "summary": "inhabitant-01 was registered as Aster.",
+        "temporal_scope": "past_event_only",
+        "world_id": "starfall.memory-proof.v1"
+      },
+      {
+        "cursor": 5,
+        "epistemic_status": "confirmed_event",
+        "evidence_ids": [
+          "083ae6985f7c4e49400f59d166390f707e492046ac144d69f09b181b16c217ab"
+        ],
+        "inhabitant_id": "inhabitant-02",
+        "kind": "wiki_fact",
+        "schema": "starfall.memory.record.v1",
+        "subjects": [
+          "inhabitant-02"
+        ],
+        "summary": "inhabitant-02 was registered as Mira.",
+        "temporal_scope": "past_event_only",
+        "world_id": "starfall.memory-proof.v1"
+      },
+      {
+        "cursor": 8,
+        "epistemic_status": "confirmed_event",
+        "evidence_ids": [
+          "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "wiki_fact",
+        "schema": "starfall.memory.record.v1",
+        "subjects": [
+          "amber",
+          "inhabitant-01"
+        ],
+        "summary": "inhabitant-01 picked up amber at tick 10.",
+        "temporal_scope": "past_event_only",
+        "world_id": "starfall.memory-proof.v1"
+      },
+      {
+        "cursor": 10,
+        "epistemic_status": "confirmed_event",
+        "evidence_ids": [
+          "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "wiki_fact",
+        "schema": "starfall.memory.record.v1",
+        "subjects": [
+          "amber",
+          "depot-west",
+          "inhabitant-01"
+        ],
+        "summary": "inhabitant-01 delivered amber to depot-west at tick 20.",
+        "temporal_scope": "past_event_only",
+        "world_id": "starfall.memory-proof.v1"
+      }
+    ],
+    "next_after": 10
+  },
+  "inhabitant_beliefs": {
+    "has_more": false,
+    "items": [
+      {
+        "cursor": 15,
+        "epistemic_status": "theory",
+        "evidence_ids": [
+          "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "belief",
+        "request_id": "first-idea",
+        "schema": "starfall.memory.record.v1",
+        "text": "The west depot might be a useful place to visit again.",
+        "world_id": "starfall.memory-proof.v1"
+      }
+    ],
+    "next_after": 15
+  },
+  "inhabitant_dreams": {
+    "has_more": false,
+    "items": [
+      {
+        "associations": [
+          {
+            "epistemic_status": "theory",
+            "evidence_ids": [
+              "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+            ],
+            "text": "Perhaps depot-west could be useful to visit again."
+          }
+        ],
+        "authority": "derived_only",
+        "cursor": 13,
+        "epistemic_status": "derived_summary_and_theories",
+        "evidence_ids": [
+          "ccf1ed567814fb64d13d4a82eda182f00b5f0a417fdebc80d0bfc60ea1ac8e11",
+          "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372",
+          "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55",
+          "59a1c3fbe308dd502a67bec7fe299e559e47184659dbdf9299e038e516bef27d"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "dream",
+        "processor": "starfall.dream.rules.v1",
+        "schema": "starfall.memory.record.v1",
+        "sleep_event_id": "59a1c3fbe308dd502a67bec7fe299e559e47184659dbdf9299e038e516bef27d",
+        "summary": [
+          "inhabitant-01 was registered as Aster.",
+          "inhabitant-01 picked up amber at tick 10.",
+          "inhabitant-01 delivered amber to depot-west at tick 20.",
+          "inhabitant-01 started sleeping at tick 30."
+        ],
+        "window_limit": 32,
+        "world_id": "starfall.memory-proof.v1"
+      },
+      {
+        "associations": [
+          {
+            "epistemic_status": "theory",
+            "evidence_ids": [
+              "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+            ],
+            "text": "Perhaps depot-west could be useful to visit again."
+          }
+        ],
+        "authority": "derived_only",
+        "cursor": 18,
+        "epistemic_status": "derived_summary_and_theories",
+        "evidence_ids": [
+          "ccf1ed567814fb64d13d4a82eda182f00b5f0a417fdebc80d0bfc60ea1ac8e11",
+          "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372",
+          "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55",
+          "59a1c3fbe308dd502a67bec7fe299e559e47184659dbdf9299e038e516bef27d",
+          "c4cf8500897b1387a97af80162f80c28b04ee28b1e28ca0ee1affcf254e36192",
+          "880afa1d8e5b94cb07c36483f073b9f3e5654863e26d594175a25d4b9db112fb"
+        ],
+        "inhabitant_id": "inhabitant-01",
+        "kind": "dream",
+        "processor": "starfall.dream.rules.v1",
+        "schema": "starfall.memory.record.v1",
+        "sleep_event_id": "880afa1d8e5b94cb07c36483f073b9f3e5654863e26d594175a25d4b9db112fb",
+        "summary": [
+          "inhabitant-01 was registered as Aster.",
+          "inhabitant-01 picked up amber at tick 10.",
+          "inhabitant-01 delivered amber to depot-west at tick 20.",
+          "inhabitant-01 started sleeping at tick 30.",
+          "inhabitant-01 woke at tick 40.",
+          "inhabitant-01 started sleeping at tick 50."
+        ],
+        "window_limit": 32,
+        "world_id": "starfall.memory-proof.v1"
+      }
+    ],
+    "next_after": 18
+  },
+  "note": "Bounded pages derived from the first 100 records per section; use paginated APIs when has_more is true. Facts describe past verified events. Beliefs and dream theories never become confirmed facts automatically.",
+  "pages": [
+    {
+      "confirmed_facts": [
+        {
+          "cursor": 8,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "amber",
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 picked up amber at tick 10.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        },
+        {
+          "cursor": 10,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "amber",
+            "depot-west",
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 delivered amber to depot-west at tick 20.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "dream_theories": [
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        },
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        }
+      ],
+      "inhabitant_beliefs": [
+        {
+          "cursor": 15,
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "belief",
+          "request_id": "first-idea",
+          "schema": "starfall.memory.record.v1",
+          "text": "The west depot might be a useful place to visit again.",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "subject_id": "amber"
+    },
+    {
+      "confirmed_facts": [
+        {
+          "cursor": 10,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "amber",
+            "depot-west",
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 delivered amber to depot-west at tick 20.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "dream_theories": [
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        },
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        }
+      ],
+      "inhabitant_beliefs": [
+        {
+          "cursor": 15,
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "belief",
+          "request_id": "first-idea",
+          "schema": "starfall.memory.record.v1",
+          "text": "The west depot might be a useful place to visit again.",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "subject_id": "depot-west"
+    },
+    {
+      "confirmed_facts": [
+        {
+          "cursor": 2,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "ccf1ed567814fb64d13d4a82eda182f00b5f0a417fdebc80d0bfc60ea1ac8e11"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 was registered as Aster.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        },
+        {
+          "cursor": 8,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "c9e0bae1d6d1cd4b80680a9e4e188f2709177f5e3cfc613c30c28a64f27cc372"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "amber",
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 picked up amber at tick 10.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        },
+        {
+          "cursor": 10,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "amber",
+            "depot-west",
+            "inhabitant-01"
+          ],
+          "summary": "inhabitant-01 delivered amber to depot-west at tick 20.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "dream_theories": [
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        },
+        {
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "text": "Perhaps depot-west could be useful to visit again."
+        }
+      ],
+      "inhabitant_beliefs": [
+        {
+          "cursor": 15,
+          "epistemic_status": "theory",
+          "evidence_ids": [
+            "339d930140c0947da960ccb3769be689fae5793b705ad70b152c03f0bfdb2e55"
+          ],
+          "inhabitant_id": "inhabitant-01",
+          "kind": "belief",
+          "request_id": "first-idea",
+          "schema": "starfall.memory.record.v1",
+          "text": "The west depot might be a useful place to visit again.",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "subject_id": "inhabitant-01"
+    },
+    {
+      "confirmed_facts": [
+        {
+          "cursor": 5,
+          "epistemic_status": "confirmed_event",
+          "evidence_ids": [
+            "083ae6985f7c4e49400f59d166390f707e492046ac144d69f09b181b16c217ab"
+          ],
+          "inhabitant_id": "inhabitant-02",
+          "kind": "wiki_fact",
+          "schema": "starfall.memory.record.v1",
+          "subjects": [
+            "inhabitant-02"
+          ],
+          "summary": "inhabitant-02 was registered as Mira.",
+          "temporal_scope": "past_event_only",
+          "world_id": "starfall.memory-proof.v1"
+        }
+      ],
+      "dream_theories": [],
+      "inhabitant_beliefs": [],
+      "subject_id": "inhabitant-02"
+    }
+  ],
+  "schema": "starfall.wiki.v1",
+  "world_id": "starfall.memory-proof.v1"
+}

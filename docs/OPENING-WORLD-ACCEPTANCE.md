@@ -1,0 +1,192 @@
+# Opening-world acceptance contract
+
+## Distant giant correction — user screenshot, 15 September
+
+The latest user review rejects the giant reading as a globe floating inside
+the canyon. Its large apparent size must be retained, but it must read as a
+distant celestial background, with cliffs in front. A larger source transform
+or one cropped screenshot does not close this requirement.
+
+For the final compiled candidate, retain three identified player views:
+canyon mouth, near riverbank and high lookout, plus continuous movement between
+at least two of them. Record build/source identity, camera positions, orientation
+and field of view. Compare the sky against terrain at matching orientations;
+ordinary camera rotation must not be mistaken for translation parallax.
+
+- The giant remains enormous in the sky, not a reachable object in the valley.
+- Terrain occludes its silhouette correctly wherever their screen areas overlap.
+- Translation produces no conspicuous nearby-object shift or scale change.
+- No clipping, horizon seam or disappearance occurs during look and traversal.
+- Smaller moons remain distinct celestial objects, with composition checked
+  alongside the giant rather than accepted merely because transforms exist.
+
+Current source uses centre `(9000, 16800, 42000)`, diameter `34000` and camera
+far clip `80000`. Round202 includes that source change; the worker reports only
+a follow-view runtime image, not the three-view proof above. Distance in world
+units does not by itself establish the intended perceived depth. This remains
+OPEN until the compiled evidence and user visual review support it.
+
+## Current priority and evidence boundary — 15 September, round190
+
+The user's expanded gameplay acceptance requires the local-infrastructure model
+to choose meaningful exploration and survival actions, not only acknowledge a
+completed delivery. Preserve every original world, clothing, controls, visual,
+memory, review, packaging and narrated-walkthrough requirement below.
+
+| Requirement | Current evidence | Remaining acceptance |
+|---|---|---|
+| Ordinary model-driven exploration and food recovery | Round190: 220s, 15 hashed admitted choices, five reached routes, three meals with measured state deltas | Longer sustained run, readable live decisions, reduced/understood timeouts |
+| Observe before knowing | Food observations are initially unproven; meal benefit follows an actual meal in run06 | No hidden resource coordinates or unearned cultivation/safety facts; retain negative tests |
+| Freshwater discovery and drinking | Legacy scripted interaction exists | Ordinary model-directed discovery, approach, verification and actual drinking; do not claim from scripted reach bypass |
+| Death preserves world and scoped knowledge | Run05 explicitly accelerated real physiology covers dehydration and starvation, cause-only lesson, return and scoped reload | Natural-timeline distinction; fix hovering return and death presentation; normal relaunch retention |
+| Recorded user walkthrough | Source/evidence available | Watchable actual gameplay recording, accurate narration, intact replay/audio |
+
+[Round190 scoped receipt](../evidence/milestones/coastal/round-190/today-survival-acceptance.json)
+is not full TODAY acceptance. Its 14 safe timeouts in 220 seconds remain a
+quality/reliability gap. Mac-hosted models through local infrastructure are
+allowed; laptop-only inference is not a new acceptance requirement. Accelerated
+need counters cannot be presented as naturally elapsed survival. Source tests
+and a safe-return coordinate do not prove an attractive or correctly grounded
+visible return pose.
+
+Current retention is one technically verified build plus a temporary candidate,
+with the separate survival evidence gate in [BUILD-RETENTION.md](BUILD-RETENTION.md).
+It is not permission to discard source, saves, compact evidence or protected
+review. The queues and receipts below are historical unless explicitly tied to
+the final candidate's exact source and complete content fingerprint.
+
+## Historical integration queue after round 139
+
+The queue below records the earlier failures, not current source state. Current
+source uses `HunterClubCarry.ClubRadius` in `HunterOutfitAuthoring.CreateClubMesh`;
+its shaft base is approximately 0.010 m, not the old 0.022 m. The integrated
+acceptance routine now requests 80 uphill/downhill pose samples plus 80 actual
+controller traversal samples, with complete terrain-ray coverage and at least
+1 m travelled. These source changes do not certify hand fit: the check explicitly
+leaves visual hand review separate. Final-candidate runtime results, retained
+close-ups and user acceptance remain required. See the current player review in
+[REVIEW-ROUND200-PLAYER.md](REVIEW-ROUND200-PLAYER.md).
+
+1. Repair and rerun the reproduced blue-delivery movement stall. Round 20
+   stopped beside the relocated forage plant with blue cargo after two deliveries;
+   this failure must remain visible until a full three-item cycle passes again.
+2. Finish the bounded water/plant correction and retain matched compiled views;
+   round 139 is not visually accepted.
+3. Transfer the corrected hunter grip deliberately from its isolated branch,
+   preserving garments and right-hand delivery. At round139 combined authoring used
+   a 0.022 m shaft base radius, unlike the corrected candidate's documented
+   0.010 m radius. These are not the same grip candidate.
+4. Validate the corrected club in the combined standalone player across movement
+   poses, hand close-ups and uneven terrain. The isolated `8c6fbe8` retry retained
+   FAIL with Search initialization and FMOD errors; flat courtyard clearance
+   cannot certify canyon traversal. Preserve those failures.
+5. Repeat final integrated regressions and user visual/play review before
+   protected review routing, packaging and narration. No club deferral or release
+   approval has been obtained.
+
+This is the completion checklist for the active opening-world goal, not a release certificate. Each final receipt must identify the exact executable, source commit, test run and inspectable evidence. An older or isolated component pass cannot certify the new combined player.
+
+| Requirement | Required final evidence | Current acceptance boundary |
+|---|---|---|
+| Spacious canyon, turquoise river/pools to sea, convincing cliffs | Actual player eye-level traversal and panorama; user visual approval | Expanded runtime vista exists; not final visual approval |
+| Kookerboom, giant, moons, distant islands and natural boundaries | Identifiable player views and traversal/boundary tests | Giant/moons visible in runtime-08; all composition requirements still need final review |
+| Terrain-fitted cave refuge | Continuous walk from playable bank through entrance, collision and shelter/weather measurements | A placed registry entry or teleported interior screenshot is insufficient |
+| Recognizable grounded berries and freshwater | Runtime geometry/clearance measurement, visible placement, actual gather/eat/drink state changes | Do not substitute a baked clearance value for a live measurement |
+| Weather and physics | Same-player weather transitions, gravity/collisions, refuge exposure, sustained-run performance | Isolated physics tests remain supporting evidence only |
+| Camera and controls | Actual camera motion; pause, possession/release, spectator, fullscreen/windowed with readable UI | Internal camera coordinates alone are insufficient; black screenshots fail evidence sanity |
+| Three deliveries without stall | Uninterrupted three-object route, persisted ordered decisions and all delivery receipts | Runtime-08 and -09 record three; repeat against release candidate |
+| Scoped memory and reload | Real journey events persisted and recovered after restart; foreign world/inhabitant rejected | Memory service tests alone are insufficient |
+| Genuine local thought and safe fallback | Same compiled candidate admits a grounded model answer tied to event; timeout/unavailable fallback tested | Endpoint or Editor-only response is insufficient |
+| Clothing and club | Full motion/camera coverage; corrected grip and error-free required validation | Club remains held until validation repaired or user explicitly defers |
+| Integration governance | Dependency/source manifest, requested review fixes validated, protected review receipts | No inference of approval from old successful CI; no unauthorized merge |
+| Versioned executable and ZIP | Exact build path, source identity, SHA256, archive/private-file checks and launch test | Keep one verified build plus temporary candidate; preserve historical evidence, not superseded binaries (BUILD-RETENTION.md) |
+| Architecture/install/status | Reproducible manual service steps, endpoint and memory ownership, honest limitations | Do not claim unified game saving from service-only reload |
+| Narrated before/after MP4 | Actual footage, evidence-backed narration, replay with audio and intact ending | See OPENING-WORLD-WALKTHROUGH.md; plan alone is not delivery |
+| Human acceptance | User tests identified final build and explicitly accepts visual/play result | Pending; cannot be supplied by automation |
+
+## Evidence sanity
+
+## Normal-play memory boundary
+
+The opt-in normal-play adapter is implemented in `0b56f70` and attached by
+`ede6add`. These commits are not runtime acceptance. Final review must launch
+without smoke flags, forced resets, test inputs or automatic quitting and prove:
+
+- A real autonomous delivery is durably recorded, recalled and visibly linked
+  to the optional model thought in the normal HUD.
+- A subsequent launch recalls the same scoped history; retaining database bytes
+  without demonstrating recall is insufficient.
+- A completed model response is rejected while paused, possessed or no longer
+  autonomous, including completion on the same frame as the control transition.
+- The service database, outbox and capability configuration all have appropriate
+  private storage protection. No credentials enter CLI arguments or evidence.
+
+Independent review raised final-state admission and normal-reload recall gaps;
+these remain pending correction and compiled-player proof.
+
+### Normal-play evidence observed after hardening
+
+The above source gaps were addressed by `a76f9d2` and subsequent integration.
+Root independently inspected these actual-player artifacts on 2026-09-14:
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Normal delivery produces visible model response | Observed in candidate ending `165313` | `evidence/local/normal-memory/run-03/normal-living-memory.json` and matching PNG: normalPlay, persisted and admitted true; Delivered Amber; 1041 ms | Retain launcher/raw response provenance and repeat on final release |
+| Subsequent normal launch recalls prior journey | Visible scoped recall observed | `evidence/local/normal-memory/run-04/normal-prior-journey.json` and PNG: prior hidden-green delivery at tick 1082 displayed at new tick 15 | Independent foreign-scope/reload receipt audit; not full world save/load |
+| HUD clearly distinguishes planner and memory reflection | Not yet accepted | Both screenshots still show Local thoughts off while memory is displayed | Clarify labels and retest final UI |
+
+These observations replace the earlier assertion that no normal-play evidence
+exists, but do not certify all release gates or the final visual requirement.
+
+Independent read-only audit found normal run-03/04 **visually persuasive, not
+audit-complete**. Their reports omit independently retained launch flags,
+executable hash, raw model response/finish reason, event-ID and restart checkpoint
+correlation, and foreign-world/actor rejection receipts. The recorded build also
+predates the one-thought-per-session/fallback-evidence refinement. The next normal
+run must retain these sanitized records with a hash catalogue, demonstrate reuse
+of the same private store, and exercise unavailable-model fallback. Never publish
+the private database or capability configuration to supply this evidence.
+
+Run `python tools/check-visual-evidence.py <runtime-directory> --require 02-complete-autonomy-cycle.png --require 04-paused-options.png --require 07-refuge-entry.png` before using screenshots in a receipt. This detects missing or blank captures, not correct content. Inspect every claimed view manually and retain failed evidence instead of overwriting it.
+
+Future hunting, construction, complete ecology, planetary geometry and infrastructure expansion are outside this milestone. They must not displace these required opening-world gates.
+
+### Post-reboot normal-play audit — 14 September
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Ordinary play retains a scoped event ledger | Collector evidence inspected | `evidence/local/normal-memory/run-07-process/ledger-audit.json`: seven chained events; foreign-world and foreign-actor queries rejected with 400, unknown capability with 401 | Complete same-store restart prefix proof and repeat on final build |
+| Unavailable provider does not fabricate a thought | Safe fallback recorded | `run-07-runtime/normal-living-memory.json`: one delivery persisted, admitted false, empty thought | Model success is a separate gate |
+| Loaded smaller model meets gameplay deadline | Failed in run 09 | `run-09-runtime/normal-living-memory.json`: SAFE_FALLBACK at 1507 ms, persisted true, admitted false | Diagnose exact-request latency; do not count a direct endpoint answer as in-game success |
+
+Earlier successful thought captures remain historical evidence, not proof that
+the post-reboot configuration meets the same deadline. Preserve both outcomes.
+
+### Build-warning audit — round 130
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Candidate compiles | Build report succeeded with 18 warnings, zero errors | `evidence/milestones/coastal/round-130/preview-build.json`; source `d7f6ea359a70ecce1d2b534863330c873708eef0` | This is not runtime or visual acceptance |
+| Deprecated Unity discovery calls remain | Confirmed compiler warnings | `evidence/local/integrated/build-20260914-181557.log`: CS0618 in EnvironmentPresentation, IntegratedFoodRuntime and CoastalSmoke | Review ordering semantics before replacing discovery overloads |
+| Some public runtime fields are not Unity-serialized | Confirmed compiler warnings, not a demonstrated persistence defect | Same log: UAC1001 for MemoryExport, environment Clock/Exposure/LocalWeather/ShelterPolicy and refuge Local | Explicitly document runtime ownership; verify intended persistence through the scoped store rather than assuming scene serialization |
+
+Do not add serialization attributes to runtime services merely to silence these
+warnings. The event-memory ledger and a complete world save are different
+contracts; this build report proves neither. Keep warnings visible in the final
+manifest and rerun this audit against the exact release candidate.
+
+### Round 134 normal-play evidence — independently inspected
+
+| Claim | Status | Evidence | Remaining gap |
+|---|---|---|---|
+| Real model output displayed after delivery | Bounded pass | `evidence/local/normal-memory/run-11-runtime/normal-living-memory.json` and PNG: Delivered amber, 534 ms, normalPlay/persisted/admitted true | A two-word grounded reflection, not conversational planning or a general learning brain |
+| Provider completed its answer | Receipt retained | `run-11-runtime/normal-model-provenance.json`: finish_reason stop and request/response/inventory hashes | Player does not assert the physical inference device; hashes alone are not raw payload inspection |
+| Prior event recalled after restart | Bounded pass | `run-13-runtime/normal-prior-journey.png` shows prior hidden-green pickup at tick 804 while new player is at tick 9; `run-13-ledger-audit.json` reports exact prior-chain prefix | Event memory persistence, not restoration of the entire physical world |
+| World/actor boundaries checked | Bounded pass | `run-13-ledger-audit.json`: foreign world/actor 400, invalid capability 401 | Repeat against final release candidate |
+
+These receipts refer to build `KookerStarfallIntegrated-0.0.10-canyon.1-20260914-185207`.
+The restart audit deliberately reports model provenance unavailable because it
+proves recall, not a new inference. Do not merge those two claims into one pass.
+Visual quality, club validation, final regression, packaging, narrated walkthrough,
+protected review and human acceptance remain open. Further builds require more
+disk space; the successful checkpoint must not be overwritten to hide prior failures.

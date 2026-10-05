@@ -1,0 +1,32 @@
+{
+    "status": "PASS",
+    "utc": "2026-09-13T13:16:22.1342492Z",
+    "checks": [
+        "nearest-permitted-perceived-item",
+        "enumeration-order-independent-choice",
+        "stable-id-breaks-distance-ties",
+        "temporary-failure-cooldown",
+        "cooldown-expires-at-explicit-tick",
+        "carried-item-needs-a-perceived-destination",
+        "carrying-changes-goal-kind",
+        "occupied-destination-ineligible",
+        "no-perceptions-yields-wait",
+        "physics-perception-detects-nearby-object",
+        "radius-excludes-distant-object",
+        "solid-wall-occludes-perception",
+        "removing-occluder-reveals-object",
+        "decision-log-is-bounded-and-ordered",
+        "pickup-rejects-remote-target-without-mutation",
+        "pickup-rechecks-live-permission",
+        "pickup-rechecks-live-occlusion",
+        "validated-pickup-owns-and-attaches-cargo",
+        "duplicate-request-is-idempotent",
+        "request-id-cannot-be-reused-for-another-action",
+        "failed-delivery-retains-cargo-and-ownership",
+        "agent-action-permission-enforced",
+        "validated-delivery-updates-one-item-and-one-destination",
+        "duplicate-delivery-does-not-count-twice",
+        "unlisted-action-rejected",
+        "unregistered-target-rejected"
+    ]
+}

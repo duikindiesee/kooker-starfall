@@ -8,6 +8,8 @@ UserSettings/
 *.csproj
 *.sln
 *.slnx
+!tools/environment-zones/ContractChecks.csproj
+tools/environment-zones/bin/
 *.user
 *.pidb
 *.pdb
@@ -16,3 +18,28 @@ node_modules/
 .env*
 evidence/local/
 tools/.reference-cache/
+*.log
+*.zip
+*.unitypackage
+*.keystore
+*.pfx
+*.p12
+*.pem
+*.key
+*.ulf
+Assets/CityLife/GeneratedPreview-*/
+Assets/CityLife/GeneratedPreview-*.meta
+__pycache__/
+*.py[cod]
+.local-memory/
+
+# Keep ongoing local player evidence separate from reviewed acceptance snapshots.
+evidence/milestones/display-toggle/native/display-mode-*.jsonl
+!tools/refuge/Checks.csproj
+/tools/refuge/bin/
+/tools/refuge/obj/
+# Refuge pre-bake coastal reference renders remain local; actual refuge evidence is retained separately.
+/evidence/milestones/coastal/round-081/
+/evidence/milestones/coastal/round-082/
+/evidence/milestones/coastal/round-083/
+output/

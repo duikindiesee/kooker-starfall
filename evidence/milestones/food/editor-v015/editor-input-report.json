@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "mode": "Unity Editor Play Mode with native pointer input",
+  "utc": "2026-09-14T06:39:04.0257023Z",
+  "source": "4ab8523f1023cb10406f64d56267698c248cc39d",
+  "runtimeMatchesBlockedCandidateSource": "8f790831f21717533018f638c0bd0df0976c462c",
+  "scene": "Assets/CityLife/Food/Scenes/FoodFixture.unity",
+  "checks": [
+    "Actual world rendered after initial shader compilation",
+    "Opaque HUD retained no stale glyphs through native lesson/gather/eat changes",
+    "Native lesson click moved actor and established known berry at tick37",
+    "Native gather click added one berry at tick47",
+    "Native eat click consumed berry and recorded +1200 energy/+400 hydration at tick57",
+    "Native pause changed button to Resume at tick69",
+    "Native Save produced visible receipt and immutable snapshot at tick69",
+    "Play Mode stopped and owned Editor exited; eight preparation files restored"
+  ],
+  "nativeEvidence": [
+    "01-editor-unknown.png",
+    "02-editor-lesson.png",
+    "03-editor-gather.png",
+    "04-editor-meal.png",
+    "05-editor-native-save.png"
+  ],
+  "limitations": [
+    "Editor runtime, not standalone-player acceptance",
+    "Desktop voice overlay partly covers world; food controls and HUD remain visible",
+    "Human art/gameplay acceptance and combined-world integration remain separate",
+    "No repeated full standalone behavior/reload suites; prior reports retained"
+  ],
+  "smartAppControl": {
+    "policyChangesPerformed": false,
+    "policyListRead": "CiTool returned access denied; registry state1 and earlier enforcement block retained",
+    "configuredState": 1
+  },
+  "standalone": "v0.1.5 launch remains blocked by Smart App Control"
+}

@@ -1,0 +1,104 @@
+{
+    "status": "FAIL",
+    "version": "0.0.7-integrated.1",
+    "worldId": "starfall.integrated-coastal.v1",
+    "inputScope": "Actual compiled-player Input System devices; separate native mouse/window acceptance required.",
+    "deliveries": 1,
+    "checks": [
+        {
+            "name": "world-binding",
+            "evidence": "starfall.integrated-coastal.v1",
+            "passed": true
+        },
+        {
+            "name": "clothing-attached",
+            "evidence": "Visual coverage inspected separately in retained frames.",
+            "passed": true
+        },
+        {
+            "name": "autonomous-delivery",
+            "evidence": "delivered; failures=1",
+            "passed": true
+        },
+        {
+            "name": "possessed-body-traversal",
+            "evidence": "Starting corridor; same CharacterController. From (-3.97, 0.18, -4.94) to (-3.22, 0.02, -3.29)",
+            "passed": false
+        },
+        {
+            "name": "possessed-captured-look",
+            "evidence": "Persistent capture survives button release; virtual input only.",
+            "passed": false
+        },
+        {
+            "name": "pause-releases-and-stops-simulation",
+            "evidence": "Both clocks stopped while menu open.",
+            "passed": false
+        },
+        {
+            "name": "resume-restores-capture",
+            "evidence": "Prior play capture intent restored.",
+            "passed": false
+        },
+        {
+            "name": "fullscreen-transition",
+            "evidence": "Windowed",
+            "passed": false
+        },
+        {
+            "name": "window-restoration",
+            "evidence": "Windowed",
+            "passed": false
+        },
+        {
+            "name": "free-spectator-traversal",
+            "evidence": "Same world and NPC; free camera input.",
+            "passed": false
+        },
+        {
+            "name": "spectator-captured-look",
+            "evidence": "Same sensitivity/capture path in free camera.",
+            "passed": false
+        },
+        {
+            "name": "spectator-escape-release",
+            "evidence": "Pointer intent released.",
+            "passed": false
+        },
+        {
+            "name": "refuge-discoverable",
+            "evidence": "Place has no pickup/delivery authority; live memory is not connected.",
+            "passed": true
+        },
+        {
+            "name": "no-runtime-errors",
+            "evidence": "0 recorded errors",
+            "passed": true
+        }
+    ],
+    "captures": [
+        "01-default-coastal-inhabitant.png",
+        "02-autonomous-delivery.png",
+        "03-possessed-look.png",
+        "04-paused-options.png",
+        "05-fullscreen.png",
+        "06-weather-Clear.png",
+        "06-weather-Rain.png",
+        "06-weather-Cold.png",
+        "06-weather-Storm.png",
+        "07-refuge-entry.png",
+        "08-clothing-Idle-0.png",
+        "08-clothing-Idle-1.png",
+        "08-clothing-Idle-2.png",
+        "08-clothing-Idle-3.png",
+        "08-clothing-Crouch-0.png",
+        "08-clothing-Crouch-1.png",
+        "08-clothing-Crouch-2.png",
+        "08-clothing-Crouch-3.png",
+        "08-clothing-Sit-0.png",
+        "08-clothing-Sit-1.png",
+        "08-clothing-Sit-2.png",
+        "08-clothing-Sit-3.png"
+    ],
+    "errors": []
+}

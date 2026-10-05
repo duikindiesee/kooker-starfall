@@ -1,0 +1,57 @@
+{
+  "schema": "starfall.capture-camera-comparison.v1",
+  "utc": "2026-09-10T20:02:13.581177+00:00",
+  "scope": "Stored manifest values checked directly. Identical orthographic position/rotation/extent/clip values, image dimensions, lights and ambient for R09 versus R11 shots04/05/15. Shot15 fieldOfView52 to60 is inactive for an orthographic projection. This does not score geometry or claim arbitrary materials identical.",
+  "comparisons": [
+    {
+      "id": "04-branch-union-closeup",
+      "r09Image": "evidence/milestones/kokerboom/round-09/2026-09-10-04-branch-union-closeup.png",
+      "r11Image": "evidence/milestones/kokerboom/round-11/2026-09-10-04-branch-union-closeup.png",
+      "cameraFieldDifferences": {},
+      "orthographicProjectionFieldsEqual": true,
+      "lightsAndAmbientEqual": true,
+      "imageDimensionsEqual": true,
+      "seed": 4242,
+      "age01": 1,
+      "lod": 0,
+      "unitScale": true,
+      "r09ImageSha256": "fa918ce156816dd332edfb434054ca4f7e89ef38cc781803d38300cf3edfff1e",
+      "r11ImageSha256": "d5c07af378131413adbf9d751c276b9d24cb04f9f1d02b80681a5aab50046ec2"
+    },
+    {
+      "id": "05-trunk-bark-closeup",
+      "r09Image": "evidence/milestones/kokerboom/round-09/2026-09-10-05-trunk-bark-closeup.png",
+      "r11Image": "evidence/milestones/kokerboom/round-11/2026-09-10-05-trunk-bark-closeup.png",
+      "cameraFieldDifferences": {},
+      "orthographicProjectionFieldsEqual": true,
+      "lightsAndAmbientEqual": true,
+      "imageDimensionsEqual": true,
+      "seed": 4242,
+      "age01": 1,
+      "lod": 0,
+      "unitScale": true,
+      "r09ImageSha256": "04018891320d2c3bdfcdfe6d8ee757c82c83aaa4d4fc67d5678c40d5a6e779c2",
+      "r11ImageSha256": "05320f3f67d0cc428f437bf6d39869f3e424ac5b236dcd7da6da23ce2e99824d"
+    },
+    {
+      "id": "15-untextured-branch-union-closeup",
+      "r09Image": "evidence/milestones/kokerboom/round-09/2026-09-10-15-untextured-branch-union-closeup.png",
+      "r11Image": "evidence/milestones/kokerboom/round-11/2026-09-10-15-untextured-branch-union-closeup.png",
+      "cameraFieldDifferences": {
+        "fieldOfView": {
+          "r09": 52.0,
+          "r11": 60.0
+        }
+      },
+      "orthographicProjectionFieldsEqual": true,
+      "lightsAndAmbientEqual": true,
+      "imageDimensionsEqual": true,
+      "seed": 4242,
+      "age01": 1,
+      "lod": 0,
+      "unitScale": true,
+      "r09ImageSha256": "9606f9f2f56a703d8968e93b074878f0a74b34bacb57ca4e33b7a4814b7780ac",
+      "r11ImageSha256": "0edc8cb3ca26af4809fda7b3194d13222b0ed7b8f08282966f98da59d64ebd48"
+    }
+  ]
+}

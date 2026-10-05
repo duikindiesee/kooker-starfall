@@ -1,0 +1,321 @@
+{
+    "contract": "starfall.environment.v1",
+    "layer": "compiled-player scripted harness",
+    "utc": "2026-09-13T15:42:05.6467789Z",
+    "unity": "6000.6.0f1",
+    "gpu": "AMD Radeon(TM) 8060S Graphics",
+    "cpu": "AMD RYZEN AI MAX+ 395 w/ Radeon 8060S ",
+    "status": "PASS",
+    "width": 1280,
+    "height": 720,
+    "modelAssertions": 12410,
+    "frames": 1923,
+    "p95ms": 16.684097290039063,
+    "p99ms": 16.929597854614258,
+    "stepP95ms": 0.0284000001847744,
+    "elapsedSeconds": 32.05084228515625,
+    "minWidth": 1280,
+    "maxWidth": 1280,
+    "minHeight": 720,
+    "maxHeight": 720,
+    "rigidBodies": 128,
+    "precipitationCapacity": 512,
+    "pausePassed": true,
+    "saveDiskPassed": true,
+    "windForcePassed": true,
+    "controllerGroundPassed": true,
+    "controllerMovePassed": true,
+    "coldResponsePassed": true,
+    "windVisualPassed": true,
+    "transitionPassed": true,
+    "weather": [
+        {
+            "tick": 400,
+            "wind": {
+                "x": 1.8410096168518066,
+                "y": 0.0,
+                "z": 0.7814623713493347
+            },
+            "vegetationLean": {
+                "x": 0.019374847412109375,
+                "y": 0.0000015497207641601563,
+                "z": 0.008224844932556152
+            },
+            "arrow": {
+                "x": 0.9205048680305481,
+                "y": 0.0,
+                "z": 0.3907312750816345
+            },
+            "shaderWind": {
+                "x": 1.8410096168518066,
+                "y": 0.0,
+                "z": 0.7814623713493347
+            },
+            "probe": {
+                "x": -31.0,
+                "y": 41.0,
+                "z": -6.0
+            },
+            "air": 22.0,
+            "apparent": 21.299999237060547,
+            "playerApparent": 21.299999237060547,
+            "precipitation": 0.0,
+            "cold": false,
+            "playerCold": false,
+            "sheltered": false
+        },
+        {
+            "tick": 1901,
+            "wind": {
+                "x": -1.0950405597686768,
+                "y": 0.0,
+                "z": -6.913818359375
+            },
+            "vegetationLean": {
+                "x": -0.013126373291015625,
+                "y": 0.0000015497207641601563,
+                "z": -0.08288097381591797
+            },
+            "arrow": {
+                "x": -0.15643438696861267,
+                "y": 0.0,
+                "z": -0.987688422203064
+            },
+            "shaderWind": {
+                "x": -1.0950405597686768,
+                "y": 0.0,
+                "z": -6.913818359375
+            },
+            "probe": {
+                "x": -31.0,
+                "y": 41.0,
+                "z": -6.0
+            },
+            "air": 12.0,
+            "apparent": 9.328072547912598,
+            "playerApparent": 9.328072547912598,
+            "precipitation": 0.699999988079071,
+            "cold": false,
+            "playerCold": false,
+            "sheltered": false
+        },
+        {
+            "tick": 3400,
+            "wind": {
+                "x": 10.125553131103516,
+                "y": 0.0,
+                "z": 4.298043251037598
+            },
+            "vegetationLean": {
+                "x": 0.098175048828125,
+                "y": 0.0000015497207641601563,
+                "z": 0.04167288541793823
+            },
+            "arrow": {
+                "x": 0.9205048084259033,
+                "y": 0.0,
+                "z": 0.3907312750816345
+            },
+            "shaderWind": {
+                "x": 10.125553131103516,
+                "y": 0.0,
+                "z": 4.298043251037598
+            },
+            "probe": {
+                "x": -37.0,
+                "y": 41.0,
+                "z": -7.0
+            },
+            "air": -8.0,
+            "apparent": 0.0,
+            "playerApparent": -12.245304107666016,
+            "precipitation": 0.4000000059604645,
+            "cold": true,
+            "playerCold": true,
+            "sheltered": true
+        },
+        {
+            "tick": 4901,
+            "wind": {
+                "x": -18.793851852416992,
+                "y": 0.0,
+                "z": 6.840401649475098
+            },
+            "vegetationLean": {
+                "x": -0.23626708984375,
+                "y": 0.0000015497207641601563,
+                "z": 0.0859946608543396
+            },
+            "arrow": {
+                "x": -0.9396927356719971,
+                "y": 0.0,
+                "z": 0.34202009439468384
+            },
+            "shaderWind": {
+                "x": -18.793851852416992,
+                "y": 0.0,
+                "z": 6.840401649475098
+            },
+            "probe": {
+                "x": -37.0,
+                "y": 41.0,
+                "z": -7.0
+            },
+            "air": 3.0,
+            "apparent": 11.0,
+            "playerApparent": -4.89025354385376,
+            "precipitation": 1.0,
+            "cold": false,
+            "playerCold": true,
+            "sheltered": true
+        }
+    ],
+    "physics": [
+        {
+            "name": "gravity semi-implicit displacement 0.5s",
+            "passed": true,
+            "measured": 8.724699974060059,
+            "expected": 8.724699974060059,
+            "tolerance": 0.02500000037252903
+        },
+        {
+            "name": "mass independent gravity",
+            "passed": true,
+            "measured": 8.724699974060059,
+            "expected": 8.724699974060059,
+            "tolerance": 0.0010000000474974513
+        },
+        {
+            "name": "gravity velocity 0.5s",
+            "passed": true,
+            "measured": -4.904998779296875,
+            "expected": -4.90500020980835,
+            "tolerance": 0.019999999552965164
+        },
+        {
+            "name": "floor stops falling",
+            "passed": true,
+            "measured": 0.4999998211860657,
+            "expected": 0.5,
+            "tolerance": 0.03500000014901161
+        },
+        {
+            "name": "heavy floor contact",
+            "passed": true,
+            "measured": 0.49999985098838806,
+            "expected": 0.5,
+            "tolerance": 0.03500000014901161
+        },
+        {
+            "name": "continuous wall collision",
+            "passed": true,
+            "measured": 0.0,
+            "expected": 0.0,
+            "tolerance": 0.05000000074505806
+        },
+        {
+            "name": "position constraint under force",
+            "passed": true,
+            "measured": 10.0,
+            "expected": 10.0,
+            "tolerance": 0.0010000000474974513
+        },
+        {
+            "name": "force mass acceleration light",
+            "passed": true,
+            "measured": 1.0000001192092896,
+            "expected": 1.0,
+            "tolerance": 0.004999999888241291
+        },
+        {
+            "name": "force mass acceleration heavy",
+            "passed": true,
+            "measured": 0.10000000894069672,
+            "expected": 0.10000000149011612,
+            "tolerance": 0.004999999888241291
+        },
+        {
+            "name": "buoyant body approaches water equilibrium",
+            "passed": true,
+            "measured": -0.000038166192098287866,
+            "expected": 0.0,
+            "tolerance": 0.30000001192092896
+        },
+        {
+            "name": "buoyant body settles vertical speed",
+            "passed": true,
+            "measured": 0.00032036006450653076,
+            "expected": 0.0,
+            "tolerance": 0.10000000149011612
+        },
+        {
+            "name": "slope collider normal 30 degrees",
+            "passed": true,
+            "measured": 29.9999942779541,
+            "expected": 30.0,
+            "tolerance": 0.10000000149011612
+        },
+        {
+            "name": "slope collider normal 60 degrees",
+            "passed": true,
+            "measured": 60.000003814697266,
+            "expected": 60.0,
+            "tolerance": 0.10000000149011612
+        },
+        {
+            "name": "capsule falls and grounds",
+            "passed": true,
+            "measured": 0.03499990701675415,
+            "expected": 0.0,
+            "tolerance": 0.07999999821186066
+        },
+        {
+            "name": "capsule sweep blocks wall",
+            "passed": true,
+            "measured": 0.0,
+            "expected": 0.0,
+            "tolerance": 0.03999999910593033
+        },
+        {
+            "name": "capsule climbs gentle slope",
+            "passed": true,
+            "measured": 1.0,
+            "expected": 1.0,
+            "tolerance": 0.0
+        },
+        {
+            "name": "capsule rejects steep slope",
+            "passed": true,
+            "measured": 1.0,
+            "expected": 1.0,
+            "tolerance": 0.0
+        },
+        {
+            "name": "capsule dry shore limit",
+            "passed": true,
+            "measured": 0.0,
+            "expected": 0.0,
+            "tolerance": 0.0010000000474974513
+        },
+        {
+            "name": "capsule finite edge",
+            "passed": true,
+            "measured": 0.0,
+            "expected": 0.0,
+            "tolerance": 0.0010000000474974513
+        },
+        {
+            "name": "capsule recovers out of bounds",
+            "passed": true,
+            "measured": 0.0,
+            "expected": 0.0,
+            "tolerance": 0.07999999821186066
+        }
+    ],
+    "captures": [
+        "clear.png",
+        "rain.png",
+        "cold.png",
+        "storm.png"
+    ]
+}
