@@ -26,6 +26,7 @@ namespace CityLife.Items
         public ItemLocationKind location;
         public string holderActorId;
         public string containerItemId;
+        public int containerSlot = -1;
         public string placedSupportId;
         public Vector3 position;
         public Quaternion rotation;
@@ -41,6 +42,7 @@ namespace CityLife.Items
             location = source.location;
             holderActorId = source.holderActorId;
             containerItemId = source.containerItemId;
+            containerSlot = source.containerSlot;
             placedSupportId = source.placedSupportId;
             position = source.position;
             rotation = source.rotation;
@@ -62,29 +64,35 @@ namespace CityLife.Items
                 case ItemLocationKind.Free:
                     return string.IsNullOrEmpty(holderActorId) &&
                            string.IsNullOrEmpty(containerItemId) &&
+                           containerSlot == -1 &&
                            string.IsNullOrEmpty(placedSupportId);
 
                 case ItemLocationKind.Carried:
                     return !string.IsNullOrEmpty(holderActorId) &&
                            ItemModel.IsValidId(holderActorId) &&
                            string.IsNullOrEmpty(containerItemId) &&
+                           containerSlot == -1 &&
                            string.IsNullOrEmpty(placedSupportId);
 
                 case ItemLocationKind.Stored:
                     return string.IsNullOrEmpty(holderActorId) &&
                            !string.IsNullOrEmpty(containerItemId) &&
                            ItemModel.IsValidId(containerItemId) &&
+                           !string.Equals(containerItemId, itemId, StringComparison.Ordinal) &&
+                           containerSlot >= 0 &&
                            string.IsNullOrEmpty(placedSupportId);
 
                 case ItemLocationKind.Placed:
                     return string.IsNullOrEmpty(holderActorId) &&
                            string.IsNullOrEmpty(containerItemId) &&
+                           containerSlot == -1 &&
                            !string.IsNullOrEmpty(placedSupportId) &&
                            ItemModel.IsValidId(placedSupportId);
 
                 case ItemLocationKind.Anchored:
                     return string.IsNullOrEmpty(holderActorId) &&
                            string.IsNullOrEmpty(containerItemId) &&
+                           containerSlot == -1 &&
                            string.IsNullOrEmpty(placedSupportId);
 
                 default:

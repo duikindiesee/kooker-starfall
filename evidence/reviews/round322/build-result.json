@@ -1,0 +1,37 @@
+{
+  "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260927-022054",
+  "unityEditor": "6000.6.0f1",
+  "sourceCommit": "3617ddf09fcce55bbd3acc41d695a07634aedba4",
+  "worktreeDirty": true,
+  "status": "Succeeded",
+  "binarySha256": "A4C71B1BFC3E42D02F2F129FE04ADEF3EBF2343A662884E4B99598E9DFC90E7D",
+  "assemblySha256": "DD419513EBCD682CC1F49344AA098DBAC7E4819ECEBFAC98CE41F6AC268E9C95",
+  "buildErrors": 0,
+  "buildWarnings": 77,
+  "integratedChecks": 2074,
+  "sourceFileCount": 266,
+  "rodSourceSha256": "87046ABDE64D5F88F4CA84D0F4939063C7576787E73B3502BC2E5B9FF4ECE464",
+  "rodSourceMatchesBuildManifest": true,
+  "integrationChecksSourceSha256": "94246D76DFF119B31CF6A8B0225494245FC8D065AF16C0BDD74F2200352F3119",
+  "integrationChecksMatchBuildManifest": true,
+  "runtimeStatus": "FAIL",
+  "completedChecks": [
+    "HUD directive completed: go fish",
+    "go fish landed river-carp-19",
+    "HUD directive completed: eat catch",
+    "eat catch removed exact fish and increased nutrition"
+  ],
+  "runtimeFailures": [
+    "go fish then store: command-cancelled: command-failed-no-reachable-bank",
+    "Second catch was not transferred to basket storage."
+  ],
+  "consumedFishId": "river-carp-19",
+  "nutritionAfterEating": 8777,
+  "automatedAudioVolume": 0.0,
+  "videoRecordingAvailable": false,
+  "captures": [
+    "rod-upright-approach.png",
+    "rod-tip-to-bobber-line.png",
+    "rod-and-line-reeling.png"
+  ]
+}

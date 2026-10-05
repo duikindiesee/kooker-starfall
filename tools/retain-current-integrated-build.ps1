@@ -23,7 +23,10 @@ foreach($dir in Get-ChildItem -LiteralPath $builds -Directory) {
     # A newer temporary candidate is not superseded by promoting an older receipt.
     if($dir.Name.Substring($dir.Name.Length-15) -gt $keep.buildId.Substring($keep.buildId.Length-15)) { $skipped+=$dir.FullName;continue }
     if([IO.Path]::GetDirectoryName($dir.FullName) -ne $builds) { throw 'Outside direct build directory.' }
-    if(@($processes|Where-Object {$_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir.FullName+'\',[StringComparison]::OrdinalIgnoreCase)}).Count){throw 'Old build is active; defer cleanup.'}
+    if(@($processes|Where-Object {$_.ExecutablePath -and $_.ExecutablePath.StartsWith($dir.FullName+'\',[StringComparison]::OrdinalIgnoreCase)}).Count){
+        # Defer deletion of actively running build until it closes
+        $skipped+=$dir.FullName;continue
+    }
     $items=@($dir)+@(Get-ChildItem -LiteralPath $dir.FullName -Recurse -Force)
     if(@($items|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint}).Count){throw 'Linked output rejected.'}
     if(@($items|Where-Object {($_.PSIsContainer -and $_.Name -match '^(?i:saves?|memory|ledger)$') -or $_.Name -match '(?i)\.(sqlite|sqlite3|db|jsonl)$'}).Count){$skipped+=$dir.FullName;continue}

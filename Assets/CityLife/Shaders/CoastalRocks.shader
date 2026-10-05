@@ -2,7 +2,7 @@ Shader "CityLife/CoastalRocks"
 {
     Properties
     {
-        _BaseColor("Iron-brown stone tint",Color)=(.18,.135,.11,1)
+        _BaseColor("Sandstone rock tint",Color)=(.44,.38,.30,1)
         _BaseMap("Base",2D)="white"{}
         _Vegetation("Succulent vertex colour",Float)=0
         _Cutoff("Cutoff",Float)=.5

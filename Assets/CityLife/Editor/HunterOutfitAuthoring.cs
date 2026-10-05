@@ -29,58 +29,94 @@ namespace CityLife.World.Editor
     var n=model.transform.InverseTransformDirection(body.transform.TransformDirection(bodyNormals[i])).normalized;
     float bulk=p[i].y<1.50f&&p[i].y>.25f&&Mathf.Abs(p[i].x)<.70f?.010f:0;
     p[i]+=n*bulk;
-    if(p[i].y>1.58f&&p[i].y<1.66f)p[i].x*=1.10f;
    }
    source.vertices=p.Select(v=>body.transform.InverseTransformPoint(model.transform.TransformPoint(v))).ToArray();source.RecalculateNormals();source.RecalculateBounds();AssetDatabase.CreateAsset(source,folder+"/Hunter robust body.asset");body.sharedMesh=source;
    var weights=source.boneWeights;
+   var normal=source.normals.Select(n=>model.transform.InverseTransformDirection(body.transform.TransformDirection(n)).normalized).ToArray();
    Vector3 Bone(HumanBodyBones id)=>model.transform.InverseTransformPoint(animator.GetBoneTransform(id).position);
    int Index(HumanBodyBones id)=>Array.IndexOf(bones,animator.GetBoneTransform(id));
    BoneWeight One(int i)=>new BoneWeight{boneIndex0=i,weight0=1};
-   BoneWeight Near(Vector3 pt){int best=0;float d=float.MaxValue;for(int i=0;i<p.Length;i++){float n=(p[i]-pt).sqrMagnitude;if(n<d){d=n;best=i;}}return weights[best];}
+   BoneWeight TorsoWeight(BoneWeight bw){
+    int lArm=Index(HumanBodyBones.LeftUpperArm),rightArm=Index(HumanBodyBones.RightUpperArm);
+    int chest=Index(HumanBodyBones.Chest),lSh=Index(HumanBodyBones.LeftShoulder),rSh=Index(HumanBodyBones.RightShoulder);
+    if(bw.boneIndex0==lArm)bw.boneIndex0=lSh>=0?lSh:chest;
+    if(bw.boneIndex1==lArm)bw.boneIndex1=lSh>=0?lSh:chest;
+    if(bw.boneIndex0==rightArm)bw.boneIndex0=rSh>=0?rSh:chest;
+    if(bw.boneIndex1==rightArm)bw.boneIndex1=rSh>=0?rSh:chest;
+    return bw;
+   }
+   BoneWeight NearSide(Vector3 pt,int side){
+    int leftLeg=Index(HumanBodyBones.LeftUpperLeg),rightLeg=Index(HumanBodyBones.RightUpperLeg);
+    int forbiddenLeg=side==0?rightLeg:leftLeg;
+    int best=0;float d=float.MaxValue;
+    for(int i=0;i<p.Length;i++){
+     var bw=weights[i];
+     if(bw.boneIndex0==forbiddenLeg&&bw.weight0>.3f)continue;
+     if(bw.boneIndex1==forbiddenLeg&&bw.weight1>.3f)continue;
+     float n=(p[i]-pt).sqrMagnitude;if(n<d){d=n;best=i;}
+    }
+    return weights[best];
+   }
    float hip=Bone(HumanBodyBones.Hips).y, shoulder=Bone(HumanBodyBones.LeftUpperArm).y;
    float knee=(Bone(HumanBodyBones.LeftLowerLeg).y+Bone(HumanBodyBones.RightLowerLeg).y)*.5f;
    float top=Bone(HumanBodyBones.Neck).y+.005f, waist=hip+.09f, hem=Mathf.Lerp(knee,hip,.70f);
    var hide=new Surface();var dark=new Surface();var trim=new Surface();var wraps=new Surface();var trousers=new Surface();var hood=new Surface();var mantle=new Surface();
-   // A lightly relaxed body-fit upper shell keeps the existing shoulder deformation and open arms.
+   // Tailored sleeveless tunic: drapes smoothly over the torso, clavicle, and trapezius with zero armhole tearing.
    float armX=Mathf.Abs(Bone(HumanBodyBones.LeftUpperArm).x);
-   bool Torso(Vector3 a)=>a.y>=hip+.015f && a.y<=top && Mathf.Abs(a.x)<armX+.018f;
+   int leftUpperArm=Index(HumanBodyBones.LeftUpperArm), rightUpperArm=Index(HumanBodyBones.RightUpperArm);
+   bool IsArmVertex(int vIdx){
+    var bw=weights[vIdx];
+    return (bw.boneIndex0==leftUpperArm&&bw.weight0>.20f)||(bw.boneIndex0==rightUpperArm&&bw.weight0>.20f)||
+           (bw.boneIndex1==leftUpperArm&&bw.weight1>.35f)||(bw.boneIndex1==rightUpperArm&&bw.weight1>.35f);
+   }
+   float limitX(float y)=>(y>=shoulder-.05f)?(armX-.012f):(armX-.010f);
+   bool Torso(int vIdx)=>p[vIdx].y>=hip+.015f && p[vIdx].y<=top+.005f && Mathf.Abs(p[vIdx].x)<limitX(p[vIdx].y) && !IsArmVertex(vIdx);
    int[] old=source.triangles;
-   for(int i=0;i<old.Length;i+=3){int a=old[i],b=old[i+1],c=old[i+2];if(!Torso(p[a])||!Torso(p[b])||!Torso(p[c]))continue;
-    int start=hide.v.Count;foreach(int j in new[]{a,b,c}){var q=p[j];var radial=new Vector3(q.x,0,q.z);q+=radial.normalized*.014f;
-     hide.Add(q,new Vector2(Mathf.Atan2(q.z,q.x)/6.28318f+.5f,(q.y-hip)*1.5f),weights[j]);}hide.t.AddRange(new[]{start,start+1,start+2});}
-   // Independent overlapping skirt panels: each side follows its thigh below the belt.
-   // The front/back overlaps are deliberate; no rigid bridge spanning both knees.
+   for(int i=0;i<old.Length;i+=3){int a=old[i],b=old[i+1],c=old[i+2];if(!Torso(a)||!Torso(b)||!Torso(c))continue;
+    int start=hide.v.Count;foreach(int j in new[]{a,b,c}){
+     var q=p[j]+normal[j]*.016f;
+     hide.Add(q,new Vector2(Mathf.Atan2(q.z,q.x)/6.28318f+.5f,(q.y-hip)*1.5f),TorsoWeight(weights[j]));
+    }hide.t.AddRange(new[]{start,start+1,start+2});}
+   // Athletic wrap skirt: front is tailored to abdomen; rear has generous clearance for buttocks and gait.
    for(int side=0;side<2;side++){
     const int cols=16,rows=5;int start=hide.v.Count;float angleStart=side==0?-.22f:Mathf.PI-.22f;
-    int thigh=Index(side==0?HumanBodyBones.LeftUpperLeg:HumanBodyBones.RightUpperLeg),hips=Index(HumanBodyBones.Hips);
-    for(int row=0;row<=rows;row++){float f=row/(float)rows;float y=Mathf.Lerp(waist,hem,f);for(int col=0;col<=cols;col++){
-     float ang=angleStart+(Mathf.PI+.44f)*col/cols;float rx=Mathf.Lerp(.205f,.232f,f),rz=Mathf.Lerp(.145f,.183f,f);
-     var q=new Vector3(Mathf.Sin(ang)*rx,y+(row==rows?.012f*Mathf.Sin(ang*5):0),Mathf.Cos(ang)*rz);
-     float blend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.12f,.78f,f));
-     hide.Add(q,new Vector2(col/(float)cols,f),new BoneWeight{boneIndex0=hips,weight0=1-blend,boneIndex1=thigh,weight1=blend});
-     if(row<rows&&col<cols){int n=start+row*(cols+1)+col;hide.Quad(n,n+cols+1,n+cols+2,n+1);}
-    }}
+    for(int row=0;row<=rows;row++){
+     float f=row/(float)rows;float y=Mathf.Lerp(waist,hem,f);
+     float rx=Mathf.Lerp(.215f,.250f,f);
+     float rzFront=Mathf.Lerp(.145f,.172f,f);
+     float rzBack=Mathf.Lerp(.185f,.225f,f);
+     const float zCenter=0.018f;
+     for(int col=0;col<=cols;col++){
+      float ang=angleStart+(Mathf.PI+.44f)*col/cols;
+      float rz=Mathf.Cos(ang)>=0?rzBack:rzFront;
+      var q=new Vector3(Mathf.Sin(ang)*rx,y+(row==rows?.012f*Mathf.Sin(ang*5):0),zCenter+Mathf.Cos(ang)*rz);
+      hide.Add(q,new Vector2(col/(float)cols,f),NearSide(q,side));
+      if(row<rows&&col<cols){int n=start+row*(cols+1)+col;hide.Quad(n,n+cols+1,n+cols+2,n+1);}
+     }
+    }
    }
    // A compact braided-looking belt and knot, all bound to hips.
    void Tube(Surface s,Vector3 a,Vector3 b,float radius,BoneWeight weight){Vector3 dir=(b-a).normalized;Vector3 u=Vector3.Cross(dir,Vector3.up);if(u.sqrMagnitude<.01f)u=Vector3.Cross(dir,Vector3.forward);u.Normalize();var v=Vector3.Cross(dir,u);int n=s.v.Count;for(int end=0;end<2;end++)for(int k=0;k<6;k++){float ang=k*Mathf.PI/3; s.Add((end==0?a:b)+(u*Mathf.Cos(ang)+v*Mathf.Sin(ang))*radius,new Vector2(k/6f,end),weight);}for(int k=0;k<6;k++)s.Quad(n+k,n+(k+1)%6,n+6+(k+1)%6,n+6+k);}
    for(int i=0;i<40;i++){float a=i*Mathf.PI/20,b=(i+1)*Mathf.PI/20;for(int strand=0;strand<2;strand++){
-     Vector3 A=new Vector3(Mathf.Sin(a)*.219f,waist+.01f+strand*.019f+Mathf.Sin(a*16)*.003f,Mathf.Cos(a)*.163f);
-     Vector3 B=new Vector3(Mathf.Sin(b)*.219f,waist+.01f+strand*.019f+Mathf.Sin(b*16)*.003f,Mathf.Cos(b)*.163f);Tube(dark,A,B,.010f,One(Index(HumanBodyBones.Hips)));}}
-   for(int i=0;i<2;i++)Tube(dark,new Vector3(.065f,waist+.015f,-.164f),new Vector3(.08f+i*.015f,waist-.075f,-.181f),.007f,One(Index(HumanBodyBones.Hips)));
+     Vector3 A=new Vector3(Mathf.Sin(a)*.220f,waist+.01f+strand*.019f+Mathf.Sin(a*16)*.003f,0.018f+Mathf.Cos(a)*(Mathf.Cos(a)>=0?.192f:.152f));
+     Vector3 B=new Vector3(Mathf.Sin(b)*.220f,waist+.01f+strand*.019f+Mathf.Sin(b*16)*.003f,0.018f+Mathf.Cos(b)*(Mathf.Cos(b)>=0?.192f:.152f));
+     Tube(dark,A,B,.010f,One(Index(HumanBodyBones.Hips)));}}
+   for(int i=0;i<2;i++)Tube(dark,new Vector3(.065f,waist+.015f,-.140f),new Vector3(.08f+i*.015f,waist-.075f,-.155f),.007f,One(Index(HumanBodyBones.Hips)));
    // Small tied gathering pouch, flattened against the left hip.
    {int start=hide.v.Count;const int cols=12,rows=6;for(int row=0;row<=rows;row++)for(int col=0;col<=cols;col++){
      float u=col/(float)cols*Mathf.PI*2,v=row/(float)rows*Mathf.PI;
-     var q=new Vector3(.208f+Mathf.Sin(v)*Mathf.Cos(u)*.053f,waist-.077f+Mathf.Cos(v)*.074f,-.085f+Mathf.Sin(v)*Mathf.Sin(u)*.032f);
+     var q=new Vector3(.215f+Mathf.Sin(v)*Mathf.Cos(u)*.048f,waist-.077f+Mathf.Cos(v)*.070f,0.018f+Mathf.Sin(v)*Mathf.Sin(u)*.030f);
      hide.Add(q,new Vector2(col/(float)cols,row/(float)rows),One(Index(HumanBodyBones.Hips)));
      if(row<rows&&col<cols){int n=start+row*(cols+1)+col;hide.Quad(n,n+1,n+cols+2,n+cols+1);}
-    }Tube(dark,new Vector3(.2f,waist+.01f,-.09f),new Vector3(.208f,waist-.025f,-.11f),.006f,One(Index(HumanBodyBones.Hips)));}
-   // Repair stitching across torso. Place against actual body-fit surface, not a floating plate.
-   for(int i=0;i<13;i++){float f=i/12f;var q=new Vector3(Mathf.Lerp(-.13f,.10f,f),Mathf.Lerp(hip+.13f,shoulder-.06f,f),-.20f);
-    int closest=Enumerable.Range(0,p.Length).Where(j=>p[j].z<0).OrderBy(j=>(p[j]-q).sqrMagnitude).First();q=p[closest];q+=new Vector3(q.x,0,q.z).normalized*.023f;
-    Tube(trim,q+new Vector3(-.014f,-.006f,0),q+new Vector3(.014f,.006f,0),.0028f,weights[closest]);}
+    }Tube(dark,new Vector3(.205f,waist+.01f,0.015f),new Vector3(.215f,waist-.025f,0.015f),.006f,One(Index(HumanBodyBones.Hips)));}
+   // Clean tunic chest: subtle leather seam stitching along the hip gathering pouch seam.
+   for(int i=0;i<4;i++){
+     float f=i/3f;
+     var q=new Vector3(.220f,waist-.05f-f*.04f,0.018f);
+     Tube(trim,q+new Vector3(0,0,-.004f),q+new Vector3(0,0,.004f),.0018f,One(Index(HumanBodyBones.Hips)));
+   }
    // Soft foot coverings preserve toe deformation; no rigid boot geometry or collider.
    bool Foot(Vector3 a)=>a.y<.25f;
-   var normal=source.normals.Select(n=>model.transform.InverseTransformDirection(body.transform.TransformDirection(n)).normalized).ToArray();
    // Optional cold layers use the same existing skin, keeping a generous open face.
    bool Hood(Vector3 q)=>q.y>1.48f&&Mathf.Abs(q.x)<.15f&&!(q.z<-.025f&&q.y<1.775f&&Mathf.Abs(q.x)<.10f);
    bool Mantle(Vector3 q)=>q.y>1.30f&&q.y<top&&Mathf.Abs(q.x)<.32f;
@@ -110,7 +146,17 @@ namespace CityLife.World.Editor
    var carry=model.AddComponent<HunterClubCarry>();carry.Animator=animator;carry.Actor=model.transform.parent;carry.Club=club.transform;carry.AuthorGrip();
    // Mask only fully covered body triangles, on a clone; original FBX and mesh stay intact.
    var masked=UnityEngine.Object.Instantiate(source);masked.name="Hunter body covered-face mask";
-   var kept=new List<int>();for(int i=0;i<old.Length;i+=3){bool cover=true;for(int j=0;j<3;j++){var q=p[old[i+j]];if(!(q.y<waist||q.y>hip+.025f&&q.y<top-.065f&&Mathf.Abs(q.x)<armX-.035f))cover=false;}if(!cover)kept.AddRange(new[]{old[i],old[i+1],old[i+2]});}masked.triangles=kept.ToArray();AssetDatabase.CreateAsset(masked,folder+"/Hunter masked body.asset");body.sharedMesh=masked;
+   var kept=new List<int>();
+   for(int i=0;i<old.Length;i+=3){
+    bool cover=true;
+    for(int j=0;j<3;j++){
+     var q=p[old[i+j]];
+     bool vertexCovered=q.y<waist||(q.y>hip+.025f&&q.y<shoulder-.055f&&Mathf.Abs(q.x)<(armX-.042f));
+     if(!vertexCovered)cover=false;
+    }
+    if(!cover)kept.AddRange(new[]{old[i],old[i+1],old[i+2]});
+   }
+   masked.triangles=kept.ToArray();AssetDatabase.CreateAsset(masked,folder+"/Hunter masked body.asset");body.sharedMesh=masked;
    Directory.CreateDirectory("evidence/local/hunter");File.WriteAllText("evidence/local/hunter/outfit-inventory.json","{\"baseVertices\":"+baseVertices+",\"baseTriangles\":"+baseTriangles+",\"allLayerVertices\":"+vertices+",\"allLayerTriangles\":"+triangles+",\"clubTriangles\":"+clubMesh.triangles.Length/3+",\"baseGarmentRenderers\":5,\"allGarmentRenderers\":7,\"materials\":5,\"hipY\":"+hip.ToString(System.Globalization.CultureInfo.InvariantCulture)+",\"hemY\":"+hem.ToString(System.Globalization.CultureInfo.InvariantCulture)+",\"bodyTrianglesRemoved\":"+((old.Length-kept.Count)/3)+"}");
   }
   public static Mesh CreateClubMesh() {

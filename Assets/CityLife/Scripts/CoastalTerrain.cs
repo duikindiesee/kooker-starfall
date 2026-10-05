@@ -26,6 +26,63 @@ namespace CityLife.World
             new Vector2(90,410), new Vector2(25,555), new Vector2(0,690)
         });
 
+        public static bool IsRiverFord(float x, float z)
+        {
+            return Mathf.Abs(z - (-15f)) <= 7f && Mathf.Abs(x) <= 25f;
+        }
+
+        public static float DistanceToFeed(float x, float z) => DistanceToCurve(x, z, Feed);
+        public static float DistanceToOutlet(float x, float z) => DistanceToCurve(x, z, Outlet);
+
+        /// <summary>
+        /// Finds the approximate river channel centerline X coordinate for a given Z in the canyon.
+        /// Scans across the canyon width to locate the deepest bathymetric floor.
+        /// </summary>
+        public static float RiverCenterlineX(float z)
+        {
+            float bestX = 0f;
+            float lowestY = float.MaxValue;
+            for (float x = -65f; x <= 65f; x += 1.0f)
+            {
+                float h = Height(x, z);
+                if (h < lowestY)
+                {
+                    lowestY = h;
+                    bestX = x;
+                }
+            }
+            return bestX;
+        }
+
+        public static bool IsFreshwaterRiver(float x, float z, float y, float waterLevel)
+        {
+            if (z > 420f) return false; // North of 420m opens into the broad saline sea
+            float groundY = Height(x, z);
+            float depth = waterLevel - groundY;
+            if (depth < 0.02f && (y - waterLevel > 2.6f || y < waterLevel - 2.2f)) return false;
+            float dFeed = DistanceToFeed(x, z);
+            float dOutlet = DistanceToOutlet(x, z);
+            float dCenter = Mathf.Sqrt(x * x + z * z);
+            return dFeed < 42f || dOutlet < 48f || (dCenter < 38f && depth > 0.02f);
+        }
+
+        public static bool CanDrinkFromRiver(float x, float z, float y, float waterLevel)
+        {
+            if (!IsFreshwaterRiver(x, z, y, waterLevel)) return false;
+            float groundY = Height(x, z);
+            float depth = waterLevel - groundY;
+            // Either standing in shallow water (depth between 2cm and 65cm, like the river ford)
+            if (depth >= 0.02f && depth <= 0.65f) return true;
+            // Or standing right on the sandy waterline edge (elevation within 35cm of water level)
+            if (depth < 0.02f && groundY <= waterLevel + 0.35f)
+            {
+                float dFeed = DistanceToFeed(x, z);
+                float dOutlet = DistanceToOutlet(x, z);
+                return dFeed < 22f || dOutlet < 22f || IsRiverFord(x, z);
+            }
+            return false;
+        }
+
         /// <summary>Metre-space surface height; outside this finite patch, returns the nearest edge height.</summary>
         public static float Height(float x, float z)
         {
@@ -43,6 +100,8 @@ namespace CityLife.World
             mesa = Mathf.Max(mesa,Mesa(x,z,410,20,250,310,132,97));
             mesa = Mathf.Max(mesa,Mesa(x,z,-390,350,250,310,124,151));
             mesa = Mathf.Max(mesa,Mesa(x,z,410,430,260,300,112,181));
+            // South Canyon Headwall: towering rear cliffs enclosing the south canyon vista and framing the waterfall
+            mesa = Mathf.Max(mesa, Mesa(x, z, -15f, -480f, 340f, 220f, 128f, 19f));
             ground += mesa;
 
             // Near-ring meander: a west-facing land neck keeps this an outcrop connected
@@ -59,7 +118,20 @@ namespace CityLife.World
             float outletCut = 1f - Smooth(-2f, 18f, DistanceToCurve(x,z,Outlet) - outletWidth);
             float channelCut = Mathf.Max(ringCut, Mathf.Max(feedCut, outletCut));
             float riverBed = -4.5f + Noise(x * .075f + 9, z * .075f) * .4f;
+            // Steep rock headwall cliff step: flat plunge basin up to z = -245m,
+            // steep cliff rise between -245m and -258m, and upper hanging gorge beyond -258m.
+            float cliffStep = Smooth(-245f, -258f, z);
+            riverBed += cliffStep * 32f + Smooth(-258f, -420f, z) * 16f;
             riverBed -= Smooth(120f, 700f, z) * 11.5f;
+
+            // Shallow River Ford crossing at z in [-22f, -8f] (centered at z = -15f):
+            // Lifts the channel bed to y = -2.18m (18cm water depth below the -2.0m water plane).
+            // Forms an authentic ankle-deep gravel ford allowing the character to wade
+            // between east and west canyon banks without swimming and without damming or blocking flow.
+            float fordInfluence = 1f - Smooth(3.5f, 8f, Mathf.Abs(z - (-15f)));
+            float fordBed = -2.18f + Noise(x * .12f + 14f, z * .12f) * .04f;
+            riverBed = Mathf.Lerp(riverBed, Mathf.Max(riverBed, fordBed), fordInfluence);
+
             ground = Mathf.Lerp(ground, Mathf.Min(ground, riverBed), channelCut);
 
             // One continuous underwater heightfield extends into the broad genuine sea.
@@ -74,12 +146,21 @@ namespace CityLife.World
             ground = Mathf.Lerp(ground, 0f, pad);
             // A second modest, dry terrace separates inhabitant activities from
             // the hero tree's dense rock bank while remaining part of the terrain.
+            // Features a gentle westward ramp down to the river bank so the inhabitant
+            // and player can freely walk between the terrace, river, and crossing without being trapped.
             float activityRadius = Vector2.Distance(new Vector2(x, z), ActivityCentre);
-            ground = Mathf.Lerp(ground, 4f, 1f - Smooth(18f, 24f, activityRadius));
+            float terracePad = 1f - Smooth(24f, 52f, activityRadius);
+            float rampX = Smooth(20f, 120f, x);
+            float rampZ = 1f - Smooth(20f, 52f, Mathf.Abs(z - ActivityCentre.y));
+            float rampFactor = rampZ * Smooth(15f, 125f, x);
+            float rampHeight = Mathf.Lerp(1.5f, 6.5f, rampX);
+            ground = Mathf.Lerp(ground, rampHeight, rampFactor * .85f);
+            ground = Mathf.Lerp(ground, 6.5f, terracePad * .92f);
+
             // A broad, dry shelf makes the authored cave/refuge entrance truly
             // reachable instead of merely translating it into a mesa face.
             float refugeRadius = Vector2.Distance(new Vector2(x, z), RefugeCentre);
-            ground = Mathf.Lerp(ground, 6f, 1f - Smooth(28f, 36f, refugeRadius));
+            ground = Mathf.Lerp(ground, 6f, 1f - Smooth(28f, 44f, refugeRadius));
             return ground;
         }
 
@@ -106,6 +187,13 @@ namespace CityLife.World
             mesh.RecalculateNormals(); mesh.RecalculateBounds();
             var material = new Material(shader) { name = "Coastal ochre strata and sandy shelves - procedural" };
             material.SetFloat("_SeaLevel",SeaLevel);
+            var groundTex = Resources.Load<Texture2D>("CityLifeArt/DryGround_1K");
+            if (groundTex != null)
+            {
+                material.SetTexture("_GroundAlbedo", groundTex);
+                material.SetFloat("_GroundTiling", 0.16f);
+                material.SetFloat("_GroundDetailTiling", 0.82f);
+            }
             var root = new GameObject("Coastal terrain " + DefinitionId + " seed " + Seed);
             root.transform.SetParent(parent,false);
             root.layer = 8;

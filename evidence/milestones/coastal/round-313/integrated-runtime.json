@@ -1,0 +1,412 @@
+{
+    "status": "PASS_AUTOMATED_NATIVE_AND_COVERAGE_REVIEW_PENDING",
+    "version": "0.0.11-survival.1",
+    "worldId": "starfall.integrated-coastal.v1",
+    "inputScope": "Actual compiled-player Input System devices; separate native mouse/window acceptance required.",
+    "deliveries": 0,
+    "fullCycleDeliveries": 0,
+    "memoryEvents": 1,
+    "checks": [
+        {
+            "name": "world-binding",
+            "evidence": "starfall.integrated-coastal.v1",
+            "passed": true
+        },
+        {
+            "name": "spacious-finite-canyon-world",
+            "evidence": "bounds=1200x1600; sampledCliff=162.9m",
+            "passed": true
+        },
+        {
+            "name": "clothing-attached",
+            "evidence": "Visual coverage inspected separately in retained frames.",
+            "passed": true
+        },
+        {
+            "name": "corrected-club-source-bound",
+            "evidence": "baseRadius=0.010m; combined player must still prove terrain/motion clearance",
+            "passed": true
+        },
+        {
+            "name": "food-model-and-world-targets",
+            "evidence": "observed-fruiting-succulent-unproven-food; gathered-ripe-berry; ate-ripe-berry-and-kept-visible-seed; verified-maintained-freshwater-source; drank-250ml-freshwater",
+            "passed": true
+        },
+        {
+            "name": "berry-bush-terrain-and-rock-clearance",
+            "evidence": "position=(126.00, 6.61, -80.00); terrainDelta=0.000; bakedClearance=10.00m; runtimeClearance=10.00m; meshGrounded=True; layer8RockColliders=84",
+            "passed": true
+        },
+        {
+            "name": "forage-decoration-does-not-block-navigation",
+            "evidence": "enabled or disabled primitive colliders below the forage root=0; root trigger remains the intended interaction sensor",
+            "passed": true
+        },
+        {
+            "name": "freshwater-seep-dry-grounded-approach-route",
+            "evidence": "site=(121.00, 6.59, -58.00); externalApproach=(122.42, 6.60, -58.00); berryToSeepWaypoints=28; authored footprint/path check only; live LOS, discovery, model choice and drinking require ordinary play",
+            "passed": true
+        },
+        {
+            "name": "berry-bush-camera-line-of-sight",
+            "evidence": "camera=(122.80, 8.06, -82.80); bush=(126.00, 6.61, -80.00); authored terrain/rocks do not occlude the evidence view",
+            "passed": true
+        },
+        {
+            "name": "distant-giant-is-beyond-coastal-terrain",
+            "evidence": "centre=(9000.00, 26000.00, 42000.00); diameter=36000; source-distance contract only; visual occlusion/parallax reviewed from frames",
+            "passed": true
+        },
+        {
+            "name": "distant-giant-posed-eyes-clear-of-terrain",
+            "evidence": "bank=proposed=-52,-55; selected=-52,-55; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-52.00, -0.45, -55.00); eye=(-52.00, 1.65, -55.00); water=-2; dryFreeboard=1.545499; forward=proposed=-52,-5; selected=-64,-5; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-64.00, -0.72, -5.00); eye=(-64.00, 1.38, -5.00); water=-2; dryFreeboard=1.275342; mouth=proposed=-38,5; selected=-62,5; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-62.00, -0.83, 5.00); eye=(-62.00, 1.27, 5.00); water=-2; dryFreeboard=1.171293; lookout=proposed=-90,110; selected=-90,110; collider=Coastal terrain starfall.coastal-world.v1 seed 1904242; floor=(-90.00, 1.84, 110.00); eye=(-90.00, 3.94, 110.00); water=-2; dryFreeboard=3.838757; horizontal bank-forward=51.41984m; posed eyes grounded by solid ray, not a verified traversal route",
+            "passed": true
+        },
+        {
+            "name": "distant-giant-player-view-metadata-retained",
+            "evidence": "mouth=(-62.00, 1.27, 5.00); bank=(-52.00, 1.65, -55.00); bankForward50=(-64.00, 1.38, -5.00); lookout=(-90.00, 3.94, 110.00); identical sea-facing heading=(-0.03490, 0.01998, 0.00070, 0.99919); FOV=52; far=80000; aspect=1.799325; visual occlusion/parallax remains separate review",
+            "passed": true
+        },
+        {
+            "name": "moving-shallow-bed-caustics",
+            "evidence": "same-camera lower-frame mean channel delta=0.477 over 650ms; visual acceptance separate",
+            "passed": true
+        },
+        {
+            "name": "actual-coastal-scene-reflection-contribution",
+            "evidence": "waterMaterial=Asset-621; planarTextureReady=True; lastRenderedFrame=28; shader time frozen; same-camera reflection strength 0/1 lower-frame mean channel delta=3.689; ordinary-play planar camera samples the current canyon/sky view; dynamic weather refresh follows rendered frames",
+            "passed": true
+        },
+        {
+            "name": "water-main-camera-input-diagnostics-retained",
+            "evidence": "matched main-camera opaque/depth/measured/transmission/final captures retained; interpretation is visual and does not lower the water acceptance bar",
+            "passed": true
+        },
+        {
+            "name": "inaccessible-offshore-landforms-present",
+            "evidence": "renderers=3; colliders=0; centres beyond active terrain z=900",
+            "passed": true
+        },
+        {
+            "name": "complete-three-object-autonomy-cycle",
+            "evidence": "living-world-survival-mode; autonomous survival and exploration active without legacy test harness items; phase=Survive / grounded model; result=Waiting for perception",
+            "passed": true
+        },
+        {
+            "name": "remembered-action-receipts",
+            "evidence": "living-world-survival-mode; action memory active via StarfallLivingMemoryRuntime; events=1",
+            "passed": true
+        },
+        {
+            "name": "post-cycle-autonomy-stays-unblocked",
+            "evidence": "8s ordinary autonomous dwell after third delivery; tick=230->592; failures=0->0; deliveries=0->0; held=none; phase=Survive / grounded model; lastResult=no survival outcome yet; no new tasks are seeded; an idle phase is expected and is not autonomous foraging",
+            "passed": true
+        },
+        {
+            "name": "possessed-body-traversal",
+            "evidence": "Starting corridor; same CharacterController. From (34.50, -1.68, -22.00) to (33.55, -1.70, -20.77)",
+            "passed": true
+        },
+        {
+            "name": "possessed-captured-look",
+            "evidence": "Persistent capture survives button release; virtual input only.",
+            "passed": true
+        },
+        {
+            "name": "pause-releases-and-stops-simulation",
+            "evidence": "Both clocks stopped while menu open.",
+            "passed": true
+        },
+        {
+            "name": "pointer-opens-controls-menu",
+            "evidence": "Actual UI pointer event routing through the canvas raycaster.",
+            "passed": true
+        },
+        {
+            "name": "pointer-returns-to-options",
+            "evidence": "Pointer back action keeps simulation paused.",
+            "passed": true
+        },
+        {
+            "name": "resume-restores-capture",
+            "evidence": "Prior play capture intent restored.",
+            "passed": true
+        },
+        {
+            "name": "fullscreen-transition",
+            "evidence": "FullScreenWindow",
+            "passed": true
+        },
+        {
+            "name": "window-restoration",
+            "evidence": "Windowed; initial=Windowed; both display modes observed",
+            "passed": true
+        },
+        {
+            "name": "free-spectator-traversal",
+            "evidence": "Same world and NPC; from (36.44, 0.66, -24.29) to internal=(29.16, 0.66, -13.92); actualCamera=(29.16, 0.66, -13.92); mode=Spectator / free camera (12m/s)",
+            "passed": true
+        },
+        {
+            "name": "spectator-captured-look",
+            "evidence": "Same sensitivity/capture path in free camera.",
+            "passed": true
+        },
+        {
+            "name": "spectator-escape-release",
+            "evidence": "Pointer intent released.",
+            "passed": true
+        },
+        {
+            "name": "refuge-approach-route",
+            "evidence": "Navigation route from east-bank shelf to the authored entrance ramp; route=10 points",
+            "passed": true
+        },
+        {
+            "name": "refuge-continuous-actor-entry-and-shelter",
+            "evidence": "same CharacterController; steps=591; final=(-165.88, 7.79, 118.00); interior=(-166.00, 7.80, 118.00); rainMultiplier=0.010; floor=(-165.88, 7.80, 118.00); footGap=-0.010",
+            "passed": true
+        },
+        {
+            "name": "refuge-regional-weather-adapter-inside-outside",
+            "evidence": "same regional clock; interior rainMultiplier=0.010; exterior rainMultiplier=1.000",
+            "passed": true
+        },
+        {
+            "name": "refuge-all-visible-water-sources-bounded",
+            "evidence": "water meshes=3; directly bound freshwater meshes=1; conservative highest surface=6.726; floor=7.800; ingress=7.800; regional river/sea and elevated freshwater basin both included",
+            "passed": true
+        },
+        {
+            "name": "refuge-removed-roof-withholds-regional-credit",
+            "evidence": "removed authored roof; rainMultiplier=1.000",
+            "passed": true
+        },
+        {
+            "name": "refuge-storm-hearth-follows-regional-weather",
+            "evidence": "storm local rain=0.267; wind=20.00; allowed=False; lit=False; reason=Ignition refused: unsafe, wet, windy or empty",
+            "passed": true
+        },
+        {
+            "name": "refuge-raised-water-invalidates-fire-and-flood",
+            "evidence": "temporary basin upper=8.800; restored upper=6.726; rendered geometry restored before subsequent player checks",
+            "passed": true
+        },
+        {
+            "name": "refuge-regional-pause-freezes-hearth",
+            "evidence": "regional paused; fireTick=1460->1460; weatherTick=401->401; lit=True; burning=True; reason=Contained fire; geometry=True; water=True",
+            "passed": true
+        },
+        {
+            "name": "refuge-discoverable",
+            "evidence": "Authored geometry above terrain, registered as a non-pickup place; this check does not verify refuge-discovery memory.",
+            "passed": true
+        },
+        {
+            "name": "corrected-club-uneven-terrain-clearance",
+            "evidence": "80 uphill/downhill pose samples plus 80 continuous CharacterController traversal samples; actual/expected layer8/10 ray hits=21120/21120; missingStates=none; slope=7.1deg at (-148.00, 21.82, -40.00); cumulative traversal=2.80m; minimum=0.012m at CrouchWalk-uphill-phase1; visual hand fit remains separate review",
+            "passed": true
+        },
+        {
+            "name": "river-carp-performance-stable",
+            "evidence": "Clean FPS distribution: min=17.9, max=19.8, mean=19.3, 99th%=17.9 across 48 frames",
+            "passed": true
+        },
+        {
+            "name": "fishing-runtime-components-present",
+            "evidence": "school and fishing interaction present",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-rod-equipped-in-right-hand",
+            "evidence": "Right hand holds fishing rod",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-cast-initiated",
+            "evidence": "Fishing cast is active",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-catch-transferred-to-left-hand",
+            "evidence": "Catch transferred to left hand (hand-left)",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-rod-retained-in-right-hand",
+            "evidence": "Right hand firmly retains fishing rod while left hand holds catch",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-catch-stored-in-basket",
+            "evidence": "Stored catch into basket: stored-in-container",
+            "passed": true
+        },
+        {
+            "name": "e2e-fishing-rod-still-retained-after-store",
+            "evidence": "Offhand catch stored into basket, right hand rod retained",
+            "passed": true
+        },
+        {
+            "name": "no-runtime-errors",
+            "evidence": "0 recorded errors",
+            "passed": true
+        }
+    ],
+    "captures": [
+        "01-default-coastal-inhabitant.png",
+        "01b-spacious-canyon-vista.png",
+        "01b-canyon-horizon-full-same-pose.png",
+        "01b-all-water-renderers-off-same-pose.png",
+        "01b-sky-backdrop-off-canyon-same-pose.png",
+        "01c-readable-berry-bush.png",
+        "01d-terrain-fitted-freshwater-seep.png",
+        "01e-distant-giant-bank-same-orientation.png",
+        "01e-distant-giant-forward-50m-same-orientation.png",
+        "01e-distant-giant-canyon-mouth.png",
+        "01e-distant-giant-high-lookout.png",
+        "01d-shallow-bed-caustics-a.png",
+        "01e-shallow-bed-caustics-b.png",
+        "01g-scene-reflection-off.png",
+        "01h-scene-reflection-on.png",
+        "01h-planar-reflection-source.png",
+        "01j-main-opaque-source.png",
+        "01k-physical-depth.png",
+        "01l-measured-depth-mask.png",
+        "01m-transmission-weight.png",
+        "01n-final-water-matched.png",
+        "01i-offshore-islands-sea-vista.png",
+        "01f-shallow-bed-overhead.png",
+        "02-complete-autonomy-cycle.png",
+        "03-possessed-look.png",
+        "04-paused-options.png",
+        "04b-pointer-controls.png",
+        "05-fullscreen.png",
+        "06-weather-Clear.png",
+        "06-weather-Rain.png",
+        "06-weather-Cold.png",
+        "06-weather-Storm.png",
+        "07-refuge-entry.png",
+        "07b-refuge-actor-inside.png",
+        "08-clothing-Idle-0.png",
+        "08-clothing-Idle-1.png",
+        "08-clothing-Idle-2.png",
+        "08-clothing-Idle-3.png",
+        "08-clothing-Crouch-0.png",
+        "08-clothing-Crouch-1.png",
+        "08-clothing-Crouch-2.png",
+        "08-clothing-Crouch-3.png",
+        "08-clothing-Sit-0.png",
+        "08-clothing-Sit-1.png",
+        "08-clothing-Sit-2.png",
+        "08-clothing-Sit-3.png",
+        "09-club-Idle-uphill.png",
+        "09b-club-full-Idle-uphill.png",
+        "09-club-Walk-uphill.png",
+        "09b-club-full-Walk-uphill.png",
+        "09-club-Crouch-uphill.png",
+        "09b-club-full-Crouch-uphill.png",
+        "09-club-CrouchWalk-uphill.png",
+        "09b-club-full-CrouchWalk-uphill.png",
+        "09-club-Pickup-uphill.png",
+        "09b-club-full-Pickup-uphill.png",
+        "09-club-SitEnter-uphill.png",
+        "09b-club-full-SitEnter-uphill.png",
+        "09-club-Sit-uphill.png",
+        "09b-club-full-Sit-uphill.png",
+        "09-club-SitExit-uphill.png",
+        "09b-club-full-SitExit-uphill.png",
+        "09-club-Idle-downhill.png",
+        "09b-club-full-Idle-downhill.png",
+        "09-club-Walk-downhill.png",
+        "09b-club-full-Walk-downhill.png",
+        "09-club-Crouch-downhill.png",
+        "09b-club-full-Crouch-downhill.png",
+        "09-club-CrouchWalk-downhill.png",
+        "09b-club-full-CrouchWalk-downhill.png",
+        "09-club-Pickup-downhill.png",
+        "09b-club-full-Pickup-downhill.png",
+        "09-club-SitEnter-downhill.png",
+        "09b-club-full-SitEnter-downhill.png",
+        "09-club-Sit-downhill.png",
+        "09b-club-full-Sit-downhill.png",
+        "09-club-SitExit-downhill.png",
+        "09b-club-full-SitExit-downhill.png",
+        "10a-refuge-descent-boulders.png",
+        "10b-hollow-log-terrace-cavity.png",
+        "10c-waterline-riparian-sedges.png",
+        "10d-waterfall-south-cascade.png",
+        "carp-swimming-frames\\carp-swim-001.png",
+        "carp-swimming-frames\\carp-swim-002.png",
+        "carp-swimming-frames\\carp-swim-003.png",
+        "carp-swimming-frames\\carp-swim-004.png",
+        "carp-swimming-frames\\carp-swim-005.png",
+        "carp-swimming-frames\\carp-swim-006.png",
+        "carp-swimming-frames\\carp-swim-007.png",
+        "carp-swimming-frames\\carp-swim-008.png",
+        "carp-swimming-frames\\carp-swim-009.png",
+        "carp-swimming-frames\\carp-swim-010.png",
+        "carp-swimming-frames\\carp-swim-011.png",
+        "carp-swimming-frames\\carp-swim-012.png",
+        "carp-swimming-frames\\carp-swim-013.png",
+        "carp-swimming-frames\\carp-swim-014.png",
+        "carp-swimming-frames\\carp-swim-015.png",
+        "carp-swimming-frames\\carp-swim-016.png",
+        "carp-swimming-frames\\carp-swim-017.png",
+        "carp-swimming-frames\\carp-swim-018.png",
+        "carp-swimming-frames\\carp-swim-019.png",
+        "carp-swimming-frames\\carp-swim-020.png",
+        "carp-swimming-frames\\carp-swim-021.png",
+        "carp-swimming-frames\\carp-swim-022.png",
+        "carp-swimming-frames\\carp-swim-023.png",
+        "carp-swimming-frames\\carp-swim-024.png"
+    ],
+    "errors": [],
+    "decisionEvents": [
+        {
+            "sequence": 1,
+            "tick": 1,
+            "phase": "perception",
+            "perception": "",
+            "goal": "",
+            "action": "sense-radius-and-line-of-sight",
+            "result": "0 visible; 0 occluded",
+            "fallback": "",
+            "position": {
+                "x": -136.17478942871094,
+                "y": 19.92967987060547,
+                "z": -39.55488204956055
+            }
+        },
+        {
+            "sequence": 2,
+            "tick": 382,
+            "phase": "DECISION",
+            "perception": "",
+            "goal": "explore north",
+            "action": "Deterministic survival rule",
+            "result": "explore north",
+            "fallback": "",
+            "position": {
+                "x": -136.17478942871094,
+                "y": 19.881742477416992,
+                "z": -39.55488204956055
+            }
+        },
+        {
+            "sequence": 3,
+            "tick": 382,
+            "phase": "ROUTE",
+            "perception": "",
+            "goal": "explore north",
+            "action": "Plot waypoint route",
+            "result": "18 waypoints queued",
+            "fallback": "",
+            "position": {
+                "x": -136.17478942871094,
+                "y": 19.881742477416992,
+                "z": -39.55488204956055
+            }
+        }
+    ]
+}

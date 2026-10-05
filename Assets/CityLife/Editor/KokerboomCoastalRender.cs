@@ -291,7 +291,7 @@ namespace CityLife.World.Editor
             var mesh=new Mesh{name="Procedural distant galaxy sky plane"};
             Vector3[] vertices={new Vector3(-2000,-400,600),new Vector3(2000,-400,600),new Vector3(2000,1200,600),new Vector3(-2000,1200,600)};
             mesh.vertices=vertices;
-            var uv=new Vector2[4];for(int i=0;i<4;i++)uv[i]=new Vector2((vertices[i].x+650)/1300,(vertices[i].y+60)/480);
+            var uv=new Vector2[]{new Vector2(0,0),new Vector2(1,0),new Vector2(1,1),new Vector2(0,1)};
             mesh.uv=uv;
             mesh.triangles=new[]{0,2,1,0,3,2};mesh.RecalculateBounds();owned.Add(mesh);
             var sky=new GameObject("Distant galaxy - procedural dust and stellar band");sky.transform.SetParent(backdrop.transform,false);
@@ -301,8 +301,8 @@ namespace CityLife.World.Editor
 
         private const string CoastalGalaxyShader=@"
 Shader ""Hidden/Starfall/CoastalGalaxy"" {
-SubShader {Tags {""RenderPipeline""=""UniversalPipeline"" ""Queue""=""Background""}
-Pass {Cull Off ZWrite Off
+SubShader {Tags {""RenderPipeline""=""UniversalPipeline"" ""Queue""=""Background+10""}
+Pass {Cull Off ZWrite Off Blend SrcAlpha OneMinusSrcAlpha
 HLSLPROGRAM
 #pragma vertex Vert
 #pragma fragment Frag
@@ -317,7 +317,9 @@ float band=exp(-y*y*180)*saturate(dust*.8-.15);float r=(y+.013*(n(uv*37)-.5))*85
 float3 c=lerp(float3(.006,.016,.052),float3(.022,.058,.14),saturate(1-uv.y));
 c+=band*(1-rift)*lerp(float3(.09,.13,.36),float3(.20,.36,.57),n(uv*39));
 float star=pow(saturate(n(uv*2200)),85)*.9;c+=star*float3(.72,.85,1);
-return half4(c,1);}
+float2 edgeDist=min(uv,1.0-uv);
+float edgeAlpha=smoothstep(0.0,0.18,min(edgeDist.x,edgeDist.y));
+return half4(c,edgeAlpha);}
 ENDHLSL
 }}}";
     }

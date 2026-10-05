@@ -1,0 +1,2151 @@
+{
+    "status": "FAIL",
+    "version": "0.0.11-survival.1",
+    "buildGuid": "eeb83162d0c24bccbdceb31af9d5aaf2",
+    "scope": "Real HUD Input System submission and normal player simulation; isolated saves",
+    "automatedAudioVolume": 0.0,
+    "consumedFishId": "river-carp-19",
+    "storedFishId": "",
+    "storageBasketId": "",
+    "nutritionAfterEating": 8777,
+    "checks": [
+        "HUD directive completed: go fish",
+        "go fish landed river-carp-19",
+        "HUD directive completed: eat catch",
+        "eat catch removed exact fish and increased nutrition"
+    ],
+    "failures": [
+        "go fish then store: command-cancelled: command-failed-no-reachable-bank",
+        "Second catch was not transferred to basket storage."
+    ],
+    "samples": [
+        {
+            "seconds": 1.8662796020507813,
+            "command": "go fish",
+            "step": "Equip fishing rod",
+            "status": "Approaching rod (9.7m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(23.64, -2.46, -8.27) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(22.48, -2.39, -6.02) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.04, -2.31, -3.53) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(23.45, -2.49, 2.45) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.445396423339844,
+                "y": -1.9846224784851074,
+                "z": -9.109209060668945
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 34.445396423339844,
+                "y": -1.6740654706954956,
+                "z": -22.109209060668945
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.3646225929260254,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 2.8846917152404785,
+            "command": "go fish",
+            "step": "Equip fishing rod",
+            "status": "Approaching rod (7.8m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(24.79, -2.43, -8.21) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(22.51, -2.49, -7.09) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.81, -2.35, -4.37) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(23.84, -2.70, 1.39) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 19.408824920654297,
+                "y": -1.9733089208602905,
+                "z": -21.724456787109375
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 34.4088249206543,
+                "y": -1.6369905471801758,
+                "z": -24.724456787109375
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.353308916091919,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 3.9030189514160156,
+            "command": "go fish",
+            "step": "Equip fishing rod",
+            "status": "Approaching rod (5.0m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(25.98, -2.41, -7.96) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(23.63, -2.51, -7.52) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.96, -2.37, -4.24) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(24.81, -2.90, 0.74) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 19.72616958618164,
+                "y": -1.9613453149795532,
+                "z": -21.2876033782959
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 36.72616958618164,
+                "y": -1.5856856107711792,
+                "z": -26.2876033782959
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.3413453102111816,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 4.920478820800781,
+            "command": "go fish",
+            "step": "Equip fishing rod",
+            "status": "Approaching rod (2.3m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "fishing-camp-basket-v1, tool-fishing-rod-01",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(26.93, -2.38, -7.49) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(24.84, -2.53, -7.49) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.59, -2.38, -3.22) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.88, -2.92, 1.23) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 19.219318389892578,
+                "y": -1.9494067430496216,
+                "z": -21.634428024291992
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 38.21931838989258,
+                "y": -1.5209187269210815,
+                "z": -28.634428024291992
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.32940673828125,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 4.985915184020996,
+            "command": "go fish",
+            "step": "Select active fish & calculate casting bank",
+            "status": "Seeking river to spot active fish (16.1m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "fishing-camp-basket-v1, tool-fishing-rod-01",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(26.96, -2.38, -7.46) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(24.91, -2.53, -7.48) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.61, -2.38, -3.15) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.92, -2.92, 1.28) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 19.225540161132813,
+                "y": -1.948740839958191,
+                "z": -21.651430130004883
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 38.22554016113281,
+                "y": -1.5204346179962158,
+                "z": -28.651430130004883
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.3287408351898193,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 5.923887252807617,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (29.9m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-17, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(27.26, -2.34, -7.01) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(25.94, -2.50, -7.24) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.75, -2.39, -2.11) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(26.39, -2.86, 2.21) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.25021743774414,
+                "y": -1.9384733438491821,
+                "z": -7.041306495666504
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 36.117191314697266,
+                "y": -1.5454366207122803,
+                "z": -29.01264190673828
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.3184733390808105,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 6.9289093017578125,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (24.4m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(27.19, -2.31, -6.83) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.90, -2.40, -6.97) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.63, -2.40, -0.96) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(26.57, -2.81, 3.36) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.203876495361328,
+                "y": -1.9271823167800903,
+                "z": -6.899447441101074
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 35.296695709228516,
+                "y": -1.652911901473999,
+                "z": -23.088375091552734
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.3071823120117188,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 7.964534759521484,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (21.5m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(27.20, -2.37, -5.77) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(26.90, -2.34, -5.63) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.22, -2.42, 0.22) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(26.45, -2.82, 4.60) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.720252990722656,
+                "y": -1.9151456356048584,
+                "z": -9.671321868896484
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 36.720252990722656,
+                "y": -1.673450231552124,
+                "z": -20.671321868896484
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2951455116271973,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 8.997934341430664,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (17.7m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(27.15, -2.38, -4.53) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(26.37, -2.40, -4.51) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.50, -2.43, 1.22) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(26.05, -2.90, 5.76) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.288143157958984,
+                "y": -1.9032268524169922,
+                "z": -9.358259201049805
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 36.288143157958984,
+                "y": -1.7372238636016846,
+                "z": -16.358259201049805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.28322696685791,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 10.027894020080566,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (16.8m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(26.85, -2.42, -3.33) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(25.56, -2.44, -3.58) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.46, -2.44, 1.86) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.33, -2.99, 6.75) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 28.39935302734375,
+                "y": -1.8914151191711426,
+                "z": -7.952728271484375
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 35.39935302734375,
+                "y": -1.7584229707717896,
+                "z": -14.952728271484375
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2714152336120605,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 11.045465469360352,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (13.5m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "fishing-camp-basket-v1, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(26.29, -2.44, -2.25) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(24.48, -2.43, -3.03) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(23.25, -2.42, 1.86) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(24.29, -3.05, 7.37) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 28.230709075927734,
+                "y": -1.8798152208328247,
+                "z": -9.362382888793945
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 37.230709075927734,
+                "y": -1.7712516784667969,
+                "z": -12.362382888793945
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.259815216064453,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 12.0674467086792,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (11.0m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(25.45, -2.44, -1.36) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(23.27, -2.40, -3.06) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(22.24, -2.41, 1.19) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(23.09, -3.08, 7.32) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 28.887805938720703,
+                "y": -1.8682613372802734,
+                "z": -7.259302139282227
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 35.8878059387207,
+                "y": -1.816604733467102,
+                "z": -8.259302139282227
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2482614517211914,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 13.0941801071167,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (6.3m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(24.33, -2.43, -0.89) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(22.24, -2.40, -3.72) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.61, -2.41, 0.14) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(22.12, -3.10, 6.59) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.726543426513672,
+                "y": -1.8567404747009277,
+                "z": -5.493590354919434
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 38.72654342651367,
+                "y": -1.796797275543213,
+                "z": -4.493590354919434
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2367405891418457,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 14.120482444763184,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (2.8m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(23.13, -2.44, -1.07) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(21.54, -2.40, -4.72) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.33, -2.41, -1.05) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.55, -2.44, 4.98) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 28.32238006591797,
+                "y": -1.8453282117843628,
+                "z": -3.1554012298583984
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 41.32238006591797,
+                "y": -1.5838212966918945,
+                "z": -2.1554012298583984
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.225328207015991,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 15.163750648498535,
+            "command": "go fish",
+            "step": "Route to casting bank",
+            "status": "Routing to casting bank (2.5m)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(22.17, -2.43, -1.86) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(22.16, -2.44, 3.89) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.35, -2.40, -2.30) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.37, -3.12, 4.26) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.977397918701172,
+                "y": -1.8338451385498047,
+                "z": -2.4348270893096924
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 40.97739791870117,
+                "y": -1.5801515579223633,
+                "z": -1.4348270893096924
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2138452529907227,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 15.54316234588623,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Executing: Catch a fish - Step 4/6: Face fish & cast fishing line",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(22.48, -2.44, 3.57) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(21.92, -2.43, -2.24) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.44, -2.40, -2.75) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.38, -3.13, 3.81) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.743392944335938,
+                "y": -1.8297014236450195,
+                "z": -1.242881417274475
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 42.74339294433594,
+                "y": -1.3587779998779297,
+                "z": -0.24288146197795868
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.2097015380859375,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 16.559326171875,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Watching for a visible fish in casting range",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(21.92, -2.40, -3.81) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(21.50, -2.42, -3.33) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(23.52, -2.43, 3.07) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(21.00, -2.34, -7.40) reserved=True world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.8879337310791,
+                "y": -1.81911301612854,
+                "z": -3.7543535232543945
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 43.0240364074707,
+                "y": -1.3587779998779297,
+                "z": -6.728664875030518
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.199112892150879,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 17.601078033447266,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, fishing-camp-basket-v1, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(24.71, -2.39, 3.35) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(22.69, -2.40, -4.78) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(22.03, -2.33, -8.05) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(21.32, -2.41, -4.56) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.982032775878906,
+                "y": -1.8079586029052734,
+                "z": -6.30144739151001
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 42.982032775878906,
+                "y": -1.6033759117126465,
+                "z": -5.30144739151001
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.1879587173461914,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 18.6363525390625,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(25.50, -2.33, 4.29) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(23.81, -2.38, -5.28) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(23.23, -3.19, 0.86) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(23.26, -2.32, -8.24) reserved=True world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.92668914794922,
+                "y": -1.7969951629638672,
+                "z": -1.2974624633789063
+            },
+            "selectedBank": {
+                "x": 43.0,
+                "y": -1.372829794883728,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 42.92668914794922,
+                "y": -1.3482263088226318,
+                "z": -0.2974624037742615
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.176995277404785,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 20.028820037841797,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(24.89, -2.34, -5.02) reserved=True world=starfall.integrated-coastal.v1; river-carp-17 pos=(24.39, -2.28, -8.23) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(24.34, -3.13, 0.87) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(22.48, -2.41, -6.52) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 24.834009170532227,
+                "y": -1.7871112823486328,
+                "z": -5.059936046600342
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 42.390357971191406,
+                "y": -1.5114262104034424,
+                "z": -6.19175910949707
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.167111396789551,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 21.059452056884766,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(25.66, -2.25, -8.02) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.74, -2.29, -4.07) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(23.68, -2.39, -6.97) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.32, -2.99, 1.66) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 25.53618049621582,
+                "y": -1.776043176651001,
+                "z": -8.055377006530762
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 35.82378005981445,
+                "y": -1.8246076107025146,
+                "z": -6.842741012573242
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.15604305267334,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 22.097148895263672,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(26.81, -2.23, -7.55) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.12, -2.29, -2.89) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(24.92, -2.35, -7.05) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.81, -2.89, 2.79) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 26.635311126708984,
+                "y": -1.7655237913131714,
+                "z": -7.6513166427612305
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 30.129159927368164,
+                "y": -1.8191382884979248,
+                "z": -6.0989813804626465
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.1455237865448,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 23.14084243774414,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "fishing-camp-basket-v1, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(27.27, -2.18, -6.90) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.10, -2.30, -6.94) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.16, -2.30, -1.64) reserved=True world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.93, -2.85, 4.03) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 27.0,
+                "y": -1.7551225423812866,
+                "z": -9.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 27.899398803710938,
+                "y": -1.8509684801101685,
+                "z": -12.177754402160645
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.135122537612915,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 24.166259765625,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "berry-food-7, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(27.14, -2.17, -6.53) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.70, -2.27, -5.90) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.89, -2.30, -0.45) reserved=True world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.72, -2.89, 5.24) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 24.0,
+                "y": -1.7450999021530151,
+                "z": -9.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 25.075103759765625,
+                "y": -2.2891135215759277,
+                "z": -10.218657493591309
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.1250998973846436,
+                "z": 0.0
+            },
+            "swimming": true,
+            "baitEaten": false
+        },
+        {
+            "seconds": 25.198394775390625,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(26.79, -2.21, -5.34) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.81, -2.26, -4.66) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.28, -2.30, 0.63) reserved=True world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.17, -2.96, 6.34) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 26.816585540771484,
+                "y": -1.7351473569869995,
+                "z": -5.403683662414551
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 25.014888763427734,
+                "y": -2.0945940017700195,
+                "z": -12.342098236083984
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.115147352218628,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 26.229381561279297,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(26.19, -2.26, -4.26) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.60, -2.28, -3.45) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.32, -2.30, 1.39) reserved=True world=starfall.integrated-coastal.v1; river-fish-12 pos=(24.25, -3.01, 7.15) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 24.0,
+                "y": -1.725426197052002,
+                "z": -12.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 25.518402099609375,
+                "y": -2.124669075012207,
+                "z": -11.263216972351074
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.10542631149292,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 27.270183563232422,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-13, river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(25.31, -2.29, -3.40) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.09, -2.30, -2.32) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(23.11, -2.30, 1.51) reserved=True world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.25, -2.32, 7.17) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 3.2978787422180176,
+                "y": -1.7158421277999878,
+                "z": -25.711599349975586
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 20.21964454650879,
+                "y": -2.1817309856414795,
+                "z": -12.650470733642578
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.095842123031616,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 28.314533233642578,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(24.14, -2.28, -2.97) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(22.06, -2.28, 0.84) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(25.24, -2.31, -1.40) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(3.17, -2.29, -24.34) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 22.20079803466797,
+                "y": -1.7063984870910645,
+                "z": 0.986781656742096
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 14.310797691345215,
+                "y": -2.193190574645996,
+                "z": -12.175141334533691
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0863986015319824,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 29.352230072021484,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-13, river-carp-14, river-carp-15, river-fish-11",
+            "nearbyFishDiagnostic": "river-carp-17 pos=(22.93, -2.25, -3.20) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.46, -2.27, -0.23) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(24.10, -2.30, -0.94) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.43, -2.31, 4.70) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 3.7163736820220947,
+                "y": -1.6972309350967407,
+                "z": -23.989208221435547
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 14.409592628479004,
+                "y": -2.4216856956481934,
+                "z": -10.566030502319336
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.077230930328369,
+                "z": 0.0
+            },
+            "swimming": true,
+            "baitEaten": false
+        },
+        {
+            "seconds": 30.387496948242188,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(3.93, -2.25, -22.52) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(1.57, -2.21, -22.52) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(21.99, -2.25, -4.00) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(21.22, -2.27, -1.45) reserved=True world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.224637985229492,
+                "y": -1.688321828842163,
+                "z": -1.3855220079421997
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 10.760744094848633,
+                "y": -2.1750104427337646,
+                "z": -12.453124046325684
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.068321704864502,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 31.407997131347656,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(3.40, -2.18, -21.44) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(0.46, -2.19, -22.03) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-4.75, -2.22, -22.04) reserved=False world=starfall.integrated-coastal.v1; river-fish-11 pos=(-3.84, -3.03, -24.18) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.422008514404297,
+                "y": -1.679762840270996,
+                "z": -5.003294944763184
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 5.568825721740723,
+                "y": -1.9929999113082886,
+                "z": -11.776366233825684
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.059762954711914,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 32.408897399902344,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(2.40, -2.14, -20.80) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-0.65, -2.24, -22.38) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-4.52, -2.26, -23.22) reserved=False world=starfall.integrated-coastal.v1; river-fish-11 pos=(-4.11, -3.06, -25.35) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 0.0,
+                "y": -1.6715906858444214,
+                "z": -15.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -0.008423492312431335,
+                "y": -1.9705743789672852,
+                "z": -13.142646789550781
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.05159068107605,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 33.464317321777344,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-12, river-carp-13, river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(1.17, -2.13, -20.54) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-1.36, -2.26, -23.41) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-3.93, -2.27, -24.33) reserved=False world=starfall.integrated-coastal.v1; river-fish-11 pos=(-4.07, -3.08, -26.61) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 1.2979871034622192,
+                "y": -1.6632304191589355,
+                "z": -20.550966262817383
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -3.9264726638793945,
+                "y": -1.9809120893478394,
+                "z": -11.796764373779297
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0432305335998535,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 34.51789093017578,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-12, river-carp-13, river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(-0.10, -2.12, -20.59) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-1.62, -2.26, -24.64) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-2.97, -2.27, -25.14) reserved=False world=starfall.integrated-coastal.v1; river-fish-11 pos=(-3.70, -3.08, -27.82) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 0.09987456351518631,
+                "y": -1.6551177501678467,
+                "z": -20.560022354125977
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -4.7376837730407715,
+                "y": -1.8449902534484863,
+                "z": -10.894493103027344
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0351176261901855,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 35.56786346435547,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-12, river-carp-13, river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(-1.31, -2.14, -20.76) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-1.75, -2.28, -25.36) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-1.52, -2.26, -25.89) reserved=False world=starfall.integrated-coastal.v1; river-carp-12 pos=(1.06, -2.35, -27.26) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": -1.2532061338424683,
+                "y": -1.6473056077957153,
+                "z": -20.728715896606445
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -6.3590874671936035,
+                "y": -1.9932169914245605,
+                "z": -9.681936264038086
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0273056030273438,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 36.5781364440918,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-12, river-carp-13, river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(-1.86, -2.24, -21.81) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-0.65, -2.29, -24.88) reserved=False world=starfall.integrated-coastal.v1; river-carp-12 pos=(0.71, -2.34, -26.10) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-1.10, -2.27, -27.03) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": -1.846476435661316,
+                "y": -1.640040636062622,
+                "z": -21.742630004882813
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -7.083525657653809,
+                "y": -1.850135326385498,
+                "z": -8.727799415588379
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.020040512084961,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 37.61937713623047,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-13 pos=(-1.87, -2.27, -23.05) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(0.15, -2.25, -23.93) reserved=False world=starfall.integrated-coastal.v1; river-carp-12 pos=(0.05, -2.33, -25.04) reserved=False world=starfall.integrated-coastal.v1; river-carp-14 pos=(-0.32, -2.27, -27.99) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": -3.0,
+                "y": -1.6328026056289673,
+                "z": -12.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -3.9322519302368164,
+                "y": -0.5634344816207886,
+                "z": -8.992780685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0128026008605957,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 38.953697204589844,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-15 pos=(0.69, -2.20, -23.03) reserved=False world=starfall.integrated-coastal.v1; river-carp-13 pos=(-1.62, -2.28, -24.08) reserved=False world=starfall.integrated-coastal.v1; river-carp-12 pos=(-0.77, -2.32, -24.39) reserved=False world=starfall.integrated-coastal.v1; river-fish-13 pos=(-18.49, -3.03, 7.52) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": -3.0,
+                "y": -1.6269021034240723,
+                "z": -12.0
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": -3.6016907691955566,
+                "y": 0.244886115193367,
+                "z": -5.963438987731934
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -2.0069022178649902,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 39.99612045288086,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-14, river-carp-15, river-fish-11, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-15 pos=(0.81, -2.12, -21.76) reserved=False world=starfall.integrated-coastal.v1; river-carp-12 pos=(-2.03, -2.31, -24.15) reserved=False world=starfall.integrated-coastal.v1; river-carp-13 pos=(-1.01, -2.28, -25.22) reserved=False world=starfall.integrated-coastal.v1; river-fish-11 pos=(0.68, -3.14, -27.57) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 0.8295596837997437,
+                "y": -1.6199085712432861,
+                "z": -21.821239471435547
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 1.8332996368408203,
+                "y": -0.03129880130290985,
+                "z": -4.82144832611084
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -1.9999085664749146,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 41.03310775756836,
+            "command": "go fish",
+            "step": "Face fish & cast fishing line",
+            "status": "Fish moved: approaching a safe casting position",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-fish-11, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(22.11, -2.21, 8.79) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(0.08, -2.05, -20.79) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.49, -2.19, 0.27) reserved=True world=starfall.integrated-coastal.v1; river-fish-12 pos=(24.78, -2.93, 6.71) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 25.55860137939453,
+                "y": -1.6135035753250122,
+                "z": 0.16263429820537567
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 5.515130519866943,
+                "y": -0.031589850783348083,
+                "z": -1.7332632541656494
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 0.0,
+                "y": -1.9935035705566406,
+                "z": 0.0
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 42.070919036865234,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Executing: Catch a fish - Step 5/6: Wait for fish bite & strike",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Casting",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(21.45, -2.20, 7.75) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.63, -2.18, 1.16) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(23.70, -2.97, 7.28) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.69, -2.17, -3.76) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.469934463500977,
+                "y": -1.6073970794677734,
+                "z": 7.812798976898193
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.3133225440979,
+                "y": 0.6132833361625671,
+                "z": -2.285748243331909
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9873970746994019,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 43.093563079833984,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(21.19, -2.21, 6.61) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(23.53, -2.19, 1.51) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(22.57, -2.99, 7.10) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.29, -2.18, -2.66) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.200481414794922,
+                "y": -1.6019043922424316,
+                "z": 6.74432897567749
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.98190438747406,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 44.13035202026367,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(22.38, -2.19, 1.10) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.24, -2.22, 5.37) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.69, -3.00, 6.23) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(25.43, -2.18, -3.48) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 22.540746688842773,
+                "y": -1.5963618755340576,
+                "z": 1.2116316556930542
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.976361870765686,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 45.165184020996094,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(21.62, -2.18, 0.13) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.62, -2.21, 4.20) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.26, -3.00, 5.07) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(24.30, -2.18, -2.98) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.713348388671875,
+                "y": -1.5911202430725098,
+                "z": 0.30267685651779175
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9711202383041382,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 46.19828414916992,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(21.27, -2.17, -1.05) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.18, -3.01, 3.84) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(23.09, -2.16, -3.13) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(22.37, -2.21, 3.22) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.31226921081543,
+                "y": -1.586195707321167,
+                "z": -0.7968123555183411
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9661957025527954,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 47.227142333984375,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(21.24, -2.17, -2.28) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(22.10, -2.15, -3.86) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(22.27, -2.19, -1.68) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(21.44, -3.03, 2.63) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.234079360961914,
+                "y": -1.5815699100494385,
+                "z": -2.221430778503418
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 22.786012649536133,
+                "y": -2.1955697536468506,
+                "z": 3.308121681213379
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.961569905281067,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 48.24055862426758,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(21.52, -2.18, -3.46) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(21.63, -2.20, -2.71) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(21.46, -2.16, -4.89) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(22.02, -3.05, 1.57) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.493581771850586,
+                "y": -1.5773239135742188,
+                "z": -3.4045844078063965
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 22.542129516601563,
+                "y": -2.1517624855041504,
+                "z": 4.142873287200928
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9573239088058472,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 49.26087951660156,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(21.30, -2.20, -3.89) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(20.93, -2.16, -5.99) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(22.19, -2.18, -4.48) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(22.97, -3.08, 0.83) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.315963745117188,
+                "y": -1.5733517408370972,
+                "z": -3.8250961303710938
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 22.296730041503906,
+                "y": -2.1067357063293457,
+                "z": 4.982842445373535
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9533517360687256,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 50.269161224365234,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(21.33, -2.20, -5.09) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(20.87, -2.13, -7.17) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(23.10, -2.17, -5.26) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(22.05, -2.06, 5.81) reserved=True world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.315174102783203,
+                "y": -1.569723129272461,
+                "z": -5.029654502868652
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 22.054088592529297,
+                "y": -2.061093330383301,
+                "z": 5.81335973739624
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9497231245040894,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 51.27961349487305,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(21.92, -2.19, -6.13) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(21.74, -2.11, -7.96) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.81, -2.01, 6.65) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(24.28, -2.15, -5.42) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.832162857055664,
+                "y": -1.5663877725601196,
+                "z": -6.0423994064331055
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 21.81096839904785,
+                "y": -2.013878583908081,
+                "z": 6.645513534545898
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.946387767791748,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 52.28545379638672,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Floating)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Floating",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-16 pos=(22.93, -2.20, -6.78) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(22.92, -2.12, -8.22) reserved=False world=starfall.integrated-coastal.v1; river-carp-19 pos=(21.57, -1.96, 7.47) reserved=True world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.30, -2.13, -4.81) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 22.808427810668945,
+                "y": -1.5633714199066162,
+                "z": -6.732280254364014
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 21.569181442260742,
+                "y": -1.9644720554351807,
+                "z": 7.47309684753418
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9433714151382446,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 53.300079345703125,
+            "command": "go fish",
+            "step": "Wait for fish bite & strike",
+            "status": "Watching bobber (Nibble)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Nibble",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(21.47, -1.94, 7.81) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(24.11, -2.21, -7.05) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(24.13, -2.11, -8.25) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(25.92, -2.10, -3.77) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.469934463500977,
+                "y": -1.5606346130371094,
+                "z": 7.812798976898193
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 21.469934463500977,
+                "y": -1.9406346082687378,
+                "z": 7.812798976898193
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9406346082687378,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": false
+        },
+        {
+            "seconds": 54.108131408691406,
+            "command": "go fish",
+            "step": "Land catch into hand",
+            "status": "Fishing in progress (Reeling)...",
+            "receipt": "command-started: Catch a fish",
+            "fishing": "Reeling",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-19 pos=(20.39, -1.24, 7.07) reserved=True world=starfall.integrated-coastal.v1; river-carp-16 pos=(25.08, -2.17, -7.05) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(25.10, -2.08, -8.15) reserved=False world=starfall.integrated-coastal.v1; river-carp-18 pos=(26.14, -2.09, -2.83) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 21.469934463500977,
+                "y": -1.5586764812469482,
+                "z": 7.812798976898193
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 20.3886661529541,
+                "y": -1.2396605014801025,
+                "z": 7.0747270584106445
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9386764764785767,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": true
+        },
+        {
+            "seconds": 54.978885650634766,
+            "command": "go fish",
+            "step": "",
+            "status": "Command completed: Catch a fish",
+            "receipt": "command-completed: Catch a fish",
+            "fishing": "Landed",
+            "interestedFish": "river-carp-19",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(26.16, -2.10, -1.84) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.01, -2.11, -7.00) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(26.05, -2.05, -7.91) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.52, -2.82, 5.60) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 26.171064376831055,
+                "y": -1.5568912029266357,
+                "z": -2.001760721206665
+            },
+            "selectedBank": {
+                "x": 8.0,
+                "y": -0.01426953636109829,
+                "z": -1.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 7.966534614562988,
+                "y": 1.9442129135131836,
+                "z": -2.1975836753845215
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9368911981582642,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": true
+        },
+        {
+            "seconds": 55.35102844238281,
+            "command": "eat catch",
+            "step": "",
+            "status": "Command completed: Eat catch",
+            "receipt": "command-completed: Eat catch",
+            "fishing": "Landed",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-carp-19 [unavailable], river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(26.13, -2.10, -1.53) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.25, -2.09, -6.79) reserved=False world=starfall.integrated-coastal.v1; river-carp-17 pos=(26.35, -2.04, -7.79) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.38, -2.84, 5.88) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 26.161420822143555,
+                "y": -1.5563549995422363,
+                "z": -1.844264268875122
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9363549947738647,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": true
+        },
+        {
+            "seconds": 55.6939582824707,
+            "command": "go fish then store",
+            "step": "",
+            "status": "Command cancelled: command-failed-no-reachable-bank",
+            "receipt": "command-cancelled: command-failed-no-reachable-bank",
+            "fishing": "Idle",
+            "interestedFish": "",
+            "perception": "river-carp-16, river-carp-17, river-carp-18, river-fish-12, tool-fishing-rod-01 [unavailable]",
+            "nearbyFishDiagnostic": "river-carp-18 pos=(26.07, -2.11, -1.21) reserved=False world=starfall.integrated-coastal.v1; river-carp-16 pos=(26.44, -2.08, -6.53) reserved=False world=starfall.integrated-coastal.v1; river-fish-12 pos=(25.22, -2.85, 6.16) reserved=False world=starfall.integrated-coastal.v1; river-carp-15 pos=(-0.02, -1.97, -20.73) reserved=False world=starfall.integrated-coastal.v1",
+            "knownWater": {
+                "x": 26.085140228271484,
+                "y": -1.5558408498764038,
+                "z": -1.2768458127975464
+            },
+            "selectedBank": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "actor": {
+                "x": 7.400079250335693,
+                "y": 0.5713947415351868,
+                "z": -2.2258405685424805
+            },
+            "fish": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "bait": {
+                "x": 21.469934463500977,
+                "y": -1.9358408451080322,
+                "z": 7.812798976898193
+            },
+            "swimming": false,
+            "baitEaten": true
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+  "status": "BLOCKED",
+  "scope": "Standalone player run 2026-09-26, isolated new world",
+  "buildId": "KookerStarfallIntegrated-0.0.11-survival.1-20260926-072027",
+  "buildGuid": "c3207a7e6a8b4a62a761e4da5de733a7",
+  "audioVolume": 0.0,
+  "passedChecks": [
+    "HUD directive completed: go fish",
+    "go fish landed river-carp-18",
+    "HUD directive completed: eat catch",
+    "eat catch removed exact fish and increased nutrition"
+  ],
+  "failures": [
+    "go fish then store: command-cancelled: command-failed-no-reachable-bank",
+    "Second catch was not transferred to basket storage."
+  ],
+  "privateResultSha256": "E957017B57304BBAA891E057F889FDBFDD98ADCEC94A61AC59E91A2DA723BE89",
+  "otherPriorCandidateEvidence": "Round318 suite passed all four fresh/existing-world loop and reload cases; see historical task evidence."
+}

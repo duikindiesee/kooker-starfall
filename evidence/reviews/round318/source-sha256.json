@@ -1,0 +1,1386 @@
+[
+  {
+    "path": "Assets/CityLife/Art/Carp/Editor/CarpVisualReceipt.cs",
+    "sha256": "3B551B4FD978E7754F2D069C5539E6EF12F81BA48537C365B75E19AC50647FF2"
+  },
+  {
+    "path": "Assets/CityLife/Art/Catfish/Editor/CatfishVisualReceipt.cs",
+    "sha256": "9D651C21057CBFA4A7695756A9786518C2A667E51EA1ABB08D36AB18EF4AFAE8"
+  },
+  {
+    "path": "Assets/CityLife/Art/RiverbankPilot/Editor/RiverbankPilotAuthoring.cs",
+    "sha256": "E996050F09A9E3D8F3AF6479C28EF19AEBE841A6335D582F6F8BBE8ECFAEAC04"
+  },
+  {
+    "path": "Assets/CityLife/Editor/CharacterAssetImport.cs",
+    "sha256": "86C271A051C360B81F7421875F220E518D794CC623C648D27ADA0EAB423F1703"
+  },
+  {
+    "path": "Assets/CityLife/Editor/CharacterPreviewBuild.cs",
+    "sha256": "A1DD5E8615EFC323C9F3424D829FBB9392A04650723355378F0C3A9D130F45C9"
+  },
+  {
+    "path": "Assets/CityLife/Editor/CityLifeBuild.cs",
+    "sha256": "31E0F7E2D3B618A507CF77B4925F793B22A40C2F78AC09DE1114AE54580692F0"
+  },
+  {
+    "path": "Assets/CityLife/Editor/CoastalPlayerBuild.cs",
+    "sha256": "0665CCFD9C86929658F9C485381057E574D698A1D9FE063382D68C78EB4C3B23"
+  },
+  {
+    "path": "Assets/CityLife/Editor/CosmicPreviewBuild.cs",
+    "sha256": "069823AA58842632D2C2C9807676586709F292689A31527A0078427130989441"
+  },
+  {
+    "path": "Assets/CityLife/Editor/FishingPlayModeProbe.cs",
+    "sha256": "F14214409792EE76F0C722E7E372C135760E11B48FA34315EA707A99A43CACEE"
+  },
+  {
+    "path": "Assets/CityLife/Editor/GoFishCommandValidationTests.cs",
+    "sha256": "90FA3BC9ABD10145550F2C693176186E6DAB897FE5F06D3304A75E43E4D1DC94"
+  },
+  {
+    "path": "Assets/CityLife/Editor/HunterInspection.cs",
+    "sha256": "58870AB64ACB7806B6E73B5BE12487AEAE61FBB311E7F0D0529AC760391F5F54"
+  },
+  {
+    "path": "Assets/CityLife/Editor/HunterOutfitAuthoring.cs",
+    "sha256": "0DADDBAEC7E5A487B9C5F1922D4E9112AF551915AAE2AD8C565D755CE268C6C9"
+  },
+  {
+    "path": "Assets/CityLife/Editor/HunterPlayMode.cs",
+    "sha256": "B87B221C41B65826ED81F5B946858A062EFAE725D74DCE1886A4B8121AE062E2"
+  },
+  {
+    "path": "Assets/CityLife/Editor/IntegratedCoastalBuild.cs",
+    "sha256": "A9FB8F83D25DECFEAF17ECD284B33998FEE49E17BCE331A0438013D8A6485309"
+  },
+  {
+    "path": "Assets/CityLife/Editor/IslandValidation.cs",
+    "sha256": "40EC8D8D3A3DAAC624A7FA31993564601D52C868175D44382D79026A2B3C0314"
+  },
+  {
+    "path": "Assets/CityLife/Editor/KokerboomCoastalRender.cs",
+    "sha256": "5C6B9111FD2B8AB2E9E36B00437D53BF2AF3FF168C829C3490C2C7AEC14E20D5"
+  },
+  {
+    "path": "Assets/CityLife/Editor/KokerboomRender.cs",
+    "sha256": "6FF5E74DB711235C797A1887020ACF0C39230E8CC60A5D59DD362B1288B79672"
+  },
+  {
+    "path": "Assets/CityLife/Editor/KokerboomSourceIdentity.cs",
+    "sha256": "0869D598E22342AFCC4F49C7E19F8F7BE78776669D8514DF1F2A478144BBF1F2"
+  },
+  {
+    "path": "Assets/CityLife/Editor/KokerboomSourceRosettes.cs",
+    "sha256": "AB5FDEFF390462401EC946EB133EA416433192F1CA9A597C5D5A3EDE65D7AD19"
+  },
+  {
+    "path": "Assets/CityLife/Editor/KokerboomValidation.cs",
+    "sha256": "667CABDA5B7C4A881F5B036683051B31302CC663944BA11D2B2F523E7360D451"
+  },
+  {
+    "path": "Assets/CityLife/Editor/LocomotionSpeedValidation.cs",
+    "sha256": "7DDCB14F85AE43B32FCE6097C4C531A18054134E6DD89F86EAF2F1B21BF67FA9"
+  },
+  {
+    "path": "Assets/CityLife/Editor/NpcHybridValidation.cs",
+    "sha256": "908B4D1B92D02DC9CAE8618A0635374611811A591876C09EB869B806FA512F1C"
+  },
+  {
+    "path": "Assets/CityLife/Editor/NpcMilestoneValidation.cs",
+    "sha256": "D84313F607D2ED9642FC669DC0C3897B0F2F7EB29488FCC55FB331C346983F72"
+  },
+  {
+    "path": "Assets/CityLife/Editor/NpcPreviewStage.cs",
+    "sha256": "750B165792B8AE4E5A8025DD2575C281939955360CE15F971CA35216027CE998"
+  },
+  {
+    "path": "Assets/CityLife/Editor/PH01ImportedTupleCandidate.cs",
+    "sha256": "94387F205F6A491C10C47DE91E42FCA405296F9A49C8C0D553232D490D0F601B"
+  },
+  {
+    "path": "Assets/CityLife/Editor/PH02CrownCandidate.cs",
+    "sha256": "9B12328F9140EDC3815D68D1A9D2D8B9219356B7095D3BEF6C2D28317D89B2DD"
+  },
+  {
+    "path": "Assets/CityLife/Editor/PH02FamilyComponent.cs",
+    "sha256": "4DB45F339BB267FA2FE73EE229A8DBC997413A51E1DEBE074B4E89B95506050D"
+  },
+  {
+    "path": "Assets/CityLife/Editor/PH02FittedSupportCandidate.cs",
+    "sha256": "B2E01E44BD908132358167990178D9E0EE2F84A90270F00B31308D87B2B7FBF5"
+  },
+  {
+    "path": "Assets/CityLife/Editor/PH02ImportedCrownCandidate.cs",
+    "sha256": "47A48DBB8CB304EE915EEBB543EEBFD25EDBB5A6A9CD40945413A64CF5799EF6"
+  },
+  {
+    "path": "Assets/CityLife/Editor/RiverFishValidationTests.cs",
+    "sha256": "7FF71E9392F76AF2F7B845C0F2F1D3E1EED87660959F1692FFF271684F2F50EE"
+  },
+  {
+    "path": "Assets/CityLife/Editor/Round313Benchmark.cs",
+    "sha256": "92F49D52D3B4D193AEC25835C06F391097A30DA1BB5D214C0389780DBE26A731"
+  },
+  {
+    "path": "Assets/CityLife/Editor/StarfallMapValidation.cs",
+    "sha256": "4730701FFCB7A3CD44C7B5039FD4712072AB1E547EAC788B5603073D95ABE1FC"
+  },
+  {
+    "path": "Assets/CityLife/Editor/StarfallMemoryPlayMode.cs",
+    "sha256": "60977F9D9F06696C2BCD2771DDC2B30DF12A91F7175663951B82E56F77580948"
+  },
+  {
+    "path": "Assets/CityLife/Editor/StarfallMemoryValidation.cs",
+    "sha256": "373342F18B74D725D99EF43B506C737837380040AF3707B24D5600D3B2D1BD35"
+  },
+  {
+    "path": "Assets/CityLife/Environment/Editor/EnvironmentBuild.cs",
+    "sha256": "63CC51F175E272EA4996C811517820560885A6CD8E61DF036008AC6AFAC2582D"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentChecks.cs",
+    "sha256": "CB07078AD37271AC1CC6396443B3E741535F22EFCF17B06F87815DA148964EB8"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentModel.cs",
+    "sha256": "3B188E7DE9CA5235495DB942F7D2D18D3488970C2D9E8793625E2F141430EA90"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentMotion.cs",
+    "sha256": "C34BB059083D366B9A7E25A95A3767362C80C635C2DCEF9B40B4792FC305802A"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPhysicsChecks.cs",
+    "sha256": "86856812FA864B2AF3B3A6A34FF348A5EDEC300A84E5FB6894488E7AC1D0A05F"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPlayerEvidence.cs",
+    "sha256": "9A9FE1B323239A628E1B02DEAFF1896E9FA1E4A01AD20F0285F058044CFDB396"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentPresentation.cs",
+    "sha256": "2F9A3FAE8738FFFCE7A657A92D630E609D18484783CDC5CA98DCA93017D970CE"
+  },
+  {
+    "path": "Assets/CityLife/Environment/EnvironmentWorld.cs",
+    "sha256": "0BD1C2AA3BF98F1893975ED94BA99E4C9EBFDBB8A47B53D96E8C18D071DF887E"
+  },
+  {
+    "path": "Assets/CityLife/EnvironmentZones/CaveEnvironmentZone.cs",
+    "sha256": "70D4BB8E8C8FAA026F61EDCB5B172E7CE4DEE1EA9162535B74F42EE737BA12F4"
+  },
+  {
+    "path": "Assets/CityLife/Fire/Editor/TinderValidationReceipt.cs",
+    "sha256": "7F019982F527D9DC9436D38E405C937963C22509C221600488BC285820C25561"
+  },
+  {
+    "path": "Assets/CityLife/Fire/TinderGeometry.cs",
+    "sha256": "C962DBEF7AECD6CA2BA43FA63AA02DE56A358CD9D90D024E693FCCE9F903F881"
+  },
+  {
+    "path": "Assets/CityLife/Fire/TinderMetadata.cs",
+    "sha256": "AACD4717472FE4CC0E53180666EDD91458C17BBCBAD30A2D5016E90B963FC525"
+  },
+  {
+    "path": "Assets/CityLife/Fire/TinderValidation.cs",
+    "sha256": "36F042B8D810B4B899B5A653DF0CB5D01D144BCFDA2228398B2E8AA5BB3804B6"
+  },
+  {
+    "path": "Assets/CityLife/Fire/TinderVertexColor.shader",
+    "sha256": "7A1F016A953FDB011434A3A14022F87287EAD627A7627CAC82AE35CBA139F3E0"
+  },
+  {
+    "path": "Assets/CityLife/Food/CaveFoodMemory.cs",
+    "sha256": "59DD6140FF7F4C1BABD29657F4A9E389A38E64B63D749D44F12E6775BF17C005"
+  },
+  {
+    "path": "Assets/CityLife/Food/CaveFoodMemoryChecks.cs",
+    "sha256": "B90019C057BA003674FACA0894A5F6390718966778821CF60EE84FF7D23D9128"
+  },
+  {
+    "path": "Assets/CityLife/Food/EdenEcology.cs",
+    "sha256": "1053B5C1DC5B4D3FC2F6A44BB751459BDE3A064547DC4BB8090A66E706056847"
+  },
+  {
+    "path": "Assets/CityLife/Food/Editor/CaveFoodValidationReceipt.cs",
+    "sha256": "E91D5E76B645C5A09E70329F426F6566C61AFB8D37864883C8BF8C812370FDE2"
+  },
+  {
+    "path": "Assets/CityLife/Food/Editor/FoodBuild.cs",
+    "sha256": "8B82BC369E05F67383BA2F3B8B8AA5DEBBC8A956FEB3D2EAD1951AF1FB76841D"
+  },
+  {
+    "path": "Assets/CityLife/Food/Editor/FoodOwnershipCheckpointValidationReceipt.cs",
+    "sha256": "106A7691D22FCA202216CEE6880E0F615DC08361708734BB2B9D977B343B8543"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodChecks.cs",
+    "sha256": "C5B4EB5987DFA5E6B05D6DD94088146328E1B2786CD5624D7F2CB4E7926D0950"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodModel.cs",
+    "sha256": "19356C388458F1350EF1FB73858C913C517C3E664E80FEA4618D6CA1F614C8F7"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodOwnershipCheckpoint.cs",
+    "sha256": "1BEA4C0748F2D772294FDDCE304A21048BD6107AF8589A62363658AC0501CF1F"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodOwnershipCheckpointChecks.cs",
+    "sha256": "A996F6943876A4FEA5E79D956975F52ABBC0E7D8A1A003EDB74846FE19F653F4"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodOwnershipCheckpointCodec.cs",
+    "sha256": "933CAFEAB1F59DBEB351D602E7F03F5F1A5A8FAED92C2170B1ECA52DC36D9B64"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodOwnershipCheckpointRepository.cs",
+    "sha256": "D3C86286B76ED5A9372F3E107B4C0D7F20D55BC381047132F046D021340A085B"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodPhysicalCatalog.cs",
+    "sha256": "22A4CAA21D99567AA820743DCACC2A5BF7614DBCC156A9CA57A9773906A5E81A"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodPhysiology.cs",
+    "sha256": "350564A03379793FFA3A6E1DA36809CFF934BDDA753EB8F426E3C1308C722F41"
+  },
+  {
+    "path": "Assets/CityLife/Food/FoodWorld.cs",
+    "sha256": "96D55DEB9C2C1FC2ABAB752CE344EC06BE0A9453C01D93E63A7E058C4C9FE9CC"
+  },
+  {
+    "path": "Assets/CityLife/Food/IntegratedFoodRuntime.cs",
+    "sha256": "C2DC168F72A185CE859DC243A9430236E9B4A11E61856DD87543B606436F1F47"
+  },
+  {
+    "path": "Assets/CityLife/Food/ItemObservationMemory.cs",
+    "sha256": "A3495F87E7CCE9FB64280F5F9374F771E633CFC69ECC7F4E2D38883F4561A890"
+  },
+  {
+    "path": "Assets/CityLife/Food/StarfallMapChecks.cs",
+    "sha256": "95C8685FA22914B2F71D3656065A01C1752F8CDBDFC0EEEF5C2A7B79DFC2F991"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-072100/Shader-624.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-072100/Shader-631.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-072100/Shader-638.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-072100/Shader-641.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-080054/Shader-626.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-080054/Shader-629.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-080054/Shader-631.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-080054/Shader-633.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-081856/Shader-599.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-081856/Shader-613.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-081856/Shader-615.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-081856/Shader-622.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-082523/Shader-620.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-082523/Shader-622.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-082523/Shader-626.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-082523/Shader-630.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-083244/Shader-613.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-083244/Shader-615.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-083244/Shader-621.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-083244/Shader-629.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-084010/Shader-605.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-084010/Shader-624.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-084010/Shader-629.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-084010/Shader-631.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-093728/Shader-614.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-093728/Shader-618.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-093728/Shader-627.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-093728/Shader-632.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-095602/Shader-610.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-095602/Shader-613.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-095602/Shader-625.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-095602/Shader-632.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-120341/Shader-604.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-120341/Shader-610.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-120341/Shader-625.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-120341/Shader-630.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-161113/Shader-625.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-161113/Shader-628.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-161113/Shader-632.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-161113/Shader-635.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-190123/Shader-602.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-190123/Shader-627.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-190123/Shader-631.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-190123/Shader-636.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-191341/Shader-604.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-191341/Shader-613.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-191341/Shader-624.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-191341/Shader-630.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-192144/Shader-619.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-192144/Shader-628.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-192144/Shader-632.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-192144/Shader-636.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-210311/Shader-599.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-210311/Shader-624.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-210311/Shader-629.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-210311/Shader-631.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-212317/Shader-608.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-212317/Shader-612.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-212317/Shader-624.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-212317/Shader-636.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-213634/Shader-612.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-213634/Shader-617.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-213634/Shader-631.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-213634/Shader-635.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-215851/Shader-599.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-215851/Shader-617.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-215851/Shader-619.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-215851/Shader-635.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-220910/Shader-625.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-220910/Shader-629.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-220910/Shader-632.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260920-220910/Shader-635.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-174846/Shader-610.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-174846/Shader-617.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-174846/Shader-633.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-174846/Shader-635.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-175749/Shader-605.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-175749/Shader-621.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-175749/Shader-626.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-175749/Shader-636.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-192456/Shader-623.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-192456/Shader-628.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-192456/Shader-630.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-192456/Shader-636.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-193533/Shader-575.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-193533/Shader-608.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-193533/Shader-633.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-193533/Shader-636.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-194412/Shader-618.shader",
+    "sha256": "918A90D915C0B75E93DA0BBFBB24DE9D7F5E559C12723A5ED75F211D8AA23155"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-194412/Shader-623.shader",
+    "sha256": "ED6FBF9C695E53E78C81D839E86CE531889B32C855E810A160CF3F33D2C28863"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-194412/Shader-625.shader",
+    "sha256": "420E0F19B58A048D6A154A2D7A26CDA3EC039C3038A350F1D2468C99B0EF9710"
+  },
+  {
+    "path": "Assets/CityLife/GeneratedPreview-20260921-194412/Shader-628.shader",
+    "sha256": "E1F94362F228C42CD033F67662CFCF874AAFC16F1D086104FC13A8C889CD066C"
+  },
+  {
+    "path": "Assets/CityLife/Items/BasketPersistenceChecks.cs",
+    "sha256": "9B1C88A18608623110FD8CE6101C2D55AE8037AF8CB337BB8AB89ED83AE15DF2"
+  },
+  {
+    "path": "Assets/CityLife/Items/DualHandCarryChecks.cs",
+    "sha256": "B0AAC23F40E31F9D5D7F372ADCA1F8191F4A4DE1EF1B93D925F643249870D2E2"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/BasketPlayerIntegrationChecks.cs",
+    "sha256": "26B135CBE1343A28FC2113561B7F677F18EF47202E654791D5227AABB0143CE9"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/BasketTransactionChecks.cs",
+    "sha256": "8D6F0D8514E2E8DF084B5CF2BC01B3BADCE061DD5C66DE392492BA035D5AE2D3"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/BasketValidationReceipt.cs",
+    "sha256": "63DC944C58CDB4B005D02ED973B5C58E40C000AD5BC07678B604534D2C86CB6B"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/FishingIntegrationChecks.cs",
+    "sha256": "CA061915C69BD467095491C885D909DF4D622012E276723B3053C7921E7C6E6E"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/PhysicalItemBootstrapRuntimeChecks.cs",
+    "sha256": "8EC60B4FFEC4ECAB42E9F50AC8C7BE123F49D27FB3477221F7726DF967B20F05"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/PhysicalItemRuntimeChecks.cs",
+    "sha256": "4B24582B62FD4CC00ABAE628750D64CFBA2077BB1229375A592C10C56574C210"
+  },
+  {
+    "path": "Assets/CityLife/Items/Editor/PhysicalItemValidation.cs",
+    "sha256": "6527F1F2498ECB57181C6CEC1E1BAEC1C537FD44E9BF19B9D9147F295554D28A"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemChecks.cs",
+    "sha256": "7DADB16EAB1EC1BC32D374009AD075A53AB2ADEACE5D336C9FEEDC7BE8165FD7"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemDefinition.cs",
+    "sha256": "9F70E5F3B5C6DBD841B57A2A4639CB1B493CE8EBCDB609FA6A46FCB8347EFDD4"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemMaterialTransaction.cs",
+    "sha256": "A7DCEAF082942D2584C71BE379EA64228BC686E748A66B8BFF0B75DB4ECC6698"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemMaterialTransactionChecks.cs",
+    "sha256": "49A632B7195EB0D0868C9A69F0503998D904F1E96D22273EC2B211F73B552D50"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemModel.cs",
+    "sha256": "B9B245C981B4A3FD7BDC06E2552374D98BBA27334B1F29F732436E5DEA89063A"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemPersistence.cs",
+    "sha256": "455111478EB6381953E6FD9565A9D09A3D833555C914740D9A4FAB61794822F1"
+  },
+  {
+    "path": "Assets/CityLife/Items/ItemState.cs",
+    "sha256": "C78F3FEB8C459CB9BB74854E1D383645EB343CD324AD123232098AA192680319"
+  },
+  {
+    "path": "Assets/CityLife/Items/PhysicalCanyonDropDiagnostic.cs",
+    "sha256": "B93CAB91CDF610EDCD1A56DFD036C778893108CDD8E9872DBF8C609D123AFD06"
+  },
+  {
+    "path": "Assets/CityLife/Items/PhysicalContactDiagnostic.cs",
+    "sha256": "3BD4E165498F8E43738153651E3D2E0058AD16ABC515571909F142B05A69756F"
+  },
+  {
+    "path": "Assets/CityLife/Items/PhysicalItem.cs",
+    "sha256": "BDE6AF03E09F808104C721B27FFB49B4C9D179AF73D6E2BFA24BCE5782EBD4A6"
+  },
+  {
+    "path": "Assets/CityLife/Items/PhysicalItemBootstrap.cs",
+    "sha256": "8F3D5FF9305463F3E3703ED160D080A5AB66E961927B7751115BD4AA5BB899A7"
+  },
+  {
+    "path": "Assets/CityLife/Items/PhysicalItemCatalog.cs",
+    "sha256": "BF48709F1D049A99B373AD5E231C658DCFFFCFEB4852D60F3626D219E0502928"
+  },
+  {
+    "path": "Assets/CityLife/Items/WovenBasketVisual.cs",
+    "sha256": "D979AFE719CA16DA21384B7AA0625503642A48646853E9FA05C2A4DAF6DF8722"
+  },
+  {
+    "path": "Assets/CityLife/Refuge/Editor/RefugeBuild.cs",
+    "sha256": "E220936D4C9ED623CA2AE4E528E4E53265A21246FAB1C372A24CF60AD52C5377"
+  },
+  {
+    "path": "Assets/CityLife/Refuge/HearthState.cs",
+    "sha256": "620ABC43C7936AD5C0572630E235BF8A078BC5BBE531799B325ECCB7877EF79A"
+  },
+  {
+    "path": "Assets/CityLife/Refuge/RefugeRain.cs",
+    "sha256": "CCA61DE8BAD11A6B23806A92DAC2DA741CC7576910A5D71A5A86CEA5058BDA34"
+  },
+  {
+    "path": "Assets/CityLife/Refuge/RefugeRuntime.cs",
+    "sha256": "00B2BC2038C24840F6A5210AC7570C9A404A73B079762486D0936B5B002AA478"
+  },
+  {
+    "path": "Assets/CityLife/Refuge/RefugeStone.cs",
+    "sha256": "401028CEF5273DBD5DFFB81A99176ACBA00F77701E621A6CADC4D0351578169C"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/AlienArtifactScanner.cs",
+    "sha256": "C9D6507688C4ED4C034A8B6D8A75689DB448C2B06E04DF9517D1B893C80E7F34"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CanyonMicroWeather.cs",
+    "sha256": "5D00F16DD631463AA855F1263857015536B5CC8C60268A0E4F2ACF6468001217"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CharacterPreviewActor.cs",
+    "sha256": "90F97E41DA8205DD0B55BE7298EBE22C0D0D12CF9DF2C440068702943D8E9251"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CharacterPreviewCamera.cs",
+    "sha256": "7022BA36590FA9C0866BBC37E68042A63D3F04A97F522462F2A640E46467A475"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CharacterPreviewRoamer.cs",
+    "sha256": "9580A15D93BAD8BACA8B19E86B7C233563A09CF68735A7D93BCBE6DF5CD5BCB8"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CharacterPreviewSmoke.cs",
+    "sha256": "366778DFB87AD9926139ED8B6FC0EDB508CE2C669BE44FFFF7F35C50A347BBCC"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalCrabActor.cs",
+    "sha256": "E0A181074C651CA77185306EDE0DCCF8BA6535BA5A56F09F39F1D8FCFD8FD7AB"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalCrabDistribution.cs",
+    "sha256": "5E1125704E48263E0AE016EC00DCD6E9924D36844108521E1F48EFD644AFC7F2"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalDistantIslands.cs",
+    "sha256": "CA7AB2841988012585F01F1C88E970385678C294A2E7861C20ADF522AB766CBD"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalExplorer.cs",
+    "sha256": "34B5B641446279050910063FD515F4771FD1E67227C67257F7B43B12462FB101"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalPlanarReflection.cs",
+    "sha256": "44818FC67E256802BFD9060EE381BCD8E42D3EA010D27549A012029E63140C51"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalPreviewSmoke.cs",
+    "sha256": "C15C3AE1542220B945DE26FA0AC59836B09AC9D2268AEDBC5ABB04E2F8F4CD64"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalReflectionRuntime.cs",
+    "sha256": "705C8B51AA391D7F2433BD8075FBA93ECF502B7970137EDA6D31CDE27EB753F1"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalRocks.cs",
+    "sha256": "0A9EC583E3EBD882783210D11DC5D035D9D864DF5210A0FC1B45F90B95F387BA"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalSkyViewSites.cs",
+    "sha256": "37BB2CBAD7BF5BF3F3DD471F559E79EC599E2829E69A3AD772BBEFCE213BA525"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalSmoke.cs",
+    "sha256": "B64D50518B095A53E95595C9B1E76FBBF1896616891D72C209B7C4E5AE9FF843"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalTerrain.cs",
+    "sha256": "5F71CDB07CB7136D655FFF009F0D63B08E349AF06D3677A5D4945F112BA46771"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalTide.cs",
+    "sha256": "EB956A83EA6C2CBDCB3C7015DDD64E24DAC8C83EBC4FC561DC570E1D21D0E1BE"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalWater.cs",
+    "sha256": "F46AD062DE07A17C3DD9E8038C8EE7CED89FD4DC54CDDE95EEAA98389FAF4468"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CoastalWolfEcology.cs",
+    "sha256": "99362A6556DEA380DCCE3390E0755B23920AE933D481F5F856182E59D3DF7A70"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CosmicPreviewExplorer.cs",
+    "sha256": "092D80776B6D7D726779BA70989A36DFEE22FC25C57E0A62A87E08C56C85E7D6"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/CosmicPreviewSmoke.cs",
+    "sha256": "D6A29A7D7DE96C1A4DE60B7BCD149B1F8026E3198F04C2B9A634CA1A80571467"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/DriftwoodTideDeposit.cs",
+    "sha256": "4581128B345F4BC4ED78968EEC064F667C4969A70FBF3F4EF8DD7FC123DE2AE2"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/EveningRefugeFireCycle.cs",
+    "sha256": "73EF55759C0BBF2BF646F3FCFE5C0AE77B74CC70EECF386FF9BFD323F2B38A9E"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FishBaitResponse.cs",
+    "sha256": "835FEF781E7C5C74D7DA8ECFB09C4FA3C9D3C4612ACB93B827B05714714271F0"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FishingCampSupplies.cs",
+    "sha256": "1EB58CFED0A5EB9452E28A3043F0C2A69A2731A5F705550D2B0EE2AF1A1AE628"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FishingCommandAcceptance.cs",
+    "sha256": "79036B7C88226816412687A993DFD8EFCD4FE60D0FE9442DA4D62E0FDDBA0610"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FishingInteraction.cs",
+    "sha256": "391BEF8973817C002E9BF6656DC985BFA3B845B9BC9354BFF80958F57D16026E"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FishingRodItem.cs",
+    "sha256": "DB835494A1DA037168273FBFBBC43B3CA915A2FE6C5EF7882908AF34601EC8FA"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/FoodConsumptionBridge.cs",
+    "sha256": "7B0208C3A840AB350E1C84EFCF10DBE07CEC73A94CADA6543CD77183E85F2AD4"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/ForagingExpeditionCycle.cs",
+    "sha256": "F9BBA1069FACF1F9ABAEF8FF4AE7112D0D25C3D098D1DE767E4C1EF3F2F8A5FF"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/HearthCooking.cs",
+    "sha256": "31B2B89B49B69B62D0B323275FE796D1296098293103A8865B1984ECB418E26B"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/HunterClubCarry.cs",
+    "sha256": "A4A38D2DC566A46BEBD7EB2DE9283096E8B79BF19B8BC195376CEF640BCF079E"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/HunterMoonbag.cs",
+    "sha256": "A30696D01CCD982861105F11839367EAF29C41AB9109C648C4BC3496B8A96964"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/HunterPreview.cs",
+    "sha256": "DD3F12307BE45C7C1D7A661C7120E5AF182F81D2912FB32E278C6AD40F3925D4"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IntegratedAcceptance.cs",
+    "sha256": "E4A79D22031EE539F98AF0849697E060E60B2C8F52DB5BA820E95650E3F20E45"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IntegratedCelestial.cs",
+    "sha256": "2EB6AFE41A5D4F87EFCDC33138BE9B71E34CD1DCB434FF379F2F86B22936BD8D"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IntegratedEnvironment.cs",
+    "sha256": "873D9F717131751F5A456C1773C1B905390DDA9694C5A2B068A2CB7624BD42AC"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandBootstrap.cs",
+    "sha256": "0DC5ED6ED0BEDFB4418005C97BF0487B7AE298AC1213BB8E8E686FFA8A20DF1D"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandDefinition.cs",
+    "sha256": "D8E226EBA54C1C888F15AC4C845748C392E598B0020BBA045BF3975E30579444"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandExplorer.cs",
+    "sha256": "BFF80F956115618656477850AA6DFC15253378F2A5D8097D48BB7ED6ED930E37"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandField.cs",
+    "sha256": "D2ECF659BD5EE36E7E6D415F03C770A5B366A667742885541E1DB0CCF4E231CE"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandFloraGeometry.cs",
+    "sha256": "7960D124E0AFBD9CF77CF4B4482D7FB3E2B97E8FB149E59ACB8B036B0C164BBA"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/IslandRenderer.cs",
+    "sha256": "381FFC76F812A2101CBF2422F098609A36F64FD48A9C7869107449B55F31AF92"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/KokerboomGeometry.cs",
+    "sha256": "75AA85987CF823BA6E4AA60F441F3B9D268EC9B70F83487DEA0A17326B56704C"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcActionApi.cs",
+    "sha256": "6995378EBC279CC58EE4AB4BFF0F002E589CAA0F480347F21208C4D39E7FEADF"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcAutonomy.cs",
+    "sha256": "AAB5C39846E6164CECF804DE0FB2DCDE54818199D211D750F18D5467003BF393"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcBoundedJson.cs",
+    "sha256": "B74519EC2E16259D58CC85548F73B62BFBBF6CB10F706E3E01C1FFF5743A621A"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcControlAcceptance.cs",
+    "sha256": "DD71DBB96E22742FFA8659BAA1265C6D511DDA1089DE6CE1B98EE6342A57C5E2"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcDecisionHud.cs",
+    "sha256": "69F661B4362BA4B4F804AA299FF5AC017AA45980C53D38BC6D0F29817ED413E1"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcDecisionLog.cs",
+    "sha256": "C5EA463C0296A55BB8DBCB4112BAE6C66210DF6E34FFB5C5258EECC66EA129E3"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcDecisionPolicy.cs",
+    "sha256": "32B80EFE7A473E0EDC6A9F529B9C6109807D3F043AB6C3ECDD036DB8D9118165"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcGridNavigation.cs",
+    "sha256": "EB726E8D65A9ECD44239C90CC25410B5B6BAFBBDDF3A9295E38995198028A6A1"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcHybridAcceptance.cs",
+    "sha256": "41B042668135DB1974289C2D97E3CF1375A46538EBF8C25A3FC7695C24F786D9"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcInteractable.cs",
+    "sha256": "5E20F0944F816894AE2DE4546C2B40A35906EEAB2117FDF6F660587EFBE08E80"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcLocalProposalProvider.cs",
+    "sha256": "0EDDAFAFD4574FC40D76066BEB524CC72792CC2750C9C5E3FF5357B7DDD3C551"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcOptionalPlanner.cs",
+    "sha256": "4B4FAAE0B9024598AF430C8D270E33A104746494E2022FECBE892738A02477E1"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcPerception.cs",
+    "sha256": "54A85E912000390EB1042BF41AE96F619EFB86F75B048AD27ABF030EA9ABAFFB"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcPlayerControls.cs",
+    "sha256": "E37BDCA4CE1419ECBE13ACCA71ED169FD4FBD41B808D259D1B53BB30FD2CE14F"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcPreviewSmoke.cs",
+    "sha256": "8578A103BD1BEC5339DAC06F7EE36DFF1AF24B5FFC65D90D97970A7E9B5C0EBE"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcProposal.cs",
+    "sha256": "7EFC16697C62FE83F5CF110E778727C98F999EE3275D11DF6095FD6BF62A640F"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcProposalBroker.cs",
+    "sha256": "31D19BF0635D54D675F0AD9CFEDBC29A4EAC58228C041F7EAADEFCB3B3C8AAD2"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcRealProposalAcceptance.cs",
+    "sha256": "20E4B111D689708C199140D7E206F06B1C5FB9DB76653B77E70018D0F0BD9140"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/NpcTerrainNavigation.cs",
+    "sha256": "BFBB7D8DB5B76B7B7E78F8D7B26858A2C7F2EDC51E877215CB599812647D1C9E"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/PhysicalContainerPanel.cs",
+    "sha256": "B633FC8775C33D7DA7A0028C7C596566112CFDA9198D56828B4E2AA8BBCFCA04"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/PreviewDisplayMode.cs",
+    "sha256": "7D68CBA7ACCC8640719480EDFC2EFE1277D2E72159818F8DE71BA2C64367E0DB"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/RiverbankDecoration.cs",
+    "sha256": "3E624EB1D07012F6E94699FB1C9289B4138F08DC8583A16D2A00F13F756BAA21"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/RiverbankFoliageWind.cs",
+    "sha256": "804A8D5966E5CA1E7D805319237EA220D2433160D075B5BC8D8ECBD35B25DE14"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/RiverbankPilotSlice.cs",
+    "sha256": "E379B8B256594D0F78AD097A0032A513D6C34CE754484D650034AC6E970687A7"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/RiverDriftwoodFlow.cs",
+    "sha256": "EB4AE64326AE1CFC68B1C3BB556F55B94467C39581072298E98B292542AEBAA4"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/RiverFishSchool.cs",
+    "sha256": "71F9E7AEDF939CAD276168321B7DAD908D3AAC11BB912E873E7040B7F09F2195"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/SeededNoise.cs",
+    "sha256": "517980482B24D7AEBF82CE0EE651173C7386D9D43F085507F58B3AFFC16C9077"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallAmbientSoundscape.cs",
+    "sha256": "2E66BFC12F04BDFF4BB9C06142C913D91A6C295F2A55BA00B34F7BA197BC6D34"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallLivingMemoryAcceptance.cs",
+    "sha256": "0E4B0AB38EC2568AA84253B2D42E9D8252DAF14A1C11C639A8926E6A1ED3D2A7"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallLivingMemoryClient.cs",
+    "sha256": "8233D927799326FC6A87B75FF49F352D23DA9457586DB2516FEDB6019389769F"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallLivingMemoryRuntime.cs",
+    "sha256": "EA13CA8DF3FB5F9CA62D44D26087F49173FB49F9EDA243E40F50D744E1587458"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallMapHud.cs",
+    "sha256": "DC4601537A6E8AA9E15EFF0FAC65D25987C77B7E35D87C4D890A3FBE2553E459"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallMapViewModel.cs",
+    "sha256": "D50CC4D9A1F087679441E33FDC312774F16CB6852B85B9C1D45EE649C8E7727C"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallMemoryExport.cs",
+    "sha256": "D8C4C60B00B1D72FA054DEF20573461DDF2B3393C6DF27522BB5AE934CE94DC5"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallMemoryThought.cs",
+    "sha256": "82CA2FECE1246E70D2DDC5A1DBB7CE68BFAE27A5B282B3C692C4DBB911BA06EA"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSemanticInterpreter.cs",
+    "sha256": "2FCA6855643D31DA30E7F9AB938E6E4BFD33DE31DCF40204118B36983C687FB6"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSurvivalAutonomy.cs",
+    "sha256": "BCA8E9BE856875ECA424612663623B306AF0A630AB4C7B2715705E56C20AB37B"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSurvivalDeathAcceptance.cs",
+    "sha256": "36F56E0A5B202C20A06ED0E80BE5601BF1BA3A3338C85FF4142EFCBA90C646D5"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSurvivalDiary.cs",
+    "sha256": "ADCB11065E1256A7C8D9F5D5E492C44E88CE581BF96522B2A76D19DD6961C899"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSurvivalGameCapture.cs",
+    "sha256": "EA0A82601531463D7796E7BE8FA78E760A2FD37E8F094D00CE065D46703E7B1D"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallSurvivalThought.cs",
+    "sha256": "361DE54BEAFFA97857AE3BEC0035BF3CE64A946AF02315057732A53AD2D168BA"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StarfallVisualMapGenerator.cs",
+    "sha256": "E18B1B8B53D485D994551E1BAF3371A1364DE38B10718685ADFBC654CF2A8415"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StoneBuildingWorkstation.cs",
+    "sha256": "EFF6A2BA45235839E9243218388887E939CC055F501901F07325EB2D27584E47"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/StoneKnappingWorkstation.cs",
+    "sha256": "134F3AF5A9F0DC1B7A6F97F2F7721DD210C0249418DA8F921945AFA1B0BE1817"
+  },
+  {
+    "path": "Assets/CityLife/Scripts/WorldEdits.cs",
+    "sha256": "4DAE7873F9D2EC2ED0FA0AE635E20DC19A99A5DB290F686CF72C128E7CB6DFF6"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/CoastalRocks.shader",
+    "sha256": "BF77DA764459F79CFC0FA016D3B49556A2FB02A114B5091639035C89360BC901"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/CoastalTerrain.shader",
+    "sha256": "0F47E427A98BB6F042420E0D3F96E02E5F48075297785D257C02605524035970"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/CoastalWater.shader",
+    "sha256": "DCC212FF5CA5F761022BD9B14B8EE13D983761519AAAB62DD08139FB14A7CF62"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/EnvironmentSky.shader",
+    "sha256": "AF8621D83A3B19FECA8B5A50BDB9E1BA448B2B75BA0C095BD81FEC555CAF9386"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/EnvironmentWater.shader",
+    "sha256": "26317B9F959E49027E9BF1166DDC40A7698E76428E2BF3C9D66E218854F6405F"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/IslandOcean.shader",
+    "sha256": "30DC910CCA6CDB90D7773F8C632161575AB808021620C3C678288375ACF0C0B9"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/IslandSky.shader",
+    "sha256": "3173581D5DF448F4BD0624D4F27CE64A457AD762DD3F028BEB1AD47A4A517A36"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/IslandTerrain.shader",
+    "sha256": "DB45738B0903D2AA026DE9FC53888762A0E933485C6152BC1B02DE407B755B3E"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/KokerboomBranchSkin.hlsl",
+    "sha256": "4970845DF6C8FD4604E3111649D493895A8D070CD6DAA4D927578CA5244150CA"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/KokerboomSurface.shader",
+    "sha256": "C1DFFE83751105AE80C755D89E167733ADF2E7DC1AAF447BF7B6521B9705041F"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/PH02FittedSupport.shader",
+    "sha256": "E24242C5A1AC57A4A16CB5F5F3C56BA5E1164B3948C0E7132A6F7FD6366F16B7"
+  },
+  {
+    "path": "Assets/CityLife/Shaders/WaterfallCascade.shader",
+    "sha256": "87DB3DCEF162B99AFB4F970522E745DADF122DCEB9F57826650AF4FFDDDA7783"
+  },
+  {
+    "path": "Assets/CityLife/Stones/Editor/StoneValidation.cs",
+    "sha256": "01E29EBB5CE2D3C77DA3935D6D3B5A69B30821F71D5AD80203E1C4E1F9A08F70"
+  },
+  {
+    "path": "Assets/CityLife/Stones/Editor/StoneValidationReceipt.cs",
+    "sha256": "952B397B7A4E7A72D702AEC89C1EC0E0C41E931F979057BDD4586691B2BB4A56"
+  },
+  {
+    "path": "Assets/CityLife/Stones/Editor/StoneVisualReceipt.cs",
+    "sha256": "BB840D3D4358426548475E82C0E7FE579DBDD8CC223D1C733E733B23EBD61849"
+  },
+  {
+    "path": "Assets/CityLife/Stones/StoneMeshGenerator.cs",
+    "sha256": "7C3D129FD65F386081D2476938BEA3A7992494A373729B254FA38BBAAF34E759"
+  },
+  {
+    "path": "Assets/CityLife/Stones/StoneMetadata.cs",
+    "sha256": "FB6772354FD0314DFC7C77C516F108FB76B10882ECE821E801EA3FDCDB447E37"
+  },
+  {
+    "path": "Assets/CityLife/Wood/Editor/WoodValidationReceipt.cs",
+    "sha256": "4CB83102BB62679B64869B0ED4AEBC25B4268AC015279C490DDDB217545B6B3C"
+  },
+  {
+    "path": "Assets/CityLife/Wood/Editor/WoodVisualReceipt.cs",
+    "sha256": "DCE69C915B33BE4260DE9D4D8514DE82226C4D899269E24F952C4FB3AA7397CC"
+  },
+  {
+    "path": "Assets/CityLife/Wood/FallenWoodAssetMetadata.cs",
+    "sha256": "2392B6F342374D681B926A8F06337B0AA83A9263746F5DEA5ADEFD9AC7EB69DA"
+  },
+  {
+    "path": "Assets/CityLife/Wood/FallenWoodChecks.cs",
+    "sha256": "D71A0EB441DD6E4BFC8FCCBC5503274639FC2E6F88AFDA6921089DCEEB69C468"
+  },
+  {
+    "path": "Assets/CityLife/Wood/FallenWoodGenerator.cs",
+    "sha256": "8A24818DA851870A1E5CF28CB4675914F78C095B5006C7400FF75EC2FA19BA70"
+  },
+  {
+    "path": "Assets/CityLife/Wood/FallenWoodInstance.cs",
+    "sha256": "2303C516353A1FED386E990AC1666FE277D276072B3D62F0BECC691002EB45BD"
+  },
+  {
+    "path": "Assets/CityLife/Wood/FallenWoodProfile.cs",
+    "sha256": "710D11ED554684ED5DD524233E845D36C57B1C62D25B8288C56A4FB4FE231631"
+  },
+  {
+    "path": "tools/build-character.ps1",
+    "sha256": "A5AF7E79BBA2887DE29F488BF8A4DED84DF9C70EF62F159C7676158EADA0F0CE"
+  },
+  {
+    "path": "tools/build-coastal.ps1",
+    "sha256": "675F10EABAD81948FA74F6D074F65A6FAFAE47756E32F504B02D771746FA3901"
+  },
+  {
+    "path": "tools/build-environment.ps1",
+    "sha256": "9CB08A7D608EA88BFC3E86EDA740CEDB18A3FACCA0587EA4855E2D1DCD85A49B"
+  },
+  {
+    "path": "tools/build-food.ps1",
+    "sha256": "C56D1733D3A0236F5CD8F05F2DC16A28F451AEFA71643C58F70A17AB9990FD9E"
+  },
+  {
+    "path": "tools/build-hunter.ps1",
+    "sha256": "878512420CAD0FB3B28C38F642A45D2AD2D1FEED201A8F29E64A5244588972A1"
+  },
+  {
+    "path": "tools/build-integrated.ps1",
+    "sha256": "A5D938DAEC160BF0D1212B2720204711EBB75C1A471123D9D50C532744688D56"
+  },
+  {
+    "path": "tools/build-npc.ps1",
+    "sha256": "5E75BCD1000D86B9F5EC7EA6F44A10B962293B23CC1C937A6AC72AE1258FBB0B"
+  },
+  {
+    "path": "tools/build-round-276.ps1",
+    "sha256": "664080775EF9690DC13C5272FB1C24BF4CDA8E337873C3173BAE059F11EAF826"
+  },
+  {
+    "path": "tools/build-round-277.ps1",
+    "sha256": "EE3990E4716C78ED85445C9CC6C7758DA57B8A90B145E6640484E23D83E89F48"
+  },
+  {
+    "path": "tools/build-round-278.ps1",
+    "sha256": "9458FC1185B9C2EA8A1BFA485D505A143B5B37A360588F513A03EDE11B17DF36"
+  },
+  {
+    "path": "tools/build-round-279.ps1",
+    "sha256": "1AB9380251DC595A096B39A7F1E5BB7D1265B378EE987C7DEF5ACDD858DB2FE2"
+  },
+  {
+    "path": "tools/build-round-280.ps1",
+    "sha256": "E2E21A497F5882278975160C46537A7156195821E3DF487407B453A5B16F10BF"
+  },
+  {
+    "path": "tools/build-round-281.ps1",
+    "sha256": "A9844F2F428A15F56928FBAE8CB2F2A6A538BBEADA94544D06C2DE987235ADAF"
+  },
+  {
+    "path": "tools/build-round-282.ps1",
+    "sha256": "D1414F777FA158817A737E2C86D600E833BE4CE92A708BD6D674956AB6E563DC"
+  },
+  {
+    "path": "tools/build-round-312.ps1",
+    "sha256": "78EC7207A1D2D409F0052B1F6E2C2A0BD6C630A5F7F77F056F985E6C791C7395"
+  },
+  {
+    "path": "tools/build-round-313.ps1",
+    "sha256": "6BF1B85BAAE36B96C02E3096859938F7641853EB42450B8AC931355ACF7CEE66"
+  },
+  {
+    "path": "tools/build.ps1",
+    "sha256": "213366C6C542B28BCBB22BEDA5081544F2875C31C1AE34B21D9A54C4DF0B0F67"
+  },
+  {
+    "path": "tools/capture-normal-process.ps1",
+    "sha256": "2DB83D93F3A83481FCFA565E3DBED4709BA8306588BD2E13A785C42EC0653658"
+  },
+  {
+    "path": "tools/check-distribution-path.ps1",
+    "sha256": "B89E6FB3EBE22478260087416C18F60DBA95ABA7CB08EDDA410D97ED97390E89"
+  },
+  {
+    "path": "tools/check-integrated-build.ps1",
+    "sha256": "293831380F63F10114F300EE90840CE35590377122E3AC6CAC16B4A77127609E"
+  },
+  {
+    "path": "tools/check-powershell.ps1",
+    "sha256": "14E0FB1D8B21D11594B36D344A55378427A1791C9D28B53A995A2906ED09E425"
+  },
+  {
+    "path": "tools/check-secrets.ps1",
+    "sha256": "9A060D2EFA68AC0D17EE3418CC3891D804433E180C76CA39174E70ABE2D4A32A"
+  },
+  {
+    "path": "tools/check-survival-promotion.ps1",
+    "sha256": "B57EF1BF667C8C183E97AA0BF1AAED2CF1764E10D7124F57F2D853626802C231"
+  },
+  {
+    "path": "tools/get-integrated-content-hash.ps1",
+    "sha256": "C8677B6838BAA1F670F34581CC3937C3F28B1C0E2A4BA4128CE2EACB2BEB80BD"
+  },
+  {
+    "path": "tools/narrate-walkthrough.ps1",
+    "sha256": "963F63A6CC7BDE4020EA0BD2ABF54894D3F574F87C81BA3BBDE3D84EC2C17A3D"
+  },
+  {
+    "path": "tools/package-integrated-starfall.ps1",
+    "sha256": "0846B9F386A6275AF302B1530A9B67059C77BBF35AD1FA3106100D26EA14F90B"
+  },
+  {
+    "path": "tools/package-starfall.ps1",
+    "sha256": "8181F91A117BF9C6D6111CE69D8A7B678CABF8F66FA3BDB32BAF39B5195A4A70"
+  },
+  {
+    "path": "tools/package.ps1",
+    "sha256": "844B17B0974C1C0CC236685F2EA0C4BA4786C893DC756C26A2E7611D78E592CE"
+  },
+  {
+    "path": "tools/play-starfall-with-memory.ps1",
+    "sha256": "35C5F694E96CC84F9E8A5AEE1158113ACD7B20BACD56EC8CE91816AE08AD3E16"
+  },
+  {
+    "path": "tools/reconcile-integrated-builds.ps1",
+    "sha256": "9A84BF57C260297F154C44E10750C6F7C5AB9A98BB5E44CC3007E93E2BA20996"
+  },
+  {
+    "path": "tools/refuge/build.ps1",
+    "sha256": "6F949AA36F2B7425C18C628ADE7803FEFB87CE1C9D174C138D58BF43A11E64BF"
+  },
+  {
+    "path": "tools/remove-failed-integrated-build.ps1",
+    "sha256": "5FEAA99C948EC80142785DBF8F8F1D5DD7899BD57A7AFB7FF51D87CF8EA59A2E"
+  },
+  {
+    "path": "tools/render-carp.ps1",
+    "sha256": "C3734813315339024BBB8DBEDD464002E6CD1FD4887E147D7699FBA667B7591B"
+  },
+  {
+    "path": "tools/render-catfish.ps1",
+    "sha256": "18B96F24E7CA788A9D6C0CA0D8B807E05D809D26AF51A8E404F65CE587C49D82"
+  },
+  {
+    "path": "tools/render-coastal.ps1",
+    "sha256": "6632DC932CF390A326E1EDF8C1C669055C6E44BDB116807516D070DA5DCF86F0"
+  },
+  {
+    "path": "tools/render-kokerboom.ps1",
+    "sha256": "1C0C46547F83997908A2ED77162030B01675224943D6B145985CFF963E809F16"
+  },
+  {
+    "path": "tools/retain-current-integrated-build.ps1",
+    "sha256": "10D91A1299DB88B2CC899F5B70F33008AC1B219851A06CE6AE8F69CFE2F82A8C"
+  },
+  {
+    "path": "tools/run-hunter-editor.ps1",
+    "sha256": "E96694CA659ED0C64AA756EF787B02AFF68A5B1EB88564EABF3B3198B1D0697A"
+  },
+  {
+    "path": "tools/select-distribution-files.ps1",
+    "sha256": "30E703DD14F1E772001BB2A68FD6B1229EAE34869D295A77474F8AAD3EA941C3"
+  },
+  {
+    "path": "tools/smoke-coastal.ps1",
+    "sha256": "8A8E9E4A96F762EF420A03203998118BF24663EFC7EC6BE63511747CD9482F1A"
+  },
+  {
+    "path": "tools/smoke.ps1",
+    "sha256": "8759DF66BFFF95674E5E6EAEDD878619ADBA582F213C92E85FFBEC944D11D243"
+  },
+  {
+    "path": "tools/test-distribution-path.ps1",
+    "sha256": "536762E07D288B246663930EE3E0CB258FE11128C13C1F040BF40BB4E80F165F"
+  },
+  {
+    "path": "tools/test-distribution-selection.ps1",
+    "sha256": "28382C72610CE1C57425AEC037583300D1F395460293120159DB49D1B1AAEE82"
+  },
+  {
+    "path": "tools/test-integrated-fast.ps1",
+    "sha256": "1ACE8FE044BF93CB3F071D817165D256E100323A15D83CBCB9E3E598374394C9"
+  },
+  {
+    "path": "tools/test-normal-process-flags.ps1",
+    "sha256": "AC93B89F8BBC7C993E1EF977D78CB4C15539CAE4AFFCB5193FB5694944866A99"
+  },
+  {
+    "path": "tools/test-player-smoke.ps1",
+    "sha256": "D75961644D20FBB7B052D9BE27D35D6C96CB2AF64CA6B66033A3D89873DD5754"
+  },
+  {
+    "path": "tools/verify-memory-unity.ps1",
+    "sha256": "E7D2CDBAE1EAD99A0FB6B5027B5602F16C484C0DA4E350234B936AB9F8807B27"
+  }
+]

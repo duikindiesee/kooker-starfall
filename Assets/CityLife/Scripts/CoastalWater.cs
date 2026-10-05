@@ -12,6 +12,7 @@ namespace CityLife.World
     public static class CoastalWater
     {
         public const float Level = -2f;
+        public static float CurrentLevel => Level + CoastalTide.CurrentOffset;
         public const float VisualSeaHalfWidth = 1800f;
         public const float VisualSeaMinZ = CoastalTerrain.MaxZ;
         public const float VisualSeaMaxZ = 2200f;
@@ -82,6 +83,7 @@ namespace CityLife.World
             renderer.receiveShadows = false;
             renderer.lightProbeUsage = LightProbeUsage.Off;
             renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            surface.AddComponent<CoastalTide>();
             surface.AddComponent<CoastalPlanarReflection>();
             AddVisualSea(surface.transform, material);
             SetLayerRecursively(surface,4); // built-in Water layer; excluded from its own probe

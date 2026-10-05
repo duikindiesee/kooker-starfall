@@ -1,4 +1,5 @@
 using UnityEngine;
+using CityLife.Items;
 namespace CityLife.World
 {
  // Cosmetic left-hand prop only: no collider, damage, targeting or action authority.
@@ -16,6 +17,10 @@ namespace CityLife.World
   public float ForearmSlope=-1.5f,ElbowOut=.6f,WristDeviation=30f;
   public float GroundClearance {get;private set;}
   public Vector3 GripCenter {get;private set;}
+  private Transform cachedClubRoot;
+  private Renderer[] cachedClubRenderers;
+  private bool[] originalClubRendererStates;
+  private bool hiddenForFishingRod;
   public static float ClubRadius(float fraction){float t=Mathf.Clamp01((fraction-.22f)/.78f);return .010f+.026f*t*t*(3-2*t)+.043f*Mathf.Exp(-Mathf.Pow((fraction-.87f)/.17f,2));}
   public static float ClubCurve(float fraction){return fraction<=.22f?0:.012f*Mathf.Sin((fraction-.22f)/.78f*5);}
   // Author once in the imported bind pose, before the Animator evaluates.
@@ -60,7 +65,100 @@ namespace CityLife.World
    GripLeaves=new Transform[5];LeafRotations=new Quaternion[5];LeafPositions=new Vector3[5];
    for(int i=0;i<5;i++){var leaf=GripBones[i*3+2].GetChild(0);GripLeaves[i]=leaf;LeafRotations[i]=leaf.localRotation;LeafPositions[i]=leaf.localPosition;}
   }
-  private void LateUpdate(){if(!Animator||!Club||GripBones==null)return;
+  public bool Stowed { get; private set; }
+  public void ToggleHolster() => SetStowed(!Stowed);
+  public bool SetStowed(bool stowed, bool force = false)
+  {
+      if (!stowed && !force)
+      {
+          var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+          if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+          {
+              return false;
+          }
+      }
+      Stowed = stowed;
+      if (Club != null)
+      {
+          if (stowed)
+          {
+              AttachToBack();
+          }
+      }
+      RefreshClubVisibilityForCurrentLoadout();
+      return true;
+  }
+  public void RefreshClubVisibilityForCurrentLoadout()
+  {
+      if (Club == null) return;
+      EnsureClubRendererCache();
+      var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+      bool rodHeld = brain != null && brain.Actions != null &&
+          (IsFishingRod(brain.Actions.HeldRight) || IsFishingRod(brain.Actions.HeldLeft));
+      if (rodHeld && !Stowed)
+      {
+          Stowed = true;
+          AttachToBack();
+      }
+      if (rodHeld == hiddenForFishingRod) return;
+
+      hiddenForFishingRod = rodHeld;
+      for (int i = 0; i < cachedClubRenderers.Length; i++)
+      {
+          var renderer = cachedClubRenderers[i];
+          if (renderer != null)
+              renderer.enabled = rodHeld ? false : originalClubRendererStates[i];
+      }
+  }
+  private void EnsureClubRendererCache()
+  {
+      if (cachedClubRoot == Club && cachedClubRenderers != null) return;
+      cachedClubRoot = Club;
+      cachedClubRenderers = Club != null ? Club.GetComponentsInChildren<Renderer>(true) : new Renderer[0];
+      originalClubRendererStates = new bool[cachedClubRenderers.Length];
+      for (int i = 0; i < cachedClubRenderers.Length; i++)
+          originalClubRendererStates[i] = cachedClubRenderers[i] != null && cachedClubRenderers[i].enabled;
+      hiddenForFishingRod = false;
+  }
+  private static bool IsFishingRod(NpcInteractable held)
+  {
+      if (held == null) return false;
+      if (held.GetComponent<FishingRodItem>() != null || held.GetComponentInChildren<FishingRodItem>() != null)
+          return true;
+      var physical = held.GetComponent<PhysicalItem>() ?? held.GetComponentInChildren<PhysicalItem>();
+      return physical != null && physical.itemTypeId == FishingRodItem.ItemTypeId;
+  }
+  public void AttachToBack()
+  {
+      if (!Animator || !Club) return;
+      Transform backBone = Animator.GetBoneTransform(HumanBodyBones.Chest);
+      if (backBone == null) backBone = Animator.GetBoneTransform(HumanBodyBones.Spine);
+      if (backBone == null) backBone = Actor;
+      if (Club.parent != backBone)
+      {
+          Club.SetParent(backBone, false);
+          Club.localScale = Vector3.one;
+      }
+      // Holster diagonally across back from right shoulder blade to left waist
+      Club.localPosition = new Vector3(-0.08f, 0.14f, 0.135f);
+      Club.localRotation = Quaternion.Euler(-6f, 2f, 22f);
+  }
+  private void LateUpdate(){
+      if(!Club)return;
+      RefreshClubVisibilityForCurrentLoadout();
+      if(!Animator)return;
+      if(Stowed)
+      {
+          AttachToBack();
+          return;
+      }
+      var brain = Actor != null ? (Actor.GetComponent<NpcAutonomy>() ?? Actor.GetComponentInChildren<NpcAutonomy>()) : null;
+      if (brain != null && brain.Actions != null && brain.Actions.HeldLeft != null)
+      {
+          AttachToBack();
+          return;
+      }
+      if(GripBones==null)return;
    var upper=Animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
    var forearm=Animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
    var hand=Animator.GetBoneTransform(HumanBodyBones.LeftHand);
@@ -70,7 +168,7 @@ namespace CityLife.World
    Vector3 upperDirection=(Vector3.down-Actor.right*ElbowOut+Actor.forward*swing).normalized;
    upper.rotation=Quaternion.FromToRotation(forearm.position-upper.position,upperDirection)*upper.rotation;
    float lowPose=Mathf.InverseLerp(1.25f,.85f,upper.position.y-Actor.position.y);
-   float slope=Mathf.Lerp(ForearmSlope,.3f,lowPose);
+   float slope=Mathf.Lerp(ForearmSlope,.46f,lowPose);
    Vector3 forearmDirection=(Actor.forward+Vector3.up*slope).normalized;
    forearm.rotation=Quaternion.FromToRotation(hand.position-forearm.position,forearmDirection)*forearm.rotation;
    Vector3 handDirection=Quaternion.AngleAxis(-WristDeviation,Actor.right)*forearmDirection;
@@ -83,7 +181,8 @@ namespace CityLife.World
    if(Club.parent!=hand){Club.SetParent(hand,false);Club.localScale=Vector3.one;}
    Club.localPosition=PalmAnchor+PalmAlong*DiagnosticAnchorAdjustment.x+PalmNormal*DiagnosticAnchorAdjustment.y;
    Club.localRotation=Quaternion.FromToRotation(Vector3.down,ShaftAxis);GripCenter=Club.position;
-   GroundClearance=Club.GetComponent<Renderer>().bounds.min.y-Actor.position.y;
+   var clubRenderer=Club.GetComponent<Renderer>();
+   if(clubRenderer!=null)GroundClearance=clubRenderer.bounds.min.y-Actor.position.y;
   }
  }
 }
