@@ -6,6 +6,7 @@ using UnityEngine;
 using CityLife.Items;
 using CityLife.World;
 using CityLife.Food;
+using Starfall.Food;
 
 namespace CityLife.World.Editor
 {
@@ -77,6 +78,9 @@ namespace CityLife.World.Editor
 
                 // 9. Go Swim Natural Language Directive
                 TestGoSwimDirective(checks);
+
+                // 10. Checkpoint Bounded Eviction (prevents ledger overflow > 256)
+                TestBoundedReceiptEviction(checks);
 
                 receipt = $"All {checks.Count} 'go fish' validation assertions passed:\n" + string.Join("\n", checks);
                 return true;
@@ -1389,6 +1393,116 @@ namespace CityLife.World.Editor
             finally
             {
                 UnityEngine.Object.DestroyImmediate(actorGo);
+            }
+        }
+
+        private static void TestBoundedReceiptEviction(List<string> checks)
+        {
+            string testDir = Path.Combine(Path.GetTempPath(), "starfall-test-eviction-" + Guid.NewGuid().ToString("N"));
+            var bsGo = new GameObject("Test_BS_Eviction");
+            try
+            {
+                Directory.CreateDirectory(testDir);
+                var brain = bsGo.AddComponent<NpcAutonomy>();
+                var foodGo = new GameObject("FoodRuntime");
+                foodGo.transform.SetParent(bsGo.transform);
+                var foodRuntime = foodGo.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+                foodRuntime.Brain = brain;
+                foodRuntime.EnsureModel();
+                var foodModel = foodRuntime.Model;
+                string worldId = foodModel.State.world;
+                string actorId = foodModel.State.actorId;
+
+                brain.InstanceWorldId = worldId;
+                var bs = bsGo.AddComponent<PhysicalItemBootstrap>();
+                bs.Brain = brain;
+                brain.PhysicalItems = bs;
+                var cat = PhysicalItemCatalog.CreateDefaultCatalog();
+                var itemModel = new ItemModel(worldId, "gen-01");
+                cat.PopulateModel(itemModel);
+                bs.SetModelForTesting(itemModel, cat);
+
+                var survival = bsGo.AddComponent<StarfallSurvivalAutonomy>();
+                survival.Brain = brain;
+                brain.Survival = survival;
+                survival.Food = foodRuntime;
+
+                string repoDir = Path.Combine(testDir, "food-ownership-repository");
+                Directory.CreateDirectory(repoDir);
+                FoodConsumptionBridge.CustomRepositoryDirectoryOverrideForTesting = repoDir;
+
+                var repo = new FoodOwnershipCheckpointRepository(repoDir, worldId, actorId, "combined-v1", "gen-01");
+                if (!repo.InitializeEmpty(out string initErr))
+                    throw new InvalidOperationException("Failed to initialize empty repo for eviction test: " + initErr);
+
+                // Pre-populate an authoritative checkpoint with exactly 256 receipts (MaxReceiptLedgerSize)
+                var receipts = new List<FoodOwnershipReceiptRecord>();
+                for (int i = 1; i <= FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize; i++)
+                {
+                    receipts.Add(new FoodOwnershipReceiptRecord
+                    {
+                        transactionId = i,
+                        requestSignature = "Sync:" + i,
+                        foodRequestId = i,
+                        itemRequestId = i,
+                        status = FoodOwnershipReceiptStatus.Committed,
+                        statusCode = "sync-ok",
+                        checkpointSequence = 1,
+                        payloadHash = FoodOwnershipCheckpointCodec.ComputeSha256("pre-" + i)
+                    });
+                }
+
+                var seedEnvelope = new FoodOwnershipCheckpointEnvelope
+                {
+                    schema = FoodOwnershipCheckpointEnvelope.CurrentSchema,
+                    worldId = worldId,
+                    actorId = actorId,
+                    foodGeneration = "combined-v1",
+                    physicalGeneration = "gen-01",
+                    sequence = 1,
+                    previousCheckpointHash = "",
+                    requestHighWatermark = FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize,
+                    foodPayload = foodModel.Json(),
+                    physicalPayload = JsonUtility.ToJson(ItemPersistence.CreateSnapshot(itemModel, actorId), false),
+                    receipts = receipts
+                };
+                seedEnvelope.foodPayloadHash = FoodOwnershipCheckpointCodec.ComputeSha256(seedEnvelope.foodPayload);
+                seedEnvelope.physicalPayloadHash = FoodOwnershipCheckpointCodec.ComputeSha256(seedEnvelope.physicalPayload);
+                seedEnvelope.checkpointHash = FoodOwnershipCheckpointCodec.ComputeCanonicalEnvelopeHash(seedEnvelope);
+
+                var commitRes = repo.Commit(seedEnvelope, foodModel, itemModel);
+                if (commitRes.Status != CheckpointCommitStatus.Committed)
+                    throw new InvalidOperationException("Failed to commit 256-receipt seed checkpoint: " + commitRes.Message);
+
+                // Now execute 2 successive syncs through FoodConsumptionBridge
+                // (which would exceed 256 and overflow without bounded FIFO eviction)
+                bool sync1 = FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(brain, "eviction-test-1", out string rc1);
+                if (!sync1)
+                    throw new InvalidOperationException("Sync 1 failed at ledger boundary: " + rc1);
+
+                bool sync2 = FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(brain, "eviction-test-2", out string rc2);
+                if (!sync2)
+                    throw new InvalidOperationException("Sync 2 failed at ledger boundary: " + rc2);
+
+                if (repo.LoadAuthoritativeCheckpoint(foodModel, itemModel, out var loadedEnv).Status != CheckpointLoadStatus.Success || loadedEnv == null)
+                    throw new InvalidOperationException("Failed to load authoritative checkpoint after eviction syncs.");
+
+                if (loadedEnv.receipts.Count != FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize)
+                    throw new InvalidOperationException($"Expected exactly {FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize} receipts after eviction, got {loadedEnv.receipts.Count}.");
+
+                if (loadedEnv.receipts[0].transactionId != 3)
+                    throw new InvalidOperationException($"Expected oldest retained transactionId to be 3 after 2 evictions, got {loadedEnv.receipts[0].transactionId}.");
+
+                if (loadedEnv.receipts[loadedEnv.receipts.Count - 1].transactionId != FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize + 2)
+                    throw new InvalidOperationException($"Expected newest transactionId to be {FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize + 2}, got {loadedEnv.receipts[loadedEnv.receipts.Count - 1].transactionId}.");
+
+                checks.Add("[CheckpointEviction:BoundedLedger] Verified bounded FIFO eviction prevents receipt ledger overflow beyond 256 across long sessions.");
+            }
+            finally
+            {
+                FoodConsumptionBridge.CustomRepositoryDirectoryOverrideForTesting = null;
+                UnityEngine.Object.DestroyImmediate(bsGo);
+                try { if (Directory.Exists(testDir)) Directory.Delete(testDir, true); } catch { }
             }
         }
     }

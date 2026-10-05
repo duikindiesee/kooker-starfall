@@ -49,8 +49,13 @@ namespace CityLife.World
             return !string.IsNullOrEmpty(typeId) && EdibleItemTypes.Contains(typeId);
         }
 
+        public static string CustomRepositoryDirectoryOverrideForTesting { get; set; }
+
         public static string GetRepositoryDirectory(NpcAutonomy brain)
         {
+            if (!string.IsNullOrEmpty(CustomRepositoryDirectoryOverrideForTesting))
+                return CustomRepositoryDirectoryOverrideForTesting;
+
             if (brain != null && brain.Survival != null &&
                 (!string.IsNullOrEmpty(brain.Survival.SavePath) || Application.isPlaying))
             {
@@ -335,6 +340,11 @@ namespace CityLife.World
             }
 
             long nextSeq = currentSeq + 1;
+            while (receipts.Count >= FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize)
+            {
+                receipts.RemoveAt(0);
+            }
+
             receipts.Add(new FoodOwnershipReceiptRecord
             {
                 transactionId = nextTxId,
@@ -709,6 +719,11 @@ namespace CityLife.World
             long nextSeq = currentSeq + 1;
             int foodReqId = foodModel.State != null ? foodModel.State.lastRequest : 0;
             brain.TryAllocateRequestId(out int itemReqId);
+
+            while (receipts.Count >= FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize)
+            {
+                receipts.RemoveAt(0);
+            }
 
             receipts.Add(new FoodOwnershipReceiptRecord
             {
