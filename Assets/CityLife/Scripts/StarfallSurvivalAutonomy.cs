@@ -3813,6 +3813,19 @@ namespace CityLife.World
                     forward.y = 0;
                     if (forward.sqrMagnitude > .01f) self.Brain.transform.rotation = Quaternion.LookRotation(forward);
 
+                    // If the specific fish coordinate is slightly out of reach from this standing bank,
+                    // check if casting directly into the river channel from this bank is valid.
+                    if (!fishing.CanStartCast(self.Brain.transform.position, self.commandCastTarget, out _))
+                    {
+                        if (fishing.CanStartCast(self.Brain.transform.position, out var directWater, out _))
+                        {
+                            self.commandCastTarget = directWater;
+                            forward = self.commandCastTarget - self.Brain.transform.position;
+                            forward.y = 0;
+                            if (forward.sqrMagnitude > .01f) self.Brain.transform.rotation = Quaternion.LookRotation(forward);
+                        }
+                    }
+
                     // Only changes in caster safety/range can move the bank. Fish motion cannot.
                     if (CoastalTerrain.Height(self.Brain.transform.position.x, self.Brain.transform.position.z) < CoastalWater.CurrentLevel + .15f ||
                         !fishing.CanStartCast(self.Brain.transform.position, self.commandCastTarget, out _) ||

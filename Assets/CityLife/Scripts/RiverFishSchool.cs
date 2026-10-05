@@ -1100,9 +1100,9 @@ namespace CityLife.World
         {
             reason = null;
             float dist = Vector3.Distance(casterPos, castTargetPos);
-            if (dist < 2.0f || dist > 18.0f)
+            if (dist < 2.0f || dist > 20.0f)
             {
-                reason = "Cast distance out of range [2m, 18m]";
+                reason = "Cast distance out of range [2m, 20m]";
                 return false;
             }
 
