@@ -37,6 +37,7 @@ namespace CityLife.World
         private static Material cachedCorkMaterial;
         private static Material cachedReelMaterial;
         private static Material cachedGuideMaterial;
+        private static Material cachedBoneMaterial;
 
         public static Mesh GetOrCreateRodMesh()
         {
@@ -48,58 +49,70 @@ namespace CityLife.World
         public static Material GetOrCreateRodMaterial()
         {
             if (cachedRodMaterial != null) return cachedRodMaterial;
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             cachedRodMaterial = new Material(shader)
             {
-                name = "RiverFishingRod_WoodBlank"
+                name = "RiverFishingSpear_WoodShaft"
             };
-            // Warm ash wood tone
-            cachedRodMaterial.SetColor("_BaseColor", new Color(0.50f, 0.20f, 0.07f, 1f));
-            cachedRodMaterial.SetFloat("_Smoothness", 0.45f);
+            // Weathered fire-hardened hardwood spear shaft
+            cachedRodMaterial.SetColor("_BaseColor", new Color(0.44f, 0.28f, 0.16f, 1f));
+            cachedRodMaterial.SetFloat("_Smoothness", 0.15f);
             return cachedRodMaterial;
+        }
+
+        public static Material GetOrCreateBoneMaterial()
+        {
+            if (cachedBoneMaterial != null) return cachedBoneMaterial;
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            cachedBoneMaterial = new Material(shader)
+            {
+                name = "PrimitiveSpear_CarvedBone"
+            };
+            // Carved bone / flint harpoon tip
+            cachedBoneMaterial.SetColor("_BaseColor", new Color(0.86f, 0.84f, 0.76f, 1f));
+            cachedBoneMaterial.SetFloat("_Smoothness", 0.25f);
+            return cachedBoneMaterial;
         }
 
         public static Material GetOrCreateCorkMaterial()
         {
             if (cachedCorkMaterial != null) return cachedCorkMaterial;
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             cachedCorkMaterial = new Material(shader)
             {
-                name = "RiverFishingRod_CorkGrip"
+                name = "RiverFishingSpear_RawhideLashing"
             };
-            // Pale natural cork tone
-            cachedCorkMaterial.SetColor("_BaseColor", new Color(0.91f, 0.68f, 0.39f, 1f));
-            cachedCorkMaterial.SetFloat("_Smoothness", 0.20f);
+            // Rawhide and sinew cord binding
+            cachedCorkMaterial.SetColor("_BaseColor", new Color(0.36f, 0.26f, 0.18f, 1f));
+            cachedCorkMaterial.SetFloat("_Smoothness", 0.15f);
             return cachedCorkMaterial;
         }
 
         private static Material GetOrCreateReelMaterial()
         {
             if (cachedReelMaterial != null) return cachedReelMaterial;
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-            cachedReelMaterial = new Material(shader) { name = "RiverFishingRod_TealReel" };
-            cachedReelMaterial.SetColor("_BaseColor", new Color(0.035f, 0.28f, 0.34f, 1f));
-            cachedReelMaterial.SetFloat("_Smoothness", 0.58f);
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            cachedReelMaterial = new Material(shader) { name = "RiverFishingSpear_TetherHank" };
+            // Coiled hank of twisted plant fiber retrieval tether
+            cachedReelMaterial.SetColor("_BaseColor", new Color(0.45f, 0.38f, 0.26f, 1f));
+            cachedReelMaterial.SetFloat("_Smoothness", 0.10f);
             return cachedReelMaterial;
         }
 
         private static Material GetOrCreateGuideMaterial()
         {
             if (cachedGuideMaterial != null) return cachedGuideMaterial;
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-            cachedGuideMaterial = new Material(shader) { name = "RiverFishingRod_LineGuides" };
-            cachedGuideMaterial.SetColor("_BaseColor", new Color(0.96f, 0.82f, 0.47f, 1f));
-            cachedGuideMaterial.SetFloat("_Smoothness", 0.72f);
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            cachedGuideMaterial = new Material(shader) { name = "RiverFishingSpear_SinewRings" };
+            // Sinew tie-down loops along the shaft
+            cachedGuideMaterial.SetColor("_BaseColor", new Color(0.42f, 0.34f, 0.22f, 1f));
+            cachedGuideMaterial.SetFloat("_Smoothness", 0.12f);
             return cachedGuideMaterial;
         }
 
         public static Mesh GenerateProceduralRodMesh()
         {
-            var mesh = new Mesh { name = "Procedural_Fishing_Rod_Mesh" };
+            var mesh = new Mesh { name = "Procedural_Primitive_Fishing_Spear_Mesh" };
 
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
@@ -109,9 +122,9 @@ namespace CityLife.World
             const int sides = 8;
             const int segments = 12;
 
-            // Rod extends along local Z axis from 0 to RodLength (2.1m)
-            // Handle: z in [0, 0.35m]. The blank is deliberately stout enough
-            // to read as a crafted fishing pole at the pulled-back game camera.
+            // Spear extends along local Z axis from 0 to RodLength (2.10m)
+            // Grip section (z in [0, 0.35m]): radius 0.032m (giving width 0.064m >= 0.06f)
+            // Shaft section: smoothly tapers to 0.020m, then socket at tip.
             for (int r = 0; r <= segments; r++)
             {
                 float fr = r / (float)segments;
@@ -120,12 +133,17 @@ namespace CityLife.World
                 float radius;
                 if (z <= 0.35f)
                 {
-                    radius = 0.036f; // Stout handle blank; separate cork overlay below
+                    radius = 0.032f; // Ergonomic grip section
+                }
+                else if (z <= 1.85f)
+                {
+                    float shaftFr = (z - 0.35f) / 1.50f;
+                    radius = Mathf.Lerp(0.032f, 0.020f, shaftFr);
                 }
                 else
                 {
-                    float blankFr = (z - 0.35f) / (RodLength - 0.35f);
-                    radius = Mathf.Lerp(0.036f, 0.012f, blankFr); // Tapered wood blank
+                    float socketFr = (z - 1.85f) / (RodLength - 1.85f);
+                    radius = Mathf.Lerp(0.020f, 0.016f, socketFr);
                 }
 
                 for (int s = 0; s <= sides; s++)
@@ -182,42 +200,6 @@ namespace CityLife.World
                 triangles.Add(lastRing + s);
             }
 
-            // Reel spool geometry: small drum mounted at z = 0.18m, offset in -Y
-            int reelStart = vertices.Count;
-            float reelRadius = 0.032f;
-            float reelWidth = 0.024f;
-            float reelZ = 0.18f;
-            float reelY = -0.035f;
-
-            for (int rs = 0; rs <= sides; rs++)
-            {
-                float angle = (rs / (float)sides) * Mathf.PI * 2f;
-                float rx = Mathf.Cos(angle) * reelRadius;
-                float ry = Mathf.Sin(angle) * reelRadius + reelY;
-
-                vertices.Add(new Vector3(rx, ry, reelZ - reelWidth * 0.5f));
-                normals.Add(new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0).normalized);
-                uvs.Add(new Vector2(rs / (float)sides, 0));
-
-                vertices.Add(new Vector3(rx, ry, reelZ + reelWidth * 0.5f));
-                normals.Add(new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0).normalized);
-                uvs.Add(new Vector2(rs / (float)sides, 1));
-            }
-
-            for (int rs = 0; rs < sides; rs++)
-            {
-                int curr = reelStart + rs * 2;
-                int next = curr + 2;
-
-                triangles.Add(curr);
-                triangles.Add(next);
-                triangles.Add(curr + 1);
-
-                triangles.Add(curr + 1);
-                triangles.Add(next);
-                triangles.Add(next + 1);
-            }
-
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uvs);
@@ -239,42 +221,76 @@ namespace CityLife.World
             var mr = visual.AddComponent<MeshRenderer>();
             mr.sharedMaterial = rodMat != null ? rodMat : GetOrCreateRodMaterial();
 
-            // The rod used to be one slim, dark mesh. At the normal game camera
-            // distance it read as a line beside the inhabitant, not as fishing
-            // equipment. Give the grip, reel and guides distinct handcrafted
-            // materials and a clear silhouette without changing line physics.
+            // 1. Rawhide Grip Binding (replaces modern cork grip with rugged rawhide cord)
             var grip = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            grip.name = "VisibleCorkGrip";
+            grip.name = "VisibleCorkGrip"; // Retained for catalog/integration checks
             grip.transform.SetParent(visual.transform, false);
             grip.transform.localPosition = new Vector3(0, 0, 0.18f);
             grip.transform.localRotation = Quaternion.Euler(90f, 0, 0);
-            grip.transform.localScale = new Vector3(0.044f, 0.175f, 0.044f);
+            grip.transform.localScale = new Vector3(0.046f, 0.175f, 0.046f);
             grip.GetComponent<Renderer>().sharedMaterial = corkMat != null ? corkMat : GetOrCreateCorkMaterial();
             var gripCollider = grip.GetComponent<Collider>();
             if (gripCollider != null) SafeDestroy(gripCollider);
 
+            var rawhideAlias = new GameObject("RawhideGrip");
+            rawhideAlias.transform.SetParent(grip.transform, false);
+
+            // 2. Carved Bone Spear Point at tip (z = 2.10m extending forward)
+            var spearPoint = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            spearPoint.name = "SpearPoint";
+            spearPoint.transform.SetParent(visual.transform, false);
+            spearPoint.transform.localPosition = new Vector3(0, 0, RodLength + 0.08f);
+            spearPoint.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+            spearPoint.transform.localScale = new Vector3(0.024f, 0.09f, 0.024f);
+            spearPoint.GetComponent<Renderer>().sharedMaterial = GetOrCreateBoneMaterial();
+            var pointCol = spearPoint.GetComponent<Collider>();
+            if (pointCol != null) SafeDestroy(pointCol);
+
+            // 3. Carved Bone Harpoon Barb (angled backward)
+            var barb = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            barb.name = "HarpoonBarb";
+            barb.transform.SetParent(visual.transform, false);
+            barb.transform.localPosition = new Vector3(0, 0.026f, RodLength + 0.02f);
+            barb.transform.localRotation = Quaternion.Euler(145f, 0, 0);
+            barb.transform.localScale = new Vector3(0.014f, 0.055f, 0.014f);
+            barb.GetComponent<Renderer>().sharedMaterial = GetOrCreateBoneMaterial();
+            var barbCol = barb.GetComponent<Collider>();
+            if (barbCol != null) SafeDestroy(barbCol);
+
+            // 4. Sinew / Rawhide Spear Lashing securing head to wooden shaft
+            var lashing = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            lashing.name = "SpearLashing";
+            lashing.transform.SetParent(visual.transform, false);
+            lashing.transform.localPosition = new Vector3(0, 0, RodLength - 0.06f);
+            lashing.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+            lashing.transform.localScale = new Vector3(0.038f, 0.065f, 0.038f);
+            lashing.GetComponent<Renderer>().sharedMaterial = GetOrCreateCorkMaterial();
+            var lashingCol = lashing.GetComponent<Collider>();
+            if (lashingCol != null) SafeDestroy(lashingCol);
+
+            // 5. Coiled Retrieval Tether Hank (replaces lathe metal reel spool with a primitive hank of sinew line)
             var reel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             reel.name = "VisibleReelSpool";
             reel.transform.SetParent(visual.transform, false);
-            // Keep the spool beyond the hand so its side plate is visible in the
-            // player camera; the old along-shaft cylinder read as no reel at all.
-            reel.transform.localPosition = new Vector3(0, -0.075f, 0.43f);
-            reel.transform.localScale = new Vector3(0.18f, 0.045f, 0.18f);
+            reel.transform.localPosition = new Vector3(0, -0.045f, 0.42f);
+            reel.transform.localScale = new Vector3(0.08f, 0.035f, 0.08f);
             reel.GetComponent<Renderer>().sharedMaterial = GetOrCreateReelMaterial();
             var reelCollider = reel.GetComponent<Collider>();
             if (reelCollider != null) SafeDestroy(reelCollider);
 
-            AddRodAccent(visual.transform, "ReelHub", new Vector3(0, -0.102f, 0.43f),
-                new Vector3(0.052f, 0.052f, 0.052f), GetOrCreateGuideMaterial());
-            AddRodAccent(visual.transform, "ReelCrank", new Vector3(0.11f, -0.075f, 0.43f),
-                new Vector3(0.022f, 0.082f, 0.022f), GetOrCreateGuideMaterial());
-            AddRodAccent(visual.transform, "ReelKnob", new Vector3(0.11f, -0.14f, 0.43f),
-                new Vector3(0.036f, 0.036f, 0.036f), GetOrCreateReelMaterial());
+            AddRodAccent(visual.transform, "ReelHub", new Vector3(0, -0.055f, 0.42f),
+                new Vector3(0.028f, 0.028f, 0.028f), GetOrCreateCorkMaterial());
+            AddRodAccent(visual.transform, "ReelCrank", new Vector3(0.055f, -0.045f, 0.42f),
+                new Vector3(0.016f, 0.048f, 0.016f), GetOrCreateRodMaterial());
+            AddRodAccent(visual.transform, "ReelKnob", new Vector3(0.055f, -0.075f, 0.42f),
+                new Vector3(0.022f, 0.022f, 0.022f), GetOrCreateCorkMaterial());
+
+            // 6. Sinew Tie-Down Rings along spear shaft (formerly wire line guides)
             for (int guide = 0; guide < 4; guide++)
             {
                 float z = 0.62f + guide * 0.39f;
-                AddRodAccent(visual.transform, "LineGuide" + (guide + 1), new Vector3(0, 0.020f, z),
-                    new Vector3(0.022f, 0.022f, 0.022f), GetOrCreateGuideMaterial());
+                AddRodAccent(visual.transform, "LineGuide" + (guide + 1), new Vector3(0, 0.016f, z),
+                    new Vector3(0.020f, 0.020f, 0.020f), GetOrCreateGuideMaterial());
             }
 
             var tipGo = new GameObject("RodTip");
@@ -323,7 +339,11 @@ namespace CityLife.World
 
             var approach = new GameObject(stableId + " approach");
             approach.transform.SetParent(rodGo.transform, false);
-            approach.transform.localPosition = new Vector3(0.3f, 0, 0.4f);
+            approach.transform.localPosition = new Vector3(0.28f, 0, 0.4f);
+
+            var sightCenter = new GameObject(stableId + " sight-center");
+            sightCenter.transform.SetParent(rodGo.transform, false);
+            sightCenter.transform.localPosition = new Vector3(0, 0, RodLength * 0.5f);
 
             var ni = rodGo.AddComponent<NpcInteractable>();
             ni.StableId = stableId;
@@ -331,6 +351,7 @@ namespace CityLife.World
             ni.Kind = NpcObjectKind.Item;
             ni.Permission = true;
             ni.Approach = approach.transform;
+            ni.CustomSightTarget = sightCenter.transform;
 
             var phys = rodGo.AddComponent<PhysicalItem>();
             phys.itemId = stableId;
@@ -363,6 +384,22 @@ namespace CityLife.World
             ConfigureGripPose(phys, handleGo.transform.localPosition);
 
             return rodGo;
+        }
+
+        private void Update()
+        {
+            if (PhysicalItem != null && !PhysicalItem.IsCarried && Interactable != null && Interactable.Approach != null)
+            {
+                Transform actor = null;
+                var auto = FindFirstObjectByType<NpcAutonomy>();
+                if (auto != null) actor = auto.transform;
+                if (actor != null)
+                {
+                    Vector3 localActor = transform.InverseTransformPoint(actor.position);
+                    float targetZ = Mathf.Clamp(localActor.z, 0.35f, 1.85f);
+                    Interactable.Approach.localPosition = new Vector3(0.28f, 0f, targetZ);
+                }
+            }
         }
 
         public void AttachLineRenderer(LineRenderer lr)
@@ -429,6 +466,18 @@ namespace CityLife.World
             ConfigureGripPose(physical, handle.localPosition);
             var collider = root.GetComponent<BoxCollider>();
             if (collider != null) collider.center = new Vector3(0, 0, RodLength * .5f);
+
+            if (interactable != null)
+            {
+                var sight = root.transform.Find(root.name + " sight-center");
+                if (sight == null)
+                {
+                    sight = new GameObject(root.name + " sight-center").transform;
+                    sight.SetParent(root.transform, false);
+                    sight.localPosition = new Vector3(0, 0, RodLength * 0.5f);
+                }
+                interactable.CustomSightTarget = sight;
+            }
         }
 
         private static void ConfigureGripPose(PhysicalItem physical, Vector3 handleLocalPosition)

@@ -137,8 +137,8 @@ namespace CityLife.World
                 {
                     Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
                     var mat = new Material(shader) { name = "BobberMaterial" };
-                    mat.SetColor("_BaseColor", new Color(0.95f, 0.22f, 0.12f, 1f)); // High-visibility red/orange float
-                    mat.SetFloat("_Smoothness", 0.7f);
+                    mat.SetColor("_BaseColor", new Color(0.48f, 0.35f, 0.22f, 1f)); // Carved buoyant bark / driftwood float
+                    mat.SetFloat("_Smoothness", 0.15f);
                     rend.sharedMaterial = mat;
                 }
                 BobberInstance.SetActive(false);
@@ -150,13 +150,13 @@ namespace CityLife.World
                 lineGo.transform.SetParent(transform, false);
                 DynamicLine = lineGo.AddComponent<LineRenderer>();
                 DynamicLine.positionCount = 4;
-                DynamicLine.startWidth = 0.005f;
-                DynamicLine.endWidth = 0.004f;
+                DynamicLine.startWidth = 0.007f;
+                DynamicLine.endWidth = 0.006f;
                 DynamicLine.useWorldSpace = true;
 
                 Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
                 var mat = new Material(shader) { name = "FishingLine_Material" };
-                mat.SetColor("_BaseColor", new Color(0.90f, 0.88f, 0.82f, 0.85f)); // Translucent monofilament / silk twine
+                mat.SetColor("_BaseColor", new Color(0.42f, 0.38f, 0.30f, 0.95f)); // Braided plant fiber / sinew cord
                 DynamicLine.material = mat;
                 DynamicLine.enabled = false;
             }

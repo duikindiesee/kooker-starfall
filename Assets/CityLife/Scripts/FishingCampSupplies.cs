@@ -27,38 +27,25 @@ namespace CityLife.World
                 Receipt = "supplies-refused-world-not-ready";
                 yield break;
             }
-            var model = Brain.PhysicalItems.Model;
-            if (model.TryGetItem(BasketId, out _) || model.TryGetTombstone(BasketId, out _))
+            var sceneBasket = GameObject.Find(BasketId);
+            if (sceneBasket != null)
             {
-                Receipt = "supplies-v1-already-applied";
-                Ready = true;
-                yield break;
+                sceneBasket.SetActive(false);
+                if (Application.isPlaying) Destroy(sceneBasket);
+                else DestroyImmediate(sceneBasket);
             }
-            foreach (var item in model.GetAllItemSnapshots())
-                if (item.itemTypeId == "container-basket")
+            if (Brain.Actions != null && Brain.Actions.Held != null)
+            {
+                var heldPhys = Brain.Actions.Held.GetComponent<PhysicalItem>();
+                if (heldPhys != null && heldPhys.itemTypeId == "container-basket")
                 {
-                    Receipt = "existing-storage-preserved";
-                    Ready = true;
-                    yield break;
+                    Brain.ExecutePlayerAction(NpcActionKind.Drop, Brain.Actions.Held.StableId);
                 }
-            Vector3 position = new Vector3(42f, CoastalTerrain.Height(42f, -30f) + .17f, -30f);
-            var basket = Brain.PhysicalItems.CreatePhysicalItem(BasketId, "container-basket", position, Quaternion.identity);
-            if (basket == null) { Receipt = "supplies-create-refused"; yield break; }
-            foreach (var part in basket.GetComponentsInChildren<Transform>()) part.gameObject.layer = 11;
-            var interactable = basket.GetComponent<NpcInteractable>();
-            interactable.ObservedType = "woven storage basket";
-            if (!FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(Brain, "world-content:fishing-supplies-v1", out string code))
-            {
-                basket.gameObject.SetActive(false);
-                Brain.Pause();
-                Receipt = "supplies-checkpoint-failed: " + code;
-                Debug.LogError(Receipt);
-                yield break;
             }
-            Brain.Actions.RegisterInteractable(interactable);
-            Receipt = "supplies-v1-committed";
+            Receipt = "basket-supplies-deprecated";
             Ready = true;
             Debug.Log("FISHING_SUPPLIES: " + Receipt);
+            yield break;
         }
     }
 }

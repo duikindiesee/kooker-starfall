@@ -775,6 +775,11 @@ namespace CityLife.World
                     float distSight = Vector3.Distance(Brain.transform.position + Vector3.up, candidate.SightPoint);
                     if (distApproach <= 0.65f && distSight <= 1.7f)
                     {
+                        var carry = Brain.GetComponent<HunterClubCarry>() ?? Brain.GetComponentInChildren<HunterClubCarry>();
+                        if (carry != null && !carry.Stowed)
+                        {
+                            carry.SetStowed(true);
+                        }
                         Brain.ExecutePlayerAction(NpcActionKind.Pickup, candidate.StableId);
                         RefreshPickupTarget();
                         if (ContainerPanel != null && ContainerPanel.IsOpen)

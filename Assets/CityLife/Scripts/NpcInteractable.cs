@@ -12,9 +12,9 @@ namespace CityLife.World
         public string WorldId = "starfall.npc-courtyard.v1";
         public NpcObjectKind Kind;
         public bool Permission = true;
-        public Transform Approach, Socket;
+        public Transform Approach, Socket, CustomSightTarget;
         public string HeldBy = "", DeliveredTo = "", Occupant = "";
-        public Vector3 SightPoint => Kind == NpcObjectKind.Item ? transform.position : transform.position + Vector3.up * .65f;
+        public Vector3 SightPoint => CustomSightTarget != null ? CustomSightTarget.position : (Kind == NpcObjectKind.Item ? transform.position : transform.position + Vector3.up * .65f);
         public bool Available => Kind == NpcObjectKind.Item ? HeldBy.Length == 0 && DeliveredTo.Length == 0 : Occupant.Length == 0;
         private Transform originalParent;
         private Vector3 originalPosition;

@@ -1073,8 +1073,16 @@ namespace CityLife.Items
 
                 if (rec.location == ItemLocationKind.Carried)
                 {
-                    phys.AttachToHand(actions.HandTransform);
-                    if (b.interactable != null) b.interactable.HeldBy = payload.actorId;
+                    if (rec.itemTypeId == "container-basket" || rec.itemId == "fishing-camp-basket-v1")
+                    {
+                        phys.ReleaseToPhysics(rec.position, rec.rotation);
+                        if (b.interactable != null) b.interactable.HeldBy = "";
+                    }
+                    else
+                    {
+                        phys.AttachToHand(actions.HandTransform);
+                        if (b.interactable != null) b.interactable.HeldBy = payload.actorId;
+                    }
                 }
                 else if (rec.location == ItemLocationKind.Free)
                 {
