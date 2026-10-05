@@ -451,8 +451,8 @@ namespace CityLife.World
                 var fish = ActiveFish[i];
                 if (fish == null || fish.gameObject == null || !fish.gameObject.activeSelf) continue;
 
-                // If reserved on fishing line, carried in hand, stowed in satchel, or undergoing eating/cooking, don't simulate swimming orbit
-                if (fish.fishingControlled || (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored)))
+                // If reserved on fishing line, carried in hand, stowed in satchel, bound to inventory/world, or on dry ground, don't simulate swimming orbit
+                if (fish.fishingControlled || (fish.physicalItem != null && (fish.physicalItem.IsCarried || fish.physicalItem.IsStored || fish.physicalItem.IsBound)) || fish.gameObject.transform.position.y > waterY + 0.10f)
                 {
                     continue;
                 }
