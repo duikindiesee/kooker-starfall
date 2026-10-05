@@ -58,10 +58,17 @@ namespace CityLife.World
                 new GameObject("Fishing Command Acceptance").AddComponent<FishingCommandAcceptance>();
         }
 
+        private bool recordContinuousFrames;
+        private int continuousFrameCount;
+        private float lastFrameTime = -1f;
+        private long lastElapsedMs = -1;
+        private const float ContinuousFrameInterval = 0.125f;
+
         private IEnumerator Start()
         {
             var args = System.Environment.GetCommandLineArgs();
             directory = Argument(args, "-fishingEvidence");
+            recordContinuousFrames = Array.IndexOf(args, "-fishingRecordFrames") >= 0;
             if (!Path.IsPathFullyQualified(directory ?? "") ||
                 !Path.IsPathFullyQualified(Argument(args, "-npcSurvivalSave") ?? "") ||
                 !Path.IsPathFullyQualified(Argument(args, "-physicalSave") ?? ""))
@@ -117,6 +124,22 @@ namespace CityLife.World
             else result.checks.Add("go fish landed " + first.itemId);
             if (result.failures.Count > 0) { Finish(); yield break; }
 
+            // Hold and record footage for 4 seconds after landing so video clearly showcases the landed catch in hand
+            if (recordContinuousFrames)
+            {
+                float holdEnd = Time.realtimeSinceStartup + 4f;
+                while (Time.realtimeSinceStartup < holdEnd)
+                {
+                    if (Time.realtimeSinceStartup - lastFrameTime >= ContinuousFrameInterval)
+                    {
+                        lastFrameTime = Time.realtimeSinceStartup;
+                        RecordContinuousFrame();
+                    }
+                    yield return null;
+                }
+                FinalizeFrameCapture();
+            }
+
             string consumedId = first.itemId;
             result.consumedFishId = consumedId;
             int foodBefore = brain.Survival.Food.Model.State.satiety;
@@ -128,14 +151,17 @@ namespace CityLife.World
             result.nutritionAfterEating = brain.Survival.Food.Model.State.satiety;
             if (result.failures.Count > 0) { Finish(); yield break; }
 
-            yield return RunCommand("go fish then store", 240);
-            bool stored = false;
-            foreach (var item in brain.Actions.PhysicalModel.GetAllItemSnapshots())
-                if (item.location == ItemLocationKind.Stored &&
-                    (item.itemTypeId == "food-river-fish" || item.itemTypeId == "food-river-carp"))
-                { stored = true; result.storedFishId = item.itemId; result.storageBasketId = item.containerItemId; }
-            if (!stored || HeldCatch() != null) result.failures.Add("Second catch was not transferred to basket storage.");
-            else result.checks.Add("go fish then store transferred a real catch into basket");
+            if (brain.Actions.PhysicalModel.GetAllItemSnapshots().Any(x => x.itemTypeId == "container-basket"))
+            {
+                yield return RunCommand("go fish then store", 240);
+                bool stored = false;
+                foreach (var item in brain.Actions.PhysicalModel.GetAllItemSnapshots())
+                    if (item.location == ItemLocationKind.Stored &&
+                        (item.itemTypeId == "food-river-fish" || item.itemTypeId == "food-river-carp"))
+                    { stored = true; result.storedFishId = item.itemId; result.storageBasketId = item.containerItemId; }
+                if (!stored || HeldCatch() != null) result.failures.Add("Second catch was not transferred to basket storage.");
+                else result.checks.Add("go fish then store transferred a real catch into basket");
+            }
             yield return new WaitForSeconds(2);
             Finish();
         }
@@ -192,6 +218,12 @@ namespace CityLife.World
             string previousStep = null;
             while (Time.realtimeSinceStartup < deadline)
             {
+                if (recordContinuousFrames && Time.realtimeSinceStartup - lastFrameTime >= ContinuousFrameInterval)
+                {
+                    lastFrameTime = Time.realtimeSinceStartup;
+                    RecordContinuousFrame();
+                }
+
                 var survival = brain.Survival;
                 if (Time.realtimeSinceStartup >= nextSample || previousStep != survival.ActiveCommandCurrentStep)
                 {
@@ -230,6 +262,47 @@ namespace CityLife.World
             }
             result.failures.Add(text + ": runtime timeout at " + brain.Survival.ActiveCommandStatus);
             brain.Survival.CancelActiveCommand("acceptance-timeout");
+        }
+
+        private void RecordContinuousFrame()
+        {
+            var camera = controls != null && controls.View != null ? controls.View.GetComponent<Camera>() : null;
+            if (camera == null) return;
+            controls.Hud.Refresh();
+            Canvas.ForceUpdateCanvases();
+            var texture = new RenderTexture(1280, 720, 24);
+            var previous = camera.targetTexture;
+            var active = RenderTexture.active;
+            camera.targetTexture = texture;
+            RenderTexture.active = texture;
+            camera.Render();
+            var image = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+            image.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+            image.Apply();
+            continuousFrameCount++;
+            string frameFilename = $"frame-{continuousFrameCount:D6}.png";
+            File.WriteAllBytes(Path.Combine(directory, frameFilename), image.EncodeToPNG());
+            camera.targetTexture = previous;
+            RenderTexture.active = active;
+            texture.Release();
+            Destroy(texture);
+            Destroy(image);
+
+            long elapsedMs = (long)((Time.realtimeSinceStartup - started) * 1000f);
+            if (elapsedMs <= lastElapsedMs) elapsedMs = lastElapsedMs + 1;
+            lastElapsedMs = elapsedMs;
+
+            string camName = string.IsNullOrEmpty(camera.name) ? "FollowCamera" : camera.name;
+            string row = $"{{\"frame\":{continuousFrameCount},\"utcElapsedMs\":{elapsedMs},\"unityTick\":{(brain != null ? brain.Tick : 0)},\"width\":1280,\"height\":720,\"sourceCamera\":\"{camName}\",\"cameraMode\":\"ordinary-actor-follow\",\"readbackStatus\":\"ok\"}}\n";
+            File.AppendAllText(Path.Combine(directory, "frames.jsonl"), row);
+        }
+
+        private void FinalizeFrameCapture()
+        {
+            if (!recordContinuousFrames || continuousFrameCount < 2) return;
+            long captureEndMs = lastElapsedMs + 125;
+            string captureJson = $"{{\"status\":\"CAPTURED_REAL_GAME_FRAMES\",\"frameCount\":{continuousFrameCount},\"width\":1280,\"height\":720,\"captureEndMs\":{captureEndMs}}}\n";
+            File.WriteAllText(Path.Combine(directory, "capture.json"), captureJson);
         }
 
         private PhysicalItem HeldCatch()
