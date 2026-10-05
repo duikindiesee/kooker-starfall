@@ -75,6 +75,9 @@ namespace CityLife.World.Editor
                 // 8. Grounded Berry Directive & Authoritative Checkpoint Hydration
                 TestEatBerryDirective(checks);
 
+                // 9. Go Swim Natural Language Directive
+                TestGoSwimDirective(checks);
+
                 receipt = $"All {checks.Count} 'go fish' validation assertions passed:\n" + string.Join("\n", checks);
                 return true;
             }
@@ -221,6 +224,17 @@ namespace CityLife.World.Editor
             AssertAction("go fish and store", SemanticActionKind.CatchThenStore, "deterministic");
             AssertAction("go fishing and store", SemanticActionKind.CatchThenStore, "deterministic");
 
+            // Swimming directives
+            AssertAction("go swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go swimming", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("take a swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim in river", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim river", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go to river and swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go to water and swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim in water", SemanticActionKind.GoSwim, "deterministic");
+
             // Strict negation rejection
             AssertNegation("don't go fish");
             AssertNegation("dont go fish");
@@ -229,8 +243,14 @@ namespace CityLife.World.Editor
             AssertNegation("stop fishing");
             AssertNegation("cannot fish");
             AssertNegation("do not catch fish");
+            AssertNegation("don't swim");
+            AssertNegation("dont swim");
+            AssertNegation("never swim");
+            AssertNegation("avoid swimming");
+            AssertNegation("stop swimming");
+            AssertNegation("cannot swim");
 
-            checks.Add("[SemanticInterpreter] Verified 'go fish' canonical shortcuts, chained actions, and strict negation filtering.");
+            checks.Add("[SemanticInterpreter] Verified 'go fish' and 'go swim' canonical shortcuts, chained actions, and strict negation filtering.");
         }
 
         private static void AssertAction(string text, SemanticActionKind expectedAction, string expectedSource)
@@ -1312,6 +1332,63 @@ namespace CityLife.World.Editor
                     UnityEngine.Object.DestroyImmediate(bsGo);
                     if (rodGo != null) UnityEngine.Object.DestroyImmediate(rodGo);
                 }
+            }
+        }
+
+        private static void TestGoSwimDirective(List<string> checks)
+        {
+            var actorGo = new GameObject("Test_Swim_Actor");
+            var rightHandGo = new GameObject("RightHand");
+            var leftHandGo = new GameObject("LeftHand");
+
+            try
+            {
+                rightHandGo.transform.SetParent(actorGo.transform, false);
+                leftHandGo.transform.SetParent(actorGo.transform, false);
+
+                var brain = actorGo.AddComponent<NpcAutonomy>();
+                var actions = new NpcActionApi("test-agent", "test-world", actorGo.transform, rightHandGo.transform, leftHandGo.transform, Array.Empty<NpcInteractable>());
+                brain.SetActionsForTesting(actions);
+
+                var nav = actorGo.AddComponent<NpcTerrainNavigation>();
+                brain.TerrainNavigation = nav;
+
+                var perception = actorGo.AddComponent<NpcPerception>();
+                brain.Perception = perception;
+
+                var survival = actorGo.AddComponent<StarfallSurvivalAutonomy>();
+                survival.Brain = brain;
+                brain.Survival = survival;
+
+                // 1. Rejection of negation
+                bool negSubmit = survival.SubmitNaturalLanguageCommand("don't swim");
+                if (negSubmit || survival.HasActiveCommand)
+                    throw new InvalidOperationException("Negated swimming command was not rejected.");
+
+                // 2. Submission of canonical "go swim" directive
+                bool submit = survival.SubmitNaturalLanguageCommand("go swim");
+                if (!submit || !survival.HasActiveCommand)
+                    throw new InvalidOperationException("Failed to submit canonical 'go swim' command.");
+
+                if (survival.ActiveCommandTitle != "Go swim in river")
+                    throw new InvalidOperationException($"Expected 'Go swim in river', got '{survival.ActiveCommandTitle}'.");
+
+                if (survival.ActiveCommandCurrentStep != "Navigate to river bank")
+                    throw new InvalidOperationException($"Expected initial step 'Navigate to river bank', got '{survival.ActiveCommandCurrentStep}'.");
+
+                // 3. Clean cancellation
+                bool cancelSubmit = survival.SubmitNaturalLanguageCommand("cancel");
+                if (!cancelSubmit || survival.HasActiveCommand)
+                    throw new InvalidOperationException("Failed to cancel active swim command via 'cancel' directive.");
+
+                if (survival.LastCommandReceipt != "command-cancelled: directive-cancel")
+                    throw new InvalidOperationException($"Expected cancellation receipt 'command-cancelled: directive-cancel', got '{survival.LastCommandReceipt}'.");
+
+                checks.Add("[SwimDirective] Verified 'go swim' command submission, 3-step sequence setup, cancellation, and negation rejection.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(actorGo);
             }
         }
     }

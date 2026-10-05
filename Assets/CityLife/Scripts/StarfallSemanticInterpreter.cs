@@ -23,7 +23,8 @@ namespace CityLife.World
         CatchThenRoast = 9,
         Cancel = 10,
         Rejected = 11,
-        EatBerry = 12
+        EatBerry = 12,
+        GoSwim = 13
     }
 
     public struct SemanticInterpretationResult
@@ -102,6 +103,19 @@ namespace CityLife.World
             { "eat sourfig", SemanticActionKind.EatBerry },
             { "eat sourfig berry", SemanticActionKind.EatBerry },
             { "eat a sourfig berry", SemanticActionKind.EatBerry },
+
+            // Swimming Directives
+            { "go swim", SemanticActionKind.GoSwim },
+            { "swim", SemanticActionKind.GoSwim },
+            { "go swimming", SemanticActionKind.GoSwim },
+            { "take a swim", SemanticActionKind.GoSwim },
+            { "take swim", SemanticActionKind.GoSwim },
+            { "have a swim", SemanticActionKind.GoSwim },
+            { "swim in river", SemanticActionKind.GoSwim },
+            { "swim river", SemanticActionKind.GoSwim },
+            { "go to river and swim", SemanticActionKind.GoSwim },
+            { "go to water and swim", SemanticActionKind.GoSwim },
+            { "swim in water", SemanticActionKind.GoSwim },
 
             // Chained Actions
             { "go river then catch", SemanticActionKind.GoRiverThenCatch },
@@ -285,7 +299,7 @@ namespace CityLife.World
                     Success = false,
                     Action = SemanticActionKind.Rejected,
                     ActionName = "rejected",
-                    Reason = "endpoint-unavailable: use documented shortcut (e.g. 'go fish', 'go river', 'eat catch', 'store catch')",
+                    Reason = "endpoint-unavailable: use documented shortcut (e.g. 'go fish', 'go river', 'eat catch', 'store catch', 'go swim')",
                     Source = "endpoint-unavailable",
                     Generation = generation,
                     Milliseconds = timer.ElapsedMilliseconds
@@ -350,7 +364,7 @@ namespace CityLife.World
                             Success = false,
                             Action = SemanticActionKind.Rejected,
                             ActionName = "timeout",
-                            Reason = "endpoint-timeout: retry or use documented shortcut (e.g. 'go fish', 'go river', 'eat catch', 'store catch')",
+                            Reason = "endpoint-timeout: retry or use documented shortcut (e.g. 'go fish', 'go river', 'eat catch', 'store catch', 'go swim')",
                             Source = "timeout",
                             Generation = generation,
                             Milliseconds = timer.ElapsedMilliseconds
@@ -446,9 +460,9 @@ namespace CityLife.World
             string systemPrompt = "You are a gameplay command interpreter for an autonomous inhabitant in a survival game. " +
                                   "Classify the player's natural language directive into exact JSON with keys 'action' and 'reason'. " +
                                   "Allowed 'action' values: " +
-                                  "'go-to-river', 'catch-fish', 'roast-catch', 'store-fish-in-basket', 'eat-catch', 'eat-berry', " +
+                                  "'go-to-river', 'catch-fish', 'roast-catch', 'store-fish-in-basket', 'eat-catch', 'eat-berry', 'go-swim', " +
                                   "'catch-then-eat', 'catch-then-store', 'go-river-then-catch', 'catch-then-roast', 'cancel', 'rejected'. " +
-                                  "Negations (e.g. 'do not eat', 'don't fish') MUST be classified as 'rejected'. " +
+                                  "Negations (e.g. 'do not eat', 'don't fish', 'don't swim') MUST be classified as 'rejected'. " +
                                   "Unsupported requests (e.g. 'build shelter', 'look at fish', 'sing song') MUST be classified as 'rejected'. " +
                                   "Output ONLY valid JSON.";
 
@@ -504,6 +518,8 @@ namespace CityLife.World
                     case "store-fish-in-basket": action = SemanticActionKind.StoreFishInBasket; return true;
                     case "eat-catch": action = SemanticActionKind.EatCatch; return true;
                     case "eat-berry": action = SemanticActionKind.EatBerry; return true;
+                    case "go-swim": action = SemanticActionKind.GoSwim; return true;
+                    case "swim": action = SemanticActionKind.GoSwim; return true;
                     case "catch-then-eat": action = SemanticActionKind.CatchThenEat; return true;
                     case "catch-then-store": action = SemanticActionKind.CatchThenStore; return true;
                     case "go-river-then-catch": action = SemanticActionKind.GoRiverThenCatch; return true;
@@ -530,6 +546,7 @@ namespace CityLife.World
                 case SemanticActionKind.StoreFishInBasket: return "store-fish-in-basket";
                 case SemanticActionKind.EatCatch: return "eat-catch";
                 case SemanticActionKind.EatBerry: return "eat-berry";
+                case SemanticActionKind.GoSwim: return "go-swim";
                 case SemanticActionKind.CatchThenEat: return "catch-then-eat";
                 case SemanticActionKind.CatchThenStore: return "catch-then-store";
                 case SemanticActionKind.GoRiverThenCatch: return "go-river-then-catch";
