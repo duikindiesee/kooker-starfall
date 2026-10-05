@@ -2926,6 +2926,11 @@ namespace CityLife.World
                     AddEatBerrySteps(steps);
                     return true;
 
+                case SemanticActionKind.GoSwim:
+                    title = "Go swim in river";
+                    AddGoSwimSteps(steps);
+                    return true;
+
                 default:
                     failReason = "unrecognized-command: " + originalText;
                     return false;
@@ -2964,6 +2969,168 @@ namespace CityLife.World
             });
         }
 
+        private void AddGoSwimSteps(List<ActiveCommandStep> steps)
+        {
+            // Step 1: Navigate to river bank / water
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Navigate to river bank",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    if (self.Brain != null && self.Brain.Actor != null &&
+                        (self.Brain.Actor.IsSwimming || (self.Brain.Actor.IsWading && self.Brain.Actor.WaterDepth > 0.5f)))
+                    {
+                        self.ActiveCommandStatus = "Arrived at river";
+                        return true;
+                    }
+
+                    Vector3 target = self.FindRiverBankTarget(self.Brain.transform.position);
+                    if (target == Vector3.zero)
+                    {
+                        target = self.FindGroundedRiverWaterTarget(self.Brain.transform.position);
+                    }
+                    if (target == Vector3.zero && self.Brain != null && self.Brain.TerrainNavigation != null)
+                    {
+                        target = self.Brain.TerrainNavigation.FindNearestRiverBank(self.Brain.transform.position);
+                    }
+                    if (target == Vector3.zero)
+                    {
+                        self.ActiveCommandStatus = "Cannot find river: no river seen or remembered in territory";
+                        self.CancelActiveCommand("command-failed-river-unknown");
+                        return true;
+                    }
+
+                    float dist = Vector3.Distance(self.Brain.transform.position, target);
+                    if (dist <= 3.2f || (self.Brain.Actor != null && self.Brain.Actor.IsWading))
+                    {
+                        self.ActiveCommandStatus = "Arrived at river bank";
+                        return true;
+                    }
+                    if (self.route.Count == 0 || self.routePurpose != "go-swim-bank")
+                    {
+                        self.StartRoute(target);
+                        self.routePurpose = "go-swim-bank";
+                    }
+                    self.ActiveCommandStatus = $"Navigating to river ({dist:F1}m)...";
+                    return false;
+                }
+            });
+
+            // Step 2: Wade into river until swimming
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Enter river water",
+                TimeoutSeconds = 15f,
+                Execute = self =>
+                {
+                    if (self.Brain == null || self.Brain.Actor == null) return true;
+
+                    // If actor is swimming, we have successfully entered deep water!
+                    if (self.Brain.Actor.IsSwimming)
+                    {
+                        self.ActiveCommandStatus = "In river water: swimming";
+                        return true;
+                    }
+
+                    Vector3 pos = self.Brain.transform.position;
+                    float cx = CoastalTerrain.RiverCenterlineX(pos.z);
+                    Vector3 waterTarget = new Vector3(cx, CoastalWater.CurrentLevel, pos.z);
+
+                    Vector3 delta = waterTarget - pos;
+                    delta.y = 0;
+                    if (delta.sqrMagnitude > 0.04f)
+                    {
+                        Vector3 dir = delta.normalized;
+                        self.Brain.Actor.Step(dir, NpcAutonomy.StepSeconds);
+                    }
+                    else if (self.Brain.Actor.WaterDepth > 0.75f)
+                    {
+                        return true;
+                    }
+
+                    self.ActiveCommandStatus = $"Entering river water (depth: {self.Brain.Actor.WaterDepth:F2}m)...";
+                    return false;
+                }
+            });
+
+            // Step 3: Autonomous River Swimming Loop
+            var swimStep = new ActiveCommandStep
+            {
+                Title = "Swim in river",
+                TimeoutSeconds = 180f
+            };
+            swimStep.Execute = self =>
+            {
+                if (self.Brain == null || self.Brain.Actor == null) return true;
+
+                // Safety checks: if energy or hydration critically depleted, or fatigue high, exit water gracefully
+                if (self.Food != null && self.Food.Model != null && self.Food.Model.State != null)
+                {
+                    var s = self.Food.Model.State;
+                    if (s.satiety < 1200 || s.hydration < 1200 || (s.body != null && s.body.fatigue > 8500))
+                    {
+                        self.ActiveCommandStatus = "Fatigued / seeking shore to exit water";
+                        return true;
+                    }
+                }
+
+                Vector3 pos = self.Brain.transform.position;
+                float cx = CoastalTerrain.RiverCenterlineX(pos.z);
+
+                // River corridor pathfinding: swim along the scenic river reach
+                // Gently oscillate along the river channel
+                float cycle = Mathf.Sin(swimStep.ElapsedSeconds * 0.12f);
+                float longitudinalDir = cycle >= 0f ? 0.75f : -0.75f;
+                float lateralCorrection = Mathf.Clamp((cx - pos.x) * 0.65f, -0.65f, 0.65f);
+
+                Vector3 swimDir = new Vector3(lateralCorrection, 0f, longitudinalDir).normalized;
+                self.Brain.Actor.Step(swimDir, NpcAutonomy.StepSeconds);
+
+                self.ActiveCommandStatus = $"Swimming in river ({swimStep.ElapsedSeconds:F0}s) - [Cancel: C to exit water]";
+                return false;
+            };
+            steps.Add(swimStep);
+
+            // Step 4: Return to dry river bank upon completion/exit
+            steps.Add(new ActiveCommandStep
+            {
+                Title = "Exit river to shore",
+                TimeoutSeconds = 25f,
+                Execute = self =>
+                {
+                    if (self.Brain == null || self.Brain.Actor == null) return true;
+                    if (!self.Brain.Actor.IsSwimming && !self.Brain.Actor.IsWading && self.Brain.transform.position.y > CoastalWater.Level + 0.20f)
+                    {
+                        self.ActiveCommandStatus = "Exited river onto dry shore";
+                        return true;
+                    }
+
+                    Vector3 target = self.FindRiverBankTarget(self.Brain.transform.position);
+                    if (target == Vector3.zero)
+                    {
+                        target = self.FindNearestShore(self.Brain.transform.position);
+                    }
+
+                    if (target != Vector3.zero)
+                    {
+                        Vector3 delta = target - self.Brain.transform.position;
+                        delta.y = 0;
+                        if (delta.sqrMagnitude > 0.1f)
+                        {
+                            self.Brain.Actor.Step(delta.normalized, NpcAutonomy.StepSeconds);
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    self.ActiveCommandStatus = "Exiting river onto dry shore...";
+                    return false;
+                }
+            });
+        }
+
         public void CancelActiveCommand(string reason = "cancelled-by-user")
         {
             HoldingAfterDirective = false;
@@ -2992,6 +3159,16 @@ namespace CityLife.World
                 routePurpose = null;
                 activeCommandSteps = null;
                 activeCommandStepIndex = 0;
+
+                if (Brain != null && Brain.Actor != null && (Brain.Actor.IsSwimming || Brain.Actor.IsWading))
+                {
+                    Vector3 shore = FindNearestShore(Brain.transform.position);
+                    if (shore != Vector3.zero)
+                    {
+                        StartRoute(shore);
+                        routePurpose = "seek-shore";
+                    }
+                }
             }
             LastCommandReceipt = "command-cancelled: " + reason;
             ActiveCommandStatus = "Command cancelled: " + reason;

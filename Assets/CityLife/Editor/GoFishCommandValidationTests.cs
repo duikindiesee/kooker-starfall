@@ -6,6 +6,7 @@ using UnityEngine;
 using CityLife.Items;
 using CityLife.World;
 using CityLife.Food;
+using Starfall.Food;
 
 namespace CityLife.World.Editor
 {
@@ -74,6 +75,12 @@ namespace CityLife.World.Editor
 
                 // 8. Grounded Berry Directive & Authoritative Checkpoint Hydration
                 TestEatBerryDirective(checks);
+
+                // 9. Go Swim Natural Language Directive
+                TestGoSwimDirective(checks);
+
+                // 10. Checkpoint Bounded Eviction (prevents ledger overflow > 256)
+                TestBoundedReceiptEviction(checks);
 
                 receipt = $"All {checks.Count} 'go fish' validation assertions passed:\n" + string.Join("\n", checks);
                 return true;
@@ -221,6 +228,17 @@ namespace CityLife.World.Editor
             AssertAction("go fish and store", SemanticActionKind.CatchThenStore, "deterministic");
             AssertAction("go fishing and store", SemanticActionKind.CatchThenStore, "deterministic");
 
+            // Swimming directives
+            AssertAction("go swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go swimming", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("take a swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim in river", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim river", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go to river and swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("go to water and swim", SemanticActionKind.GoSwim, "deterministic");
+            AssertAction("swim in water", SemanticActionKind.GoSwim, "deterministic");
+
             // Strict negation rejection
             AssertNegation("don't go fish");
             AssertNegation("dont go fish");
@@ -229,8 +247,14 @@ namespace CityLife.World.Editor
             AssertNegation("stop fishing");
             AssertNegation("cannot fish");
             AssertNegation("do not catch fish");
+            AssertNegation("don't swim");
+            AssertNegation("dont swim");
+            AssertNegation("never swim");
+            AssertNegation("avoid swimming");
+            AssertNegation("stop swimming");
+            AssertNegation("cannot swim");
 
-            checks.Add("[SemanticInterpreter] Verified 'go fish' canonical shortcuts, chained actions, and strict negation filtering.");
+            checks.Add("[SemanticInterpreter] Verified 'go fish' and 'go swim' canonical shortcuts, chained actions, and strict negation filtering.");
         }
 
         private static void AssertAction(string text, SemanticActionKind expectedAction, string expectedSource)
@@ -1312,6 +1336,173 @@ namespace CityLife.World.Editor
                     UnityEngine.Object.DestroyImmediate(bsGo);
                     if (rodGo != null) UnityEngine.Object.DestroyImmediate(rodGo);
                 }
+            }
+        }
+
+        private static void TestGoSwimDirective(List<string> checks)
+        {
+            var actorGo = new GameObject("Test_Swim_Actor");
+            var rightHandGo = new GameObject("RightHand");
+            var leftHandGo = new GameObject("LeftHand");
+
+            try
+            {
+                rightHandGo.transform.SetParent(actorGo.transform, false);
+                leftHandGo.transform.SetParent(actorGo.transform, false);
+
+                var brain = actorGo.AddComponent<NpcAutonomy>();
+                var actions = new NpcActionApi("test-agent", "test-world", actorGo.transform, rightHandGo.transform, leftHandGo.transform, Array.Empty<NpcInteractable>());
+                brain.SetActionsForTesting(actions);
+
+                var nav = actorGo.AddComponent<NpcTerrainNavigation>();
+                brain.TerrainNavigation = nav;
+
+                var perception = actorGo.AddComponent<NpcPerception>();
+                brain.Perception = perception;
+
+                var survival = actorGo.AddComponent<StarfallSurvivalAutonomy>();
+                survival.Brain = brain;
+                brain.Survival = survival;
+
+                // 1. Rejection of negation
+                bool negSubmit = survival.SubmitNaturalLanguageCommand("don't swim");
+                if (negSubmit || survival.HasActiveCommand)
+                    throw new InvalidOperationException("Negated swimming command was not rejected.");
+
+                // 2. Submission of canonical "go swim" directive
+                bool submit = survival.SubmitNaturalLanguageCommand("go swim");
+                if (!submit || !survival.HasActiveCommand)
+                    throw new InvalidOperationException("Failed to submit canonical 'go swim' command.");
+
+                if (survival.ActiveCommandTitle != "Go swim in river")
+                    throw new InvalidOperationException($"Expected 'Go swim in river', got '{survival.ActiveCommandTitle}'.");
+
+                if (survival.ActiveCommandCurrentStep != "Navigate to river bank")
+                    throw new InvalidOperationException($"Expected initial step 'Navigate to river bank', got '{survival.ActiveCommandCurrentStep}'.");
+
+                // 3. Clean cancellation
+                bool cancelSubmit = survival.SubmitNaturalLanguageCommand("cancel");
+                if (!cancelSubmit || survival.HasActiveCommand)
+                    throw new InvalidOperationException("Failed to cancel active swim command via 'cancel' directive.");
+
+                if (survival.LastCommandReceipt != "command-cancelled: directive-cancel")
+                    throw new InvalidOperationException($"Expected cancellation receipt 'command-cancelled: directive-cancel', got '{survival.LastCommandReceipt}'.");
+
+                checks.Add("[SwimDirective] Verified 'go swim' command submission, 3-step sequence setup, cancellation, and negation rejection.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(actorGo);
+            }
+        }
+
+        private static void TestBoundedReceiptEviction(List<string> checks)
+        {
+            string testDir = Path.Combine(Path.GetTempPath(), "starfall-test-eviction-" + Guid.NewGuid().ToString("N"));
+            var bsGo = new GameObject("Test_BS_Eviction");
+            try
+            {
+                Directory.CreateDirectory(testDir);
+                var brain = bsGo.AddComponent<NpcAutonomy>();
+                var foodGo = new GameObject("FoodRuntime");
+                foodGo.transform.SetParent(bsGo.transform);
+                var foodRuntime = foodGo.AddComponent<Starfall.Food.IntegratedFoodRuntime>();
+                foodRuntime.Brain = brain;
+                foodRuntime.EnsureModel();
+                var foodModel = foodRuntime.Model;
+                string worldId = foodModel.State.world;
+                string actorId = foodModel.State.actorId;
+
+                brain.InstanceWorldId = worldId;
+                var bs = bsGo.AddComponent<PhysicalItemBootstrap>();
+                bs.Brain = brain;
+                brain.PhysicalItems = bs;
+                var cat = PhysicalItemCatalog.CreateDefaultCatalog();
+                var itemModel = new ItemModel(worldId, "gen-01");
+                cat.PopulateModel(itemModel);
+                bs.SetModelForTesting(itemModel, cat);
+
+                var survival = bsGo.AddComponent<StarfallSurvivalAutonomy>();
+                survival.Brain = brain;
+                brain.Survival = survival;
+                survival.Food = foodRuntime;
+
+                string repoDir = Path.Combine(testDir, "food-ownership-repository");
+                Directory.CreateDirectory(repoDir);
+                FoodConsumptionBridge.CustomRepositoryDirectoryOverrideForTesting = repoDir;
+
+                var repo = new FoodOwnershipCheckpointRepository(repoDir, worldId, actorId, "combined-v1", "gen-01");
+                if (!repo.InitializeEmpty(out string initErr))
+                    throw new InvalidOperationException("Failed to initialize empty repo for eviction test: " + initErr);
+
+                // Pre-populate an authoritative checkpoint with exactly 256 receipts (MaxReceiptLedgerSize)
+                var receipts = new List<FoodOwnershipReceiptRecord>();
+                for (int i = 1; i <= FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize; i++)
+                {
+                    receipts.Add(new FoodOwnershipReceiptRecord
+                    {
+                        transactionId = i,
+                        requestSignature = "Sync:" + i,
+                        foodRequestId = i,
+                        itemRequestId = i,
+                        status = FoodOwnershipReceiptStatus.Committed,
+                        statusCode = "sync-ok",
+                        checkpointSequence = 1,
+                        payloadHash = FoodOwnershipCheckpointCodec.ComputeSha256("pre-" + i)
+                    });
+                }
+
+                var seedEnvelope = new FoodOwnershipCheckpointEnvelope
+                {
+                    schema = FoodOwnershipCheckpointEnvelope.CurrentSchema,
+                    worldId = worldId,
+                    actorId = actorId,
+                    foodGeneration = "combined-v1",
+                    physicalGeneration = "gen-01",
+                    sequence = 1,
+                    previousCheckpointHash = "",
+                    requestHighWatermark = FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize,
+                    foodPayload = foodModel.Json(),
+                    physicalPayload = JsonUtility.ToJson(ItemPersistence.CreateSnapshot(itemModel, actorId), false),
+                    receipts = receipts
+                };
+                seedEnvelope.foodPayloadHash = FoodOwnershipCheckpointCodec.ComputeSha256(seedEnvelope.foodPayload);
+                seedEnvelope.physicalPayloadHash = FoodOwnershipCheckpointCodec.ComputeSha256(seedEnvelope.physicalPayload);
+                seedEnvelope.checkpointHash = FoodOwnershipCheckpointCodec.ComputeCanonicalEnvelopeHash(seedEnvelope);
+
+                var commitRes = repo.Commit(seedEnvelope, foodModel, itemModel);
+                if (commitRes.Status != CheckpointCommitStatus.Committed)
+                    throw new InvalidOperationException("Failed to commit 256-receipt seed checkpoint: " + commitRes.Message);
+
+                // Now execute 2 successive syncs through FoodConsumptionBridge
+                // (which would exceed 256 and overflow without bounded FIFO eviction)
+                bool sync1 = FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(brain, "eviction-test-1", out string rc1);
+                if (!sync1)
+                    throw new InvalidOperationException("Sync 1 failed at ledger boundary: " + rc1);
+
+                bool sync2 = FoodConsumptionBridge.TryCommitCoordinatedCheckpoint(brain, "eviction-test-2", out string rc2);
+                if (!sync2)
+                    throw new InvalidOperationException("Sync 2 failed at ledger boundary: " + rc2);
+
+                if (repo.LoadAuthoritativeCheckpoint(foodModel, itemModel, out var loadedEnv).Status != CheckpointLoadStatus.Success || loadedEnv == null)
+                    throw new InvalidOperationException("Failed to load authoritative checkpoint after eviction syncs.");
+
+                if (loadedEnv.receipts.Count != FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize)
+                    throw new InvalidOperationException($"Expected exactly {FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize} receipts after eviction, got {loadedEnv.receipts.Count}.");
+
+                if (loadedEnv.receipts[0].transactionId != 3)
+                    throw new InvalidOperationException($"Expected oldest retained transactionId to be 3 after 2 evictions, got {loadedEnv.receipts[0].transactionId}.");
+
+                if (loadedEnv.receipts[loadedEnv.receipts.Count - 1].transactionId != FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize + 2)
+                    throw new InvalidOperationException($"Expected newest transactionId to be {FoodOwnershipCheckpointEnvelope.MaxReceiptLedgerSize + 2}, got {loadedEnv.receipts[loadedEnv.receipts.Count - 1].transactionId}.");
+
+                checks.Add("[CheckpointEviction:BoundedLedger] Verified bounded FIFO eviction prevents receipt ledger overflow beyond 256 across long sessions.");
+            }
+            finally
+            {
+                FoodConsumptionBridge.CustomRepositoryDirectoryOverrideForTesting = null;
+                UnityEngine.Object.DestroyImmediate(bsGo);
+                try { if (Directory.Exists(testDir)) Directory.Delete(testDir, true); } catch { }
             }
         }
     }

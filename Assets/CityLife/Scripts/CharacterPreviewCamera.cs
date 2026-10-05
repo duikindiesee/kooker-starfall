@@ -157,6 +157,20 @@ namespace CityLife.World
             ActualDistance = smoothedDistance;
             transform.position = cameraPivot + backDir * ActualDistance;
 
+            // Maintain third-person camera above water surface when tracking character near or in water
+            if (ViewMode != CameraViewMode.FirstPerson)
+            {
+                float waterLevel = CoastalWater.CurrentLevel;
+                if (Target.position.y >= waterLevel - 1.8f)
+                {
+                    float minCameraY = waterLevel + 0.35f;
+                    if (transform.position.y < minCameraY)
+                    {
+                        transform.position = new Vector3(transform.position.x, minCameraY, transform.position.z);
+                    }
+                }
+            }
+
             // Look slightly ahead of character pivot for cinematic third-person framing
             Vector3 lookTarget = pivot + (rot * Vector3.forward * 1.2f) + lateral * 0.2f;
             transform.LookAt(lookTarget);

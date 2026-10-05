@@ -23,7 +23,7 @@ Shader "CityLife/CoastalWater"
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
             ZTest LEqual
-            Cull Off
+            Cull Back
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex Vert
